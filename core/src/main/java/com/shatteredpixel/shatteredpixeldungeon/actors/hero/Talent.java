@@ -197,6 +197,24 @@ public enum Talent {
 	//Power of Many T4
 	BEAMING_RAY(183, 4), LIFE_LINK(184, 4), STASIS(185, 4),
 
+	//Seven Sins: talent icons live in rows 8+ of talent_icons.png (row 8 = 256 = gluttony)
+	//Gluttony (Predator) T1
+	PREDATOR_FEAST(256), PREDATOR_TASTE(257), PREDATOR_FANG(258), PREDATOR_HIDE(259),
+	//Gluttony T2
+	PREDATOR_GLUTTONY(260), PREDATOR_CURSE_EATER(261), PREDATOR_EFFICIENCY(262), PREDATOR_SCRAPS(263), PREDATOR_INSTINCT(264),
+	//Gluttony T3
+	PREDATOR_ADAPT(265, 3), PREDATOR_APEX(266, 3),
+	//Gourmand T3
+	GOURMAND_SECOND_STOMACH(267, 3), GOURMAND_LEFTOVERS(268, 3), GOURMAND_FOOD_COMA(269, 3),
+	//Inheritor T3
+	INHERITOR_RESONANCE(270, 3), INHERITOR_MEMORY(271, 3), INHERITOR_PURIFY(272, 3),
+	//Gorge Bite T4
+	BITE_REACH(273, 4), BITE_DIGEST(274, 4), BITE_TEAR(275, 4),
+	//Iron Gut T4
+	GUT_THICKNESS(276, 4), GUT_THORNS(277, 4), GUT_RECOVER(278, 4),
+	//Regurgitate T4
+	REGURG_RANGE(279, 4), REGURG_ACID(280, 4), REGURG_DISGUST(281, 4),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -463,6 +481,8 @@ public enum Talent {
 					return 154;
 				case CLERIC:
 					return 186;
+				case GLUTTONY:
+					return 282;
 			}
 		} else {
 			return icon;
@@ -994,6 +1014,9 @@ public enum Talent {
 			case CLERIC:
 				Collections.addAll(tierTalents, SATIATED_SPELLS, HOLY_INTUITION, SEARING_LIGHT, SHIELD_OF_LIGHT);
 				break;
+			case GLUTTONY:
+				Collections.addAll(tierTalents, PREDATOR_FEAST, PREDATOR_TASTE, PREDATOR_FANG, PREDATOR_HIDE);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1023,6 +1046,9 @@ public enum Talent {
 			case CLERIC:
 				Collections.addAll(tierTalents, ENLIGHTENING_MEAL, RECALL_INSCRIPTION, SUNRAY, DIVINE_SENSE, BLESS);
 				break;
+			case GLUTTONY:
+				Collections.addAll(tierTalents, PREDATOR_GLUTTONY, PREDATOR_CURSE_EATER, PREDATOR_EFFICIENCY, PREDATOR_SCRAPS, PREDATOR_INSTINCT);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1051,6 +1077,9 @@ public enum Talent {
 				break;
 			case CLERIC:
 				Collections.addAll(tierTalents, CLEANSE, LIGHT_READING);
+				break;
+			case GLUTTONY:
+				Collections.addAll(tierTalents, PREDATOR_ADAPT, PREDATOR_APEX);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1115,6 +1144,12 @@ public enum Talent {
 				break;
 			case PALADIN:
 				Collections.addAll(tierTalents, LAY_ON_HANDS, AURA_OF_PROTECTION, WALL_OF_LIGHT);
+				break;
+			case GOURMAND:
+				Collections.addAll(tierTalents, GOURMAND_SECOND_STOMACH, GOURMAND_LEFTOVERS, GOURMAND_FOOD_COMA);
+				break;
+			case INHERITOR:
+				Collections.addAll(tierTalents, INHERITOR_RESONANCE, INHERITOR_MEMORY, INHERITOR_PURIFY);
 				break;
 		}
 		for (Talent talent : tierTalents){

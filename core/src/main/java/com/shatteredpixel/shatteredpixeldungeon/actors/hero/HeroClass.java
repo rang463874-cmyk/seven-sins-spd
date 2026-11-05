@@ -28,6 +28,12 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.QuickSlot;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.ArmorAbility;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PredatorStomach;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.GorgeBite;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.IronGut;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.Regurgitate;
+import com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric.AscendedForm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric.PowerOfMany;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric.Trinity;
@@ -89,12 +95,20 @@ public enum HeroClass {
 	ROGUE( HeroSubClass.ASSASSIN, HeroSubClass.FREERUNNER ),
 	HUNTRESS( HeroSubClass.SNIPER, HeroSubClass.WARDEN ),
 	DUELIST( HeroSubClass.CHAMPION, HeroSubClass.MONK ),
-	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN );
+	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN ),
+
+	//Seven Sins
+	GLUTTONY( HeroSubClass.GOURMAND, HeroSubClass.INHERITOR );
 
 	private HeroSubClass[] subClasses;
 
 	HeroClass( HeroSubClass...subClasses ) {
 		this.subClasses = subClasses;
+	}
+
+	//whether this class appears in hero selection (the cleric is hidden in this mod, but kept for old saves)
+	public boolean selectable(){
+		return this != CLERIC;
 	}
 
 	public void initHero( Hero hero ) {
@@ -139,6 +153,10 @@ public enum HeroClass {
 
 			case CLERIC:
 				initCleric( hero );
+				break;
+
+			case GLUTTONY:
+				initGluttony( hero );
 				break;
 		}
 
@@ -260,6 +278,21 @@ public enum HeroClass {
 		new ScrollOfRemoveCurse().identify();
 	}
 
+	private static void initGluttony( Hero hero ) {
+
+		(hero.belongings.weapon = new WornShortsword()).identify();
+		hero.belongings.weapon.activate(hero);
+
+		PredatorMaw maw = new PredatorMaw();
+		maw.identify().collect();
+		Dungeon.quickslot.setSlot(0, maw);
+
+		Buff.affect(hero, PredatorStomach.class);
+
+		new PotionOfHealing().identify();
+		new ScrollOfRemoveCurse().identify();
+	}
+
 	public String title() {
 		return Messages.get(HeroClass.class, name());
 	}
@@ -290,6 +323,8 @@ public enum HeroClass {
 				return new ArmorAbility[]{new Challenge(), new ElementalStrike(), new Feint()};
 			case CLERIC:
 				return new ArmorAbility[]{new AscendedForm(), new Trinity(), new PowerOfMany()};
+			case GLUTTONY:
+				return new ArmorAbility[]{new GorgeBite(), new IronGut(), new Regurgitate()};
 		}
 	}
 
@@ -307,6 +342,8 @@ public enum HeroClass {
 				return Assets.Sprites.DUELIST;
 			case CLERIC:
 				return Assets.Sprites.CLERIC;
+			case GLUTTONY:
+				return Assets.Sprites.GLUTTONY;
 		}
 	}
 
@@ -324,6 +361,8 @@ public enum HeroClass {
 				return Assets.Splashes.DUELIST;
 			case CLERIC:
 				return Assets.Splashes.CLERIC;
+			case GLUTTONY:
+				return Assets.Splashes.GLUTTONY;
 		}
 	}
 	
@@ -344,6 +383,9 @@ public enum HeroClass {
 				return Badges.isUnlocked(Badges.Badge.UNLOCK_DUELIST);
 			case CLERIC:
 				return Badges.isUnlocked(Badges.Badge.UNLOCK_CLERIC);
+			//the seven sins are available from the start
+			case GLUTTONY:
+				return true;
 		}
 	}
 	

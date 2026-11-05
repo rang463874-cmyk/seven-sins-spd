@@ -84,6 +84,8 @@ public class HeroSelectScene extends PixelScene {
 	//fading UI elements
 	private RenderedTextBlock title;
 	private ArrayList<StyledButton> heroBtns = new ArrayList<>();
+	//total height of the hero button bar in portrait (1 or 2 rows)
+	private int heroBarHeight = HeroBtn.HEIGHT;
 	private RenderedTextBlock heroName; //only on landscape
 	private RenderedTextBlock heroDesc; //only on landscape
 	private StyledButton startBtn;
@@ -102,6 +104,11 @@ public class HeroSelectScene extends PixelScene {
 		super.create();
 
 		Dungeon.hero = null;
+
+		//hidden classes (e.g. the cleric in this mod) can't be pre-selected
+		if (GamesInProgress.selectedClass != null && !GamesInProgress.selectedClass.selectable()){
+			GamesInProgress.selectedClass = null;
+		}
 
 		Badges.loadGlobal();
 		Journal.loadGlobal();
@@ -193,6 +200,7 @@ public class HeroSelectScene extends PixelScene {
 		add(infoButton);
 
 		for (HeroClass cl : HeroClass.values()){
+			if (!cl.selectable()) continue;
 			HeroBtn button = new HeroBtn(cl);
 			add(button);
 			heroBtns.add(button);
@@ -255,30 +263,31 @@ public class HeroSelectScene extends PixelScene {
 			title.setPos(insets.left + (leftArea - title.width())/2f, (h-uiHeight)/2f);
 			align(title);
 
-			int btnWidth = HeroBtn.MIN_WIDTH + 15;
 			int btnHeight = HeroBtn.HEIGHT;
 			if (uiHeight >= 180){
 				btnHeight += 6;
 			}
 
-			int cols = (int)Math.ceil(heroBtns.size()/2f);
-			float curX = insets.left + (leftArea - btnWidth * cols + (cols-1))/2f;
-			float curY = title.bottom() + uiSpacing;
+			//fit all hero buttons into the left area, adding rows as needed
+			int total = heroBtns.size();
+			int rows = 2;
+			int cols = (int)Math.ceil(total/(float)rows);
+			int btnWidth = (int)Math.min(HeroBtn.MIN_WIDTH + 15, (leftArea - (cols-1)) / cols);
+			while (btnWidth < HeroBtn.MIN_WIDTH && rows < total){
+				rows++;
+				cols = (int)Math.ceil(total/(float)rows);
+				btnWidth = (int)Math.min(HeroBtn.MIN_WIDTH + 15, (leftArea - (cols-1)) / cols);
+			}
 
-			int count = 0;
-			for (StyledButton button : heroBtns){
-				button.setRect(curX, curY, btnWidth, btnHeight);
+			float curY = title.bottom() + uiSpacing;
+			for (int i = 0; i < total; i++){
+				int row = i / cols;
+				int col = i % cols;
+				int inRow = Math.min(cols, total - row*cols);
+				float x = insets.left + (leftArea - btnWidth * inRow - (inRow-1))/2f + col * (btnWidth+1);
+				StyledButton button = heroBtns.get(i);
+				button.setRect(x, curY + row * (btnHeight+1), btnWidth, btnHeight);
 				align(button);
-				curX += btnWidth+1;
-				count++;
-				if (count >= (1+heroBtns.size())/2){
-					curX -= btnWidth*count + count;
-					curY += btnHeight+1;
-					if (heroBtns.size()%2 != 0){
-						curX += btnWidth/2f;
-					}
-					count = 0;
-				}
 			}
 
 			heroName = renderTextBlock(9);
@@ -327,16 +336,25 @@ public class HeroSelectScene extends PixelScene {
 
 			int btnWidth = HeroBtn.MIN_WIDTH;
 
-			float curX = insets.left + (w - btnWidth * heroBtns.size()) / 2f;
-			if (curX > 0) {
-				btnWidth += Math.min(curX / (heroBtns.size() / 2f), 15);
-				curX = insets.left + (w - btnWidth * heroBtns.size()) / 2f;
-			}
-			float curY = insets.top + h - HeroBtn.HEIGHT + 3;
+			//use two rows when all heroes don't fit in one
+			int total = heroBtns.size();
+			int rows = (total * btnWidth > w) ? 2 : 1;
+			int perRow = (int)Math.ceil(total / (float)rows);
+			heroBarHeight = HeroBtn.HEIGHT * rows;
 
-			for (StyledButton button : heroBtns) {
-				button.setRect(curX, curY, btnWidth, HeroBtn.HEIGHT + insets.bottom);
-				curX += btnWidth;
+			float spare = (w - btnWidth * perRow) / 2f;
+			if (spare > 0) {
+				btnWidth += Math.min(spare / (perRow / 2f), 15);
+			}
+
+			for (int i = 0; i < total; i++) {
+				int row = i / perRow;
+				int col = i % perRow;
+				int inRow = (row == rows-1) ? total - perRow*(rows-1) : perRow;
+				float x = insets.left + (w - btnWidth * inRow) / 2f + col * btnWidth;
+				float y = insets.top + h - HeroBtn.HEIGHT*(rows-row) + 3;
+				float bh = (row == rows-1) ? HeroBtn.HEIGHT + insets.bottom : HeroBtn.HEIGHT;
+				heroBtns.get(i).setRect(x, y, btnWidth, bh);
 			}
 
 			//add a darkening bar along bottom
@@ -349,9 +367,9 @@ public class HeroSelectScene extends PixelScene {
 				add(blocker);
 			}
 
-			title.setPos(insets.left + (w - title.width()) / 2f, insets.top + (h - HeroBtn.HEIGHT - title.height() - 4));
+			title.setPos(insets.left + (w - title.width()) / 2f, insets.top + (h - heroBarHeight - title.height() - 4));
 
-			btnOptions.setRect(heroBtns.get(0).left() + 16, Camera.main.height-HeroBtn.HEIGHT-16, 20, 21);
+			btnOptions.setRect(heroBtns.get(0).left() + 16, Camera.main.height-heroBarHeight-16, 20, 21);
 			optionsPane.setPos(heroBtns.get(0).left(), 0);
 		}
 
@@ -463,7 +481,7 @@ public class HeroSelectScene extends PixelScene {
 			startBtn.text(Messages.titleCase(cl.title()));
 			startBtn.setSize(startBtn.reqWidth() + 8, 21);
 
-			startBtn.setPos((Camera.main.width - startBtn.width())/2f, (Camera.main.height - insets.bottom - HeroBtn.HEIGHT + 2 - startBtn.height()));
+			startBtn.setPos((Camera.main.width - startBtn.width())/2f, (Camera.main.height - insets.bottom - heroBarHeight + 2 - startBtn.height()));
 			PixelScene.align(startBtn);
 
 			infoButton.visible = infoButton.active = true;
@@ -823,7 +841,7 @@ public class HeroSelectScene extends PixelScene {
 
 			int unlockedCount = 0;
 			for (HeroClass cls : HeroClass.values()){
-				if (cls.isUnlocked()) unlockedCount++;
+				if (cls.selectable() && cls.isUnlocked()) unlockedCount++;
 			}
 
 			if (unlockedCount >= 2) {
@@ -838,7 +856,7 @@ public class HeroSelectScene extends PixelScene {
 							HeroClass randomCls;
 							do {
 								randomCls = Random.oneOf(HeroClass.values());
-							} while (!randomCls.isUnlocked());
+							} while (!randomCls.selectable() || !randomCls.isUnlocked());
 							setSelectedHero(randomCls);
 							GamesInProgress.randomizedClass = true;
 						}
@@ -938,7 +956,7 @@ public class HeroSelectScene extends PixelScene {
 							HeroClass randomCls;
 							do {
 								randomCls = Random.oneOf(HeroClass.values());
-							} while (!randomCls.isUnlocked());
+							} while (!randomCls.selectable() || !randomCls.isUnlocked());
 							setSelectedHero(randomCls);
 							GamesInProgress.randomizedClass = true;
 						} else {

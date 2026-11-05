@@ -29,7 +29,7 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
-	private static final int TX_HEIGHT = 512;
+	private static final int TX_HEIGHT = 528; //extended by one row for the seven sins
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
 
@@ -816,6 +816,15 @@ public class ItemSpriteSheet {
 		assignItemRect(CAVES_PAGE,  10, 11);
 		assignItemRect(CITY_PAGE,   10, 11);
 		assignItemRect(HALLS_PAGE,  10, 11);
+	}
+
+	//Seven Sins classes: signature item + class armor per sin (tools/sinsart/make_sin_assets.py)
+	private static final int SINS       =                                   xy(1, 33);  //16 slots
+	public static final int PREDATOR_MAW    = SINS+0;
+	public static final int ARMOR_PREDATOR  = SINS+1;
+	static{
+		assignItemRect(PREDATOR_MAW,    16, 15);
+		assignItemRect(ARMOR_PREDATOR,  13, 14);
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite

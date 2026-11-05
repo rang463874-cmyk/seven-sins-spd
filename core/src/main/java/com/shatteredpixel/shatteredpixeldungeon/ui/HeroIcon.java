@@ -113,6 +113,14 @@ public class HeroIcon extends Image {
 	public static final int WEAPON_SWAP     = 109;
 	public static final int MONK_ABILITIES  = 110;
 
+	//Seven Sins: one row of 8 per sin starting at 128 (tools/sinsart/make_sin_assets.py)
+	//order per row: subclass 1, subclass 2, armor ability 1, 2, 3
+	public static final int GOURMAND        = 128;
+	public static final int INHERITOR       = 129;
+	public static final int GORGE_BITE      = 130;
+	public static final int IRON_GUT        = 131;
+	public static final int REGURGITATE     = 132;
+
 	public HeroIcon(HeroSubClass subCls){
 		super( Assets.Interfaces.HERO_ICONS );
 		if (film == null){
