@@ -90,6 +90,7 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.features.Chasm;
 import com.shatteredpixel.shatteredpixeldungeon.levels.traps.Trap;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.greed.GreedHooks;
+import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
@@ -371,6 +372,13 @@ public abstract class Mob extends Char {
 			if (source != null) {
 				return source;
 			}
+		}
+
+		//wrath's discord: rivals only hunt each other
+		Char rival = WrathHooks.discordTarget( this );
+		if (rival != null) {
+			state = HUNTING;
+			return rival;
 		}
 		
 		//if we are an alert enemy, auto-hunt a target that is affected by aggression, even another enemy
@@ -1023,6 +1031,7 @@ public abstract class Mob extends Char {
 	public void die( Object cause ) {
 
 		GreedHooks.onMobDeath( this, cause );
+		WrathHooks.onMobDeath( this, cause );
 
 		if (cause == Chasm.class){
 			//50% chance to round up, 50% to round down

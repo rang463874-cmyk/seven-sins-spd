@@ -35,6 +35,13 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.I
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.Regurgitate;
 import com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw;
 import com.shatteredpixel.shatteredpixeldungeon.items.GoldenCard;
+import com.shatteredpixel.shatteredpixeldungeon.items.WarDrum;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRage;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gloves;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WrathGrudge;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.wrath.RageBurst;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.wrath.WarCry;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.wrath.WrathSpirits;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.GreedVault;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Bankruptcy;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.GoldRain;
@@ -104,7 +111,8 @@ public enum HeroClass {
 
 	//Seven Sins
 	GLUTTONY( HeroSubClass.GOURMAND, HeroSubClass.INHERITOR ),
-	GREED( HeroSubClass.BANKER, HeroSubClass.USURER );
+	GREED( HeroSubClass.BANKER, HeroSubClass.USURER ),
+	WRATH( HeroSubClass.INSTIGATOR, HeroSubClass.AVENGER );
 
 	private HeroSubClass[] subClasses;
 
@@ -167,6 +175,10 @@ public enum HeroClass {
 
 			case GREED:
 				initGreed( hero );
+				break;
+
+			case WRATH:
+				initWrath( hero );
 				break;
 		}
 
@@ -318,6 +330,21 @@ public enum HeroClass {
 		new ScrollOfMagicMapping().identify();
 	}
 
+	private static void initWrath( Hero hero ) {
+
+		(hero.belongings.weapon = new Gloves()).identify();
+		hero.belongings.weapon.activate(hero);
+
+		WarDrum drum = new WarDrum();
+		drum.identify().collect();
+		Dungeon.quickslot.setSlot(0, drum);
+
+		Buff.affect(hero, WrathGrudge.class);
+
+		new PotionOfHealing().identify();
+		new ScrollOfRage().identify();
+	}
+
 	public String title() {
 		return Messages.get(HeroClass.class, name());
 	}
@@ -352,6 +379,8 @@ public enum HeroClass {
 				return new ArmorAbility[]{new GorgeBite(), new IronGut(), new Regurgitate()};
 			case GREED:
 				return new ArmorAbility[]{new GoldRain(), new Insurance(), new Bankruptcy()};
+			case WRATH:
+				return new ArmorAbility[]{new WarCry(), new WrathSpirits(), new RageBurst()};
 		}
 	}
 
@@ -373,6 +402,8 @@ public enum HeroClass {
 				return Assets.Sprites.GLUTTONY;
 			case GREED:
 				return Assets.Sprites.GREED;
+			case WRATH:
+				return Assets.Sprites.WRATH;
 		}
 	}
 
@@ -394,6 +425,8 @@ public enum HeroClass {
 				return Assets.Splashes.GLUTTONY;
 			case GREED:
 				return Assets.Splashes.GREED;
+			case WRATH:
+				return Assets.Splashes.WRATH;
 		}
 	}
 	
@@ -417,6 +450,7 @@ public enum HeroClass {
 			//the seven sins are available from the start
 			case GLUTTONY:
 			case GREED:
+			case WRATH:
 				return true;
 		}
 	}

@@ -89,6 +89,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.armor.RogueArmor",
 			"com.shatteredpixel.shatteredpixeldungeon.items.armor.ScaleArmor",
 			"com.shatteredpixel.shatteredpixeldungeon.items.armor.WarriorArmor",
+			"com.shatteredpixel.shatteredpixeldungeon.items.armor.WrathArmor",
 		},
 		{"아티팩트",
 			"com.shatteredpixel.shatteredpixeldungeon.items.artifacts.AlchemistsToolkit",
@@ -352,6 +353,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.Stylus",
 			"com.shatteredpixel.shatteredpixeldungeon.items.TengusMask",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Torch",
+			"com.shatteredpixel.shatteredpixeldungeon.items.WarDrum",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Waterskin",
 		},
 	};

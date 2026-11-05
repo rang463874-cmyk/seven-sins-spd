@@ -165,6 +165,7 @@ import com.shatteredpixel.shatteredpixeldungeon.mechanics.ShadowCaster;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks;
 import com.shatteredpixel.shatteredpixeldungeon.greed.GreedHooks;
+import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Insurance;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.AlchemyScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -268,6 +269,7 @@ public class Hero extends Char {
 		HT = Math.round(multiplier * HT);
 		HT = PredatorHooks.bonusHT(this, HT);
 		HT = GreedHooks.bonusHT(this, HT);
+		HT = WrathHooks.bonusHT(this, HT);
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -520,6 +522,7 @@ public class Hero extends Char {
 		accuracy *= RingOfAccuracy.accuracyMultiplier( this );
 		accuracy = PredatorHooks.accuracy( this, accuracy );
 		accuracy = GreedHooks.accuracy( this, accuracy );
+		accuracy = WrathHooks.accuracy( this, accuracy );
 		
 		//precise assault and liquid agility
 		if (!(wep instanceof MissileWeapon)) {
@@ -590,6 +593,7 @@ public class Hero extends Char {
 		evasion *= RingOfEvasion.evasionMultiplier( this );
 		evasion = PredatorHooks.evasion( this, evasion );
 		evasion = GreedHooks.evasion( this, evasion );
+		evasion = WrathHooks.evasion( this, evasion );
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
 			if (pointsInTalent(Talent.LIQUID_AGILITY) == 1){
@@ -673,6 +677,7 @@ public class Hero extends Char {
 
 		dr = PredatorHooks.drBonus(this, dr);
 		dr = GreedHooks.drBonus(this, dr);
+		dr = WrathHooks.drBonus(this, dr);
 		
 		return dr;
 	}
@@ -1549,6 +1554,7 @@ public class Hero extends Char {
 			damage = PredatorHooks.onMeleeAttack( this, enemy, damage );
 		}
 		damage = GreedHooks.onAttack( this, enemy, damage );
+		damage = WrathHooks.onAttack( this, enemy, damage );
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );
@@ -1609,6 +1615,7 @@ public class Hero extends Char {
 
 		damage = PredatorHooks.onDefense( this, enemy, damage );
 		damage = GreedHooks.onDefense( this, enemy, damage );
+		damage = WrathHooks.onDefense( this, enemy, damage );
 		
 		if (belongings.armor() != null) {
 			damage = belongings.armor().proc( enemy, this, damage );

@@ -56,7 +56,11 @@ public enum HeroSubClass {
 
 	//Greed
 	BANKER(HeroIcon.BANKER),
-	USURER(HeroIcon.USURER);
+	USURER(HeroIcon.USURER),
+
+	//Wrath
+	INSTIGATOR(HeroIcon.INSTIGATOR),
+	AVENGER(HeroIcon.AVENGER);
 
 	int icon;
 

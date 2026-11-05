@@ -232,6 +232,23 @@ public enum Talent {
 	//Bankruptcy T4
 	BANKRUPT_REACH(311, 4), BANKRUPT_SEIZE(312, 4), BANKRUPT_DREAD(313, 4),
 
+	//Wrath T1 (row 10 = 320)
+	WRATH_SPITE(320), WRATH_FUEL(321), WRATH_FIRST_BLOOD(322), WRATH_GLARE(323),
+	//Wrath T2
+	WRATH_DRUMMER(324), WRATH_TEMPO(325), WRATH_DASH_STRIKE(326), WRATH_LONG_GRUDGE(327), WRATH_SCAVENGE(328),
+	//Wrath T3
+	WRATH_FURY(329, 3), WRATH_CHAOS(330, 3),
+	//Instigator T3
+	INSTIGATOR_FERVOR(331, 3), INSTIGATOR_PLAGUE(332, 3), INSTIGATOR_RIOT(333, 3),
+	//Avenger T3
+	AVENGER_FEAST(334, 3), AVENGER_EMPOWER(335, 3), AVENGER_EXECUTE(336, 3),
+	//War Cry T4
+	CRY_REACH(337, 4), CRY_ENDURE(338, 4), CRY_FRIGHT(339, 4),
+	//Wrath Spirits T4
+	SPIRIT_MIGHT(340, 4), SPIRIT_HUNGER(341, 4), SPIRIT_SPITE(342, 4),
+	//Rage Burst T4
+	BURST_POWER(343, 4), BURST_RADIUS(344, 4), BURST_CHAIN(345, 4),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -502,6 +519,8 @@ public enum Talent {
 					return 282;
 				case GREED:
 					return 314;
+				case WRATH:
+					return 346;
 			}
 		} else {
 			return icon;
@@ -1039,6 +1058,9 @@ public enum Talent {
 			case GREED:
 				Collections.addAll(tierTalents, GREED_PENNY, GREED_LOOT, GREED_GILDED_SKIN, GREED_DISCOUNT);
 				break;
+			case WRATH:
+				Collections.addAll(tierTalents, WRATH_SPITE, WRATH_FUEL, WRATH_FIRST_BLOOD, WRATH_GLARE);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1074,6 +1096,9 @@ public enum Talent {
 			case GREED:
 				Collections.addAll(tierTalents, GREED_HOARD, GREED_COMPENSATION, GREED_EXPRESS, GREED_BRIBERY, GREED_COINSHOT);
 				break;
+			case WRATH:
+				Collections.addAll(tierTalents, WRATH_DRUMMER, WRATH_TEMPO, WRATH_DASH_STRIKE, WRATH_LONG_GRUDGE, WRATH_SCAVENGE);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1108,6 +1133,9 @@ public enum Talent {
 				break;
 			case GREED:
 				Collections.addAll(tierTalents, GREED_PRESTIGE, GREED_MIDAS);
+				break;
+			case WRATH:
+				Collections.addAll(tierTalents, WRATH_FURY, WRATH_CHAOS);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1184,6 +1212,12 @@ public enum Talent {
 				break;
 			case USURER:
 				Collections.addAll(tierTalents, USURER_GOUGE, USURER_COLLECTOR, USURER_LIEN);
+				break;
+			case INSTIGATOR:
+				Collections.addAll(tierTalents, INSTIGATOR_FERVOR, INSTIGATOR_PLAGUE, INSTIGATOR_RIOT);
+				break;
+			case AVENGER:
+				Collections.addAll(tierTalents, AVENGER_FEAST, AVENGER_EMPOWER, AVENGER_EXECUTE);
 				break;
 		}
 		for (Talent talent : tierTalents){

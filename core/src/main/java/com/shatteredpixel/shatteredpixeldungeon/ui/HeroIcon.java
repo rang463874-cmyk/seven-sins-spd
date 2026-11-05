@@ -125,6 +125,11 @@ public class HeroIcon extends Image {
 	public static final int GOLD_RAIN       = 138;
 	public static final int INSURANCE       = 139;
 	public static final int BANKRUPTCY      = 140;
+	public static final int INSTIGATOR      = 144;
+	public static final int AVENGER         = 145;
+	public static final int WAR_CRY         = 146;
+	public static final int WRATH_SPIRITS   = 147;
+	public static final int RAGE_BURST      = 148;
 
 	public HeroIcon(HeroSubClass subCls){
 		super( Assets.Interfaces.HERO_ICONS );

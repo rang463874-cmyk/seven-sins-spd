@@ -75,6 +75,28 @@ CARD_PAL = {
     "K": (60, 40, 12, 255), "C": (200, 200, 210, 255), "D": (120, 84, 20, 255),
 }
 
+# 14x14 war drum (top-left aligned)
+DRUM = [
+    "....S....S....",
+    ".....S..S.....",
+    "..OOOOOOOOOO..",
+    ".OHHHHHHHHHHO.",
+    "OHLLLLLLLLLLHO",
+    "ORRWRRRRWRRRRO",
+    "ORRRWRRWRRRRRO",
+    "ORRRRWWRRRRRRO",
+    "ORRRWRRWRRRRRO",
+    "ORRWRRRRWRRRDO",
+    "OGGGGGGGGGGGGO",
+    ".ODDRRRRRRDDO.",
+    "..OOOOOOOOOO..",
+    "..............",
+]
+DRUM_PAL = {
+    "O": (40, 12, 8, 255), "R": (168, 32, 24, 255), "D": (104, 18, 14, 255), "H": (230, 214, 180, 255),
+    "L": (250, 240, 214, 255), "W": (236, 200, 120, 255), "G": (200, 150, 40, 255), "S": (120, 80, 40, 255),
+}
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -84,6 +106,7 @@ SINS = [
          talents=[0, 72, 75, 3, 96, 44, 10, 146, 86, 144, 11, 100, 143, 71, 53, 54, 165,
                   76, 77, 13, 35, 99, 64, 49, 50, 51, 186]),
     dict(name="greed", hue=46, accent=130, item="card", hair_v=1.7),
+    dict(name="wrath", hue=4, accent=28, item="drum", hair_v=1.15),
 ]
 
 
@@ -234,6 +257,8 @@ def main():
             sig = draw(MAW, MAW_PAL)
         elif sin.get("item") == "card":
             sig = draw(CARD, CARD_PAL)
+        elif sin.get("item") == "drum":
+            sig = draw(DRUM, DRUM_PAL)
         else:
             sig = rotate_to(items.crop(cell(ITEM_TOME, 16)), hue)
         items.paste(sig, cell(512 + 2 * k, 16)[:2])
