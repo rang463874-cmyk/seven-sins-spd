@@ -1,0 +1,93 @@
+# Seven Sins mod for Shattered Pixel Dungeon
+
+A mod of Shattered Pixel Dungeon v4.0.2 (GPLv3) that adds seven "Seven Deadly Sins" hero classes.
+The owner plays and tests on an Android phone and talks in Korean, so reply in Korean.
+
+## Current state
+
+Done and pushed (see `git log`):
+- Developer tools (in-game menu, debug builds only): item spawner, level up, heal, identify all.
+- Cleric is hidden from hero select (kept for old saves). Hero select fits 12 classes.
+- Seven sin classes, each with: signature item (no equipment slot), a permanent-growth buff,
+  2 subclasses, 26 talents, 3 armor abilities, class armor, en/ko strings, placeholder art.
+- Tier 1 sin weapons (starting weapons) and tier 5 sin weapons (via the blacksmith's
+  Sigil of Sin, 3000 favor, keeps upgrades/enchantment). Effects only work for the owning sin.
+- Imp quest vault mirror gives each sin a "reflection" of its signature item with bonuses.
+- GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
+  pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
+
+Not yet done / known gaps:
+- Never play-tested on a device until the first APK; expect UI/layout fixes.
+- Balance is untuned (Hibernator armor, Pride's Duel, Banker interest are on the strong side).
+- Sigil costs 3000 favor, which is the quest maximum (owner's choice, may lower to 2000).
+- Remains items for sins fall back to the warrior's seal shard.
+- Talent/hero icons for the sins are recolored cleric icons (placeholders).
+
+Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
+a points value that never decreases; accuracy/evasion are capped at 40%/30%).
+
+## The seven sins
+
+| Sin | Enum | Signature item | Buff (progress) | Hooks | Subclasses | Armor abilities |
+|---|---|---|---|---|---|---|
+| Gluttony 식탐 | GLUTTONY | PredatorMaw | PredatorStomach (devour points) | predator/PredatorHooks | GOURMAND, INHERITOR | abilities/predator/* |
+| Greed 탐욕 | GREED | GoldenCard | GreedVault (lifetime deposits) | greed/GreedHooks | BANKER, USURER | abilities/greed/* |
+| Wrath 분노 | WRATH | WarDrum | WrathGrudge (grudge from infighting) | wrath/WrathHooks | INSTIGATOR, AVENGER | abilities/wrath/* |
+| Pride 교만 | PRIDE | PrideCrown | PrideGlory (glory from flawless kills, dignity) | pride/PrideHooks | MONARCH, PARAGON | abilities/pride/* |
+| Lust 색욕 | LUST | Perfume | LustDesire (drain/charmed kills) | lust/LustHooks | SIREN, DREAMWEAVER | abilities/lust/* |
+| Envy 시기 | ENVY | EnvyMirror | EnvyCovet (robbed kills + bestiary of 27 special mobs) | envy/EnvyHooks | USURPER, COPYCAT | abilities/envy/* |
+| Sloth 나태 | SLOTH | SlothPillow | SlothRepose (torpor; kills while torpid) | sloth/SlothHooks | HIBERNATOR, SLEEPING_LION | abilities/sloth/* |
+
+Paths are under `core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/`
+(items in `items/`, buffs in `actors/buffs/`, abilities in `actors/hero/abilities/`).
+Charge-based sins keep their item charges inside the buff. Each buff has a `mirrored` flag
+set by the vault mirror relic (`items/MirrorRelics.java`).
+Sin weapons: `items/weapon/melee/sins/` (`SinWeapons` helper, each extends a base weapon).
+
+## How the mod plugs into the game
+
+Each sin has a `*Hooks` class with static pass-through methods. Call sites (search for `Hooks.`):
+- `Hero`: `updateHT` (bonusHT), `attackSkill` (accuracy), `defenseSkill` (evasion), `drRoll`,
+  `attackProc` (onAttack), `defenseProc` (onDefense), `die` (Greed insurance).
+- `Char.damage`: `modifyDamage` before damage, `afterDamage` after HP is reduced.
+- `Mob.die`: `onMobDeath`; `Mob.chooseEnemy`: Wrath discord / Lust siren targeting.
+- `Gold.doPickUp`: bonus gold. Per-class switches: `HeroClass`, `Talent` (trees + heroic energy
+  icon), `ClassArmor.upgrade`, `Icons.get`, `WndHeroInfo`, `Badges` (null-safe for new classes),
+  `VaultMirror`, `WndBlacksmith`.
+
+Adding a new class means touching all of the above; follow an existing sin as the template.
+
+## Assets
+
+`tools/sinsart/make_sin_assets.py` regenerates all placeholder art from the Cleric's art
+(hero sheet, splash, avatar, talent/hero icons, signature items, class armor, sin weapons,
+mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.py`.
+Reserved layout (must match the Java constants):
+- `talent_icons.png`: row 8 + k (icon 256 + 32k + i), heroic energy at +26
+- `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
+- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 560):
+  row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics
+- `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
+k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
+
+## Strings
+
+English and Korean only. Source copies live in `tools/strings/*.properties` and are appended to
+`core/src/main/assets/messages/{actors,items,windows}/*.properties` under
+`###### Seven Sins: ... ######` headers. Keep both languages in sync; a missing key shows as
+"!!!NO TEXT FOUND!!!" in game. Messages fall back to superclass keys, so sin weapons inherit
+their base weapon's ability text.
+
+## Building and checking
+
+- Normal PC: open in Android Studio, or `./gradlew android:assembleDebug`.
+- Phone testing: push to GitHub; `.github/workflows/build-apk.yml` builds and publishes the APK.
+- Sandboxes without Maven/Google access: `bash tools/compilecheck/check.sh` compiles against
+  libGDX built from GitHub sources (prints `exit: 0` on success). Headless logic tests can be run
+  with `java -cp <out>/spdcls:<deps.jar>`; anything touching Messages/UI needs the real game.
+- After adding items: regenerate the dev-tools item list with
+  `CLASSES=<spdcls> CP=<deps.jar> bash tools/devitems/regen.sh`
+  (on a PC: `./gradlew :core:compileJava && bash tools/devitems/regen.sh`).
+
+Debug builds (version suffix -INDEV) unlock all classes and show the dev tools; they install
+alongside official SPD (`.indev` package suffix).
