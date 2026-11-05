@@ -37,6 +37,11 @@ import com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw;
 import com.shatteredpixel.shatteredpixeldungeon.items.GoldenCard;
 import com.shatteredpixel.shatteredpixeldungeon.items.WarDrum;
 import com.shatteredpixel.shatteredpixeldungeon.items.PrideCrown;
+import com.shatteredpixel.shatteredpixeldungeon.items.Perfume;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LustDesire;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.EnchantingDance;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.Heartbreak;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.SoulSiphon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PrideGlory;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.pride.Aegis;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.pride.Judgement;
@@ -118,7 +123,8 @@ public enum HeroClass {
 	GLUTTONY( HeroSubClass.GOURMAND, HeroSubClass.INHERITOR ),
 	GREED( HeroSubClass.BANKER, HeroSubClass.USURER ),
 	WRATH( HeroSubClass.INSTIGATOR, HeroSubClass.AVENGER ),
-	PRIDE( HeroSubClass.MONARCH, HeroSubClass.PARAGON );
+	PRIDE( HeroSubClass.MONARCH, HeroSubClass.PARAGON ),
+	LUST( HeroSubClass.SIREN, HeroSubClass.DREAMWEAVER );
 
 	private HeroSubClass[] subClasses;
 
@@ -189,6 +195,10 @@ public enum HeroClass {
 
 			case PRIDE:
 				initPride( hero );
+				break;
+
+			case LUST:
+				initLust( hero );
 				break;
 		}
 
@@ -370,6 +380,21 @@ public enum HeroClass {
 		new ScrollOfMirrorImage().identify();
 	}
 
+	private static void initLust( Hero hero ) {
+
+		(hero.belongings.weapon = new Dagger()).identify();
+		hero.belongings.weapon.activate(hero);
+
+		Perfume perfume = new Perfume();
+		perfume.identify().collect();
+		Dungeon.quickslot.setSlot(0, perfume);
+
+		Buff.affect(hero, LustDesire.class);
+
+		new PotionOfHealing().identify();
+		new ScrollOfLullaby().identify();
+	}
+
 	public String title() {
 		return Messages.get(HeroClass.class, name());
 	}
@@ -408,6 +433,8 @@ public enum HeroClass {
 				return new ArmorAbility[]{new WarCry(), new WrathSpirits(), new RageBurst()};
 			case PRIDE:
 				return new ArmorAbility[]{new Reign(), new Aegis(), new Judgement()};
+			case LUST:
+				return new ArmorAbility[]{new EnchantingDance(), new SoulSiphon(), new Heartbreak()};
 		}
 	}
 
@@ -433,6 +460,8 @@ public enum HeroClass {
 				return Assets.Sprites.WRATH;
 			case PRIDE:
 				return Assets.Sprites.PRIDE;
+			case LUST:
+				return Assets.Sprites.LUST;
 		}
 	}
 
@@ -458,6 +487,8 @@ public enum HeroClass {
 				return Assets.Splashes.WRATH;
 			case PRIDE:
 				return Assets.Splashes.PRIDE;
+			case LUST:
+				return Assets.Splashes.LUST;
 		}
 	}
 	
@@ -483,6 +514,7 @@ public enum HeroClass {
 			case GREED:
 			case WRATH:
 			case PRIDE:
+			case LUST:
 				return true;
 		}
 	}

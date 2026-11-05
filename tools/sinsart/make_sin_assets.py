@@ -116,6 +116,28 @@ CROWN_PAL = {
     "R": (200, 60, 220, 255), "B": (90, 160, 255, 255), "P": (240, 240, 255, 255),
 }
 
+# 10x14 perfume bottle (top-left aligned)
+PERFUME = [
+    "...OOOO...",
+    "...OGGO...",
+    "....OO....",
+    "...OHHO...",
+    "..OPPPPO..",
+    ".OPLLPPPO.",
+    "OPLLPPPPPO",
+    "OPLPPPPPPO",
+    "OPPPPPPPDO",
+    "OPPPPPPPDO",
+    "OPPPPPPDDO",
+    ".OPPPPDDO.",
+    "..OOOOOO..",
+    "..........",
+]
+PERFUME_PAL = {
+    "O": (70, 16, 40, 255), "P": (236, 92, 160, 255), "L": (255, 200, 228, 255), "D": (170, 40, 104, 255),
+    "H": (240, 230, 240, 255), "G": (230, 190, 70, 255),
+}
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -127,6 +149,7 @@ SINS = [
     dict(name="greed", hue=46, accent=130, item="card", hair_v=1.7),
     dict(name="wrath", hue=4, accent=28, item="drum", hair_v=1.15),
     dict(name="pride", hue=265, accent=48, item="crown", hair_v=2.4, hair_s=0.18),
+    dict(name="lust", hue=332, accent=300, item="perfume", hair_v=1.6, hair_s=0.65),
 ]
 
 
@@ -281,6 +304,8 @@ def main():
             sig = draw(DRUM, DRUM_PAL)
         elif sin.get("item") == "crown":
             sig = draw(CROWN, CROWN_PAL)
+        elif sin.get("item") == "perfume":
+            sig = draw(PERFUME, PERFUME_PAL)
         else:
             sig = rotate_to(items.crop(cell(ITEM_TOME, 16)), hue)
         items.paste(sig, cell(512 + 2 * k, 16)[:2])

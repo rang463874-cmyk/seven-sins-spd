@@ -145,6 +145,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Languages;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
 import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
+import com.shatteredpixel.shatteredpixeldungeon.lust.LustHooks;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Earthroot;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -842,6 +843,7 @@ public abstract class Char extends Actor {
 
 		dmg = WrathHooks.modifyDamage(this, src, dmg);
 		dmg = PrideHooks.modifyDamage(this, src, dmg);
+		dmg = LustHooks.modifyDamage(this, src, dmg);
 
 		if (!(src instanceof LifeLink || src instanceof Hunger) && buff(LifeLink.class) != null){
 			HashSet<LifeLink> links = buffs(LifeLink.class);
@@ -994,6 +996,7 @@ public abstract class Char extends Actor {
 		HP -= dmg;
 		WrathHooks.afterDamage(this, src, dmg + shielded);
 		PrideHooks.afterDamage(this, src, dmg + shielded);
+		LustHooks.afterDamage(this, src, dmg + shielded);
 
 		if (HP > 0 && src instanceof Char && ((Char) src).buff(Grim.GrimTracker.class) != null){
 

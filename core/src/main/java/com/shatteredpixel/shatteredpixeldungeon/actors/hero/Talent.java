@@ -266,6 +266,23 @@ public enum Talent {
 	//Judgement T4
 	JUDGE_POWER(375, 4), JUDGE_DIGNITY(376, 4), JUDGE_GLORY(377, 4),
 
+	//Lust T1 (row 12 = 384)
+	LUST_YEARNING(384), LUST_LINGER(385), LUST_SWEET(386), LUST_BLUSH(387),
+	//Lust T2
+	LUST_BOTTLE(388), LUST_REFILL(389), LUST_WAFT(390), LUST_THIRST(391), LUST_EMBRACE(392),
+	//Lust T3
+	LUST_OBSESSION(393, 3), LUST_HEARTSTRINGS(394, 3),
+	//Siren T3
+	SIREN_SONG(395, 3), SIREN_ECHO(396, 3), SIREN_DEVOTION(397, 3),
+	//Dreamweaver T3
+	DREAM_DEEP(398, 3), DREAM_LULLABY(399, 3), DREAM_REVERIE(400, 3),
+	//Enchanting Dance T4
+	DANCE_REACH(401, 4), DANCE_ENCORE(402, 4), DANCE_DAZE(403, 4),
+	//Soul Siphon T4
+	SIPHON_POWER(404, 4), SIPHON_SHIELD(405, 4), SIPHON_CHARM(406, 4),
+	//Heartbreak T4
+	BREAK_POWER(407, 4), BREAK_FEAR(408, 4), BREAK_DESIRE(409, 4),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -540,6 +557,8 @@ public enum Talent {
 					return 346;
 				case PRIDE:
 					return 378;
+				case LUST:
+					return 410;
 			}
 		} else {
 			return icon;
@@ -1083,6 +1102,9 @@ public enum Talent {
 			case PRIDE:
 				Collections.addAll(tierTalents, PRIDE_VANITY, PRIDE_COMPOSURE, PRIDE_POISE, PRIDE_GRACE);
 				break;
+			case LUST:
+				Collections.addAll(tierTalents, LUST_YEARNING, LUST_LINGER, LUST_SWEET, LUST_BLUSH);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1124,6 +1146,9 @@ public enum Talent {
 			case PRIDE:
 				Collections.addAll(tierTalents, PRIDE_REGALIA, PRIDE_SWIFT_CROWN, PRIDE_PROCESSION, PRIDE_DECREE, PRIDE_SCORN);
 				break;
+			case LUST:
+				Collections.addAll(tierTalents, LUST_BOTTLE, LUST_REFILL, LUST_WAFT, LUST_THIRST, LUST_EMBRACE);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1164,6 +1189,9 @@ public enum Talent {
 				break;
 			case PRIDE:
 				Collections.addAll(tierTalents, PRIDE_MAJESTY, PRIDE_SUPREMACY);
+				break;
+			case LUST:
+				Collections.addAll(tierTalents, LUST_OBSESSION, LUST_HEARTSTRINGS);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1252,6 +1280,12 @@ public enum Talent {
 				break;
 			case PARAGON:
 				Collections.addAll(tierTalents, PARAGON_SOLITUDE, PARAGON_GIANTSLAYER, PARAGON_LEGEND);
+				break;
+			case SIREN:
+				Collections.addAll(tierTalents, SIREN_SONG, SIREN_ECHO, SIREN_DEVOTION);
+				break;
+			case DREAMWEAVER:
+				Collections.addAll(tierTalents, DREAM_DEEP, DREAM_LULLABY, DREAM_REVERIE);
 				break;
 		}
 		for (Talent talent : tierTalents){

@@ -92,6 +92,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.greed.GreedHooks;
 import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
 import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
+import com.shatteredpixel.shatteredpixeldungeon.lust.LustHooks;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
@@ -380,6 +381,13 @@ public abstract class Mob extends Char {
 		if (rival != null) {
 			state = HUNTING;
 			return rival;
+		}
+
+		//lust's siren: charmed enemies turn on their own kind
+		Char lured = LustHooks.sirenTarget( this );
+		if (lured != null) {
+			if (state != SLEEPING) state = HUNTING;
+			return lured;
 		}
 		
 		//if we are an alert enemy, auto-hunt a target that is affected by aggression, even another enemy
@@ -1034,6 +1042,7 @@ public abstract class Mob extends Char {
 		GreedHooks.onMobDeath( this, cause );
 		WrathHooks.onMobDeath( this, cause );
 		PrideHooks.onMobDeath( this, cause );
+		LustHooks.onMobDeath( this, cause );
 
 		if (cause == Chasm.class){
 			//50% chance to round up, 50% to round down

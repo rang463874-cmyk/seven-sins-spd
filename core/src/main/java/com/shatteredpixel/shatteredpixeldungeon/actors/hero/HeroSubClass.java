@@ -64,7 +64,11 @@ public enum HeroSubClass {
 
 	//Pride
 	MONARCH(HeroIcon.MONARCH),
-	PARAGON(HeroIcon.PARAGON);
+	PARAGON(HeroIcon.PARAGON),
+
+	//Lust
+	SIREN(HeroIcon.SIREN),
+	DREAMWEAVER(HeroIcon.DREAMWEAVER);
 
 	int icon;
 
