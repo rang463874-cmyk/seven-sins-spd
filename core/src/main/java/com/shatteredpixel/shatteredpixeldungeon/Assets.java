@@ -256,6 +256,7 @@ public class Assets {
 		public static final String PRIDE    = "splashes/pride.jpg";
 		public static final String LUST     = "splashes/lust.jpg";
 		public static final String ENVY     = "splashes/envy.jpg";
+		public static final String SLOTH    = "splashes/sloth.jpg";
 
 		public static final String SEWERS   = "splashes/sewers.jpg";
 		public static final String PRISON   = "splashes/prison.jpg";
@@ -287,6 +288,7 @@ public class Assets {
 		public static final String PRIDE    = "sprites/pride.png";
 		public static final String LUST     = "sprites/lust.png";
 		public static final String ENVY     = "sprites/envy.png";
+		public static final String SLOTH    = "sprites/sloth.png";
 		public static final String AVATARS  = "sprites/avatars.png";
 		public static final String PET      = "sprites/pet.png";
 		public static final String AMULET   = "sprites/amulet.png";

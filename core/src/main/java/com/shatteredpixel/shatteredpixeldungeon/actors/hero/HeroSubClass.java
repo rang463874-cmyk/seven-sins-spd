@@ -72,7 +72,11 @@ public enum HeroSubClass {
 
 	//Envy
 	USURPER(HeroIcon.USURPER),
-	COPYCAT(HeroIcon.COPYCAT);
+	COPYCAT(HeroIcon.COPYCAT),
+
+	//Sloth
+	HIBERNATOR(HeroIcon.HIBERNATOR),
+	SLEEPING_LION(HeroIcon.SLEEPING_LION);
 
 	int icon;
 

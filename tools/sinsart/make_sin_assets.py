@@ -161,6 +161,25 @@ MIRROR_PAL = {
     "D": (90, 140, 110, 255),
 }
 
+# 15x11 pillow (top-left aligned)
+PILLOW = [
+    ".OO.........OO.",
+    "OLLOOOOOOOOOLLO",
+    "OLWWWWWWWWWWWLO",
+    ".OWWWBBBBWWWWO.",
+    ".OWWBWWWWBWWWO.",
+    ".OWWWWZZWWWWWO.",
+    ".OWWWWWWZZWWSO.",
+    ".OWWWWWZZWWWSO.",
+    "OLWWWWWWWWWSSLO",
+    "OLLOOOOOOOOOLLO",
+    ".OO.........OO.",
+]
+PILLOW_PAL = {
+    "O": (30, 36, 70, 255), "W": (200, 214, 248, 255), "L": (150, 170, 230, 255), "S": (140, 156, 210, 255),
+    "B": (90, 110, 190, 255), "Z": (60, 80, 160, 255),
+}
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -174,6 +193,7 @@ SINS = [
     dict(name="pride", hue=265, accent=48, item="crown", hair_v=2.4, hair_s=0.18),
     dict(name="lust", hue=332, accent=300, item="perfume", hair_v=1.6, hair_s=0.65),
     dict(name="envy", hue=125, accent=160, item="mirror", hair_v=1.2, hair_s=0.7),
+    dict(name="sloth", hue=215, accent=195, item="pillow", hair_v=1.3, hair_s=0.6),
 ]
 
 
@@ -332,6 +352,8 @@ def main():
             sig = draw(PERFUME, PERFUME_PAL)
         elif sin.get("item") == "mirror":
             sig = draw(MIRROR, MIRROR_PAL)
+        elif sin.get("item") == "pillow":
+            sig = draw(PILLOW, PILLOW_PAL)
         else:
             sig = rotate_to(items.crop(cell(ITEM_TOME, 16)), hue)
         items.paste(sig, cell(512 + 2 * k, 16)[:2])

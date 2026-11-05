@@ -169,6 +169,7 @@ import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
 import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
 import com.shatteredpixel.shatteredpixeldungeon.lust.LustHooks;
 import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks;
+import com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Insurance;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.AlchemyScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -276,6 +277,7 @@ public class Hero extends Char {
 		HT = PrideHooks.bonusHT(this, HT);
 		HT = LustHooks.bonusHT(this, HT);
 		HT = EnvyHooks.bonusHT(this, HT);
+		HT = SlothHooks.bonusHT(this, HT);
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -532,6 +534,7 @@ public class Hero extends Char {
 		accuracy = PrideHooks.accuracy( this, accuracy );
 		accuracy = LustHooks.accuracy( this, accuracy );
 		accuracy = EnvyHooks.accuracy( this, accuracy );
+		accuracy = SlothHooks.accuracy( this, accuracy );
 		
 		//precise assault and liquid agility
 		if (!(wep instanceof MissileWeapon)) {
@@ -606,6 +609,7 @@ public class Hero extends Char {
 		evasion = PrideHooks.evasion( this, evasion );
 		evasion = LustHooks.evasion( this, evasion );
 		evasion = EnvyHooks.evasion( this, evasion );
+		evasion = SlothHooks.evasion( this, evasion );
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
 			if (pointsInTalent(Talent.LIQUID_AGILITY) == 1){
@@ -693,6 +697,7 @@ public class Hero extends Char {
 		dr = PrideHooks.drBonus(this, dr);
 		dr = LustHooks.drBonus(this, dr);
 		dr = EnvyHooks.drBonus(this, dr);
+		dr = SlothHooks.drBonus(this, dr);
 		
 		return dr;
 	}
@@ -1573,6 +1578,7 @@ public class Hero extends Char {
 		damage = PrideHooks.onAttack( this, enemy, damage );
 		damage = LustHooks.onAttack( this, enemy, damage );
 		damage = EnvyHooks.onAttack( this, enemy, damage );
+		damage = SlothHooks.onAttack( this, enemy, damage );
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );

@@ -136,6 +136,9 @@ abstract public class ClassArmor extends Armor {
 			case ENVY:
 				classArmor = new EnvyArmor();
 				break;
+			case SLOTH:
+				classArmor = new SlothArmor();
+				break;
 		}
 		
 		classArmor.level(armor.trueLevel());

@@ -300,6 +300,23 @@ public enum Talent {
 	//Downfall T4
 	FALL_POWER(439, 4), FALL_REACH(440, 4), FALL_ROB(441, 4),
 
+	//Sloth T1 (row 14 = 448)
+	SLOTH_IDLE(448), SLOTH_COMFY(449), SLOTH_SNORE(450), SLOTH_LINGER(451),
+	//Sloth T2
+	SLOTH_PILLOW(452), SLOTH_RESTFUL(453), SLOTH_ROLL(454), SLOTH_YAWN(455), SLOTH_SHOVE(456),
+	//Sloth T3
+	SLOTH_APATHY(457, 3), SLOTH_SNOOZE(458, 3),
+	//Hibernator T3
+	HIB_THICK(459, 3), HIB_DREAM(460, 3), HIB_DEEP(461, 3),
+	//Sleeping Lion T3
+	LION_POUNCE(462, 3), LION_WAKE(463, 3), LION_ROAR(464, 3),
+	//Eternal Slumber T4
+	SLUMBER_REACH(465, 4), SLUMBER_DEEP(466, 4), SLUMBER_REST(467, 4),
+	//Stagnation T4
+	STAG_REACH(468, 4), STAG_DURATION(469, 4), STAG_CRIPPLE(470, 4),
+	//Fortified Nap T4
+	NAP_SHIELD(471, 4), NAP_HEAL(472, 4), NAP_DREAMS(473, 4),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -578,6 +595,8 @@ public enum Talent {
 					return 410;
 				case ENVY:
 					return 442;
+				case SLOTH:
+					return 474;
 			}
 		} else {
 			return icon;
@@ -1127,6 +1146,9 @@ public enum Talent {
 			case ENVY:
 				Collections.addAll(tierTalents, ENVY_COVET, ENVY_GRASP, ENVY_PETTY, ENVY_SNATCH);
 				break;
+			case SLOTH:
+				Collections.addAll(tierTalents, SLOTH_IDLE, SLOTH_COMFY, SLOTH_SNORE, SLOTH_LINGER);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1174,6 +1196,9 @@ public enum Talent {
 			case ENVY:
 				Collections.addAll(tierTalents, ENVY_MIRROR, ENVY_POLISH, ENVY_SWITCH, ENVY_LEVEL, ENVY_RESENT);
 				break;
+			case SLOTH:
+				Collections.addAll(tierTalents, SLOTH_PILLOW, SLOTH_RESTFUL, SLOTH_ROLL, SLOTH_YAWN, SLOTH_SHOVE);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1220,6 +1245,9 @@ public enum Talent {
 				break;
 			case ENVY:
 				Collections.addAll(tierTalents, ENVY_JEALOUSY, ENVY_TROPHY);
+				break;
+			case SLOTH:
+				Collections.addAll(tierTalents, SLOTH_APATHY, SLOTH_SNOOZE);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1320,6 +1348,12 @@ public enum Talent {
 				break;
 			case COPYCAT:
 				Collections.addAll(tierTalents, COPY_STUDY, COPY_MASK, COPY_ECHO);
+				break;
+			case HIBERNATOR:
+				Collections.addAll(tierTalents, HIB_THICK, HIB_DREAM, HIB_DEEP);
+				break;
+			case SLEEPING_LION:
+				Collections.addAll(tierTalents, LION_POUNCE, LION_WAKE, LION_ROAR);
 				break;
 		}
 		for (Talent talent : tierTalents){
