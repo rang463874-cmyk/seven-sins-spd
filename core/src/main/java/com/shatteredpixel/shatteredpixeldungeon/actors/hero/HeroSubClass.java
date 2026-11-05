@@ -52,7 +52,11 @@ public enum HeroSubClass {
 
 	//Gluttony (Predator)
 	GOURMAND(HeroIcon.GOURMAND),
-	INHERITOR(HeroIcon.INHERITOR);
+	INHERITOR(HeroIcon.INHERITOR),
+
+	//Greed
+	BANKER(HeroIcon.BANKER),
+	USURER(HeroIcon.USURER);
 
 	int icon;
 

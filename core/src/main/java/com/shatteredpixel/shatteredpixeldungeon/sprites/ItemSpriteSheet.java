@@ -822,9 +822,13 @@ public class ItemSpriteSheet {
 	private static final int SINS       =                                   xy(1, 33);  //16 slots
 	public static final int PREDATOR_MAW    = SINS+0;
 	public static final int ARMOR_PREDATOR  = SINS+1;
+	public static final int GOLDEN_CARD     = SINS+2;
+	public static final int ARMOR_GREED     = SINS+3;
 	static{
 		assignItemRect(PREDATOR_MAW,    16, 15);
 		assignItemRect(ARMOR_PREDATOR,  13, 14);
+		assignItemRect(GOLDEN_CARD,     15, 11);
+		assignItemRect(ARMOR_GREED,     13, 14);
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite

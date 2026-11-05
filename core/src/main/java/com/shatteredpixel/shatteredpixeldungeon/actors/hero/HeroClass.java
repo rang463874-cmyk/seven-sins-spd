@@ -34,6 +34,11 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.G
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.IronGut;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.Regurgitate;
 import com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw;
+import com.shatteredpixel.shatteredpixeldungeon.items.GoldenCard;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.GreedVault;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Bankruptcy;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.GoldRain;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Insurance;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric.AscendedForm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric.PowerOfMany;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric.Trinity;
@@ -98,7 +103,8 @@ public enum HeroClass {
 	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN ),
 
 	//Seven Sins
-	GLUTTONY( HeroSubClass.GOURMAND, HeroSubClass.INHERITOR );
+	GLUTTONY( HeroSubClass.GOURMAND, HeroSubClass.INHERITOR ),
+	GREED( HeroSubClass.BANKER, HeroSubClass.USURER );
 
 	private HeroSubClass[] subClasses;
 
@@ -157,6 +163,10 @@ public enum HeroClass {
 
 			case GLUTTONY:
 				initGluttony( hero );
+				break;
+
+			case GREED:
+				initGreed( hero );
 				break;
 		}
 
@@ -293,6 +303,21 @@ public enum HeroClass {
 		new ScrollOfRemoveCurse().identify();
 	}
 
+	private static void initGreed( Hero hero ) {
+
+		(hero.belongings.weapon = new Dagger()).identify();
+		hero.belongings.weapon.activate(hero);
+
+		GoldenCard card = new GoldenCard();
+		card.identify().collect();
+		Dungeon.quickslot.setSlot(0, card);
+
+		Buff.affect(hero, GreedVault.class);
+
+		new PotionOfHealing().identify();
+		new ScrollOfMagicMapping().identify();
+	}
+
 	public String title() {
 		return Messages.get(HeroClass.class, name());
 	}
@@ -325,6 +350,8 @@ public enum HeroClass {
 				return new ArmorAbility[]{new AscendedForm(), new Trinity(), new PowerOfMany()};
 			case GLUTTONY:
 				return new ArmorAbility[]{new GorgeBite(), new IronGut(), new Regurgitate()};
+			case GREED:
+				return new ArmorAbility[]{new GoldRain(), new Insurance(), new Bankruptcy()};
 		}
 	}
 
@@ -344,6 +371,8 @@ public enum HeroClass {
 				return Assets.Sprites.CLERIC;
 			case GLUTTONY:
 				return Assets.Sprites.GLUTTONY;
+			case GREED:
+				return Assets.Sprites.GREED;
 		}
 	}
 
@@ -363,6 +392,8 @@ public enum HeroClass {
 				return Assets.Splashes.CLERIC;
 			case GLUTTONY:
 				return Assets.Splashes.GLUTTONY;
+			case GREED:
+				return Assets.Splashes.GREED;
 		}
 	}
 	
@@ -385,6 +416,7 @@ public enum HeroClass {
 				return Badges.isUnlocked(Badges.Badge.UNLOCK_CLERIC);
 			//the seven sins are available from the start
 			case GLUTTONY:
+			case GREED:
 				return true;
 		}
 	}

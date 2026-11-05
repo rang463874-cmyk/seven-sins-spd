@@ -56,6 +56,25 @@ MAW_PAL = {
     "W": (240, 236, 224, 255), "D": (42, 6, 18, 255), "R": (192, 48, 74, 255), "L": (232, 110, 130, 255),
 }
 
+# 15x11 golden card (top-left aligned)
+CARD = [
+    ".OOOOOOOOOOOOO.",
+    "OYYYYYYYYYYYYHO",
+    "OYHHYYYYYYYYYYO",
+    "OKKKKKKKKKKKKKO",
+    "OYYYYYYYYYYYYYO",
+    "OYCCCYYYYYYYYYO",
+    "OYCDCYYYYYYYYYO",
+    "OYCCCYYYYYYYYYO",
+    "OYYYYYYDDYDDYYO",
+    "OSYYYYYYYYYYYSO",
+    ".OOOOOOOOOOOOO.",
+]
+CARD_PAL = {
+    "O": (92, 58, 10, 255), "Y": (232, 184, 48, 255), "H": (255, 236, 150, 255), "S": (176, 128, 24, 255),
+    "K": (60, 40, 12, 255), "C": (200, 200, 210, 255), "D": (120, 84, 20, 255),
+}
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -64,6 +83,7 @@ SINS = [
     dict(name="gluttony", hue=285, accent=95, item="maw",
          talents=[0, 72, 75, 3, 96, 44, 10, 146, 86, 144, 11, 100, 143, 71, 53, 54, 165,
                   76, 77, 13, 35, 99, 64, 49, 50, 51, 186]),
+    dict(name="greed", hue=46, accent=130, item="card", hair_v=1.7),
 ]
 
 
@@ -80,14 +100,14 @@ def rgb(h, s, v, a):
     return int(r * 255), int(g * 255), int(b * 255), a
 
 
-def hero_px(hue, accent):
+def hero_px(hue, accent, hair_v=0.85):
     """Cleric hero sheet: hair -> hue, cloth/metal -> hue tint, coloured trims -> accent, skin kept."""
     def f(p):
         if p[3] == 0:
             return p
         h, s, v, a = hsv(p)
         if 12 <= h <= 45 and s >= 0.7:            # brown hair (incl. dark outline)
-            return rgb(hue, s * 0.8, v * 0.85, a)
+            return rgb(hue, s * 0.8, v * hair_v, a)
         if 12 <= h <= 40 and s < 0.7 and v > 0.4:  # skin tones
             return p
         if s < 0.14 and v > 0.35:                 # whites / greys
@@ -194,12 +214,12 @@ def main():
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]
 
-        sheet = recolor(cleric_sheet, hero_px(hue, acc))
-        # keep the death/skull frames (x 96..168) untouched
-        sheet.paste(cleric_sheet.crop((96, 0, 168, cleric_sheet.height)), (96, 0))
+        sheet = recolor(cleric_sheet, hero_px(hue, acc, sin.get("hair_v", 0.85)))
+        # keep the death/skull frames (frames 8..12, x 96..156) untouched
+        sheet.paste(cleric_sheet.crop((96, 0, 156, cleric_sheet.height)), (96, 0))
         sheet.save(p("sprites/%s.png" % name))
         recolor(cleric_splash, splash_px(hue, acc)).convert("RGB").save(p("splashes/%s.jpg" % name), quality=92)
-        avatars.paste(recolor(cleric_avatar, hero_px(hue, acc)), cell(FIRST_SIN_ORDINAL + k, 1000, 24, 32)[:2])
+        avatars.paste(recolor(cleric_avatar, hero_px(hue, acc, sin.get("hair_v", 0.85))), cell(FIRST_SIN_ORDINAL + k, 1000, 24, 32)[:2])
 
         srcs = sin.get("talents") or list(range(CLERIC_TALENT_ROW, CLERIC_TALENT_ROW + 27))
         for i, src in enumerate(srcs):
@@ -210,9 +230,14 @@ def main():
             ic = rotate_to(hero_icons.crop(cell(src, 8)), hue)
             hero_icons.paste(ic, cell(128 + 8 * k + i, 8)[:2])
 
-        sig = draw(MAW, MAW_PAL) if sin.get("item") == "maw" else rotate_to(items.crop(cell(ITEM_TOME, 16)), hue)
+        if sin.get("item") == "maw":
+            sig = draw(MAW, MAW_PAL)
+        elif sin.get("item") == "card":
+            sig = draw(CARD, CARD_PAL)
+        else:
+            sig = rotate_to(items.crop(cell(ITEM_TOME, 16)), hue)
         items.paste(sig, cell(512 + 2 * k, 16)[:2])
-        items.paste(recolor(items.crop(cell(ITEM_ARMOR_CLERIC, 16)), hero_px(hue, acc)), cell(512 + 2 * k + 1, 16)[:2])
+        items.paste(recolor(items.crop(cell(ITEM_ARMOR_CLERIC, 16)), hero_px(hue, acc, sin.get("hair_v", 0.85))), cell(512 + 2 * k + 1, 16)[:2])
         if sin.get("item") == "maw":
             # the maw doubles as the first armor ability icon
             hero_icons.paste(sig, cell(128 + 8 * k + 2, 8)[:2])

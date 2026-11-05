@@ -481,6 +481,8 @@ public enum Icons {
 				return new ItemSprite(ItemSpriteSheet.ARTIFACT_TOME);
 			case GLUTTONY:
 				return new ItemSprite(ItemSpriteSheet.PREDATOR_MAW);
+			case GREED:
+				return new ItemSprite(ItemSpriteSheet.GOLDEN_CARD);
 			default:
 				return null;
 		}

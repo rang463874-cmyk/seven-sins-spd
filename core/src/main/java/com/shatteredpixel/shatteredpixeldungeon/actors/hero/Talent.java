@@ -215,6 +215,23 @@ public enum Talent {
 	//Regurgitate T4
 	REGURG_RANGE(279, 4), REGURG_ACID(280, 4), REGURG_DISGUST(281, 4),
 
+	//Greed T1 (row 9 = 288)
+	GREED_PENNY(288), GREED_LOOT(289), GREED_GILDED_SKIN(290), GREED_DISCOUNT(291),
+	//Greed T2
+	GREED_HOARD(292), GREED_COMPENSATION(293), GREED_EXPRESS(294), GREED_BRIBERY(295), GREED_COINSHOT(296),
+	//Greed T3
+	GREED_PRESTIGE(297, 3), GREED_MIDAS(298, 3),
+	//Banker T3
+	BANKER_RATE(299, 3), BANKER_CAPITALIZE(300, 3), BANKER_DIVIDEND(301, 3),
+	//Usurer T3
+	USURER_GOUGE(302, 3), USURER_COLLECTOR(303, 3), USURER_LIEN(304, 3),
+	//Gold Rain T4
+	RAIN_RADIUS(305, 4), RAIN_DAZZLE(306, 4), RAIN_REFUND(307, 4),
+	//Insurance T4
+	INS_COVERAGE(308, 4), INS_TERM(309, 4), INS_PAYOUT(310, 4),
+	//Bankruptcy T4
+	BANKRUPT_REACH(311, 4), BANKRUPT_SEIZE(312, 4), BANKRUPT_DREAD(313, 4),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -483,6 +500,8 @@ public enum Talent {
 					return 186;
 				case GLUTTONY:
 					return 282;
+				case GREED:
+					return 314;
 			}
 		} else {
 			return icon;
@@ -1017,6 +1036,9 @@ public enum Talent {
 			case GLUTTONY:
 				Collections.addAll(tierTalents, PREDATOR_FEAST, PREDATOR_TASTE, PREDATOR_FANG, PREDATOR_HIDE);
 				break;
+			case GREED:
+				Collections.addAll(tierTalents, GREED_PENNY, GREED_LOOT, GREED_GILDED_SKIN, GREED_DISCOUNT);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1049,6 +1071,9 @@ public enum Talent {
 			case GLUTTONY:
 				Collections.addAll(tierTalents, PREDATOR_GLUTTONY, PREDATOR_CURSE_EATER, PREDATOR_EFFICIENCY, PREDATOR_SCRAPS, PREDATOR_INSTINCT);
 				break;
+			case GREED:
+				Collections.addAll(tierTalents, GREED_HOARD, GREED_COMPENSATION, GREED_EXPRESS, GREED_BRIBERY, GREED_COINSHOT);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1080,6 +1105,9 @@ public enum Talent {
 				break;
 			case GLUTTONY:
 				Collections.addAll(tierTalents, PREDATOR_ADAPT, PREDATOR_APEX);
+				break;
+			case GREED:
+				Collections.addAll(tierTalents, GREED_PRESTIGE, GREED_MIDAS);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1150,6 +1178,12 @@ public enum Talent {
 				break;
 			case INHERITOR:
 				Collections.addAll(tierTalents, INHERITOR_RESONANCE, INHERITOR_MEMORY, INHERITOR_PURIFY);
+				break;
+			case BANKER:
+				Collections.addAll(tierTalents, BANKER_RATE, BANKER_CAPITALIZE, BANKER_DIVIDEND);
+				break;
+			case USURER:
+				Collections.addAll(tierTalents, USURER_GOUGE, USURER_COLLECTOR, USURER_LIEN);
 				break;
 		}
 		for (Talent talent : tierTalents){

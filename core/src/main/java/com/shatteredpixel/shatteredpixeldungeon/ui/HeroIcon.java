@@ -120,6 +120,11 @@ public class HeroIcon extends Image {
 	public static final int GORGE_BITE      = 130;
 	public static final int IRON_GUT        = 131;
 	public static final int REGURGITATE     = 132;
+	public static final int BANKER          = 136;
+	public static final int USURER          = 137;
+	public static final int GOLD_RAIN       = 138;
+	public static final int INSURANCE       = 139;
+	public static final int BANKRUPTCY      = 140;
 
 	public HeroIcon(HeroSubClass subCls){
 		super( Assets.Interfaces.HERO_ICONS );

@@ -121,6 +121,9 @@ abstract public class ClassArmor extends Armor {
 			case GLUTTONY:
 				classArmor = new PredatorArmor();
 				break;
+			case GREED:
+				classArmor = new GreedArmor();
+				break;
 		}
 		
 		classArmor.level(armor.trueLevel());
