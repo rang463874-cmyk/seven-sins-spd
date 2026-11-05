@@ -166,6 +166,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks;
 import com.shatteredpixel.shatteredpixeldungeon.greed.GreedHooks;
 import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
+import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Insurance;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.AlchemyScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -270,6 +271,7 @@ public class Hero extends Char {
 		HT = PredatorHooks.bonusHT(this, HT);
 		HT = GreedHooks.bonusHT(this, HT);
 		HT = WrathHooks.bonusHT(this, HT);
+		HT = PrideHooks.bonusHT(this, HT);
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -523,6 +525,7 @@ public class Hero extends Char {
 		accuracy = PredatorHooks.accuracy( this, accuracy );
 		accuracy = GreedHooks.accuracy( this, accuracy );
 		accuracy = WrathHooks.accuracy( this, accuracy );
+		accuracy = PrideHooks.accuracy( this, accuracy );
 		
 		//precise assault and liquid agility
 		if (!(wep instanceof MissileWeapon)) {
@@ -594,6 +597,7 @@ public class Hero extends Char {
 		evasion = PredatorHooks.evasion( this, evasion );
 		evasion = GreedHooks.evasion( this, evasion );
 		evasion = WrathHooks.evasion( this, evasion );
+		evasion = PrideHooks.evasion( this, evasion );
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
 			if (pointsInTalent(Talent.LIQUID_AGILITY) == 1){
@@ -678,6 +682,7 @@ public class Hero extends Char {
 		dr = PredatorHooks.drBonus(this, dr);
 		dr = GreedHooks.drBonus(this, dr);
 		dr = WrathHooks.drBonus(this, dr);
+		dr = PrideHooks.drBonus(this, dr);
 		
 		return dr;
 	}
@@ -1555,6 +1560,7 @@ public class Hero extends Char {
 		}
 		damage = GreedHooks.onAttack( this, enemy, damage );
 		damage = WrathHooks.onAttack( this, enemy, damage );
+		damage = PrideHooks.onAttack( this, enemy, damage );
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );

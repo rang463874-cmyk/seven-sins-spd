@@ -36,6 +36,11 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.predator.R
 import com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw;
 import com.shatteredpixel.shatteredpixeldungeon.items.GoldenCard;
 import com.shatteredpixel.shatteredpixeldungeon.items.WarDrum;
+import com.shatteredpixel.shatteredpixeldungeon.items.PrideCrown;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PrideGlory;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.pride.Aegis;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.pride.Judgement;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.pride.Reign;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRage;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gloves;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WrathGrudge;
@@ -112,7 +117,8 @@ public enum HeroClass {
 	//Seven Sins
 	GLUTTONY( HeroSubClass.GOURMAND, HeroSubClass.INHERITOR ),
 	GREED( HeroSubClass.BANKER, HeroSubClass.USURER ),
-	WRATH( HeroSubClass.INSTIGATOR, HeroSubClass.AVENGER );
+	WRATH( HeroSubClass.INSTIGATOR, HeroSubClass.AVENGER ),
+	PRIDE( HeroSubClass.MONARCH, HeroSubClass.PARAGON );
 
 	private HeroSubClass[] subClasses;
 
@@ -179,6 +185,10 @@ public enum HeroClass {
 
 			case WRATH:
 				initWrath( hero );
+				break;
+
+			case PRIDE:
+				initPride( hero );
 				break;
 		}
 
@@ -345,6 +355,21 @@ public enum HeroClass {
 		new ScrollOfRage().identify();
 	}
 
+	private static void initPride( Hero hero ) {
+
+		(hero.belongings.weapon = new Rapier()).identify();
+		hero.belongings.weapon.activate(hero);
+
+		PrideCrown crown = new PrideCrown();
+		crown.identify().collect();
+		Dungeon.quickslot.setSlot(0, crown);
+
+		Buff.affect(hero, PrideGlory.class);
+
+		new PotionOfHealing().identify();
+		new ScrollOfMirrorImage().identify();
+	}
+
 	public String title() {
 		return Messages.get(HeroClass.class, name());
 	}
@@ -381,6 +406,8 @@ public enum HeroClass {
 				return new ArmorAbility[]{new GoldRain(), new Insurance(), new Bankruptcy()};
 			case WRATH:
 				return new ArmorAbility[]{new WarCry(), new WrathSpirits(), new RageBurst()};
+			case PRIDE:
+				return new ArmorAbility[]{new Reign(), new Aegis(), new Judgement()};
 		}
 	}
 
@@ -404,6 +431,8 @@ public enum HeroClass {
 				return Assets.Sprites.GREED;
 			case WRATH:
 				return Assets.Sprites.WRATH;
+			case PRIDE:
+				return Assets.Sprites.PRIDE;
 		}
 	}
 
@@ -427,6 +456,8 @@ public enum HeroClass {
 				return Assets.Splashes.GREED;
 			case WRATH:
 				return Assets.Splashes.WRATH;
+			case PRIDE:
+				return Assets.Splashes.PRIDE;
 		}
 	}
 	
@@ -451,6 +482,7 @@ public enum HeroClass {
 			case GLUTTONY:
 			case GREED:
 			case WRATH:
+			case PRIDE:
 				return true;
 		}
 	}

@@ -485,6 +485,8 @@ public enum Icons {
 				return new ItemSprite(ItemSpriteSheet.GOLDEN_CARD);
 			case WRATH:
 				return new ItemSprite(ItemSpriteSheet.WAR_DRUM);
+			case PRIDE:
+				return new ItemSprite(ItemSpriteSheet.PRIDE_CROWN);
 			default:
 				return null;
 		}

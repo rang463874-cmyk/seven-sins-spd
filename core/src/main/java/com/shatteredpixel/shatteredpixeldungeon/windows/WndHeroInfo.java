@@ -85,6 +85,9 @@ public class WndHeroInfo extends WndTabbed {
 			case WRATH:
 				tabIcon = new ItemSprite(ItemSpriteSheet.WAR_DRUM, null);
 				break;
+			case PRIDE:
+				tabIcon = new ItemSprite(ItemSpriteSheet.PRIDE_CROWN, null);
+				break;
 		}
 
 		int finalHeight = MIN_HEIGHT;
@@ -230,6 +233,11 @@ public class WndHeroInfo extends WndTabbed {
 					icons = new Image[]{ new ItemSprite(ItemSpriteSheet.WAR_DRUM),
 							Icons.get(Icons.TALENT),
 							new ItemSprite(ItemSpriteSheet.GLOVES)};
+					break;
+				case PRIDE:
+					icons = new Image[]{ new ItemSprite(ItemSpriteSheet.PRIDE_CROWN),
+							Icons.get(Icons.TALENT),
+							new ItemSprite(ItemSpriteSheet.RAPIER)};
 					break;
 			}
 			for (Image im : icons) {

@@ -249,6 +249,23 @@ public enum Talent {
 	//Rage Burst T4
 	BURST_POWER(343, 4), BURST_RADIUS(344, 4), BURST_CHAIN(345, 4),
 
+	//Pride T1 (row 11 = 352)
+	PRIDE_VANITY(352), PRIDE_COMPOSURE(353), PRIDE_POISE(354), PRIDE_GRACE(355),
+	//Pride T2
+	PRIDE_REGALIA(356), PRIDE_SWIFT_CROWN(357), PRIDE_PROCESSION(358), PRIDE_DECREE(359), PRIDE_SCORN(360),
+	//Pride T3
+	PRIDE_MAJESTY(361, 3), PRIDE_SUPREMACY(362, 3),
+	//Monarch T3
+	MONARCH_COURT(363, 3), MONARCH_DOMINION(364, 3), MONARCH_LOYALTY(365, 3),
+	//Paragon T3
+	PARAGON_SOLITUDE(366, 3), PARAGON_GIANTSLAYER(367, 3), PARAGON_LEGEND(368, 3),
+	//Reign T4
+	REIGN_REACH(369, 4), REIGN_DURATION(370, 4), REIGN_HUMBLE(371, 4),
+	//Aegis T4
+	AEGIS_COUNT(372, 4), AEGIS_RIPOSTE(373, 4), AEGIS_DIGNITY(374, 4),
+	//Judgement T4
+	JUDGE_POWER(375, 4), JUDGE_DIGNITY(376, 4), JUDGE_GLORY(377, 4),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -521,6 +538,8 @@ public enum Talent {
 					return 314;
 				case WRATH:
 					return 346;
+				case PRIDE:
+					return 378;
 			}
 		} else {
 			return icon;
@@ -1061,6 +1080,9 @@ public enum Talent {
 			case WRATH:
 				Collections.addAll(tierTalents, WRATH_SPITE, WRATH_FUEL, WRATH_FIRST_BLOOD, WRATH_GLARE);
 				break;
+			case PRIDE:
+				Collections.addAll(tierTalents, PRIDE_VANITY, PRIDE_COMPOSURE, PRIDE_POISE, PRIDE_GRACE);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1099,6 +1121,9 @@ public enum Talent {
 			case WRATH:
 				Collections.addAll(tierTalents, WRATH_DRUMMER, WRATH_TEMPO, WRATH_DASH_STRIKE, WRATH_LONG_GRUDGE, WRATH_SCAVENGE);
 				break;
+			case PRIDE:
+				Collections.addAll(tierTalents, PRIDE_REGALIA, PRIDE_SWIFT_CROWN, PRIDE_PROCESSION, PRIDE_DECREE, PRIDE_SCORN);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1136,6 +1161,9 @@ public enum Talent {
 				break;
 			case WRATH:
 				Collections.addAll(tierTalents, WRATH_FURY, WRATH_CHAOS);
+				break;
+			case PRIDE:
+				Collections.addAll(tierTalents, PRIDE_MAJESTY, PRIDE_SUPREMACY);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1218,6 +1246,12 @@ public enum Talent {
 				break;
 			case AVENGER:
 				Collections.addAll(tierTalents, AVENGER_FEAST, AVENGER_EMPOWER, AVENGER_EXECUTE);
+				break;
+			case MONARCH:
+				Collections.addAll(tierTalents, MONARCH_COURT, MONARCH_DOMINION, MONARCH_LOYALTY);
+				break;
+			case PARAGON:
+				Collections.addAll(tierTalents, PARAGON_SOLITUDE, PARAGON_GIANTSLAYER, PARAGON_LEGEND);
 				break;
 		}
 		for (Talent talent : tierTalents){

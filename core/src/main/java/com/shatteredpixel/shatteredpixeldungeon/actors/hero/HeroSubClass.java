@@ -60,7 +60,11 @@ public enum HeroSubClass {
 
 	//Wrath
 	INSTIGATOR(HeroIcon.INSTIGATOR),
-	AVENGER(HeroIcon.AVENGER);
+	AVENGER(HeroIcon.AVENGER),
+
+	//Pride
+	MONARCH(HeroIcon.MONARCH),
+	PARAGON(HeroIcon.PARAGON);
 
 	int icon;
 

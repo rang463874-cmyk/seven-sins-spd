@@ -91,6 +91,7 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.traps.Trap;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.greed.GreedHooks;
 import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
+import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
@@ -1032,6 +1033,7 @@ public abstract class Mob extends Char {
 
 		GreedHooks.onMobDeath( this, cause );
 		WrathHooks.onMobDeath( this, cause );
+		PrideHooks.onMobDeath( this, cause );
 
 		if (cause == Chasm.class){
 			//50% chance to round up, 50% to round down

@@ -826,6 +826,8 @@ public class ItemSpriteSheet {
 	public static final int ARMOR_GREED     = SINS+3;
 	public static final int WAR_DRUM        = SINS+4;
 	public static final int ARMOR_WRATH     = SINS+5;
+	public static final int PRIDE_CROWN     = SINS+6;
+	public static final int ARMOR_PRIDE     = SINS+7;
 	static{
 		assignItemRect(PREDATOR_MAW,    16, 15);
 		assignItemRect(ARMOR_PREDATOR,  13, 14);
@@ -833,6 +835,8 @@ public class ItemSpriteSheet {
 		assignItemRect(ARMOR_GREED,     13, 14);
 		assignItemRect(WAR_DRUM,        14, 14);
 		assignItemRect(ARMOR_WRATH,     13, 14);
+		assignItemRect(PRIDE_CROWN,     14, 11);
+		assignItemRect(ARMOR_PRIDE,     13, 14);
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite

@@ -127,6 +127,9 @@ abstract public class ClassArmor extends Armor {
 			case WRATH:
 				classArmor = new WrathArmor();
 				break;
+			case PRIDE:
+				classArmor = new PrideArmor();
+				break;
 		}
 		
 		classArmor.level(armor.trueLevel());
