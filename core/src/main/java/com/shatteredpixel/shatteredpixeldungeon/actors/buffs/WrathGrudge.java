@@ -21,6 +21,9 @@ import com.watabou.utils.Random;
  */
 public class WrathGrudge extends Buff {
 
+	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
+	public boolean mirrored = false;
+
 	public float grudge = 0;
 	public int charges = 2;
 	public float partialCharge = 0;
@@ -82,12 +85,13 @@ public class WrathGrudge extends Buff {
 
 	public int maxCharges() {
 		Hero h = hero();
-		return 3 + (h == null ? 0 : h.pointsInTalent(Talent.WRATH_DRUMMER));
+		return 3 + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.WRATH_DRUMMER));
 	}
 
 	public float turnsPerCharge() {
 		Hero h = hero();
-		return 35f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_TEMPO)));
+		float t = 35f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_TEMPO)));
+		return mirrored ? t / 1.25f : t;
 	}
 
 	public void gainCharge(float amount) {
@@ -178,6 +182,7 @@ public class WrathGrudge extends Buff {
 		bundle.put("grudge", grudge);
 		bundle.put("charges", charges);
 		bundle.put("partial", partialCharge);
+		bundle.put("mirrored", mirrored);
 	}
 
 	@Override
@@ -186,6 +191,7 @@ public class WrathGrudge extends Buff {
 		grudge = bundle.getFloat("grudge");
 		charges = bundle.getInt("charges");
 		partialCharge = bundle.getFloat("partial");
+		mirrored = bundle.getBoolean("mirrored");
 	}
 
 	// ------------------------------------------------------------------ debuffs on enemies

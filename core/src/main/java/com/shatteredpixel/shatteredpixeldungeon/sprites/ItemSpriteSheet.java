@@ -29,7 +29,7 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
-	private static final int TX_HEIGHT = 544; //extended by two rows for the seven sins
+	private static final int TX_HEIGHT = 560; //extended by three rows for the seven sins
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
 
@@ -883,6 +883,26 @@ public class ItemSpriteSheet {
 			assignItemRect(p[0], (int)film.width(p[1]), (int)film.height(p[1]));
 		}
 		assignItemRect(SIN_SIGIL, 14, 14);
+	}
+
+	//Seven Sins: the vault mirror's reflections of each signature item
+	private static final int SINS3      =                                   xy(1, 35);  //16 slots
+	public static final int MIRROR_GLUTTONY = SINS3+0;
+	public static final int MIRROR_GREED    = SINS3+1;
+	public static final int MIRROR_WRATH    = SINS3+2;
+	public static final int MIRROR_PRIDE    = SINS3+3;
+	public static final int MIRROR_LUST     = SINS3+4;
+	public static final int MIRROR_ENVY     = SINS3+5;
+	public static final int MIRROR_SLOTH    = SINS3+6;
+	static{
+		int[][] pairs = {
+				{MIRROR_GLUTTONY, PREDATOR_MAW}, {MIRROR_GREED, GOLDEN_CARD}, {MIRROR_WRATH, WAR_DRUM},
+				{MIRROR_PRIDE, PRIDE_CROWN},     {MIRROR_LUST, PERFUME},      {MIRROR_ENVY, ENVY_MIRROR},
+				{MIRROR_SLOTH, SLOTH_PILLOW},
+		};
+		for (int[] p : pairs){
+			assignItemRect(p[0], (int)film.width(p[1]), (int)film.height(p[1]));
+		}
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite

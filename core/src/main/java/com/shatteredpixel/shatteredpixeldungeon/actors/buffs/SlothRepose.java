@@ -21,6 +21,9 @@ import com.watabou.utils.Random;
  */
 public class SlothRepose extends Buff {
 
+	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
+	public boolean mirrored = false;
+
 	public float sloth = 0;
 	public int torpor = 0;
 	public int lastPos = -1;
@@ -100,7 +103,7 @@ public class SlothRepose extends Buff {
 	public int maxTorpor() {
 		Hero h = hero();
 		if (h == null) return 20;
-		int max = 20 + 5 * h.pointsInTalent(Talent.SLOTH_COMFY);
+		int max = 20 + 5 * h.pointsInTalent(Talent.SLOTH_COMFY) + (mirrored ? 10 : 0);
 		if (h.subClass == HeroSubClass.HIBERNATOR) max += 20 + 10 * h.pointsInTalent(Talent.HIB_DEEP);
 		return max;
 	}
@@ -137,7 +140,7 @@ public class SlothRepose extends Buff {
 
 	public int maxCharges() {
 		Hero h = hero();
-		return 3 + (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_PILLOW));
+		return 3 + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_PILLOW));
 	}
 
 	public float turnsPerCharge() {
@@ -245,6 +248,7 @@ public class SlothRepose extends Buff {
 		bundle.put("regen", regenTurns);
 		bundle.put("charges", charges);
 		bundle.put("partial", partialCharge);
+		bundle.put("mirrored", mirrored);
 	}
 
 	@Override
@@ -256,6 +260,7 @@ public class SlothRepose extends Buff {
 		regenTurns = bundle.getFloat("regen");
 		charges = bundle.getInt("charges");
 		partialCharge = bundle.getFloat("partial");
+		mirrored = bundle.getBoolean("mirrored");
 	}
 
 	public static SlothRepose of() {

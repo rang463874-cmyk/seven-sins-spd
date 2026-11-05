@@ -30,6 +30,9 @@ import java.util.LinkedHashSet;
  */
 public class EnvyCovet extends Buff {
 
+	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
+	public boolean mirrored = false;
+
 	public float envy = 0;
 	public int charges = 2;
 	public float partialCharge = 0;
@@ -106,8 +109,9 @@ public class EnvyCovet extends Buff {
 	/** trait strength: the Copycat doubles every trait, and Studious Mimicry adds more */
 	public float traitMult() {
 		Hero h = hero();
-		if (h == null || h.subClass != HeroSubClass.COPYCAT) return 1f;
-		return 2f + 0.25f * h.pointsInTalent(Talent.COPY_STUDY);
+		float m = 1f;
+		if (h != null && h.subClass == HeroSubClass.COPYCAT) m = 2f + 0.25f * h.pointsInTalent(Talent.COPY_STUDY);
+		return mirrored ? m * 1.25f : m;
 	}
 
 	/** value of a trait if registered, 0 otherwise */
@@ -285,7 +289,7 @@ public class EnvyCovet extends Buff {
 
 	public int maxCharges() {
 		Hero h = hero();
-		return 3 + (h == null ? 0 : h.pointsInTalent(Talent.ENVY_MIRROR));
+		return 3 + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.ENVY_MIRROR));
 	}
 
 	public float turnsPerCharge() {
@@ -392,6 +396,7 @@ public class EnvyCovet extends Buff {
 		bundle.put("envy", envy);
 		bundle.put("charges", charges);
 		bundle.put("partial", partialCharge);
+		bundle.put("mirrored", mirrored);
 		bundle.put("regen", regenTurns);
 		ArrayList<String> names = new ArrayList<>();
 		for (Trait t : codex) names.add(t.name());
@@ -404,6 +409,7 @@ public class EnvyCovet extends Buff {
 		envy = bundle.getFloat("envy");
 		charges = bundle.getInt("charges");
 		partialCharge = bundle.getFloat("partial");
+		mirrored = bundle.getBoolean("mirrored");
 		regenTurns = bundle.getFloat("regen");
 		codex.clear();
 		if (bundle.contains("codex")) {

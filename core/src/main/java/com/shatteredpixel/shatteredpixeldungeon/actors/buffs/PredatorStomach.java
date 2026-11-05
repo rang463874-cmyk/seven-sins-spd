@@ -38,6 +38,9 @@ import java.util.ArrayList;
  */
 public class PredatorStomach extends Buff {
 
+	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
+	public boolean mirrored = false;
+
 	public static final int CAT_WEAPON = 0;
 	public static final int CAT_ARMOR = 1;
 	public static final int CAT_TRINKET = 2;
@@ -155,6 +158,8 @@ public class PredatorStomach extends Buff {
 			mult += 0.30f + 0.10f * hero.pointsInTalent(Talent.GOURMAND_SECOND_STOMACH);
 		}
 		if (SinWeapons.wields(hero, GluttonScythe.class, com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.GLUTTONY)) mult *= 1.5f;
+		PredatorStomach st = hero.buff(PredatorStomach.class);
+		if (st != null && st.mirrored) mult *= 1.25f;
 		return s * mult;
 	}
 
@@ -398,6 +403,7 @@ public class PredatorStomach extends Buff {
 		bundle.put(LEFTOVER, leftoverHP);
 		bundle.put(ENCHANTS, enchants.toArray(new Class[0]));
 		bundle.put(GLYPHS, glyphs.toArray(new Class[0]));
+		bundle.put("mirrored", mirrored);
 	}
 
 	@Override
@@ -408,6 +414,7 @@ public class PredatorStomach extends Buff {
 		trinketPts = bundle.getFloat(TRINKET);
 		eaten = bundle.getInt(EATEN);
 		leftoverHP = bundle.getInt(LEFTOVER);
+		mirrored = bundle.getBoolean("mirrored");
 		enchants.clear();
 		glyphs.clear();
 		if (bundle.contains(ENCHANTS)) {

@@ -44,33 +44,52 @@ public class PredatorMaw extends Item {
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
 		if (action.equals(AC_DEVOUR)) {
-			GameScene.selectItem(new WndBag.ItemSelector() {
-				@Override
-				public String textPrompt() {
-					return Messages.get(PredatorMaw.class, "prompt");
-				}
-
-				@Override
-				public boolean itemSelectable(Item item) {
-					return PredatorStomach.category(hero, item) >= 0;
-				}
-
-				@Override
-				public void onSelect(Item item) {
-					if (item == null) return;
-					PredatorStomach stomach = Buff.affect(hero, PredatorStomach.class);
-					if (stomach.devour(hero, item)) {
-						GLog.p(Messages.get(PredatorMaw.class, "devoured", item.name()));
-						hero.sprite.operate(hero.pos);
-						Invisibility.dispel();
-						hero.spendAndNext(1f);
-					} else {
-						GLog.w(Messages.get(PredatorMaw.class, "cant"));
-					}
-				}
-			});
+			selectDevour(hero, devoursPerUse(), false);
 		}
 	}
+
+	/** how many items one use can devour (the mirror's Golden Maw eats two) */
+	public int devoursPerUse() {
+		return 1;
+	}
+
+	private void selectDevour(final Hero hero, final int remaining, final boolean ateAlready) {
+		GameScene.selectItem(new WndBag.ItemSelector() {
+			@Override
+			public String textPrompt() {
+				return Messages.get(PredatorMaw.class, ateAlready ? "prompt_more" : "prompt");
+			}
+
+			@Override
+			public boolean itemSelectable(Item item) {
+				return PredatorStomach.category(hero, item) >= 0;
+			}
+
+			@Override
+			public void onSelect(Item item) {
+				if (item == null) {
+					//stopping after the first bite still takes the turn
+					if (ateAlready) hero.spendAndNext(1f);
+					return;
+				}
+				PredatorStomach stomach = Buff.affect(hero, PredatorStomach.class);
+				if (stomach.devour(hero, item)) {
+					GLog.p(Messages.get(PredatorMaw.class, "devoured", item.name()));
+					hero.sprite.operate(hero.pos);
+					Invisibility.dispel();
+					if (remaining > 1) {
+						selectDevour(hero, remaining - 1, true);
+					} else {
+						hero.spendAndNext(1f);
+					}
+				} else {
+					GLog.w(Messages.get(PredatorMaw.class, "cant"));
+					if (ateAlready) hero.spendAndNext(1f);
+				}
+			}
+		});
+	}
+
 
 	@Override
 	public String desc() {

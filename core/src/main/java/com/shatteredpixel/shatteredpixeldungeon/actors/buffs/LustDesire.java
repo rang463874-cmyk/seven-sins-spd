@@ -19,6 +19,9 @@ import com.watabou.utils.Random;
  */
 public class LustDesire extends Buff {
 
+	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
+	public boolean mirrored = false;
+
 	public float desire = 0;
 	public int charges = 2;
 	public float partialCharge = 0;
@@ -85,6 +88,8 @@ public class LustDesire extends Buff {
 
 	public static float charmDuration(Hero hero, float base) {
 		float d = base * (1f + 0.25f * hero.pointsInTalent(Talent.LUST_LINGER));
+		LustDesire ld = hero.buff(LustDesire.class);
+		if (ld != null && ld.mirrored) d *= 1.25f;
 		if (hero.subClass == HeroSubClass.DREAMWEAVER) d += 2f * hero.pointsInTalent(Talent.DREAM_LULLABY);
 		return d;
 	}
@@ -109,7 +114,7 @@ public class LustDesire extends Buff {
 
 	public int maxCharges() {
 		Hero h = hero();
-		return 3 + (h == null ? 0 : h.pointsInTalent(Talent.LUST_BOTTLE));
+		return 3 + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.LUST_BOTTLE));
 	}
 
 	public float turnsPerCharge() {
@@ -198,6 +203,7 @@ public class LustDesire extends Buff {
 		bundle.put("desire", desire);
 		bundle.put("charges", charges);
 		bundle.put("partial", partialCharge);
+		bundle.put("mirrored", mirrored);
 	}
 
 	@Override
@@ -206,6 +212,7 @@ public class LustDesire extends Buff {
 		desire = bundle.getFloat("desire");
 		charges = bundle.getInt("charges");
 		partialCharge = bundle.getFloat("partial");
+		mirrored = bundle.getBoolean("mirrored");
 	}
 
 	public static LustDesire of() {

@@ -216,6 +216,28 @@ def weapon_px(hue):
         return rgb(hue, max(s, 0.38), min(1, v * 1.05), a)
     return f
 
+MIRROR_ROW = 544  # row 35 of items.png: the vault mirror's reflections, one per sin
+
+# how each reflection is recoloured from the signature item: (target hue, saturation mult, value mult)
+RELIC_TONE = {
+    "gluttony": (45, 1.1, 1.15),   # golden maw
+    "greed":    (230, 0.25, 0.45), # black card
+    "wrath":    (350, 1.2, 0.7),   # blood drum
+    "pride":    (275, 0.35, 1.25), # eternal crown, pale and radiant
+    "lust":     (285, 1.0, 0.75),  # forbidden perfume
+    "envy":     (150, 0.8, 0.8),   # shattered mirror
+    "sloth":    (240, 0.9, 0.6),   # eternal pillow, night blue
+}
+
+
+def relic_px(hue, smul, vmul):
+    def f(p):
+        if p[3] == 0:
+            return p
+        h, s, v, a = hsv(p)
+        return rgb(hue, min(1, s * smul + 0.05), min(1, v * vmul), a)
+    return f
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -355,7 +377,7 @@ def main():
     hero_icons = Image.open(p("interfaces/hero_icons.png")).convert("RGBA")
     hero_icons = grow(hero_icons, 128, 16 * (16 + 7))
     items = Image.open(p("sprites/items.png")).convert("RGBA")
-    items = grow(items, 256, 16 * 34)
+    items = grow(items, 256, 16 * 35)
 
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]
@@ -397,6 +419,13 @@ def main():
         if sin.get("item") == "maw":
             # the maw doubles as the first armor ability icon
             hero_icons.paste(sig, cell(128 + 8 * k + 2, 8)[:2])
+        tone = RELIC_TONE[name]
+        relic = recolor(sig, relic_px(*tone))
+        if name == "envy":
+            # crack the glass
+            for x, y in [(4, 3), (5, 4), (6, 5), (6, 6), (7, 7), (5, 6), (4, 7), (8, 6)]:
+                relic.putpixel((x, y), (20, 30, 24, 255))
+        items.paste(relic, cell(MIRROR_ROW + k, 16)[:2])
         for j, base in enumerate((BASE_T1[name], BASE_T5[name])):
             w = recolor(items.crop(cell(base, 16)), weapon_px(hue))
             items.paste(w, cell(SIN_WEAPON_ROW + 2 * k + j, 16)[:2])

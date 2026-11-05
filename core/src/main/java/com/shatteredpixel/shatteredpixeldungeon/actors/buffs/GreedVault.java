@@ -24,6 +24,9 @@ import com.watabou.utils.Random;
  */
 public class GreedVault extends Buff {
 
+	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
+	public boolean mirrored = false;
+
 	/** gold currently in the account, spendable on payment skills or withdrawable */
 	public long balance = 0;
 	/** lifetime gold credited to the account; drives the permanent stats */
@@ -154,9 +157,10 @@ public class GreedVault extends Buff {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
 			if (Dungeon.depth > interestDepth) {
-				//interest is paid once per new floor, and only to bankers
-				if (h.subClass == HeroSubClass.BANKER && interestDepth > 0) {
-					payInterest(h, interestRate());
+				//interest is paid once per new floor, to bankers and to holders of the black card
+				float rate = (h.subClass == HeroSubClass.BANKER ? interestRate() : 0f) + (mirrored ? 0.02f : 0f);
+				if (rate > 0 && interestDepth > 0) {
+					payInterest(h, rate);
 				}
 				interestDepth = Dungeon.depth;
 			}
@@ -231,6 +235,7 @@ public class GreedVault extends Buff {
 		bundle.put(CREDITED, credited);
 		bundle.put(INTEREST_DEPTH, interestDepth);
 		bundle.put(DIVIDEND, dividendTurns);
+		bundle.put("mirrored", mirrored);
 	}
 
 	@Override
@@ -240,6 +245,7 @@ public class GreedVault extends Buff {
 		credited = bundle.getLong(CREDITED);
 		interestDepth = bundle.getInt(INTEREST_DEPTH);
 		dividendTurns = bundle.getFloat(DIVIDEND);
+		mirrored = bundle.getBoolean("mirrored");
 	}
 
 	// ------------------------------------------------------------------ usurer debt

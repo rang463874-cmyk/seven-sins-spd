@@ -25,6 +25,9 @@ import com.watabou.utils.Random;
  */
 public class PrideGlory extends Buff {
 
+	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
+	public boolean mirrored = false;
+
 	public float glory = 0;
 
 	public int dignity = 0;
@@ -100,6 +103,7 @@ public class PrideGlory extends Buff {
 		Hero h = hero();
 		int max = 10 + 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_COMPOSURE));
 		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) max += 5;
+		if (mirrored) max += 5;
 		return max;
 	}
 
@@ -138,7 +142,7 @@ public class PrideGlory extends Buff {
 
 	public int maxCharges() {
 		Hero h = hero();
-		return 3 + (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_REGALIA));
+		return 3 + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_REGALIA));
 	}
 
 	public float turnsPerCharge() {
@@ -235,6 +239,7 @@ public class PrideGlory extends Buff {
 		bundle.put("calm", calmTurns);
 		bundle.put("charges", charges);
 		bundle.put("partial", partialCharge);
+		bundle.put("mirrored", mirrored);
 	}
 
 	@Override
@@ -245,6 +250,7 @@ public class PrideGlory extends Buff {
 		calmTurns = bundle.getFloat("calm");
 		charges = bundle.getInt("charges");
 		partialCharge = bundle.getFloat("partial");
+		mirrored = bundle.getBoolean("mirrored");
 	}
 
 	// ------------------------------------------------------------------ marks on enemies
