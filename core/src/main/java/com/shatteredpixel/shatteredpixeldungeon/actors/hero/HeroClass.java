@@ -37,6 +37,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw;
 import com.shatteredpixel.shatteredpixeldungeon.items.GoldenCard;
 import com.shatteredpixel.shatteredpixeldungeon.items.WarDrum;
 import com.shatteredpixel.shatteredpixeldungeon.items.PrideCrown;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.Perfume;
 import com.shatteredpixel.shatteredpixeldungeon.items.EnvyMirror;
 import com.shatteredpixel.shatteredpixeldungeon.items.SlothPillow;
@@ -344,7 +345,7 @@ public enum HeroClass {
 
 	private static void initGluttony( Hero hero ) {
 
-		(hero.belongings.weapon = new WornShortsword()).identify();
+		(hero.belongings.weapon = new GnawingFang()).identify();
 		hero.belongings.weapon.activate(hero);
 
 		PredatorMaw maw = new PredatorMaw();
@@ -359,7 +360,7 @@ public enum HeroClass {
 
 	private static void initGreed( Hero hero ) {
 
-		(hero.belongings.weapon = new Dagger()).identify();
+		(hero.belongings.weapon = new CollectorRod()).identify();
 		hero.belongings.weapon.activate(hero);
 
 		GoldenCard card = new GoldenCard();
@@ -374,7 +375,7 @@ public enum HeroClass {
 
 	private static void initWrath( Hero hero ) {
 
-		(hero.belongings.weapon = new Gloves()).identify();
+		(hero.belongings.weapon = new TauntKnuckle()).identify();
 		hero.belongings.weapon.activate(hero);
 
 		WarDrum drum = new WarDrum();
@@ -389,7 +390,7 @@ public enum HeroClass {
 
 	private static void initPride( Hero hero ) {
 
-		(hero.belongings.weapon = new Rapier()).identify();
+		(hero.belongings.weapon = new DuelingSword()).identify();
 		hero.belongings.weapon.activate(hero);
 
 		PrideCrown crown = new PrideCrown();
@@ -404,7 +405,7 @@ public enum HeroClass {
 
 	private static void initLust( Hero hero ) {
 
-		(hero.belongings.weapon = new Dagger()).identify();
+		(hero.belongings.weapon = new RoseWhip()).identify();
 		hero.belongings.weapon.activate(hero);
 
 		Perfume perfume = new Perfume();
@@ -419,7 +420,7 @@ public enum HeroClass {
 
 	private static void initEnvy( Hero hero ) {
 
-		(hero.belongings.weapon = new WornShortsword()).identify();
+		(hero.belongings.weapon = new PickpocketDagger()).identify();
 		hero.belongings.weapon.activate(hero);
 
 		EnvyMirror mirror = new EnvyMirror();
@@ -434,7 +435,7 @@ public enum HeroClass {
 
 	private static void initSloth( Hero hero ) {
 
-		(hero.belongings.weapon = new Cudgel()).identify();
+		(hero.belongings.weapon = new PillowMace()).identify();
 		hero.belongings.weapon.activate(hero);
 
 		SlothPillow pillow = new SlothPillow();

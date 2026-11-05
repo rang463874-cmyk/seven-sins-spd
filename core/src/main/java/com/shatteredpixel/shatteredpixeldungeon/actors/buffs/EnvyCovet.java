@@ -9,6 +9,9 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.SinWeapons;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.UsurpersGauntlets;
 import com.watabou.noosa.Image;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
@@ -193,6 +196,7 @@ public class EnvyCovet extends Buff {
 
 	public static int maxRobbed(Hero hero) {
 		int base = hero.subClass == HeroSubClass.USURPER ? 10 : 5;
+		if (SinWeapons.wields(hero, UsurpersGauntlets.class, HeroClass.ENVY)) base += 5;
 		return base + 2 * hero.pointsInTalent(Talent.ENVY_GRASP);
 	}
 

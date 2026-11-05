@@ -8,6 +8,10 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.DuelingSword;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.KingsAegis;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.SinWeapons;
 import com.watabou.noosa.Image;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
@@ -74,6 +78,7 @@ public class PrideGlory extends Buff {
 	public void addGlory(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.PRIDE_VANITY);
+		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) amount *= 1.5f;
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
 		glory += amount;
@@ -93,12 +98,16 @@ public class PrideGlory extends Buff {
 
 	public int maxDignity() {
 		Hero h = hero();
-		return 10 + 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_COMPOSURE));
+		int max = 10 + 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_COMPOSURE));
+		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) max += 5;
+		return max;
 	}
 
 	public float turnsPerDignity() {
 		Hero h = hero();
-		return 3f - 0.5f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_POISE));
+		float t = 3f - 0.5f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_POISE));
+		if (SinWeapons.wields(h, DuelingSword.class, HeroClass.PRIDE)) t -= 1f;
+		return Math.max(1f, t);
 	}
 
 	/** multiplier on melee damage from dignity: +4% per stack */

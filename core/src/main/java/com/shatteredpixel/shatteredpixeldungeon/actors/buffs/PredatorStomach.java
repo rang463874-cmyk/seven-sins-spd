@@ -22,6 +22,8 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWea
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.GluttonScythe;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.SinWeapons;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.noosa.Image;
 import com.watabou.noosa.audio.Sample;
@@ -152,6 +154,7 @@ public class PredatorStomach extends Buff {
 		if (hero.subClass == HeroSubClass.GOURMAND) {
 			mult += 0.30f + 0.10f * hero.pointsInTalent(Talent.GOURMAND_SECOND_STOMACH);
 		}
+		if (SinWeapons.wields(hero, GluttonScythe.class, com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.GLUTTONY)) mult *= 1.5f;
 		return s * mult;
 	}
 

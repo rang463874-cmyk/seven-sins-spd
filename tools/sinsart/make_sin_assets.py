@@ -180,6 +180,42 @@ PILLOW_PAL = {
     "B": (90, 110, 190, 255), "Z": (60, 80, 160, 255),
 }
 
+# item sprite indices of the base weapons (see ItemSpriteSheet: WEP_TIER1 = 96, WEP_TIER3 = 112, WEP_TIER5 = 128)
+BASE_T1 = {"gluttony": 96, "greed": 97, "wrath": 98, "pride": 99, "lust": 117, "envy": 100, "sloth": 97}
+BASE_T5 = {"gluttony": 134, "greed": 131, "wrath": 128, "pride": 132, "lust": 130, "envy": 133, "sloth": 129}
+SIN_WEAPON_ROW = 528  # row 34 of items.png: T1/T5 pairs, then the sigil at +14
+
+# 14x14 sin sigil
+SIGIL = [
+    "....OOOOOO....",
+    "..OORRRRRROO..",
+    ".ORRRRYYRRRRO.",
+    ".ORRRYRRYRRRO.",
+    "ORRYYYRRYYYRRO",
+    "ORRYRRRRRRYRRO",
+    "ORRRYRRRRYRRRO",
+    "ORRRYRRRRYRRRO",
+    "ORRYRRYYRRYRRO",
+    "ORRYYYRRYYYRRO",
+    ".ORRRRRRRRRRO.",
+    ".ODRRRRRRRRDO.",
+    "..OODDDDDDOO..",
+    "....OOOOOO....",
+]
+SIGIL_PAL = {"O": (50, 8, 12, 255), "R": (170, 24, 36, 255), "D": (110, 14, 22, 255), "Y": (240, 200, 90, 255)}
+
+
+def weapon_px(hue):
+    """sin weapons: grey metal and wood pick up the sin's colour"""
+    def f(p):
+        if p[3] == 0:
+            return p
+        h, s, v, a = hsv(p)
+        if v < 0.12:
+            return p
+        return rgb(hue, max(s, 0.38), min(1, v * 1.05), a)
+    return f
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -319,7 +355,7 @@ def main():
     hero_icons = Image.open(p("interfaces/hero_icons.png")).convert("RGBA")
     hero_icons = grow(hero_icons, 128, 16 * (16 + 7))
     items = Image.open(p("sprites/items.png")).convert("RGBA")
-    items = grow(items, 256, 16 * 33)
+    items = grow(items, 256, 16 * 34)
 
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]
@@ -361,8 +397,12 @@ def main():
         if sin.get("item") == "maw":
             # the maw doubles as the first armor ability icon
             hero_icons.paste(sig, cell(128 + 8 * k + 2, 8)[:2])
+        for j, base in enumerate((BASE_T1[name], BASE_T5[name])):
+            w = recolor(items.crop(cell(base, 16)), weapon_px(hue))
+            items.paste(w, cell(SIN_WEAPON_ROW + 2 * k + j, 16)[:2])
         print("generated art for", name)
 
+    items.paste(draw(SIGIL, SIGIL_PAL), cell(SIN_WEAPON_ROW + 14, 16)[:2])
     avatars.save(p("sprites/avatars.png"))
     talents.save(p("interfaces/talent_icons.png"))
     hero_icons.save(p("interfaces/hero_icons.png"))

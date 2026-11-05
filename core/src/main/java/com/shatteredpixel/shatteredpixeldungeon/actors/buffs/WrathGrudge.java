@@ -8,6 +8,9 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.SinWeapons;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.WrathGreatsword;
 import com.watabou.noosa.Image;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
@@ -67,6 +70,7 @@ public class WrathGrudge extends Buff {
 	public void addGrudge(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.WRATH_SPITE);
+		if (SinWeapons.wields(h, WrathGreatsword.class, HeroClass.WRATH)) amount *= 1.5f;
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
 		grudge += amount;

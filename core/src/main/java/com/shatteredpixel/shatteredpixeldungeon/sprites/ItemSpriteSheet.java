@@ -29,7 +29,7 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
-	private static final int TX_HEIGHT = 528; //extended by one row for the seven sins
+	private static final int TX_HEIGHT = 544; //extended by two rows for the seven sins
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
 
@@ -849,6 +849,40 @@ public class ItemSpriteSheet {
 		assignItemRect(ARMOR_ENVY,      13, 14);
 		assignItemRect(SLOTH_PILLOW,    15, 11);
 		assignItemRect(ARMOR_SLOTH,     13, 14);
+	}
+
+	//Seven Sins weapons: tier 1 and tier 5 per sin, recolored from their base weapons
+	private static final int SINS2      =                                   xy(1, 34);  //16 slots
+	public static final int SIN_GLUTTONY_T1 = SINS2+0;
+	public static final int SIN_GLUTTONY_T5 = SINS2+1;
+	public static final int SIN_GREED_T1    = SINS2+2;
+	public static final int SIN_GREED_T5    = SINS2+3;
+	public static final int SIN_WRATH_T1    = SINS2+4;
+	public static final int SIN_WRATH_T5    = SINS2+5;
+	public static final int SIN_PRIDE_T1    = SINS2+6;
+	public static final int SIN_PRIDE_T5    = SINS2+7;
+	public static final int SIN_LUST_T1     = SINS2+8;
+	public static final int SIN_LUST_T5     = SINS2+9;
+	public static final int SIN_ENVY_T1     = SINS2+10;
+	public static final int SIN_ENVY_T5     = SINS2+11;
+	public static final int SIN_SLOTH_T1    = SINS2+12;
+	public static final int SIN_SLOTH_T5    = SINS2+13;
+	public static final int SIN_SIGIL       = SINS2+14;
+	static{
+		//each sin weapon uses the same sprite size as the weapon it was made from
+		int[][] pairs = {
+				{SIN_GLUTTONY_T1, WORN_SHORTSWORD}, {SIN_GLUTTONY_T5, WAR_SCYTHE},
+				{SIN_GREED_T1, CUDGEL},             {SIN_GREED_T5, GREATAXE},
+				{SIN_WRATH_T1, GLOVES},             {SIN_WRATH_T5, GREATSWORD},
+				{SIN_PRIDE_T1, RAPIER},             {SIN_PRIDE_T5, GREATSHIELD},
+				{SIN_LUST_T1, WHIP},                {SIN_LUST_T5, GLAIVE},
+				{SIN_ENVY_T1, DAGGER},              {SIN_ENVY_T5, GAUNTLETS},
+				{SIN_SLOTH_T1, CUDGEL},             {SIN_SLOTH_T5, WAR_HAMMER},
+		};
+		for (int[] p : pairs){
+			assignItemRect(p[0], (int)film.width(p[1]), (int)film.height(p[1]));
+		}
+		assignItemRect(SIN_SIGIL, 14, 14);
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite

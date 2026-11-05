@@ -44,6 +44,8 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ItemButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
+import com.shatteredpixel.shatteredpixeldungeon.items.SinSigil;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.SinWeapons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
@@ -164,6 +166,37 @@ public class WndBlacksmith extends Window {
 		};
 		smith.enable(Blacksmith.Quest.favor >= 2000);
 		buttons.add(smith);
+
+		//seven sins: reforge a weapon into the hero's tier 5 sin weapon
+		if (SinWeapons.tier5(hero.heroClass) != null) {
+			RedButton sinForge = new RedButton(Messages.get(this, "sin_forge", SinSigil.COST), 6){
+				@Override
+				protected void onClick() {
+					GameScene.show(new WndOptions(
+							troll.sprite(),
+							Messages.titleCase( troll.name() ),
+							Messages.get(WndBlacksmith.class, "sin_forge_verify"),
+							Messages.get(WndBlacksmith.class, "smith_yes"),
+							Messages.get(WndBlacksmith.class, "smith_no")
+					){
+						@Override
+						protected void onSelect(int index) {
+							if (index == 0){
+								Blacksmith.Quest.favor -= SinSigil.COST;
+								SinSigil sigil = new SinSigil();
+								if (!sigil.collect(hero.belongings.backpack)) {
+									Dungeon.level.drop(sigil, hero.pos).sprite.drop();
+								}
+								GLog.p(Messages.get(WndBlacksmith.class, "sin_forge_given"));
+								WndBlacksmith.this.hide();
+							}
+						}
+					});
+				}
+			};
+			sinForge.enable(Blacksmith.Quest.favor >= SinSigil.COST);
+			buttons.add(sinForge);
+		}
 
 		RedButton cashOut = new RedButton(Messages.get(this, "cashout"), 6){
 			@Override
