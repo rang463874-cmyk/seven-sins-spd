@@ -50,6 +50,10 @@ public class Artifact extends KindofMisc {
 	//levelCap is the artifact's maximum level
 	protected int levelCap = 0;
 
+	public int levelCap(){
+		return levelCap;
+	}
+
 	//the current artifact charge
 	protected int charge = 0;
 	//the build towards next charge, usually rolls over at 1.
