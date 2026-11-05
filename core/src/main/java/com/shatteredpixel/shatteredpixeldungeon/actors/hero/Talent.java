@@ -283,6 +283,23 @@ public enum Talent {
 	//Heartbreak T4
 	BREAK_POWER(407, 4), BREAK_FEAR(408, 4), BREAK_DESIRE(409, 4),
 
+	//Envy T1 (row 13 = 416)
+	ENVY_COVET(416), ENVY_GRASP(417), ENVY_PETTY(418), ENVY_SNATCH(419),
+	//Envy T2
+	ENVY_MIRROR(420), ENVY_POLISH(421), ENVY_SWITCH(422), ENVY_LEVEL(423), ENVY_RESENT(424),
+	//Envy T3
+	ENVY_JEALOUSY(425, 3), ENVY_TROPHY(426, 3),
+	//Usurper T3
+	USURP_TYRANNY(427, 3), USURP_DRAIN(428, 3), USURP_CROWN(429, 3),
+	//Copycat T3
+	COPY_STUDY(430, 3), COPY_MASK(431, 3), COPY_ECHO(432, 3),
+	//Plunder T4
+	PLUNDER_REACH(433, 4), PLUNDER_STACKS(434, 4), PLUNDER_SPOILS(435, 4),
+	//Transference T4
+	TRANS_AMPLIFY(436, 4), TRANS_HEAL(437, 4), TRANS_WEAKEN(438, 4),
+	//Downfall T4
+	FALL_POWER(439, 4), FALL_REACH(440, 4), FALL_ROB(441, 4),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -559,6 +576,8 @@ public enum Talent {
 					return 378;
 				case LUST:
 					return 410;
+				case ENVY:
+					return 442;
 			}
 		} else {
 			return icon;
@@ -1105,6 +1124,9 @@ public enum Talent {
 			case LUST:
 				Collections.addAll(tierTalents, LUST_YEARNING, LUST_LINGER, LUST_SWEET, LUST_BLUSH);
 				break;
+			case ENVY:
+				Collections.addAll(tierTalents, ENVY_COVET, ENVY_GRASP, ENVY_PETTY, ENVY_SNATCH);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1149,6 +1171,9 @@ public enum Talent {
 			case LUST:
 				Collections.addAll(tierTalents, LUST_BOTTLE, LUST_REFILL, LUST_WAFT, LUST_THIRST, LUST_EMBRACE);
 				break;
+			case ENVY:
+				Collections.addAll(tierTalents, ENVY_MIRROR, ENVY_POLISH, ENVY_SWITCH, ENVY_LEVEL, ENVY_RESENT);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1192,6 +1217,9 @@ public enum Talent {
 				break;
 			case LUST:
 				Collections.addAll(tierTalents, LUST_OBSESSION, LUST_HEARTSTRINGS);
+				break;
+			case ENVY:
+				Collections.addAll(tierTalents, ENVY_JEALOUSY, ENVY_TROPHY);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1286,6 +1314,12 @@ public enum Talent {
 				break;
 			case DREAMWEAVER:
 				Collections.addAll(tierTalents, DREAM_DEEP, DREAM_LULLABY, DREAM_REVERIE);
+				break;
+			case USURPER:
+				Collections.addAll(tierTalents, USURP_TYRANNY, USURP_DRAIN, USURP_CROWN);
+				break;
+			case COPYCAT:
+				Collections.addAll(tierTalents, COPY_STUDY, COPY_MASK, COPY_ECHO);
 				break;
 		}
 		for (Talent talent : tierTalents){

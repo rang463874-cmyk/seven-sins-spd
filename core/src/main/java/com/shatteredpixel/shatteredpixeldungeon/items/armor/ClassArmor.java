@@ -133,6 +133,9 @@ abstract public class ClassArmor extends Armor {
 			case LUST:
 				classArmor = new LustArmor();
 				break;
+			case ENVY:
+				classArmor = new EnvyArmor();
+				break;
 		}
 		
 		classArmor.level(armor.trueLevel());

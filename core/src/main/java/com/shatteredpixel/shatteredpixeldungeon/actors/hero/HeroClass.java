@@ -38,6 +38,12 @@ import com.shatteredpixel.shatteredpixeldungeon.items.GoldenCard;
 import com.shatteredpixel.shatteredpixeldungeon.items.WarDrum;
 import com.shatteredpixel.shatteredpixeldungeon.items.PrideCrown;
 import com.shatteredpixel.shatteredpixeldungeon.items.Perfume;
+import com.shatteredpixel.shatteredpixeldungeon.items.EnvyMirror;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTransmutation;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EnvyCovet;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.envy.Downfall;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.envy.Plunder;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.envy.Transference;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LustDesire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.EnchantingDance;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.Heartbreak;
@@ -124,7 +130,8 @@ public enum HeroClass {
 	GREED( HeroSubClass.BANKER, HeroSubClass.USURER ),
 	WRATH( HeroSubClass.INSTIGATOR, HeroSubClass.AVENGER ),
 	PRIDE( HeroSubClass.MONARCH, HeroSubClass.PARAGON ),
-	LUST( HeroSubClass.SIREN, HeroSubClass.DREAMWEAVER );
+	LUST( HeroSubClass.SIREN, HeroSubClass.DREAMWEAVER ),
+	ENVY( HeroSubClass.USURPER, HeroSubClass.COPYCAT );
 
 	private HeroSubClass[] subClasses;
 
@@ -199,6 +206,10 @@ public enum HeroClass {
 
 			case LUST:
 				initLust( hero );
+				break;
+
+			case ENVY:
+				initEnvy( hero );
 				break;
 		}
 
@@ -395,6 +406,21 @@ public enum HeroClass {
 		new ScrollOfLullaby().identify();
 	}
 
+	private static void initEnvy( Hero hero ) {
+
+		(hero.belongings.weapon = new WornShortsword()).identify();
+		hero.belongings.weapon.activate(hero);
+
+		EnvyMirror mirror = new EnvyMirror();
+		mirror.identify().collect();
+		Dungeon.quickslot.setSlot(0, mirror);
+
+		Buff.affect(hero, EnvyCovet.class);
+
+		new PotionOfHealing().identify();
+		new ScrollOfTransmutation().identify();
+	}
+
 	public String title() {
 		return Messages.get(HeroClass.class, name());
 	}
@@ -435,6 +461,8 @@ public enum HeroClass {
 				return new ArmorAbility[]{new Reign(), new Aegis(), new Judgement()};
 			case LUST:
 				return new ArmorAbility[]{new EnchantingDance(), new SoulSiphon(), new Heartbreak()};
+			case ENVY:
+				return new ArmorAbility[]{new Plunder(), new Transference(), new Downfall()};
 		}
 	}
 
@@ -462,6 +490,8 @@ public enum HeroClass {
 				return Assets.Sprites.PRIDE;
 			case LUST:
 				return Assets.Sprites.LUST;
+			case ENVY:
+				return Assets.Sprites.ENVY;
 		}
 	}
 
@@ -489,6 +519,8 @@ public enum HeroClass {
 				return Assets.Splashes.PRIDE;
 			case LUST:
 				return Assets.Splashes.LUST;
+			case ENVY:
+				return Assets.Splashes.ENVY;
 		}
 	}
 	
@@ -515,6 +547,7 @@ public enum HeroClass {
 			case WRATH:
 			case PRIDE:
 			case LUST:
+			case ENVY:
 				return true;
 		}
 	}

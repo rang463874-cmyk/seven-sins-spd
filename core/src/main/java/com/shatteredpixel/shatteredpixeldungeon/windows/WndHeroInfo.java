@@ -91,6 +91,9 @@ public class WndHeroInfo extends WndTabbed {
 			case LUST:
 				tabIcon = new ItemSprite(ItemSpriteSheet.PERFUME, null);
 				break;
+			case ENVY:
+				tabIcon = new ItemSprite(ItemSpriteSheet.ENVY_MIRROR, null);
+				break;
 		}
 
 		int finalHeight = MIN_HEIGHT;
@@ -246,6 +249,11 @@ public class WndHeroInfo extends WndTabbed {
 					icons = new Image[]{ new ItemSprite(ItemSpriteSheet.PERFUME),
 							Icons.get(Icons.TALENT),
 							new ItemSprite(ItemSpriteSheet.DAGGER)};
+					break;
+				case ENVY:
+					icons = new Image[]{ new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+							Icons.get(Icons.TALENT),
+							new ItemSprite(ItemSpriteSheet.WORN_SHORTSWORD)};
 					break;
 			}
 			for (Image im : icons) {

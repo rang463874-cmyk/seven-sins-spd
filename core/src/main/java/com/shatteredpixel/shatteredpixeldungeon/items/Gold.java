@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
 import com.shatteredpixel.shatteredpixeldungeon.greed.GreedHooks;
+import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
@@ -64,7 +65,7 @@ public class Gold extends Item {
 		Catalog.setSeen(getClass());
 		Statistics.itemTypesDiscovered.add(getClass());
 
-		quantity += GreedHooks.bonusGold( hero, quantity );
+		quantity += GreedHooks.bonusGold( hero, quantity ) + EnvyHooks.bonusGold( hero, quantity );
 		Dungeon.gold += quantity;
 		Statistics.goldCollected += quantity;
 		Badges.validateGoldCollected();

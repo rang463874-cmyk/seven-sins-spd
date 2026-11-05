@@ -489,6 +489,8 @@ public enum Icons {
 				return new ItemSprite(ItemSpriteSheet.PRIDE_CROWN);
 			case LUST:
 				return new ItemSprite(ItemSpriteSheet.PERFUME);
+			case ENVY:
+				return new ItemSprite(ItemSpriteSheet.ENVY_MIRROR);
 			default:
 				return null;
 		}

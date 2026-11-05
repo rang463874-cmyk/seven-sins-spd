@@ -138,6 +138,29 @@ PERFUME_PAL = {
     "H": (240, 230, 240, 255), "G": (230, 190, 70, 255),
 }
 
+# 12x15 hand mirror (top-left aligned)
+MIRROR = [
+    "...OOOOOO...",
+    "..OGGGGGGO..",
+    ".OGLLSSSSGO.",
+    "OGLLSSSSSSGO",
+    "OGLSSSSSSSGO",
+    "OGSSSSSSSSGO",
+    "OGSSSSSSSDGO",
+    "OGSSSSSSDDGO",
+    ".OGSSSSDDGO.",
+    "..OGGGGGGO..",
+    "...OOGGOO...",
+    ".....GG.....",
+    "....OGGO....",
+    "....OGGO....",
+    ".....OO.....",
+]
+MIRROR_PAL = {
+    "O": (14, 40, 18, 255), "G": (60, 170, 70, 255), "L": (220, 255, 220, 255), "S": (150, 210, 170, 255),
+    "D": (90, 140, 110, 255),
+}
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -150,6 +173,7 @@ SINS = [
     dict(name="wrath", hue=4, accent=28, item="drum", hair_v=1.15),
     dict(name="pride", hue=265, accent=48, item="crown", hair_v=2.4, hair_s=0.18),
     dict(name="lust", hue=332, accent=300, item="perfume", hair_v=1.6, hair_s=0.65),
+    dict(name="envy", hue=125, accent=160, item="mirror", hair_v=1.2, hair_s=0.7),
 ]
 
 
@@ -306,6 +330,8 @@ def main():
             sig = draw(CROWN, CROWN_PAL)
         elif sin.get("item") == "perfume":
             sig = draw(PERFUME, PERFUME_PAL)
+        elif sin.get("item") == "mirror":
+            sig = draw(MIRROR, MIRROR_PAL)
         else:
             sig = rotate_to(items.crop(cell(ITEM_TOME, 16)), hue)
         items.paste(sig, cell(512 + 2 * k, 16)[:2])

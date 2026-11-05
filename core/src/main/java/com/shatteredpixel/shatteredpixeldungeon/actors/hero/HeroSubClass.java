@@ -68,7 +68,11 @@ public enum HeroSubClass {
 
 	//Lust
 	SIREN(HeroIcon.SIREN),
-	DREAMWEAVER(HeroIcon.DREAMWEAVER);
+	DREAMWEAVER(HeroIcon.DREAMWEAVER),
+
+	//Envy
+	USURPER(HeroIcon.USURPER),
+	COPYCAT(HeroIcon.COPYCAT);
 
 	int icon;
 

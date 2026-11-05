@@ -146,6 +146,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.wrath.WrathHooks;
 import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
 import com.shatteredpixel.shatteredpixeldungeon.lust.LustHooks;
+import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Earthroot;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -844,6 +845,7 @@ public abstract class Char extends Actor {
 		dmg = WrathHooks.modifyDamage(this, src, dmg);
 		dmg = PrideHooks.modifyDamage(this, src, dmg);
 		dmg = LustHooks.modifyDamage(this, src, dmg);
+		dmg = EnvyHooks.modifyDamage(this, src, dmg);
 
 		if (!(src instanceof LifeLink || src instanceof Hunger) && buff(LifeLink.class) != null){
 			HashSet<LifeLink> links = buffs(LifeLink.class);

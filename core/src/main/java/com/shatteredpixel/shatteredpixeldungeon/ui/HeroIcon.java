@@ -140,6 +140,11 @@ public class HeroIcon extends Image {
 	public static final int ENCHANTING_DANCE= 162;
 	public static final int SOUL_SIPHON     = 163;
 	public static final int HEARTBREAK      = 164;
+	public static final int USURPER         = 168;
+	public static final int COPYCAT         = 169;
+	public static final int PLUNDER         = 170;
+	public static final int TRANSFERENCE    = 171;
+	public static final int DOWNFALL        = 172;
 
 	public HeroIcon(HeroSubClass subCls){
 		super( Assets.Interfaces.HERO_ICONS );
