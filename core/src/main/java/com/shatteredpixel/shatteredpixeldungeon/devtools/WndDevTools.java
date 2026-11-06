@@ -68,6 +68,20 @@ public class WndDevTools extends Window {
 				GameScene.show(new WndCategories());
 			}
 		});
+		addBtn(new RedButton("칠죄종 스택") {
+			@Override
+			protected void onClick() {
+				hide();
+				WndDevSins.open();
+			}
+		});
+		addBtn(new RedButton("몬스터 소환") {
+			@Override
+			protected void onClick() {
+				hide();
+				GameScene.show(new WndDevMobs());
+			}
+		});
 		addBtn(new RedButton("레벨 +1") {
 			@Override
 			protected void onClick() {

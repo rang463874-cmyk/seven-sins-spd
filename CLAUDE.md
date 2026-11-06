@@ -6,7 +6,10 @@ The owner plays and tests on an Android phone and talks in Korean, so reply in K
 ## Current state
 
 Done and pushed (see `git log`):
-- Developer tools (in-game menu, debug builds only): item spawner, level up, heal, identify all.
+- Developer tools (in-game menu, debug builds only): item spawner, sin stacks (`devtools/WndDevSins`:
+  +10/+100/+1000 to the current sin's points, refill charges/gauge/HP), monster summon
+  (`devtools/WndDevMobs`: bestiary categories, tap a tile; bosses except Goo left out), level up, heal,
+  identify all.
 - Cleric is hidden from hero select (kept for old saves). Hero select fits 12 classes.
 - Seven sin classes, each with: signature item (no equipment slot), a permanent-growth buff,
   2 subclasses, 26 talents, 3 armor abilities, class armor, en/ko strings, placeholder art.
