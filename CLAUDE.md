@@ -79,8 +79,11 @@ never cursed) with `ConquestCrown` (surrender a wounded enemy -> temporary ally 
 (Weakness aura, +10% hunger, satiety -> HP) and `DeathScythe` (reap enemies near death, survive a
 lethal hit once per floor). Hooks: `horsemen/HorsemenHooks` (Hero.attackProc/defenseProc/die, Mob.die).
 Quest: `actors/mobs/npcs/Prophet` (+ `Prophet.Quest`, saved with the other quests in `Dungeon`) spawns on
-sewer floor 2-4 from `SewerLevel.createMobs`, with 4 champion mobs carrying `SealBearer`; each drops an
-`items/quest/SealFragment`. Four fragments -> `WndProphet`, pick one artifact. Art: items.png row 36.
+sewer floor 2-4 from `SewerLevel.createMobs`, with one miniboss, `actors/mobs/SealWarden` (45 HP, shifts
+aspect every 25% HP lost: Conquest armor, War 1.5x attack speed, Famine weakness + satiety drain, Death
++50% vs a hero below half HP; placeholder art = tinted armored statue). It drops one
+`items/quest/SealFragment` (shown as "seal of the apocalypse"); `Prophet.FRAGMENTS` = 1 -> `WndProphet`,
+pick one artifact. `SealBearer` (the old 4-champion version) is kept only for old saves. Art: items.png row 36.
 
 ## The seven sins
 

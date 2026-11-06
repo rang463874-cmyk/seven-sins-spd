@@ -4,8 +4,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.SealWarden;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.SealFragment;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room;
@@ -24,13 +24,13 @@ import com.watabou.utils.Random;
 import java.util.ArrayList;
 
 /**
- * The Prophet of Seals, a sewer quest NPC. Four champion enemies on the prophet's floor each
- * carry a fragment of the broken seals; bring all four back to choose one of the four
- * horsemen artifacts.
+ * The Prophet of Seals, a sewer quest NPC. The Seal Warden, a miniboss on the prophet's floor,
+ * guards the apocalypse's seal; bring the seal back to choose one of the four horsemen artifacts.
  */
 public class Prophet extends NPC {
 
-	public static final int FRAGMENTS = 4;
+	/** seals needed for the reward (old saves may still hold fragments from four seal bearers) */
+	public static final int FRAGMENTS = 1;
 
 	{
 		spriteClass = ProphetSprite.class;
@@ -99,7 +99,7 @@ public class Prophet extends NPC {
 		return true;
 	}
 
-	/** marks one of the four champions that carry a seal fragment */
+	/** marked one of the four champions that carried a seal fragment (older quest version, kept for old saves) */
 	public static class SealBearer extends Buff {
 
 		{
@@ -185,24 +185,20 @@ public class Prophet extends NPC {
 			if (prophet.pos == -1) return;
 			level.mobs.add(prophet);
 
-			for (int i = 0; i < FRAGMENTS; i++) {
-				int cell = freeCell(level, Random.element(candidates));
-				if (cell == -1) continue;
-				Mob guard = level.createMob();
-				guard.pos = cell;
-				if (guard.buff(ChampionEnemy.class) == null) {
-					switch (Random.Int(5)) {
-						case 0: default: Buff.affect(guard, ChampionEnemy.Giant.class); break;
-						case 1: Buff.affect(guard, ChampionEnemy.Blessed.class); break;
-						case 2: Buff.affect(guard, ChampionEnemy.Growing.class); break;
-						case 3: Buff.affect(guard, ChampionEnemy.Projecting.class); break;
-						case 4: Buff.affect(guard, ChampionEnemy.AntiMagic.class); break;
-					}
-				}
-				Buff.affect(guard, SealBearer.class);
-				guard.state = guard.WANDERING;
-				level.mobs.add(guard);
+			//the seal's guardian, kept away from the prophet's own room when possible
+			SealWarden warden = new SealWarden();
+			int cell = -1;
+			for (int tries = 0; tries < 10 && cell == -1; tries++) {
+				int c = freeCell(level, Random.element(candidates));
+				if (c != -1 && level.distance(c, prophet.pos) > 4) cell = c;
 			}
+			if (cell == -1) cell = freeCell(level, Random.element(candidates));
+			if (cell == -1) {
+				level.mobs.remove(prophet);
+				return;
+			}
+			warden.pos = cell;
+			level.mobs.add(warden);
 
 			spawned = true;
 			given = false;

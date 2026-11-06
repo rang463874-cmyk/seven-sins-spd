@@ -17,19 +17,21 @@ import java.util.ArrayList;
 
 /**
  * Dev tools: summon a monster on a chosen tile. The list comes from the game's own bestiary
- * categories. Bosses other than Goo are left out, since they need their own boss levels.
+ * categories. Bosses other than Goo are left out, since they need their own boss levels;
+ * the sewer prophet's Seal Warden is listed with Goo.
  */
 public class WndDevMobs extends Window {
 
 	static final int WIDTH = WndDevTools.WIDTH;
 	static final int PER_PAGE = 10;
 
-	static final String[] CAT_NAMES = {"지역 몬스터", "공통 몬스터", "희귀 몬스터", "퀘스트 몬스터", "보스 (구만)"};
+	static final String[] CAT_NAMES = {"지역 몬스터", "공통 몬스터", "희귀 몬스터", "퀘스트 몬스터", "보스·미니보스"};
 
 	static ArrayList<Class<? extends Mob>> mobs(int cat) {
 		ArrayList<Class<? extends Mob>> out = new ArrayList<>();
 		if (cat == 4) {
 			out.add(Goo.class);
+			out.add(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.SealWarden.class);
 			return out;
 		}
 		Bestiary b = new Bestiary[]{Bestiary.REGIONAL, Bestiary.UNIVERSAL, Bestiary.RARE, Bestiary.QUEST}[cat];
