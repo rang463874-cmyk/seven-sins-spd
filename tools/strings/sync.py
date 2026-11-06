@@ -62,10 +62,19 @@ def main():
                     lines[index[k]] = new
                     changed += 1
             else:
-                if prev is None or prev not in index:
+                if prev is None:
+                    #first key of a file that has no section yet: start one at the end
+                    stem = re.sub(r"_(items|windows|actors)?_?(en|ko)\.properties$", "", fname)
+                    while lines and lines[-1].strip() == "":
+                        lines.pop()
+                    lines.append("\n")
+                    lines.append("###### Seven Sins: %s ######\n" % stem.replace("_", " ").title())
+                    at = len(lines)
+                elif prev not in index:
                     print("cannot place new key %s from %s" % (k, fname), file=sys.stderr)
                     sys.exit(1)
-                at = index[prev] + 1
+                else:
+                    at = index[prev] + 1
                 lines.insert(at, new)
                 index = {kk: (ii + 1 if ii >= at else ii) for kk, ii in index.items()}
                 index[k] = at

@@ -16,6 +16,8 @@ Done and pushed (see `git log`):
 - GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
 
+- Four horsemen artifacts (all classes) from the sewer "prophet of seals" quest, see below.
+
 Not yet done / known gaps:
 - Never play-tested on a device until the first APK; expect UI/layout fixes.
 - Balance is untuned (Hibernator armor, Pride's Duel, Banker interest are on the strong side).
@@ -32,6 +34,17 @@ Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies 
 between floors; `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
 `SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
+
+## Four horsemen artifacts and the sewer prophet
+
+`items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use, levels 0-10 by uses,
+never cursed) with `ConquestCrown` (surrender a wounded enemy -> temporary ally `Subjugated`),
+`WarBlade` (more damage at low HP, charges from hits taken, Amok on nearby enemies), `FamineScales`
+(Weakness aura, +10% hunger, satiety -> HP) and `DeathScythe` (reap enemies near death, survive a
+lethal hit once per floor). Hooks: `horsemen/HorsemenHooks` (Hero.attackProc/defenseProc/die, Mob.die).
+Quest: `actors/mobs/npcs/Prophet` (+ `Prophet.Quest`, saved with the other quests in `Dungeon`) spawns on
+sewer floor 2-4 from `SewerLevel.createMobs`, with 4 champion mobs carrying `SealBearer`; each drops an
+`items/quest/SealFragment`. Four fragments -> `WndProphet`, pick one artifact. Art: items.png row 36.
 
 ## The seven sins
 
@@ -72,8 +85,9 @@ mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.
 Reserved layout (must match the Java constants):
 - `talent_icons.png`: row 8 + k (icon 256 + 32k + i), heroic energy at +26
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
-- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 560):
-  row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics
+- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 576):
+  row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
+  row 36 horsemen artifacts + seal fragment
 - `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
 k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
 
@@ -82,7 +96,8 @@ k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, 
 English and Korean only. Source copies live in `tools/strings/*.properties` and are appended to
 `core/src/main/assets/messages/{actors,items,windows}/*.properties` under
 `###### Seven Sins: ... ######` headers. After editing a source copy, run `python3 tools/strings/sync.py` to update the game files
-(new keys land after the key that precedes them; delete removed keys by hand). Keep both languages in sync; a missing key shows as
+(new keys land after the key that precedes them, a new file gets its own section at the end;
+delete removed keys by hand). Keep both languages in sync; a missing key shows as
 "!!!NO TEXT FOUND!!!" in game. Messages fall back to superclass keys, so sin weapons inherit
 their base weapon's ability text.
 

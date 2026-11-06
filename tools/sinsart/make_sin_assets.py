@@ -238,6 +238,57 @@ def relic_px(hue, smul, vmul):
         return rgb(hue, min(1, s * smul + 0.05), min(1, v * vmul), a)
     return f
 
+HORSEMEN_ROW = 560  # row 36 of items.png: four horsemen artifacts, then the seal fragment
+
+# 12x12 scales of famine
+SCALES = [
+    ".....OO.....",
+    ".....OO.....",
+    "OOOOOOOOOOOO",
+    "O.O..OO..O.O",
+    "O..O.OO.O..O",
+    "O..O.OO.O..O",
+    "OSSSOOOSSSSO",
+    ".OSSO.OOSSO.",
+    "..OO..O.OO..",
+    ".....OO.....",
+    "....OOOO....",
+    "...OOOOOO...",
+]
+SCALES_PAL = {"O": (40, 40, 48, 255), "S": (120, 110, 90, 255)}
+
+# 10x10 broken seal fragment
+SEAL = [
+    "...OOOO...",
+    "..ORRRRO..",
+    ".ORRYYRRO.",
+    "ORRYRRYRO.",
+    "ORYRRRRYRO",
+    "ORYRRRRRO.",
+    "ORRYRRYO..",
+    ".ORRYYO...",
+    "..ORRO....",
+    "...OO.....",
+]
+SEAL_PAL = {"O": (40, 10, 50, 255), "R": (120, 50, 150, 255), "Y": (230, 200, 120, 255)}
+
+CONQUEST_PAL = {
+    "O": (70, 70, 90, 255), "Y": (240, 240, 250, 255), "H": (255, 255, 255, 255), "S": (190, 190, 210, 255),
+    "R": (240, 210, 90, 255), "B": (240, 210, 90, 255), "P": (200, 200, 220, 255),
+}
+
+
+def horsemen_art(items):
+    """conquest crown, war blade, famine scales, death scythe, seal fragment"""
+    items.paste(draw(CROWN, CONQUEST_PAL), cell(HORSEMEN_ROW + 0, 16)[:2])
+    # war: the greatsword soaked in blood red
+    items.paste(recolor(items.crop(cell(128, 16)), relic_px(355, 1.4, 0.85)), cell(HORSEMEN_ROW + 1, 16)[:2])
+    items.paste(draw(SCALES, SCALES_PAL), cell(HORSEMEN_ROW + 2, 16)[:2])
+    # death: a pale, sickly green war scythe
+    items.paste(recolor(items.crop(cell(134, 16)), relic_px(95, 0.35, 1.1)), cell(HORSEMEN_ROW + 3, 16)[:2])
+    items.paste(draw(SEAL, SEAL_PAL), cell(HORSEMEN_ROW + 4, 16)[:2])
+
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -377,7 +428,7 @@ def main():
     hero_icons = Image.open(p("interfaces/hero_icons.png")).convert("RGBA")
     hero_icons = grow(hero_icons, 128, 16 * (16 + 7))
     items = Image.open(p("sprites/items.png")).convert("RGBA")
-    items = grow(items, 256, 16 * 35)
+    items = grow(items, 256, 16 * 36)
 
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]
@@ -432,6 +483,7 @@ def main():
         print("generated art for", name)
 
     items.paste(draw(SIGIL, SIGIL_PAL), cell(SIN_WEAPON_ROW + 14, 16)[:2])
+    horsemen_art(items)
     avatars.save(p("sprites/avatars.png"))
     talents.save(p("interfaces/talent_icons.png"))
     hero_icons.save(p("interfaces/hero_icons.png"))

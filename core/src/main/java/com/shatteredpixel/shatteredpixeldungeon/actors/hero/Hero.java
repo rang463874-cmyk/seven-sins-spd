@@ -170,6 +170,7 @@ import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
 import com.shatteredpixel.shatteredpixeldungeon.lust.LustHooks;
 import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks;
 import com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks;
+import com.shatteredpixel.shatteredpixeldungeon.horsemen.HorsemenHooks;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Insurance;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.AlchemyScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -1579,6 +1580,7 @@ public class Hero extends Char {
 		damage = LustHooks.onAttack( this, enemy, damage );
 		damage = EnvyHooks.onAttack( this, enemy, damage );
 		damage = SlothHooks.onAttack( this, enemy, damage );
+		damage = HorsemenHooks.onAttack( this, enemy, damage );
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );
@@ -1642,6 +1644,7 @@ public class Hero extends Char {
 		damage = WrathHooks.onDefense( this, enemy, damage );
 		damage = EnvyHooks.onDefense( this, enemy, damage );
 		damage = SlothHooks.onDefense( this, enemy, damage );
+		damage = HorsemenHooks.onDefense( this, enemy, damage );
 		
 		if (belongings.armor() != null) {
 			damage = belongings.armor().proc( enemy, this, damage );
@@ -2227,6 +2230,12 @@ public class Hero extends Char {
 
 		//greed's insurance pays out before an ankh is consumed
 		if (Insurance.tryPayout(this)) {
+			interrupt();
+			return;
+		}
+
+		//the scythe of death spares its bearer once per floor
+		if (HorsemenHooks.cheatDeath(this)) {
 			interrupt();
 			return;
 		}

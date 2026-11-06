@@ -28,6 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Prophet;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Ripple;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
 import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
@@ -139,6 +140,7 @@ public class SewerLevel extends RegularLevel {
 	@Override
 	protected void createMobs() {
 		Ghost.Quest.spawn( this, roomExit );
+		Prophet.Quest.spawn( this, rooms, roomEntrance, roomExit );
 		super.createMobs();
 	}
 	

@@ -95,6 +95,7 @@ import com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks;
 import com.shatteredpixel.shatteredpixeldungeon.lust.LustHooks;
 import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks;
 import com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks;
+import com.shatteredpixel.shatteredpixeldungeon.horsemen.HorsemenHooks;
 import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
@@ -1048,6 +1049,7 @@ public abstract class Mob extends Char {
 	@Override
 	public void die( Object cause ) {
 
+		HorsemenHooks.onMobDeath( this, cause );
 		GreedHooks.onMobDeath( this, cause );
 		WrathHooks.onMobDeath( this, cause );
 		PrideHooks.onMobDeath( this, cause );

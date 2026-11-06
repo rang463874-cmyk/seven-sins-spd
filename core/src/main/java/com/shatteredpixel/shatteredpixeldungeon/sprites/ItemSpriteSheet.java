@@ -29,7 +29,7 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
-	private static final int TX_HEIGHT = 560; //extended by three rows for the seven sins
+	private static final int TX_HEIGHT = 576; //extended by four rows for the seven sins mod
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
 
@@ -903,6 +903,21 @@ public class ItemSpriteSheet {
 		for (int[] p : pairs){
 			assignItemRect(p[0], (int)film.width(p[1]), (int)film.height(p[1]));
 		}
+	}
+
+	//Four horsemen artifacts and the prophet's seal fragment
+	private static final int HORSEMEN   =                                   xy(1, 36);  //16 slots
+	public static final int ARTIFACT_CONQUEST = HORSEMEN+0;
+	public static final int ARTIFACT_WAR      = HORSEMEN+1;
+	public static final int ARTIFACT_FAMINE   = HORSEMEN+2;
+	public static final int ARTIFACT_DEATH    = HORSEMEN+3;
+	public static final int SEAL_FRAGMENT     = HORSEMEN+4;
+	static{
+		assignItemRect(ARTIFACT_CONQUEST, 14, 11);
+		assignItemRect(ARTIFACT_WAR,      (int)film.width(GREATSWORD), (int)film.height(GREATSWORD));
+		assignItemRect(ARTIFACT_FAMINE,   12, 12);
+		assignItemRect(ARTIFACT_DEATH,    (int)film.width(WAR_SCYTHE), (int)film.height(WAR_SCYTHE));
+		assignItemRect(SEAL_FRAGMENT,     10, 10);
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite
