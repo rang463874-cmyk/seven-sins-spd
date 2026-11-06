@@ -386,13 +386,6 @@ public abstract class Mob extends Char {
 			return rival;
 		}
 
-		//lust's siren: charmed enemies turn on their own kind
-		Char lured = LustHooks.sirenTarget( this );
-		if (lured != null) {
-			if (state != SLEEPING) state = HUNTING;
-			return lured;
-		}
-		
 		//sloth's taunt: dream puppets draw the attention of taunted enemies
 		Char taunter = SlothHooks.tauntTarget( this );
 		if (taunter != null) {

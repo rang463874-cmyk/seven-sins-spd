@@ -53,8 +53,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.envy.Plund
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.envy.Transference;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LustDesire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.EnchantingDance;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.Heartbreak;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.SoulSiphon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.DanseMacabre;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.lust.BloodPact;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PrideGlory;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.pride.Aegis;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.pride.Judgement;
@@ -137,7 +137,7 @@ public enum HeroClass {
 	GREED( HeroSubClass.BANKER, HeroSubClass.USURER ),
 	WRATH( HeroSubClass.INSTIGATOR, HeroSubClass.AVENGER ),
 	PRIDE( HeroSubClass.MONARCH, HeroSubClass.PARAGON ),
-	LUST( HeroSubClass.SIREN, HeroSubClass.DREAMWEAVER ),
+	LUST( HeroSubClass.NIGHT_DANCER, HeroSubClass.CRIMSON_NOBLE ),
 	ENVY( HeroSubClass.USURPER, HeroSubClass.COPYCAT ),
 	SLOTH( HeroSubClass.DREAM_LORD, HeroSubClass.SLEEPWALKER );
 
@@ -487,7 +487,7 @@ public enum HeroClass {
 			case PRIDE:
 				return new ArmorAbility[]{new Reign(), new Aegis(), new Judgement()};
 			case LUST:
-				return new ArmorAbility[]{new EnchantingDance(), new SoulSiphon(), new Heartbreak()};
+				return new ArmorAbility[]{new EnchantingDance(), new BloodPact(), new DanseMacabre()};
 			case ENVY:
 				return new ArmorAbility[]{new Plunder(), new Transference(), new Downfall()};
 			case SLOTH:

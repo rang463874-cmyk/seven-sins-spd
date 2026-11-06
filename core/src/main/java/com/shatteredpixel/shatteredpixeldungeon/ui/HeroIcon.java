@@ -135,11 +135,11 @@ public class HeroIcon extends Image {
 	public static final int REIGN           = 154;
 	public static final int AEGIS           = 155;
 	public static final int PRIDE_JUDGEMENT = 156;
-	public static final int SIREN           = 160;
-	public static final int DREAMWEAVER     = 161;
+	public static final int NIGHT_DANCER    = 160;
+	public static final int CRIMSON_NOBLE   = 161;
 	public static final int ENCHANTING_DANCE= 162;
-	public static final int SOUL_SIPHON     = 163;
-	public static final int HEARTBREAK      = 164;
+	public static final int BLOOD_PACT      = 163;
+	public static final int DANSE_MACABRE   = 164;
 	public static final int USURPER         = 168;
 	public static final int COPYCAT         = 169;
 	public static final int PLUNDER         = 170;

@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.utils.Random;
 
-/** Lust's tier 5 weapon: hits on charmed enemies drain life and build desire without breaking the charm. */
+/** Lust's tier 5 weapon: every hit steals a little life, and hits on charmed enemies keep them charmed. */
 public class RoseGlaive extends Glaive {
 
 	{
@@ -23,13 +23,12 @@ public class RoseGlaive extends Glaive {
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
+			//every hit drinks a little; hits on the charmed don't shake the charm off
 			if (LustDesire.charmedByHero(defender)) {
 				Charm c = defender.buff(Charm.class);
 				if (c != null) c.ignoreNextHit = true;
-				int heal = Math.min(hero.HT - hero.HP, Math.round(damage * 0.3f));
-				if (heal > 0) hero.HP += heal;
-				Buff.affect(hero, LustDesire.class).addDesire(damage * 0.1f);
 			}
+			Buff.affect(hero, LustDesire.class).drain(Math.min(damage, defender.HP + defender.shielding()), 0.15f);
 		}
 		return super.proc(attacker, defender, damage);
 	}

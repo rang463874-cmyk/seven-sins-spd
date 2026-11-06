@@ -1,15 +1,12 @@
 package com.shatteredpixel.shatteredpixeldungeon.lust;
 
-import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LustDesire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 
@@ -21,67 +18,74 @@ public final class LustHooks {
 
 	private LustHooks() {}
 
+	/** guards the Night Dancer's counter so a counter can't trigger another counter */
+	private static boolean countering = false;
+
 	private static LustDesire desire(Hero hero) {
 		return hero == null ? null : hero.buff(LustDesire.class);
 	}
 
-	private static boolean sirenCharmed(Object ch) {
-		Hero hero = Dungeon.hero;
-		return ch instanceof Mob && hero != null && hero.subClass == HeroSubClass.SIREN
-				&& desire(hero) != null && LustDesire.charmedByHero((Char) ch);
-	}
+	// ------------------------------------------------------------------ combat
 
-	// ------------------------------------------------------------------ siren
-
-	/** Called from Mob.chooseEnemy: the Siren's charmed enemies turn on their own kind. */
-	public static Char sirenTarget(Mob mob) {
-		if (!sirenCharmed(mob)) return null;
-		Char best = null;
-		for (Char ch : Actor.chars()) {
-			if (ch == mob || ch == Dungeon.hero || ch.alignment != Char.Alignment.ENEMY) continue;
-			if (LustDesire.charmedByHero(ch)) continue;
-			boolean sees = mob.fieldOfView != null && ch.pos < mob.fieldOfView.length
-					? mob.fieldOfView[ch.pos]
-					: Dungeon.level.distance(mob.pos, ch.pos) <= 8;
-			if (!sees) continue;
-			if (best == null || Dungeon.level.distance(mob.pos, ch.pos) < Dungeon.level.distance(mob.pos, best.pos)) {
-				best = ch;
-			}
-		}
-		return best;
-	}
-
-	/** Called from Char.damage before damage is applied. */
-	public static int modifyDamage(Char victim, Object src, int dmg) {
-		if (dmg <= 0 || !sirenCharmed(src) || victim == Dungeon.hero) return dmg;
-		return Math.round(dmg * (1f + 0.15f * Dungeon.hero.pointsInTalent(Talent.SIREN_SONG)));
-	}
-
-	/** Called from Char.damage after HP is reduced. */
-	public static void afterDamage(Char victim, Object src, int dmg) {
-		if (dmg <= 0 || !sirenCharmed(src) || victim == Dungeon.hero || victim.alignment != Char.Alignment.ENEMY) return;
-		Hero hero = Dungeon.hero;
+	/** Called from Hero.attackProc for every attack: bonus damage and lifesteal. */
+	public static int onAttack(Hero hero, Char enemy, int dmg) {
 		LustDesire d = desire(hero);
-		d.addDesire(dmg * 0.10f * (1f + 0.5f * hero.pointsInTalent(Talent.SIREN_DEVOTION)));
-		int echo = hero.pointsInTalent(Talent.SIREN_ECHO);
-		if (echo > 0) {
-			Charm c = ((Char) src).buff(Charm.class);
-			if (c != null) Buff.prolong((Char) src, Charm.class, c.cooldown() + echo);
+		if (d == null || enemy == null) return dmg;
+		KindOfWeapon wep = hero.belongings.attackingWeapon();
+		boolean melee = !(wep instanceof MissileWeapon);
+		if (melee) dmg += d.meleeBonus();
+
+		boolean charmed = LustDesire.charmedByHero(enemy);
+		int blush = hero.pointsInTalent(Talent.LUST_BLUSH);
+		if (blush > 0 && charmed) {
+			dmg = Math.round(dmg * (1f + 0.10f * blush));
 		}
+
+		if (melee) {
+			float rate = d.lifestealFor(enemy);
+			if (rate > 0) d.drain(Math.min(dmg, enemy.HP + enemy.shielding()), rate);
+		}
+		return dmg;
 	}
 
-	// ------------------------------------------------------------------ kills
-
-	/** Called from Mob.die. Defeating an enemy that is charmed by the hero feeds desire. */
-	public static void onMobDeath(Mob mob, Object cause) {
-		Hero hero = Dungeon.hero;
+	/**
+	 * Called from Char.attack when an attack misses. When the hero dodges an enemy,
+	 * the dance charms it, and the Night Dancer strikes back.
+	 */
+	public static void onDodge(Char attacker, Char defender) {
+		if (!(defender instanceof Hero) || !(attacker instanceof Mob) || !attacker.isAlive()) return;
+		Hero hero = (Hero) defender;
 		LustDesire d = desire(hero);
 		if (d == null || !hero.isAlive()) return;
-		if (mob.alignment != Char.Alignment.ENEMY || !LustDesire.charmedByHero(mob)) return;
 
-		d.addDesire(1f + mob.HT / 15f);
-		int hs = hero.pointsInTalent(Talent.LUST_HEARTSTRINGS);
-		if (hs > 0) d.gainCharge(0.2f * hs);
+		Mob mob = (Mob) attacker;
+		if (!LustDesire.charmImmune(mob)) {
+			LustDesire.charm(hero, mob, 2f + hero.pointsInTalent(Talent.LUST_HEARTSTRINGS));
+			if (mob.sprite != null) mob.sprite.emitter().burst(Speck.factory(Speck.HEART), 2);
+		}
+
+		if (hero.subClass != HeroSubClass.NIGHT_DANCER) return;
+
+		int tempo = hero.pointsInTalent(Talent.DANCER_TEMPO);
+		if (tempo > 0 && hero.HP < hero.HT) {
+			hero.HP = Math.min(hero.HT, hero.HP + 2 * tempo + hero.lvl / 10);
+		}
+
+		if (!countering && hero.canAttack(mob)) {
+			countering = true;
+			try {
+				float mult = 0.75f + 0.15f * hero.pointsInTalent(Talent.DANCER_COUNTER);
+				hero.sprite.turnTo(hero.pos, mob.pos);
+				hero.attack(mob, mult, 0f, 1f);
+			} finally {
+				countering = false;
+			}
+		}
+	}
+
+	/** Called from Mob.die. Desire now comes from stolen life, not from kills. */
+	public static void onMobDeath(Mob mob, Object cause) {
+		//no-op, kept so the call site stays stable
 	}
 
 	// ------------------------------------------------------------------ hero stats
@@ -93,7 +97,13 @@ public final class LustHooks {
 
 	public static float evasion(Hero hero, float mult) {
 		LustDesire d = desire(hero);
-		return d == null ? mult : mult * (1f + d.evasionBonus());
+		if (d == null) return mult;
+		mult *= 1f + d.evasionBonus();
+		if (hero.subClass == HeroSubClass.NIGHT_DANCER) {
+			mult *= 1f + 0.04f * hero.pointsInTalent(Talent.DANCER_GRACE);
+		}
+		if (hero.buff(LustDesire.Sway.class) != null) mult *= LustDesire.Sway.EVASION_MULT;
+		return mult;
 	}
 
 	public static int drBonus(Hero hero, int dr) {
@@ -106,16 +116,8 @@ public final class LustHooks {
 		return d == null ? ht : ht + d.hpBonus();
 	}
 
-	/** Called from Hero.attackProc for every attack. */
-	public static int onAttack(Hero hero, Char enemy, int dmg) {
-		LustDesire d = desire(hero);
-		if (d == null) return dmg;
-		KindOfWeapon wep = hero.belongings.attackingWeapon();
-		if (!(wep instanceof MissileWeapon)) dmg += d.meleeBonus();
-		int blush = hero.pointsInTalent(Talent.LUST_BLUSH);
-		if (blush > 0 && enemy != null && LustDesire.charmedByHero(enemy)) {
-			dmg = Math.round(dmg * (1f + 0.10f * blush));
-		}
-		return dmg;
+	/** true when nothing else should know about the hero's counterattack in progress */
+	public static boolean countering() {
+		return countering;
 	}
 }

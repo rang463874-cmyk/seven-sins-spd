@@ -4,22 +4,18 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Haste;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LustDesire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
-import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportation;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
@@ -32,16 +28,16 @@ import java.util.ArrayList;
 
 /**
  * The Lust class's signature item. Doesn't take an equipment slot.
- * Uses recharging charges (stored in LustDesire) to charm enemies and drain their life.
+ * Its skills are paid for with the wearer's own blood (HP) instead of charges.
  */
 public class Perfume extends Item {
 
 	public static final String AC_SPRAY = "SPRAY";
 
-	public static final int COST_GLANCE = 1;
-	public static final int COST_SCENT = 2;
-	public static final int COST_DRAIN = 1;
-	public static final int COST_ALLURE = 1;
+	/** HP costs as a share of max HP */
+	public static final float COST_KISS = 0.05f;
+	public static final float COST_STEP = 0.03f;
+	public static final float COST_RAPTURE = 0.10f;
 
 	{
 		image = ItemSpriteSheet.PERFUME;
@@ -70,8 +66,12 @@ public class Perfume extends Item {
 		return Buff.affect(hero, LustDesire.class);
 	}
 
-	public static int scentRadius(Hero hero) {
-		return 2 + hero.pointsInTalent(Talent.LUST_WAFT);
+	public static int kissRange(Hero hero) {
+		return 3 + hero.pointsInTalent(Talent.LUST_REFILL);
+	}
+
+	public static float stepTurns(Hero hero) {
+		return 5f + 2f * hero.pointsInTalent(Talent.LUST_WAFT);
 	}
 
 	@Override
@@ -79,206 +79,152 @@ public class Perfume extends Item {
 		super.execute(hero, action);
 		if (!action.equals(AC_SPRAY)) return;
 		final LustDesire d = desire(hero);
+		final int kiss = d.hpCost(COST_KISS);
+		final int step = d.hpCost(COST_STEP);
+		final int rapture = d.hpCost(COST_RAPTURE);
 
 		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "prompt", d.charges, d.maxCharges()),
-				Messages.get(this, "opt_glance", COST_GLANCE),
-				Messages.get(this, "opt_scent", COST_SCENT),
-				Messages.get(this, "opt_drain", COST_DRAIN),
-				Messages.get(this, "opt_allure", COST_ALLURE)) {
+				Messages.get(this, "prompt", hero.HP, hero.HT),
+				Messages.get(this, "opt_kiss", kiss),
+				Messages.get(this, "opt_step", step),
+				Messages.get(this, "opt_drain"),
+				Messages.get(this, "opt_rapture", rapture)) {
 			@Override
 			protected boolean enabled(int index) {
-				int[] costs = {COST_GLANCE, COST_SCENT, COST_DRAIN, COST_ALLURE};
-				return d.charges >= costs[index];
+				switch (index) {
+					case 0: return d.canPay(kiss);
+					case 1: return d.canPay(step);
+					case 2: return true;
+					default: return d.canPay(rapture);
+				}
 			}
 
 			@Override
 			protected void onSelect(int index) {
 				switch (index) {
-					case 0: GameScene.selectCell(glance); break;
-					case 1: scent(hero, d); break;
-					case 2: GameScene.selectCell(drainSel); break;
-					case 3: GameScene.selectCell(allure); break;
+					case 0: GameScene.selectCell(bloodKiss); break;
+					case 1: step(hero, d); break;
+					case 2: drain(hero, d); break;
+					case 3: rapture(hero, d); break;
 				}
 			}
 		});
 	}
 
-	// ------------------------------------------------------------------ helpers
-
-	private static Mob targetAt(Integer cell, boolean mustBeCharmed) {
-		if (cell == null) return null;
-		Char ch = Actor.findChar(cell);
-		if (!(ch instanceof Mob) || ch.alignment == Char.Alignment.ALLY || !Dungeon.level.heroFOV[cell]) {
-			GLog.w(Messages.get(Perfume.class, "no_target"));
-			return null;
-		}
-		if (mustBeCharmed && !LustDesire.charmedByHero(ch)) {
-			GLog.w(Messages.get(Perfume.class, "not_charmed"));
-			return null;
-		}
-		if (!mustBeCharmed && LustDesire.charmImmune(ch)) {
-			GLog.w(Messages.get(Perfume.class, "immune"));
-			return null;
-		}
-		return (Mob) ch;
-	}
-
-	/**
-	 * Drains life from a charmed enemy without breaking the charm.
-	 * Shared by the Drain skill and the Soul Siphon armor ability.
-	 * Returns the amount of life drained.
-	 */
-	public static int drain(Hero hero, Mob mob, float mult, Object src) {
-		LustDesire d = desire(hero);
-		float dmg = Random.NormalIntRange(2 + hero.lvl / 2, 5 + hero.lvl) * mult;
-		dmg *= 1f + 0.20f * hero.pointsInTalent(Talent.LUST_THIRST);
-
-		boolean asleep = mob.state == mob.SLEEPING;
-		if (hero.subClass == HeroSubClass.DREAMWEAVER && asleep) {
-			dmg *= 1.5f + 0.25f * hero.pointsInTalent(Talent.DREAM_DEEP);
-		}
-
-		Charm c = mob.buff(Charm.class);
-		if (c != null) c.ignoreNextHit = true;
-
-		int amount = Math.min(mob.HP, Math.round(dmg));
-		mob.damage(Math.round(dmg), src);
-		if (mob.isAlive() && asleep && hero.subClass == HeroSubClass.DREAMWEAVER) {
-			mob.state = mob.SLEEPING;
-		}
-
-		int heal = Math.round(amount * (1f + 0.20f * hero.pointsInTalent(Talent.LUST_SWEET)));
-		int missing = hero.HT - hero.HP;
-		hero.HP += Math.min(heal, missing);
-		if (heal > 0) {
-			hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(Math.min(heal, missing)), FloatingText.HEALING);
-		}
-		int over = heal - missing;
-		int shield = hero.pointsInTalent(Talent.SIPHON_SHIELD);
-		if (src instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.ArmorAbility && over > 0 && shield > 0) {
-			Buff.affect(hero, Barrier.class).incShield(Math.round(over * 0.25f * shield));
-		}
-
-		d.addDesire(amount * 0.3f);
-		if (asleep && hero.subClass == HeroSubClass.DREAMWEAVER) {
-			int rev = hero.pointsInTalent(Talent.DREAM_REVERIE);
-			if (rev > 0) d.gainCharge(0.15f * rev);
-		}
-
-		CellEmitter.center(mob.pos).burst(Speck.factory(Speck.HEART), 3);
-		return amount;
-	}
-
 	// ------------------------------------------------------------------ skills
 
-	private final CellSelector.Listener glance = new CellSelector.Listener() {
+	private static void step(Hero hero, LustDesire d) {
+		if (!d.pay(d.hpCost(COST_STEP))) {
+			GLog.w(Messages.get(Perfume.class, "no_blood"));
+			return;
+		}
+		Buff.prolong(hero, LustDesire.Sway.class, stepTurns(hero));
+		hero.sprite.emitter().burst(Speck.factory(Speck.HEART), 3);
+		Sample.INSTANCE.play(Assets.Sounds.CHARMS, 0.6f);
+		hero.spendAndNext(1f);
+	}
+
+	private static void drain(Hero hero, LustDesire d) {
+		ArrayList<Mob> victims = new ArrayList<>();
+		for (int n : PathFinder.NEIGHBOURS8) {
+			Char ch = Actor.findChar(hero.pos + n);
+			if (ch instanceof Mob && ch.alignment == Char.Alignment.ENEMY && LustDesire.charmedByHero(ch)) {
+				victims.add((Mob) ch);
+			}
+		}
+		if (victims.isEmpty()) {
+			GLog.w(Messages.get(Perfume.class, "no_charmed"));
+			return;
+		}
+		float bonus = 1f + 0.25f * hero.pointsInTalent(Talent.LUST_THIRST);
+		for (Mob m : victims) {
+			Charm c = m.buff(Charm.class);
+			float left = c == null ? 0 : c.cooldown();
+			if (c != null) c.detach();
+			int dmg = Math.round((Random.NormalIntRange(2, 4 + hero.lvl / 2) + 2f * left) * bonus);
+			dmg = Math.min(dmg, m.HP);
+			m.damage(dmg, Perfume.class);
+			d.drain(dmg, 1f);
+			if (m.sprite != null) m.sprite.emitter().burst(Speck.factory(Speck.HEALING), 3);
+		}
+		hero.sprite.operate(hero.pos);
+		Sample.INSTANCE.play(Assets.Sounds.DRINK);
+		hero.spendAndNext(1f);
+	}
+
+	private static void rapture(Hero hero, LustDesire d) {
+		if (!d.pay(d.hpCost(COST_RAPTURE))) {
+			GLog.w(Messages.get(Perfume.class, "no_blood"));
+			return;
+		}
+		Buff.prolong(hero, LustDesire.Rapture.class, LustDesire.Rapture.DURATION);
+		Buff.prolong(hero, Haste.class, 4f);
+		hero.sprite.emitter().burst(Speck.factory(Speck.HEART), 6);
+		Sample.INSTANCE.play(Assets.Sounds.CHARMS);
+		hero.spendAndNext(1f);
+	}
+
+	private final CellSelector.Listener bloodKiss = new CellSelector.Listener() {
 		@Override
 		public void onSelect(Integer cell) {
+			if (cell == null) return;
 			Hero hero = Dungeon.hero;
-			Mob mob = targetAt(cell, false);
-			if (mob == null) return;
-			if (!desire(hero).useCharges(COST_GLANCE)) return;
+			Char ch = Actor.findChar(cell);
+			if (!(ch instanceof Mob) || ch.alignment != Char.Alignment.ENEMY || !Dungeon.level.heroFOV[cell]
+					|| Dungeon.level.distance(hero.pos, cell) > kissRange(hero)) {
+				GLog.w(Messages.get(Perfume.class, "no_target"));
+				return;
+			}
+			Mob mob = (Mob) ch;
 
-			LustDesire.charm(hero, mob, 8f);
-			mob.sprite.emitter().burst(Speck.factory(Speck.HEART), 5);
-			hero.sprite.zap(mob.pos);
+			//land on the free tile next to the target that is closest to the hero
+			int land = -1;
+			if (Dungeon.level.adjacent(hero.pos, mob.pos)) {
+				land = hero.pos;
+			} else {
+				for (int n : PathFinder.NEIGHBOURS8) {
+					int c = mob.pos + n;
+					if (Dungeon.level.passable[c] && !Dungeon.level.avoid[c] && Actor.findChar(c) == null
+							&& Dungeon.level.heroFOV[c]
+							&& (land == -1 || Dungeon.level.distance(hero.pos, c) < Dungeon.level.distance(hero.pos, land))) {
+						land = c;
+					}
+				}
+			}
+			if (land == -1) {
+				GLog.w(Messages.get(Perfume.class, "no_room"));
+				return;
+			}
+			LustDesire d = desire(hero);
+			if (!d.pay(d.hpCost(COST_KISS))) {
+				GLog.w(Messages.get(Perfume.class, "no_blood"));
+				return;
+			}
+
+			if (land != hero.pos) {
+				ScrollOfTeleportation.appear(hero, land);
+				Dungeon.level.occupyCell(hero);
+				Dungeon.observe();
+				GameScene.updateFog();
+			}
+			hero.sprite.turnTo(hero.pos, mob.pos);
+			hero.attack(mob, 1f, 0f, 1000f);
+			if (mob.isAlive() && !LustDesire.charmImmune(mob)) {
+				//charmed after the kiss lands, so the kiss itself doesn't shake it off
+				LustDesire.charm(hero, mob, 3f + 2f * hero.pointsInTalent(Talent.LUST_EMBRACE));
+			}
+			if (mob.sprite != null) mob.sprite.emitter().burst(Speck.factory(Speck.HEART), 4);
 			Sample.INSTANCE.play(Assets.Sounds.CHARMS);
 			hero.spendAndNext(1f);
 		}
 
 		@Override
 		public String prompt() {
-			return Messages.get(Perfume.class, "prompt_glance");
-		}
-	};
-
-	private static void scent(Hero hero, LustDesire d) {
-		if (!d.useCharges(COST_SCENT)) return;
-		int r = scentRadius(hero);
-		int n = 0;
-		for (Mob mob : new ArrayList<>(Dungeon.level.mobs)) {
-			if (mob.alignment == Char.Alignment.ENEMY && Dungeon.level.heroFOV[mob.pos]
-					&& Dungeon.level.distance(hero.pos, mob.pos) <= r && !LustDesire.charmImmune(mob)) {
-				LustDesire.charm(hero, mob, 5f);
-				mob.sprite.emitter().burst(Speck.factory(Speck.HEART), 3);
-				n++;
-			}
-		}
-		for (int i : PathFinder.NEIGHBOURS9) {
-			if (Dungeon.level.heroFOV[hero.pos + i]) CellEmitter.get(hero.pos + i).burst(Speck.factory(Speck.HEART), 1);
-		}
-		if (n == 0) GLog.i(Messages.get(Perfume.class, "scent_none"));
-		hero.sprite.operate(hero.pos);
-		Sample.INSTANCE.play(Assets.Sounds.CHARMS);
-		hero.spendAndNext(1f);
-	}
-
-	private final CellSelector.Listener drainSel = new CellSelector.Listener() {
-		@Override
-		public void onSelect(Integer cell) {
-			Hero hero = Dungeon.hero;
-			Mob mob = targetAt(cell, true);
-			if (mob == null) return;
-			if (!desire(hero).useCharges(COST_DRAIN)) return;
-
-			hero.sprite.zap(mob.pos);
-			drain(hero, mob, 1f, Perfume.class);
-			Sample.INSTANCE.play(Assets.Sounds.DRINK);
-			hero.spendAndNext(1f);
-		}
-
-		@Override
-		public String prompt() {
-			return Messages.get(Perfume.class, "prompt_drain");
-		}
-	};
-
-	private final CellSelector.Listener allure = new CellSelector.Listener() {
-		@Override
-		public void onSelect(Integer cell) {
-			Hero hero = Dungeon.hero;
-			Mob mob = targetAt(cell, true);
-			if (mob == null) return;
-
-			int best = -1;
-			for (int n : PathFinder.NEIGHBOURS8) {
-				int c = mob.pos + n;
-				if (Dungeon.level.passable[c] && Actor.findChar(c) == null
-						&& (best == -1 || Dungeon.level.trueDistance(hero.pos, c) < Dungeon.level.trueDistance(hero.pos, best))) {
-					best = c;
-				}
-			}
-			if (best == -1) {
-				GLog.w(Messages.get(Perfume.class, "no_room"));
-				return;
-			}
-			if (!desire(hero).useCharges(COST_ALLURE)) return;
-
-			ScrollOfTeleportation.appear(hero, best);
-			Dungeon.level.occupyCell(hero);
-			Dungeon.observe();
-			GameScene.updateFog();
-
-			int embrace = hero.pointsInTalent(Talent.LUST_EMBRACE);
-			if (embrace > 0) Buff.affect(hero, Barrier.class).setShield(Math.round(hero.HT * 0.10f * embrace));
-			hero.sprite.emitter().burst(Speck.factory(Speck.HEART), 4);
-			hero.spendAndNext(1f);
-		}
-
-		@Override
-		public String prompt() {
-			return Messages.get(Perfume.class, "prompt_allure");
+			return Messages.get(Perfume.class, "prompt_kiss", kissRange(Dungeon.hero));
 		}
 	};
 
 	// ------------------------------------------------------------------ info
-
-	@Override
-	public String status() {
-		LustDesire d = LustDesire.of();
-		return d == null ? null : d.charges + "/" + d.maxCharges();
-	}
 
 	@Override
 	public String desc() {

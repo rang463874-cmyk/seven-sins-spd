@@ -36,6 +36,10 @@ Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies 
 between floors; `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
 `SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
+Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.hpCost/pay`), lifesteal
+on charmed enemies via `LustDesire.drain` from `LustHooks.onAttack`; dodging charms the attacker
+(`LustHooks.onDodge`, called from the miss branch of `Char.attack`; Night Dancer counters there).
+Siren infighting is gone. Old lust talent names are mapped in `Talent.renamedTalents` too.
 
 ## Four horsemen artifacts and the sewer prophet
 
@@ -56,7 +60,7 @@ sewer floor 2-4 from `SewerLevel.createMobs`, with 4 champion mobs carrying `Sea
 | Greed 탐욕 | GREED | GoldenCard | GreedVault (stats from carried gold; payment gauge filled by gold pickups) | greed/GreedHooks | BANKER, USURER | abilities/greed/* |
 | Wrath 분노 | WRATH | WarDrum | WrathGrudge (grudge from infighting) | wrath/WrathHooks | INSTIGATOR, AVENGER | abilities/wrath/* |
 | Pride 교만 | PRIDE | PrideCrown | PrideGlory (glory from flawless kills, dignity) | pride/PrideHooks | MONARCH, PARAGON | abilities/pride/* |
-| Lust 색욕 | LUST | Perfume | LustDesire (drain/charmed kills) | lust/LustHooks | SIREN, DREAMWEAVER | abilities/lust/* |
+| Lust 색욕 | LUST | Perfume | LustDesire (life stolen; 0.25 desire per HP) | lust/LustHooks | NIGHT_DANCER, CRIMSON_NOBLE | abilities/lust/* |
 | Envy 시기 | ENVY | EnvyMirror | EnvyCovet (robbed kills + bestiary of 27 special mobs) | envy/EnvyHooks | USURPER, COPYCAT | abilities/envy/* |
 | Sloth 나태 | SLOTH | SlothPillow | SlothRepose (kills by dream puppets / auto-attacks; own kills 1/3) | sloth/SlothHooks | DREAM_LORD, SLEEPWALKER | abilities/sloth/* |
 
@@ -71,8 +75,9 @@ Sin weapons: `items/weapon/melee/sins/` (`SinWeapons` helper, each extends a bas
 Each sin has a `*Hooks` class with static pass-through methods. Call sites (search for `Hooks.`):
 - `Hero`: `updateHT` (bonusHT), `attackSkill` (accuracy), `defenseSkill` (evasion), `drRoll`,
   `attackProc` (onAttack), `defenseProc` (onDefense), `die` (Greed insurance).
-- `Char.damage`: `modifyDamage` before damage (Sloth Proxy redirect), `afterDamage` after HP is reduced.
-- `Mob.die`: `onMobDeath`; `Mob.chooseEnemy`: Wrath discord / Lust siren / Sloth taunt targeting.
+- `Char.damage`: `modifyDamage` before damage (Wrath, Pride, Envy, Sloth Proxy redirect), `afterDamage` after HP is reduced.
+- `Mob.die`: `onMobDeath`; `Mob.chooseEnemy`: Wrath discord / Sloth taunt targeting;
+  `Char.attack` miss branch: Lust dodge.
 - `Gold.doPickUp`: bonus gold. Per-class switches: `HeroClass`, `Talent` (trees + heroic energy
   icon), `ClassArmor.upgrade`, `Icons.get`, `WndHeroInfo`, `Badges` (null-safe for new classes),
   `VaultMirror`, `WndBlacksmith`.

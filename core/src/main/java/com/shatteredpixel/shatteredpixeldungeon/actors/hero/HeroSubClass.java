@@ -67,8 +67,8 @@ public enum HeroSubClass {
 	PARAGON(HeroIcon.PARAGON),
 
 	//Lust
-	SIREN(HeroIcon.SIREN),
-	DREAMWEAVER(HeroIcon.DREAMWEAVER),
+	NIGHT_DANCER(HeroIcon.NIGHT_DANCER),
+	CRIMSON_NOBLE(HeroIcon.CRIMSON_NOBLE),
 
 	//Envy
 	USURPER(HeroIcon.USURPER),

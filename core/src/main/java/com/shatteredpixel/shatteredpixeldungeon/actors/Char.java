@@ -588,6 +588,9 @@ public abstract class Char extends Actor {
 			
 		} else if (!Char.hasProp(enemy, Property.OBJECT)) {
 
+			//lust's dance: dodging charms the attacker
+			LustHooks.onDodge(this, enemy);
+
 			if (enemy.sprite != null){
 				if (hitMissIcon != -1){
 					//dooking is a playful sound Ferrets can make, like low pitched chirping
@@ -846,7 +849,6 @@ public abstract class Char extends Actor {
 
 		dmg = WrathHooks.modifyDamage(this, src, dmg);
 		dmg = PrideHooks.modifyDamage(this, src, dmg);
-		dmg = LustHooks.modifyDamage(this, src, dmg);
 		dmg = EnvyHooks.modifyDamage(this, src, dmg);
 		dmg = SlothHooks.modifyDamage(this, src, dmg);
 
@@ -1001,7 +1003,6 @@ public abstract class Char extends Actor {
 		HP -= dmg;
 		WrathHooks.afterDamage(this, src, dmg + shielded);
 		PrideHooks.afterDamage(this, src, dmg + shielded);
-		LustHooks.afterDamage(this, src, dmg + shielded);
 
 		if (HP > 0 && src instanceof Char && ((Char) src).buff(Grim.GrimTracker.class) != null){
 

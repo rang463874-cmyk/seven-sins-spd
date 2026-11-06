@@ -272,16 +272,16 @@ public enum Talent {
 	LUST_BOTTLE(388), LUST_REFILL(389), LUST_WAFT(390), LUST_THIRST(391), LUST_EMBRACE(392),
 	//Lust T3
 	LUST_OBSESSION(393, 3), LUST_HEARTSTRINGS(394, 3),
-	//Siren T3
-	SIREN_SONG(395, 3), SIREN_ECHO(396, 3), SIREN_DEVOTION(397, 3),
-	//Dreamweaver T3
-	DREAM_DEEP(398, 3), DREAM_LULLABY(399, 3), DREAM_REVERIE(400, 3),
+	//Night Dancer T3
+	DANCER_COUNTER(395, 3), DANCER_GRACE(396, 3), DANCER_TEMPO(397, 3),
+	//Crimson Noble T3
+	NOBLE_BLOOD(398, 3), NOBLE_THIRST(399, 3), NOBLE_PRICE(400, 3),
 	//Enchanting Dance T4
 	DANCE_REACH(401, 4), DANCE_ENCORE(402, 4), DANCE_DAZE(403, 4),
-	//Soul Siphon T4
-	SIPHON_POWER(404, 4), SIPHON_SHIELD(405, 4), SIPHON_CHARM(406, 4),
-	//Heartbreak T4
-	BREAK_POWER(407, 4), BREAK_FEAR(408, 4), BREAK_DESIRE(409, 4),
+	//Blood Pact T4
+	PACT_SHIELD(404, 4), PACT_DURATION(405, 4), PACT_THIRST(406, 4),
+	//Danse Macabre T4
+	MACABRE_COUNT(407, 4), MACABRE_POWER(408, 4), MACABRE_CHARM(409, 4),
 
 	//Envy T1 (row 13 = 416)
 	ENVY_COVET(416), ENVY_GRASP(417), ENVY_PETTY(418), ENVY_SNATCH(419),
@@ -1337,11 +1337,11 @@ public enum Talent {
 			case PARAGON:
 				Collections.addAll(tierTalents, PARAGON_SOLITUDE, PARAGON_GIANTSLAYER, PARAGON_LEGEND);
 				break;
-			case SIREN:
-				Collections.addAll(tierTalents, SIREN_SONG, SIREN_ECHO, SIREN_DEVOTION);
+			case NIGHT_DANCER:
+				Collections.addAll(tierTalents, DANCER_COUNTER, DANCER_GRACE, DANCER_TEMPO);
 				break;
-			case DREAMWEAVER:
-				Collections.addAll(tierTalents, DREAM_DEEP, DREAM_LULLABY, DREAM_REVERIE);
+			case CRIMSON_NOBLE:
+				Collections.addAll(tierTalents, NOBLE_BLOOD, NOBLE_THIRST, NOBLE_PRICE);
 				break;
 			case USURPER:
 				Collections.addAll(tierTalents, USURP_TYRANNY, USURP_DRAIN, USURP_CROWN);
@@ -1411,6 +1411,19 @@ public enum Talent {
 
 	private static final HashMap<String, String> renamedTalents = new HashMap<>();
 	static{
+		//Seven Sins: lust rework (Nov 2026), talents keep their slots
+		renamedTalents.put("SIREN_SONG", "DANCER_COUNTER");
+		renamedTalents.put("SIREN_ECHO", "DANCER_GRACE");
+		renamedTalents.put("SIREN_DEVOTION", "DANCER_TEMPO");
+		renamedTalents.put("DREAM_DEEP", "NOBLE_BLOOD");
+		renamedTalents.put("DREAM_LULLABY", "NOBLE_THIRST");
+		renamedTalents.put("DREAM_REVERIE", "NOBLE_PRICE");
+		renamedTalents.put("SIPHON_POWER", "PACT_SHIELD");
+		renamedTalents.put("SIPHON_SHIELD", "PACT_DURATION");
+		renamedTalents.put("SIPHON_CHARM", "PACT_THIRST");
+		renamedTalents.put("BREAK_POWER", "MACABRE_COUNT");
+		renamedTalents.put("BREAK_FEAR", "MACABRE_POWER");
+		renamedTalents.put("BREAK_DESIRE", "MACABRE_CHARM");
 		//Seven Sins: sloth rework (Nov 2026), talents keep their slots
 		renamedTalents.put("HIB_THICK", "LORD_NIGHTMARE");
 		renamedTalents.put("HIB_DREAM", "LORD_BOND");
