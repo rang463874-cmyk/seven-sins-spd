@@ -7,6 +7,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Slow;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SlothRepose;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
@@ -32,6 +33,12 @@ public class DreamPuppet extends DirectableAlly {
 
 		immunities.add(AllyBuff.class);
 		properties.add(Property.INORGANIC);
+
+		//puppets roam the level on their own instead of trailing the hero, and hunt anything
+		//they come across, sleeping or wandering enemies included
+		intelligentAlly = false;
+		WANDERING = new Roaming();
+		state = WANDERING;
 	}
 
 	/** nightmares are temporary and weaker */
@@ -130,17 +137,6 @@ public class DreamPuppet extends DirectableAlly {
 	}
 
 	@Override
-	public float speed() {
-		float speed = super.speed();
-		//catches up with the hero quickly when it has nothing to fight
-		if (state == WANDERING && defendingPos == -1 && Dungeon.hero != null
-				&& Dungeon.level.distance(pos, Dungeon.hero.pos) > 2) {
-			speed *= 2;
-		}
-		return speed;
-	}
-
-	@Override
 	public int attackSkill(Char target) {
 		SlothRepose r = repose();
 		float acc = 9 + lvl();
@@ -206,6 +202,35 @@ public class DreamPuppet extends DirectableAlly {
 		super.restoreFromBundle(bundle);
 		nightmare = bundle.getBoolean("nightmare");
 		lifespan = bundle.getFloat("lifespan");
+	}
+
+	/** wanders between random spots on the level, switching to hunting as soon as it sees an enemy */
+	private class Roaming extends Mob.Wandering {
+
+		@Override
+		public boolean act(boolean enemyInFOV, boolean justAlerted) {
+			if (enemyInFOV) {
+				enemySeen = true;
+				notice();
+				alerted = true;
+				state = HUNTING;
+				target = enemy.pos;
+				return true;
+			}
+			enemySeen = false;
+			if (target == -1 || target == pos || !Dungeon.level.passable[target]) {
+				target = Dungeon.level.randomDestination(DreamPuppet.this);
+			}
+			int oldPos = pos;
+			if (target != -1 && getCloser(target)) {
+				spend(1 / speed());
+				return moveSprite(oldPos, pos);
+			}
+			//stuck: pick somewhere else next time
+			target = Dungeon.level.randomDestination(DreamPuppet.this);
+			spend(TICK);
+			return true;
+		}
 	}
 
 	/** placeholder art: a blue-tinted ghost (nightmares are purple) */

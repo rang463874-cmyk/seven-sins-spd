@@ -32,8 +32,8 @@ a points value that never decreases; accuracy/evasion are capped at 40%/30%).
 Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
 Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
 spend a gauge filled 1:1 by gold pickups (`GreedHooks.selling` keeps sale proceeds from filling it).
-Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies (DirectableAlly, follow
-between floors; `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
+Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies (DirectableAlly that roam the
+level on their own via a `Roaming` wandering state, `intelligentAlly = false`; still carried between floors; `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
 `SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
 Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.hpCost/pay`), lifesteal
