@@ -214,6 +214,10 @@ public class LustDesire extends Buff {
 	}
 
 	public String statsText() {
+		return statsTextBase() + com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.line(target);
+	}
+
+	private String statsTextBase() {
 		return Messages.get(LustDesire.class, "desc_head", Math.round(desire))
 				+ "\n\n" + Messages.get(LustDesire.class, "desc_stats",
 				meleeBonus(),

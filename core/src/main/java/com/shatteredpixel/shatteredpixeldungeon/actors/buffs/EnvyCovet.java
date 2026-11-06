@@ -371,6 +371,10 @@ public class EnvyCovet extends Buff {
 	}
 
 	public String statsText() {
+		return statsTextBase() + com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.line(target);
+	}
+
+	private String statsTextBase() {
 		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), charges, maxCharges(), codex.size(), CODEX.size())
 				+ "\n\n" + Messages.get(EnvyCovet.class, "desc_stats",
 				meleeBonus(),

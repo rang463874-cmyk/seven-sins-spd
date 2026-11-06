@@ -63,6 +63,8 @@ public class Hunger extends Buff implements Hero.Doom {
 	@Override
 	public boolean act() {
 
+		if (target instanceof Hero) com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.tick((Hero) target);
+
 		if (Dungeon.level.locked
 				|| target.buff(WellFed.class) != null
 				|| SPDSettings.intro()
@@ -91,6 +93,7 @@ public class Hunger extends Buff implements Hero.Doom {
 					hungerDelay *= 1.5f;
 				}
 				hungerDelay /= SaltCube.hungerGainMultiplier();
+				hungerDelay /= com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.hungerRate(target);
 
 				float newLevel = level + (1f/hungerDelay);
 				if (newLevel >= STARVING) {

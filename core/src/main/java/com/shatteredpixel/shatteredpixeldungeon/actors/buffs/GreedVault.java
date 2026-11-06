@@ -226,6 +226,10 @@ public class GreedVault extends Buff {
 	}
 
 	public String statsText() {
+		return statsTextBase() + com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.line(target);
+	}
+
+	private String statsTextBase() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(Messages.get(GreedVault.class, "desc_money", Dungeon.gold, chargeInt(), Math.round(maxCharge()))).append("\n\n");
 		sb.append(Messages.get(GreedVault.class, "desc_stats",

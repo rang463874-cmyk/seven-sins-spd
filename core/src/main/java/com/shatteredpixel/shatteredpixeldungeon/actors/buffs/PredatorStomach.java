@@ -368,6 +368,10 @@ public class PredatorStomach extends Buff {
 	}
 
 	public String statsText() {
+		return statsTextBase() + com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.line(target);
+	}
+
+	private String statsTextBase() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(Messages.get(PredatorStomach.class, "desc_head", eaten)).append("\n\n");
 		sb.append(Messages.get(PredatorStomach.class, "desc_points", fmt(weaponPts), fmt(armorPts), fmt(trinketPts))).append("\n\n");

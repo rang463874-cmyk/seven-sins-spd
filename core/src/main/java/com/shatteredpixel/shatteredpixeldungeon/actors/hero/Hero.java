@@ -171,6 +171,7 @@ import com.shatteredpixel.shatteredpixeldungeon.lust.LustHooks;
 import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks;
 import com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks;
 import com.shatteredpixel.shatteredpixeldungeon.horsemen.HorsemenHooks;
+import com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.greed.Insurance;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.AlchemyScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -772,6 +773,7 @@ public class Hero extends Char {
 			speed *= (2f + 0.25f*pointsInTalent(Talent.GROWING_POWER));
 		}
 
+		speed *= UniqueStats.moveSpeed(this);
 		speed = AscensionChallenge.modifyHeroSpeed(speed);
 		
 		return speed;
@@ -827,7 +829,7 @@ public class Hero extends Char {
 
 		if (!RingOfForce.fightingUnarmed(this)) {
 			
-			return delay * belongings.attackingWeapon().delayFactor( this );
+			return delay * belongings.attackingWeapon().delayFactor( this ) / UniqueStats.attackSpeed( this );
 			
 		} else {
 			//Normally putting furor speed on unarmed attacks would be unnecessary
@@ -845,7 +847,7 @@ public class Hero extends Char {
 				delay = ((Weapon)belongings.weapon).augment.delayFactor(delay);
 			}
 
-			return delay/speed;
+			return delay/speed / UniqueStats.attackSpeed( this );
 		}
 	}
 
@@ -2065,6 +2067,8 @@ public class Hero extends Char {
 	}
 	
 	public void earnExp( int exp, Class source ) {
+
+		exp = UniqueStats.bonusExp( this, exp );
 
 		//xp granted by ascension challenge is only for on-exp gain effects
 		if (source != AscensionChallenge.class) {

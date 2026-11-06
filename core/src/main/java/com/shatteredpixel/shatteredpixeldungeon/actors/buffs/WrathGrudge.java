@@ -167,6 +167,10 @@ public class WrathGrudge extends Buff {
 	}
 
 	public String statsText() {
+		return statsTextBase() + com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.line(target);
+	}
+
+	private String statsTextBase() {
 		return Messages.get(WrathGrudge.class, "desc_head", Math.round(grudge), charges, maxCharges())
 				+ "\n\n" + Messages.get(WrathGrudge.class, "desc_stats",
 				meleeBonus(),

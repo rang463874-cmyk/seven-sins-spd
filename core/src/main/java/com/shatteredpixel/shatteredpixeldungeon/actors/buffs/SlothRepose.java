@@ -274,6 +274,10 @@ public class SlothRepose extends Buff {
 	}
 
 	public String statsText() {
+		return statsTextBase() + com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.line(target);
+	}
+
+	private String statsTextBase() {
 		String s = Messages.get(SlothRepose.class, "desc_head", Math.round(sloth),
 				DreamPuppet.puppets(false).size(), maxPuppets(), charges, maxCharges())
 				+ "\n\n" + Messages.get(SlothRepose.class, "desc_stats",

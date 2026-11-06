@@ -1388,7 +1388,7 @@ public abstract class Char extends Actor {
 				result *= 0.5f;
 			}
 		}
-		return result * RingOfElements.resist(this, effect);
+		return result * RingOfElements.resist(this, effect) * com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.resist(this, effect);
 	}
 	
 	protected final HashSet<Class> immunities = new HashSet<>();

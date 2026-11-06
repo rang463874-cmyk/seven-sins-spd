@@ -41,6 +41,12 @@ on charmed enemies via `LustDesire.drain` from `LustHooks.onAttack`; dodging cha
 (`LustHooks.onDodge`, called from the miss branch of `Char.attack`; Night Dancer counters there).
 Siren infighting is gone. Old lust talent names are mapped in `Talent.renamedTalents` too.
 
+Unique stats (one per sin, on top of the shared five; all in `sins/UniqueStats`, scaled by the sin's
+points, capped): Wrath attack speed (Hero.attackDelay), Gluttony HP regen (ticked from Hunger.act),
+Greed loot chance (Mob.lootChance), Pride debuff resistance (Char.resist, negative buffs only),
+Lust move speed (Hero.speed), Envy exp (Hero.earnExp), Sloth slower hunger (Hunger.act).
+Each sin buff's `statsText()` appends `UniqueStats.line(target)`.
+
 ## Four horsemen artifacts and the sewer prophet
 
 `items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use, levels 0-10 by uses,

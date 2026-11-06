@@ -221,6 +221,10 @@ public class PrideGlory extends Buff {
 	}
 
 	public String statsText() {
+		return statsTextBase() + com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.line(target);
+	}
+
+	private String statsTextBase() {
 		return Messages.get(PrideGlory.class, "desc_head", Math.round(glory), dignity, maxDignity(),
 				Math.round((dignityMult() - 1f) * 100), charges, maxCharges())
 				+ "\n\n" + Messages.get(PrideGlory.class, "desc_stats",
