@@ -1,23 +1,32 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DreamPuppet;
+import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.noosa.Image;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 /**
  * The Sloth class's repose.
  *
- * Torpor builds every turn the hero stays put and fades when they move. Defeating an enemy
- * with enough torpor built up grants sloth points, which raise stats without limit.
- * Points are only earned from kills, so waiting alone never grows the hero forever.
- * Also holds the Cozy Pillow's recharging charges.
+ * The Sloth would rather not fight: dream puppets (summoned with the Cozy Pillow) do it instead.
+ * Enemies defeated by puppets, nightmares or automatic attacks grant sloth points, which raise
+ * the stats of the Sloth and its puppets without limit. The Sloth's own kills count for a third.
+ * Also holds the pillow's recharging charges and the Sleepwalker's automatic attacks.
  */
 public class SlothRepose extends Buff {
 
@@ -25,16 +34,16 @@ public class SlothRepose extends Buff {
 	public boolean mirrored = false;
 
 	public float sloth = 0;
-	public int torpor = 0;
-	public int lastPos = -1;
-	public float regenTurns = 0;
 
-	/** torpor spent by the Sleeping Lion's last pounce, still credited to kills that turn */
-	public int pounceTorpor = 0;
-	public float pounceTime = -1;
+	public int lastPos = -1;
+	/** consecutive turns the hero has stayed on the same tile */
+	public int stillTurns = 0;
 
 	public int charges = 2;
 	public float partialCharge = 0;
+
+	/** true while an automatic attack is being made, so its kills count in full */
+	public static boolean autoAttacking = false;
 
 	{
 		type = buffType.POSITIVE;
@@ -73,19 +82,9 @@ public class SlothRepose extends Buff {
 		return (int) (0.10f * pts());
 	}
 
-	/** armor from current torpor; the Hibernator gets much more */
-	public int torporDR() {
-		Hero h = hero();
-		float per = 0.5f;
-		if (h != null && h.subClass == HeroSubClass.HIBERNATOR) {
-			per *= 1.5f + 0.25f * h.pointsInTalent(Talent.HIB_THICK);
-		}
-		return Math.round(torpor * per);
-	}
-
 	public int drRoll() {
 		int max = drMax();
-		return (max <= 0 ? 0 : Random.IntRange(max / 2, max)) + torporDR();
+		return max <= 0 ? 0 : Random.IntRange(max / 2, max);
 	}
 
 	public void addSloth(float amount) {
@@ -98,42 +97,23 @@ public class SlothRepose extends Buff {
 		BuffIndicator.refreshHero();
 	}
 
-	// ------------------------------------------------------------------ torpor
+	// ------------------------------------------------------------------ puppets
 
-	public int maxTorpor() {
+	public int maxPuppets() {
 		Hero h = hero();
-		if (h == null) return 20;
-		int max = 20 + 5 * h.pointsInTalent(Talent.SLOTH_COMFY) + (mirrored ? 10 : 0);
-		if (h.subClass == HeroSubClass.HIBERNATOR) max += 20 + 10 * h.pointsInTalent(Talent.HIB_DEEP);
+		int max = 1 + (mirrored ? 1 : 0);
+		if (h != null && h.subClass == HeroSubClass.DREAM_LORD) max++;
 		return max;
 	}
 
-	public void addTorpor(int n) {
-		torpor = Math.min(maxTorpor(), torpor + n);
-		BuffIndicator.refreshHero();
-	}
-
-	/** torpor counted for a kill: includes torpor the lion just spent on a pounce */
-	public int creditedTorpor() {
-		if (pounceTime >= 0 && now() - pounceTime <= 1f) return Math.max(torpor, pounceTorpor);
-		return torpor;
-	}
-
-	/** turns between each point of torpor regeneration, or 0 for none */
-	public float regenDelay() {
-		if (torpor < 10) return 0;
+	/** how many nightmares the Dream Lord's kills can keep around at once */
+	public int maxLordNightmares() {
 		Hero h = hero();
-		float d = 6f - h.pointsInTalent(Talent.SLOTH_SNORE);
-		if (h.subClass == HeroSubClass.HIBERNATOR) d -= 1f + h.pointsInTalent(Talent.HIB_DREAM);
-		return Math.max(1f, d);
+		return 2 + (h == null ? 0 : h.pointsInTalent(Talent.LORD_NIGHTMARE));
 	}
 
-	/** called when the hero changes position without rolling */
-	public void disturb() {
-		Hero h = hero();
-		int linger = h == null ? 0 : h.pointsInTalent(Talent.SLOTH_LINGER);
-		torpor = Math.round(torpor * 0.25f * linger);
-		BuffIndicator.refreshHero();
+	public static float lordNightmareLife(Hero h) {
+		return 10f + 5f * h.pointsInTalent(Talent.LORD_NIGHTMARE);
 	}
 
 	// ------------------------------------------------------------------ charges
@@ -171,27 +151,91 @@ public class SlothRepose extends Buff {
 		return true;
 	}
 
+	// ------------------------------------------------------------------ sleepwalking
+
+	/** the Sleepwalker dozes off after standing still for 2 turns */
+	public boolean asleep() {
+		Hero h = hero();
+		return h != null && h.subClass == HeroSubClass.SLEEPWALKER && stillTurns >= 2;
+	}
+
+	/** makes free automatic attacks on nearby enemies while asleep or auto-hunting */
+	private void autoAttack(Hero h) {
+		AutoHunt hunt = h.buff(AutoHunt.class);
+		boolean sleeping = asleep();
+		if (!sleeping && hunt == null) return;
+
+		int reach = 1;
+		float mult = 0f;
+		int targets = 1;
+		if (sleeping) {
+			mult = 0.6f + 0.2f * h.pointsInTalent(Talent.WALK_REFLEX);
+			targets += h.pointsInTalent(Talent.WALK_BRAWL);
+		}
+		if (hunt != null) {
+			mult = Math.max(mult, 0.7f + 0.15f * h.pointsInTalent(Talent.AUTO_POWER));
+			reach += h.pointsInTalent(Talent.AUTO_REACH) / 2;
+			targets = Math.max(targets, 1 + (h.pointsInTalent(Talent.AUTO_REACH) + 1) / 2);
+		}
+
+		final int hpos = h.pos;
+		ArrayList<Char> foes = new ArrayList<>();
+		for (Char ch : Actor.chars()) {
+			if (ch != h && ch.alignment == Char.Alignment.ENEMY && ch.isAlive()
+					&& Dungeon.level.heroFOV[ch.pos]
+					&& Dungeon.level.distance(hpos, ch.pos) <= reach
+					&& ch.invisible <= 0) {
+				foes.add(ch);
+			}
+		}
+		if (foes.isEmpty()) return;
+		Collections.sort(foes, new Comparator<Char>() {
+			@Override
+			public int compare(Char a, Char b) {
+				return Dungeon.level.distance(hpos, a.pos) - Dungeon.level.distance(hpos, b.pos);
+			}
+		});
+
+		autoAttacking = true;
+		try {
+			for (int i = 0; i < Math.min(targets, foes.size()); i++) {
+				Char foe = foes.get(i);
+				if (!foe.isAlive()) continue;
+				h.sprite.turnTo(hpos, foe.pos);
+				h.attack(foe, mult, 0f, 1f);
+				if (foe.sprite != null) foe.sprite.emitter().burst(Speck.factory(Speck.NOTE), 1);
+			}
+		} finally {
+			autoAttacking = false;
+		}
+	}
+
 	@Override
 	public boolean act() {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
 			if (charges < maxCharges()) gainCharge(TICK / turnsPerCharge());
 
+			boolean wasAsleep = asleep();
 			if (lastPos == h.pos) {
-				if (torpor < maxTorpor()) addTorpor(1);
-			} else if (lastPos != -1) {
-				disturb();
+				stillTurns++;
+			} else {
+				stillTurns = 0;
 			}
 			lastPos = h.pos;
+			if (!wasAsleep && asleep()) {
+				h.sprite.showStatus(CharSprite.NEUTRAL, Messages.get(SlothRepose.class, "doze"));
+			}
 
-			float delay = regenDelay();
-			if (delay > 0 && h.HP < h.HT) {
-				regenTurns += TICK;
-				if (regenTurns >= delay) {
-					regenTurns = 0;
-					h.HP++;
+			//lingering: puppets mend while the sloth stays put
+			int linger = h.pointsInTalent(Talent.SLOTH_LINGER);
+			if (linger > 0 && stillTurns > 0) {
+				for (DreamPuppet p : DreamPuppet.active()) {
+					if (p.HP < p.HT) p.HP = Math.min(p.HT, p.HP + linger);
 				}
 			}
+
+			autoAttack(h);
 		}
 		spend(TICK);
 		return true;
@@ -211,12 +255,12 @@ public class SlothRepose extends Buff {
 
 	@Override
 	public float iconFadePercent() {
-		return 1f - torpor / (float) maxTorpor();
+		return 1f - charges / (float) maxCharges();
 	}
 
 	@Override
 	public String iconTextDisplay() {
-		return Integer.toString(torpor);
+		return Integer.toString(DreamPuppet.puppets(false).size());
 	}
 
 	@Override
@@ -230,22 +274,24 @@ public class SlothRepose extends Buff {
 	}
 
 	public String statsText() {
-		return Messages.get(SlothRepose.class, "desc_head", Math.round(sloth), torpor, maxTorpor(), torporDR(), charges, maxCharges())
+		String s = Messages.get(SlothRepose.class, "desc_head", Math.round(sloth),
+				DreamPuppet.puppets(false).size(), maxPuppets(), charges, maxCharges())
 				+ "\n\n" + Messages.get(SlothRepose.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
 				hpBonus(),
 				drMax(),
 				Math.round(evasionBonus() * 100));
+		if (asleep()) s += "\n\n" + Messages.get(SlothRepose.class, "desc_asleep");
+		return s;
 	}
 
 	@Override
 	public void storeInBundle(Bundle bundle) {
 		super.storeInBundle(bundle);
 		bundle.put("sloth", sloth);
-		bundle.put("torpor", torpor);
 		bundle.put("last_pos", lastPos);
-		bundle.put("regen", regenTurns);
+		bundle.put("still", stillTurns);
 		bundle.put("charges", charges);
 		bundle.put("partial", partialCharge);
 		bundle.put("mirrored", mirrored);
@@ -255,9 +301,8 @@ public class SlothRepose extends Buff {
 	public void restoreFromBundle(Bundle bundle) {
 		super.restoreFromBundle(bundle);
 		sloth = bundle.getFloat("sloth");
-		torpor = bundle.getInt("torpor");
 		lastPos = bundle.getInt("last_pos");
-		regenTurns = bundle.getFloat("regen");
+		stillTurns = bundle.getInt("still");
 		charges = bundle.getInt("charges");
 		partialCharge = bundle.getFloat("partial");
 		mirrored = bundle.getBoolean("mirrored");
@@ -265,5 +310,127 @@ public class SlothRepose extends Buff {
 
 	public static SlothRepose of() {
 		return Dungeon.hero == null ? null : Dungeon.hero.buff(SlothRepose.class);
+	}
+
+	// ------------------------------------------------------------------ taunt
+
+	/** An enemy taunted by a dream puppet: it can only think about hitting that puppet. */
+	public static class Taunted extends FlavourBuff {
+
+		public int object = 0;
+
+		{
+			type = buffType.NEGATIVE;
+			announced = true;
+		}
+
+		/** taunts an enemy toward a puppet, refreshing to the longer duration */
+		public static void apply(Char enemy, Char puppet, float duration) {
+			if (enemy == null || puppet == null || !enemy.isAlive() || !puppet.isAlive()) return;
+			if (enemy.alignment != Char.Alignment.ENEMY) return;
+			Taunted t = Buff.prolong(enemy, Taunted.class, duration);
+			if (t != null) t.object = puppet.id();
+		}
+
+		/** taunts every visible enemy within a radius of the puppet */
+		public static int applyAround(Char puppet, int radius, float duration) {
+			int n = 0;
+			for (Char ch : Actor.chars()) {
+				if (ch.alignment == Char.Alignment.ENEMY && ch.isAlive()
+						&& Dungeon.level.distance(puppet.pos, ch.pos) <= radius) {
+					apply(ch, puppet, duration);
+					n++;
+				}
+			}
+			if (n > 0 && puppet.sprite != null) {
+				puppet.sprite.showStatus(CharSprite.WARNING, Messages.get(Taunted.class, "shout"));
+			}
+			return n;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.TARGETED;
+		}
+
+		@Override
+		public void tintIcon(Image icon) {
+			icon.hardlight(0.5f, 0.7f, 1f);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", dispTurns());
+		}
+
+		@Override
+		public void storeInBundle(Bundle bundle) {
+			super.storeInBundle(bundle);
+			bundle.put("object", object);
+		}
+
+		@Override
+		public void restoreFromBundle(Bundle bundle) {
+			super.restoreFromBundle(bundle);
+			object = bundle.getInt("object");
+		}
+	}
+
+	// ------------------------------------------------------------------ ability buffs
+
+	/** Proxy armor ability: damage the hero would take goes to the puppets instead. */
+	public static class ProxyGuard extends FlavourBuff {
+
+		{
+			type = buffType.POSITIVE;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.ARMOR;
+		}
+
+		@Override
+		public void tintIcon(Image icon) {
+			icon.hardlight(0.5f, 0.7f, 1f);
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return Math.max(0, 1f - visualcooldown() / 25f);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", dispTurns());
+		}
+	}
+
+	/** Auto Hunt armor ability: free automatic attacks every turn. */
+	public static class AutoHunt extends FlavourBuff {
+
+		{
+			type = buffType.POSITIVE;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.FURY;
+		}
+
+		@Override
+		public void tintIcon(Image icon) {
+			icon.hardlight(0.7f, 0.4f, 1f);
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return Math.max(0, 1f - visualcooldown() / 20f);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", dispTurns());
+		}
 	}
 }

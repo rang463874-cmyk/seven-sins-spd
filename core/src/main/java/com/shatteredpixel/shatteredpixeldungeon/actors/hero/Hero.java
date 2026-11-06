@@ -1641,6 +1641,7 @@ public class Hero extends Char {
 		damage = GreedHooks.onDefense( this, enemy, damage );
 		damage = WrathHooks.onDefense( this, enemy, damage );
 		damage = EnvyHooks.onDefense( this, enemy, damage );
+		damage = SlothHooks.onDefense( this, enemy, damage );
 		
 		if (belongings.armor() != null) {
 			damage = belongings.armor().proc( enemy, this, damage );

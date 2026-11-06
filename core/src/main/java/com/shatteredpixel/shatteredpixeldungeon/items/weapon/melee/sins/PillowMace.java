@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.utils.Random;
 
-/** Sloth's tier 1 weapon: hits build torpor. */
+/** Sloth's tier 1 weapon: every dream puppet piles onto whatever it hits. */
 public class PillowMace extends Cudgel {
 
 	{
@@ -22,8 +22,12 @@ public class PillowMace extends Cudgel {
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
-			Hero hero = (Hero) attacker;
-			Buff.affect(hero, SlothRepose.class).addTorpor(1);
+			if (defender.alignment == Char.Alignment.ENEMY) {
+				for (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DreamPuppet p
+						: com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DreamPuppet.active()) {
+					p.targetChar(defender);
+				}
+			}
 		}
 		return super.proc(attacker, defender, damage);
 	}

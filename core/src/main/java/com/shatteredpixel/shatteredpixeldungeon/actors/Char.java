@@ -21,6 +21,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors;
 
+import com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks;
+
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
@@ -846,6 +848,7 @@ public abstract class Char extends Actor {
 		dmg = PrideHooks.modifyDamage(this, src, dmg);
 		dmg = LustHooks.modifyDamage(this, src, dmg);
 		dmg = EnvyHooks.modifyDamage(this, src, dmg);
+		dmg = SlothHooks.modifyDamage(this, src, dmg);
 
 		if (!(src instanceof LifeLink || src instanceof Hunger) && buff(LifeLink.class) != null){
 			HashSet<LifeLink> links = buffs(LifeLink.class);

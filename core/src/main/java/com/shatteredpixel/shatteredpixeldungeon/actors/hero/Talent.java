@@ -306,16 +306,16 @@ public enum Talent {
 	SLOTH_PILLOW(452), SLOTH_RESTFUL(453), SLOTH_ROLL(454), SLOTH_YAWN(455), SLOTH_SHOVE(456),
 	//Sloth T3
 	SLOTH_APATHY(457, 3), SLOTH_SNOOZE(458, 3),
-	//Hibernator T3
-	HIB_THICK(459, 3), HIB_DREAM(460, 3), HIB_DEEP(461, 3),
-	//Sleeping Lion T3
-	LION_POUNCE(462, 3), LION_WAKE(463, 3), LION_ROAR(464, 3),
-	//Eternal Slumber T4
-	SLUMBER_REACH(465, 4), SLUMBER_DEEP(466, 4), SLUMBER_REST(467, 4),
-	//Stagnation T4
-	STAG_REACH(468, 4), STAG_DURATION(469, 4), STAG_CRIPPLE(470, 4),
-	//Fortified Nap T4
-	NAP_SHIELD(471, 4), NAP_HEAL(472, 4), NAP_DREAMS(473, 4),
+	//Dream Lord T3
+	LORD_NIGHTMARE(459, 3), LORD_BOND(460, 3), LORD_COMMAND(461, 3),
+	//Sleepwalker T3
+	WALK_REFLEX(462, 3), WALK_DEEP(463, 3), WALK_BRAWL(464, 3),
+	//Nightmare Legion T4
+	LEGION_COUNT(465, 4), LEGION_DURATION(466, 4), LEGION_TAUNT(467, 4),
+	//Auto Hunt T4
+	AUTO_DURATION(468, 4), AUTO_POWER(469, 4), AUTO_REACH(470, 4),
+	//Proxy T4
+	PROXY_DURATION(471, 4), PROXY_MEND(472, 4), PROXY_SHIELD(473, 4),
 
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
@@ -1349,11 +1349,11 @@ public enum Talent {
 			case COPYCAT:
 				Collections.addAll(tierTalents, COPY_STUDY, COPY_MASK, COPY_ECHO);
 				break;
-			case HIBERNATOR:
-				Collections.addAll(tierTalents, HIB_THICK, HIB_DREAM, HIB_DEEP);
+			case DREAM_LORD:
+				Collections.addAll(tierTalents, LORD_NIGHTMARE, LORD_BOND, LORD_COMMAND);
 				break;
-			case SLEEPING_LION:
-				Collections.addAll(tierTalents, LION_POUNCE, LION_WAKE, LION_ROAR);
+			case SLEEPWALKER:
+				Collections.addAll(tierTalents, WALK_REFLEX, WALK_DEEP, WALK_BRAWL);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1411,7 +1411,22 @@ public enum Talent {
 
 	private static final HashMap<String, String> renamedTalents = new HashMap<>();
 	static{
-		//nothing atm
+		//Seven Sins: sloth rework (Nov 2026), talents keep their slots
+		renamedTalents.put("HIB_THICK", "LORD_NIGHTMARE");
+		renamedTalents.put("HIB_DREAM", "LORD_BOND");
+		renamedTalents.put("HIB_DEEP", "LORD_COMMAND");
+		renamedTalents.put("LION_POUNCE", "WALK_REFLEX");
+		renamedTalents.put("LION_WAKE", "WALK_DEEP");
+		renamedTalents.put("LION_ROAR", "WALK_BRAWL");
+		renamedTalents.put("SLUMBER_REACH", "LEGION_COUNT");
+		renamedTalents.put("SLUMBER_DEEP", "LEGION_DURATION");
+		renamedTalents.put("SLUMBER_REST", "LEGION_TAUNT");
+		renamedTalents.put("STAG_REACH", "AUTO_DURATION");
+		renamedTalents.put("STAG_DURATION", "AUTO_POWER");
+		renamedTalents.put("STAG_CRIPPLE", "AUTO_REACH");
+		renamedTalents.put("NAP_SHIELD", "PROXY_DURATION");
+		renamedTalents.put("NAP_HEAL", "PROXY_MEND");
+		renamedTalents.put("NAP_DREAMS", "PROXY_SHIELD");
 	}
 
 	public static void restoreTalentsFromBundle( Bundle bundle, Hero hero ){

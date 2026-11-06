@@ -75,8 +75,8 @@ public enum HeroSubClass {
 	COPYCAT(HeroIcon.COPYCAT),
 
 	//Sloth
-	HIBERNATOR(HeroIcon.HIBERNATOR),
-	SLEEPING_LION(HeroIcon.SLEEPING_LION);
+	DREAM_LORD(HeroIcon.DREAM_LORD),
+	SLEEPWALKER(HeroIcon.SLEEPWALKER);
 
 	int icon;
 

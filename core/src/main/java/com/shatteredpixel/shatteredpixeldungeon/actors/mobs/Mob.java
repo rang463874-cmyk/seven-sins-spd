@@ -392,6 +392,13 @@ public abstract class Mob extends Char {
 			return lured;
 		}
 		
+		//sloth's taunt: dream puppets draw the attention of taunted enemies
+		Char taunter = SlothHooks.tauntTarget( this );
+		if (taunter != null) {
+			if (state != SLEEPING) state = HUNTING;
+			return taunter;
+		}
+
 		//if we are an alert enemy, auto-hunt a target that is affected by aggression, even another enemy
 		if ((alignment == Alignment.ENEMY || buff(Amok.class) != null ) && state != PASSIVE && state != SLEEPING) {
 			if (enemy != null && enemy.buff(StoneOfAggression.Aggression.class) != null){

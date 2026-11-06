@@ -43,9 +43,9 @@ import com.shatteredpixel.shatteredpixeldungeon.items.EnvyMirror;
 import com.shatteredpixel.shatteredpixeldungeon.items.SlothPillow;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRecharging;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SlothRepose;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.sloth.EternalSlumber;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.sloth.FortifiedNap;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.sloth.Stagnation;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.sloth.AutoHunt;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.sloth.NightmareLegion;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.sloth.Proxy;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTransmutation;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EnvyCovet;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.envy.Downfall;
@@ -139,7 +139,7 @@ public enum HeroClass {
 	PRIDE( HeroSubClass.MONARCH, HeroSubClass.PARAGON ),
 	LUST( HeroSubClass.SIREN, HeroSubClass.DREAMWEAVER ),
 	ENVY( HeroSubClass.USURPER, HeroSubClass.COPYCAT ),
-	SLOTH( HeroSubClass.HIBERNATOR, HeroSubClass.SLEEPING_LION );
+	SLOTH( HeroSubClass.DREAM_LORD, HeroSubClass.SLEEPWALKER );
 
 	private HeroSubClass[] subClasses;
 
@@ -491,7 +491,7 @@ public enum HeroClass {
 			case ENVY:
 				return new ArmorAbility[]{new Plunder(), new Transference(), new Downfall()};
 			case SLOTH:
-				return new ArmorAbility[]{new EternalSlumber(), new Stagnation(), new FortifiedNap()};
+				return new ArmorAbility[]{new NightmareLegion(), new AutoHunt(), new Proxy()};
 		}
 	}
 

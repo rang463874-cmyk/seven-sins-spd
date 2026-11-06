@@ -19,7 +19,6 @@ Done and pushed (see `git log`):
 Not yet done / known gaps:
 - Never play-tested on a device until the first APK; expect UI/layout fixes.
 - Balance is untuned (Hibernator armor, Pride's Duel, Banker interest are on the strong side).
-- Sloth is getting a full rework toward an "auto-battle" style (owner's request, Nov 2026).
 - Sigil costs 3000 favor, which is the quest maximum (owner's choice, may lower to 2000).
 - Remains items for sins fall back to the warrior's seal shard.
 - Talent/hero icons for the sins are recolored cleric icons (placeholders).
@@ -29,6 +28,10 @@ a points value that never decreases; accuracy/evasion are capped at 40%/30%).
 Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
 Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
 spend a gauge filled 1:1 by gold pickups (`GreedHooks.selling` keeps sale proceeds from filling it).
+Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies (DirectableAlly, follow
+between floors; `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
+`SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.
+Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
 
 ## The seven sins
 
@@ -40,7 +43,7 @@ spend a gauge filled 1:1 by gold pickups (`GreedHooks.selling` keeps sale procee
 | Pride 교만 | PRIDE | PrideCrown | PrideGlory (glory from flawless kills, dignity) | pride/PrideHooks | MONARCH, PARAGON | abilities/pride/* |
 | Lust 색욕 | LUST | Perfume | LustDesire (drain/charmed kills) | lust/LustHooks | SIREN, DREAMWEAVER | abilities/lust/* |
 | Envy 시기 | ENVY | EnvyMirror | EnvyCovet (robbed kills + bestiary of 27 special mobs) | envy/EnvyHooks | USURPER, COPYCAT | abilities/envy/* |
-| Sloth 나태 | SLOTH | SlothPillow | SlothRepose (torpor; kills while torpid) | sloth/SlothHooks | HIBERNATOR, SLEEPING_LION | abilities/sloth/* |
+| Sloth 나태 | SLOTH | SlothPillow | SlothRepose (kills by dream puppets / auto-attacks; own kills 1/3) | sloth/SlothHooks | DREAM_LORD, SLEEPWALKER | abilities/sloth/* |
 
 Paths are under `core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/`
 (items in `items/`, buffs in `actors/buffs/`, abilities in `actors/hero/abilities/`).
@@ -53,8 +56,8 @@ Sin weapons: `items/weapon/melee/sins/` (`SinWeapons` helper, each extends a bas
 Each sin has a `*Hooks` class with static pass-through methods. Call sites (search for `Hooks.`):
 - `Hero`: `updateHT` (bonusHT), `attackSkill` (accuracy), `defenseSkill` (evasion), `drRoll`,
   `attackProc` (onAttack), `defenseProc` (onDefense), `die` (Greed insurance).
-- `Char.damage`: `modifyDamage` before damage, `afterDamage` after HP is reduced.
-- `Mob.die`: `onMobDeath`; `Mob.chooseEnemy`: Wrath discord / Lust siren targeting.
+- `Char.damage`: `modifyDamage` before damage (Sloth Proxy redirect), `afterDamage` after HP is reduced.
+- `Mob.die`: `onMobDeath`; `Mob.chooseEnemy`: Wrath discord / Lust siren / Sloth taunt targeting.
 - `Gold.doPickUp`: bonus gold. Per-class switches: `HeroClass`, `Talent` (trees + heroic energy
   icon), `ClassArmor.upgrade`, `Icons.get`, `WndHeroInfo`, `Badges` (null-safe for new classes),
   `VaultMirror`, `WndBlacksmith`.
