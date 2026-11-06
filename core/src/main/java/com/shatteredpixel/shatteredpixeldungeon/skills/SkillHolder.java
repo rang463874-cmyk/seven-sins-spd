@@ -14,10 +14,11 @@ public interface SkillHolder {
 	/** a line shown at the top of the skill window, such as remaining charges; may be null */
 	String skillHeader(Hero hero);
 
-	/** the first item the hero carries that holds skills, or null */
+	/** the first worn artifact/ring slot item that holds skills, or null (skills need it equipped) */
 	static Item find(Hero hero) {
 		if (hero == null || hero.belongings == null) return null;
-		for (Item item : hero.belongings) {
+		Item[] worn = {hero.belongings.artifact(), hero.belongings.misc(), hero.belongings.misc2()};
+		for (Item item : worn) {
 			if (item instanceof SkillHolder) return item;
 		}
 		return null;

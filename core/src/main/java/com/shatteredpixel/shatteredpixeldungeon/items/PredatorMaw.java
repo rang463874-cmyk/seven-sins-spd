@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
  * The Predator's signature tool: devours equipment to grant permanent stats,
  * and can spend satiety on a ravenous bite that heals from the flesh it tears.
  */
-public class PredatorMaw extends Item implements SkillHolder {
+public class PredatorMaw extends SinArtifact {
 
 	public static final String AC_DEVOUR = "DEVOUR";
 	public static final String AC_BITE = "BITE";
@@ -51,8 +52,8 @@ public class PredatorMaw extends Item implements SkillHolder {
 		ArrayList<String> actions = super.actions(hero);
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
-		actions.add(AC_DEVOUR);
-		actions.add(AC_BITE);
+		if (isEquipped(hero)) actions.add(AC_DEVOUR);
+		if (isEquipped(hero)) actions.add(AC_BITE);
 		return actions;
 	}
 
@@ -66,6 +67,7 @@ public class PredatorMaw extends Item implements SkillHolder {
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
+		if (!canUseSkills(hero, action)) return;
 		if (action.equals(AC_DEVOUR)) {
 			selectDevour(hero, devoursPerUse(), false);
 		} else if (action.equals(AC_BITE)) {

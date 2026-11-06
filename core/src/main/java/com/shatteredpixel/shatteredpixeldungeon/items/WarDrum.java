@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
@@ -39,7 +40,7 @@ import java.util.ArrayList;
  * The Wrath class's signature item. Doesn't take an equipment slot.
  * Uses recharging charges (stored in WrathGrudge) to set enemies against each other.
  */
-public class WarDrum extends Item implements SkillHolder {
+public class WarDrum extends SinArtifact {
 
 	public static final String AC_BEAT = "BEAT";
 
@@ -61,7 +62,7 @@ public class WarDrum extends Item implements SkillHolder {
 		ArrayList<String> actions = super.actions(hero);
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
-		actions.add(AC_BEAT);
+		if (isEquipped(hero)) actions.add(AC_BEAT);
 		return actions;
 	}
 
@@ -116,6 +117,7 @@ public class WarDrum extends Item implements SkillHolder {
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
+		if (!canUseSkills(hero, action)) return;
 		if (!action.equals(AC_BEAT)) return;
 		final WrathGrudge g = grudge(hero);
 

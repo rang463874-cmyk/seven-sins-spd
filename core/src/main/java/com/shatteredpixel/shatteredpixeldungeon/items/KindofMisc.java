@@ -23,6 +23,8 @@ package com.shatteredpixel.shatteredpixeldungeon.items;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import java.util.ArrayList;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact;
@@ -37,65 +39,90 @@ import com.watabou.utils.Random;
 
 public abstract class KindofMisc extends EquipableItem {
 
+	/** tries to put this item into a free slot it fits; returns false if every fitting slot is taken */
+	private boolean placeInFreeSlot(Hero hero) {
+		Belongings b = hero.belongings;
+		boolean isArtifact = this instanceof Artifact;
+		if (isArtifact && b.artifact == null) {
+			b.artifact = (Artifact) this;
+			return true;
+		}
+		if (!isArtifact && this instanceof Ring && b.ring == null) {
+			b.ring = (Ring) this;
+			return true;
+		}
+		if (b.misc == null) {
+			b.misc = this;
+			return true;
+		}
+		if (b.extraSlot && b.misc2 == null) {
+			b.misc2 = this;
+			return true;
+		}
+		//see if we can re-arrange items first: move a shared-slot item to its own dedicated slot
+		if (isArtifact) {
+			if (b.misc instanceof Ring && b.ring == null) {
+				b.ring = (Ring) b.misc;
+				b.misc = this;
+				return true;
+			}
+			if (b.extraSlot && b.misc2 instanceof Ring && b.ring == null) {
+				b.ring = (Ring) b.misc2;
+				b.misc2 = this;
+				return true;
+			}
+		} else {
+			if (b.misc instanceof Artifact && b.artifact == null) {
+				b.artifact = (Artifact) b.misc;
+				b.misc = this;
+				return true;
+			}
+			if (b.extraSlot && b.misc2 instanceof Artifact && b.artifact == null) {
+				b.artifact = (Artifact) b.misc2;
+				b.misc2 = this;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public boolean doEquip(final Hero hero) {
 
-		boolean equipFull = false;
-		if ( this instanceof Artifact
-				&& hero.belongings.artifact != null
-				&& hero.belongings.misc != null){
+		final Belongings b = hero.belongings;
 
-			//see if we can re-arrange items first
-			if (hero.belongings.misc instanceof Ring && hero.belongings.ring == null){
-				hero.belongings.ring = (Ring) hero.belongings.misc;
-				hero.belongings.misc = null;
-			} else {
-				equipFull = true;
-			}
-		} else if (this instanceof Ring
-				&& hero.belongings.misc != null
-				&& hero.belongings.ring != null){
+		//every fitting slot is full: ask which item to take off
+		boolean fits = (this instanceof Artifact && b.artifact == null)
+				|| (this instanceof Ring && b.ring == null)
+				|| b.misc == null
+				|| (b.extraSlot && b.misc2 == null)
+				|| (this instanceof Artifact && (b.misc instanceof Ring || (b.extraSlot && b.misc2 instanceof Ring)) && b.ring == null)
+				|| (this instanceof Ring && (b.misc instanceof Artifact || (b.extraSlot && b.misc2 instanceof Artifact)) && b.artifact == null);
 
-			//see if we can re-arrange items first
-			if (hero.belongings.misc instanceof Artifact && hero.belongings.artifact == null){
-				hero.belongings.artifact = (Artifact) hero.belongings.misc;
-				hero.belongings.misc = null;
-			} else {
-				equipFull = true;
-			}
-		}
+		if (!fits) {
 
-		if (equipFull) {
+			//the slots this item could go into: its own dedicated slot and the shared ones
+			final ArrayList<KindofMisc> choices = new ArrayList<>();
+			choices.add(this instanceof Artifact ? b.artifact : b.ring);
+			choices.add(b.misc);
+			if (b.extraSlot) choices.add(b.misc2);
 
-			final KindofMisc[] miscs = new KindofMisc[3];
-			miscs[0] = hero.belongings.artifact;
-			miscs[1] = hero.belongings.misc;
-			miscs[2] = hero.belongings.ring;
-
-			final boolean[] enabled = new boolean[3];
-			enabled[0] = miscs[0] != null;
-			enabled[1] = miscs[1] != null;
-			enabled[2] = miscs[2] != null;
-
-			//force swapping with the same type of item if 2x of that type is already present
-			if (this instanceof Ring && hero.belongings.misc instanceof Ring){
-				enabled[0] = false; //disable artifact
-			} else if (this instanceof Artifact && hero.belongings.misc instanceof Artifact){
-				enabled[2] = false; //disable ring
+			String[] labels = new String[choices.size()];
+			for (int i = 0; i < labels.length; i++) {
+				labels[i] = choices.get(i) == null ? "---" : Messages.titleCase(choices.get(i).title());
 			}
 
 			GameScene.show(
 					new WndOptions(new ItemSprite(this),
 							Messages.get(KindofMisc.class, "unequip_title"),
 							Messages.get(KindofMisc.class, "unequip_message"),
-							miscs[0] == null ? "---" : Messages.titleCase(miscs[0].title()),
-							miscs[1] == null ? "---" : Messages.titleCase(miscs[1].title()),
-							miscs[2] == null ? "---" : Messages.titleCase(miscs[2].title())) {
+							labels) {
 
 						@Override
 						protected void onSelect(int index) {
 
-							KindofMisc equipped = miscs[index];
+							KindofMisc equipped = choices.get(index);
+							if (equipped == null) return;
 							//we directly remove the item because we want to have inventory capacity
 							// to unequip the equipped one, but don't want to trigger any other
 							// item detaching logic
@@ -103,14 +130,6 @@ public abstract class KindofMisc extends EquipableItem {
 							slotOfUnequipped = -1;
 							Dungeon.hero.belongings.backpack.items.remove(KindofMisc.this);
 							if (equipped.doUnequip(hero, true, false)) {
-								//swap out equip in misc slot if needed
-								if (index == 0 && KindofMisc.this instanceof Ring){
-									hero.belongings.artifact = (Artifact)hero.belongings.misc;
-									hero.belongings.misc = null;
-								} else if (index == 2 && KindofMisc.this instanceof Artifact){
-									hero.belongings.ring = (Ring) hero.belongings.misc;
-									hero.belongings.misc = null;
-								}
 								Dungeon.hero.belongings.backpack.items.add(KindofMisc.this);
 								doEquip(hero);
 							} else {
@@ -126,7 +145,7 @@ public abstract class KindofMisc extends EquipableItem {
 
 						@Override
 						protected boolean enabled(int index) {
-							return enabled[index];
+							return choices.get(index) != null;
 						}
 					});
 
@@ -143,13 +162,7 @@ public abstract class KindofMisc extends EquipableItem {
 				return false;
 			}
 
-			if (this instanceof Artifact){
-				if (hero.belongings.artifact == null)   hero.belongings.artifact = (Artifact) this;
-				else                                    hero.belongings.misc = (Artifact) this;
-			} else if (this instanceof Ring){
-				if (hero.belongings.ring == null)   hero.belongings.ring = (Ring) this;
-				else                                hero.belongings.misc = (Ring) this;
-			}
+			placeInFreeSlot(hero);
 
 			detach( hero.belongings.backpack );
 
@@ -177,6 +190,8 @@ public abstract class KindofMisc extends EquipableItem {
 				hero.belongings.artifact = null;
 			} else if (hero.belongings.misc == this) {
 				hero.belongings.misc = null;
+			} else if (hero.belongings.misc2 == this) {
+				hero.belongings.misc2 = null;
 			} else if (hero.belongings.ring == this){
 				hero.belongings.ring = null;
 			}
@@ -194,6 +209,7 @@ public abstract class KindofMisc extends EquipableItem {
 	public boolean isEquipped( Hero hero ) {
 		return hero != null && (hero.belongings.artifact() == this
 				|| hero.belongings.misc() == this
+				|| hero.belongings.misc2() == this
 				|| hero.belongings.ring() == this);
 	}
 

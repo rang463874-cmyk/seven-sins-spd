@@ -308,6 +308,10 @@ public class InventoryPane extends Component {
 		if (lastBag == stuff.backpack && stuff.secondWep != null){
 			items.add(0, stuff.secondWep);
 		}
+		//Seven Sins: no room for a sixth equipment slot here, so the extra slot's item leads the bag
+		if (lastBag == stuff.backpack && stuff.misc2 != null){
+			items.add(0, stuff.misc2);
+		}
 
 		int j = 0;
 		for (int i = 0; i < 20; i++){

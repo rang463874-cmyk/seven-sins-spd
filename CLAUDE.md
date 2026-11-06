@@ -11,11 +11,15 @@ Done and pushed (see `git log`):
   (`devtools/WndDevMobs`: bestiary categories, tap a tile; bosses except Goo left out), level up, heal,
   identify all.
 - Cleric is hidden from hero select (kept for old saves). Hero select fits 12 classes.
-- Seven sin classes, each with: signature item (no equipment slot), a permanent-growth buff,
+- Seven sin classes, each with: signature artifact (`items/artifacts/SinArtifact`, starts worn in the
+  artifact slot; growth/stats always work, skills and the skill bar only while worn), a permanent-growth buff,
   2 subclasses, 26 talents, 3 armor abilities, class armor, en/ko strings, placeholder art.
 - Tier 1 sin weapons (starting weapons) and tier 5 sin weapons (via the blacksmith's
   Sigil of Sin, 3000 favor, keeps upgrades/enchantment). Effects only work for the owning sin.
-- Imp quest vault mirror gives each sin a "reflection" of its signature item with bonuses.
+- Imp quest vault mirror gives `items/MirrorCase` (every class; originals get it alongside their usual
+  reward): one use per run, sets `Belongings.extraSlot`, opening `Belongings.misc2`, a second shared
+  artifact/ring slot (equip logic in `KindofMisc`, shown in `WndBag`; `InventoryPane` lists it first in
+  the bag). The old mirror relics (`MirrorRelics`, buffs' `mirrored` flag) are kept only for old saves.
 - GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
 - Four horsemen artifacts (all classes) from the sewer "prophet of seals" quest, see below.
@@ -90,7 +94,7 @@ sewer floor 2-4 from `SewerLevel.createMobs`, with 4 champion mobs carrying `Sea
 Paths are under `core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/`
 (items in `items/`, buffs in `actors/buffs/`, abilities in `actors/hero/abilities/`).
 Charge-based sins keep their item charges inside the buff. Each buff has a `mirrored` flag
-set by the vault mirror relic (`items/MirrorRelics.java`).
+set by the old vault mirror relics (`items/MirrorRelics.java`, no longer handed out).
 Sin weapons: `items/weapon/melee/sins/` (`SinWeapons` helper, each extends a base weapon).
 
 ## How the mod plugs into the game
@@ -117,7 +121,7 @@ Reserved layout (must match the Java constants):
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
 - `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 576):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
-  row 36 horsemen artifacts + seal fragment (+0..4), sin remains (+5..11)
+  row 36 horsemen artifacts + seal fragment (+0..4), sin remains (+5..11), mirror case (+12)
 - `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
 k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
 

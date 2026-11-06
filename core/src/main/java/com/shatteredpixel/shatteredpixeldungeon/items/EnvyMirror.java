@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
@@ -38,7 +39,7 @@ import java.util.ArrayList;
  * The Envy class's signature item. Doesn't take an equipment slot.
  * Uses recharging charges (stored in EnvyCovet) to take what others have.
  */
-public class EnvyMirror extends Item implements SkillHolder {
+public class EnvyMirror extends SinArtifact {
 
 	public static final String AC_GAZE = "GAZE";
 	public static final String AC_CODEX = "CODEX";
@@ -61,7 +62,7 @@ public class EnvyMirror extends Item implements SkillHolder {
 		ArrayList<String> actions = super.actions(hero);
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
-		actions.add(AC_GAZE);
+		if (isEquipped(hero)) actions.add(AC_GAZE);
 		actions.add(AC_CODEX);
 		return actions;
 	}
@@ -126,11 +127,13 @@ public class EnvyMirror extends Item implements SkillHolder {
 		super.execute(hero, action);
 		final EnvyCovet c = covet(hero);
 
+		//the bestiary can be read whether or not the mirror is worn
 		if (action.equals(AC_CODEX)) {
 			GameScene.show(new WndTitledMessage(new ItemSprite(this),
 					Messages.get(this, "codex_title", c.codex.size(), EnvyCovet.CODEX.size()), c.codexText()));
 			return;
 		}
+		if (!canUseSkills(hero, action)) return;
 		if (!action.equals(AC_GAZE)) return;
 
 		GameScene.show(new WndSkills(this, hero));

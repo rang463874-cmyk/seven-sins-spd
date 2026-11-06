@@ -252,6 +252,12 @@ public class WndBag extends WndTabbed {
 
 		int equipped = 5;
 
+		//Seven Sins: the extra shared slot from the Mirror Ring
+		if (stuff.extraSlot) {
+			placeItem( stuff.misc2 != null ? stuff.misc2 : new Placeholder( ItemSpriteSheet.SOMETHING ) );
+			equipped++;
+		}
+
 		//the container itself if it's not the root backpack
 		if (container != Dungeon.hero.belongings.backpack){
 			placeItem(container);

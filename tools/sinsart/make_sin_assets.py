@@ -288,6 +288,25 @@ def remains_icon(sig, hue):
     return ic
 
 
+# 12x12 jewel case with a mirror in its open lid
+MIRROR_CASE = [
+    "..OOOOOOOO..",
+    ".OMMMMMMMMO.",
+    ".OMWMMMMMMO.",
+    ".OMMWMMMMMO.",
+    ".OMMMMMMMMO.",
+    "..OOOOOOOO..",
+    "OOOOOOOOOOOO",
+    "ORRRRYYRRRRO",
+    "ORRRRYYRRRRO",
+    "ORRRRRRRRRRO",
+    "ORRRRRRRRRRO",
+    "OOOOOOOOOOOO",
+]
+MIRROR_CASE_PAL = {"O": (50, 30, 20, 255), "M": (150, 190, 220, 255), "W": (240, 250, 255, 255),
+                   "R": (130, 40, 90, 255), "Y": (230, 200, 90, 255)}
+
+
 def horsemen_art(items):
     """conquest crown, war blade, famine scales, death scythe, seal fragment"""
     items.paste(draw(CROWN, CONQUEST_PAL), cell(HORSEMEN_ROW + 0, 16)[:2])
@@ -297,6 +316,8 @@ def horsemen_art(items):
     # death: a pale, sickly green war scythe
     items.paste(recolor(items.crop(cell(134, 16)), relic_px(95, 0.35, 1.1)), cell(HORSEMEN_ROW + 3, 16)[:2])
     items.paste(draw(SEAL, SEAL_PAL), cell(HORSEMEN_ROW + 4, 16)[:2])
+    # the vault mirror's slot-expanding case (+5..11 are the sin remains)
+    items.paste(draw(MIRROR_CASE, MIRROR_CASE_PAL), cell(HORSEMEN_ROW + 12, 16)[:2])
 
 
 # One entry per sin, in HeroClass order. hue/accent in degrees.

@@ -349,7 +349,8 @@ public enum HeroClass {
 		hero.belongings.weapon.activate(hero);
 
 		PredatorMaw maw = new PredatorMaw();
-		maw.identify().collect();
+		(hero.belongings.artifact = maw).identify();
+		hero.belongings.artifact.activate( hero );
 		Dungeon.quickslot.setSlot(0, maw);
 
 		Buff.affect(hero, PredatorStomach.class);
@@ -364,7 +365,8 @@ public enum HeroClass {
 		hero.belongings.weapon.activate(hero);
 
 		GoldenCard card = new GoldenCard();
-		card.identify().collect();
+		(hero.belongings.artifact = card).identify();
+		hero.belongings.artifact.activate( hero );
 		Dungeon.quickslot.setSlot(0, card);
 
 		Buff.affect(hero, GreedVault.class);
@@ -379,7 +381,8 @@ public enum HeroClass {
 		hero.belongings.weapon.activate(hero);
 
 		WarDrum drum = new WarDrum();
-		drum.identify().collect();
+		(hero.belongings.artifact = drum).identify();
+		hero.belongings.artifact.activate( hero );
 		Dungeon.quickslot.setSlot(0, drum);
 
 		Buff.affect(hero, WrathGrudge.class);
@@ -394,7 +397,8 @@ public enum HeroClass {
 		hero.belongings.weapon.activate(hero);
 
 		PrideCrown crown = new PrideCrown();
-		crown.identify().collect();
+		(hero.belongings.artifact = crown).identify();
+		hero.belongings.artifact.activate( hero );
 		Dungeon.quickslot.setSlot(0, crown);
 
 		Buff.affect(hero, PrideGlory.class);
@@ -409,7 +413,8 @@ public enum HeroClass {
 		hero.belongings.weapon.activate(hero);
 
 		Perfume perfume = new Perfume();
-		perfume.identify().collect();
+		(hero.belongings.artifact = perfume).identify();
+		hero.belongings.artifact.activate( hero );
 		Dungeon.quickslot.setSlot(0, perfume);
 
 		Buff.affect(hero, LustDesire.class);
@@ -424,7 +429,8 @@ public enum HeroClass {
 		hero.belongings.weapon.activate(hero);
 
 		EnvyMirror mirror = new EnvyMirror();
-		mirror.identify().collect();
+		(hero.belongings.artifact = mirror).identify();
+		hero.belongings.artifact.activate( hero );
 		Dungeon.quickslot.setSlot(0, mirror);
 
 		Buff.affect(hero, EnvyCovet.class);
@@ -439,7 +445,8 @@ public enum HeroClass {
 		hero.belongings.weapon.activate(hero);
 
 		SlothPillow pillow = new SlothPillow();
-		pillow.identify().collect();
+		(hero.belongings.artifact = pillow).identify();
+		hero.belongings.artifact.activate( hero );
 		Dungeon.quickslot.setSlot(0, pillow);
 
 		Buff.affect(hero, SlothRepose.class);

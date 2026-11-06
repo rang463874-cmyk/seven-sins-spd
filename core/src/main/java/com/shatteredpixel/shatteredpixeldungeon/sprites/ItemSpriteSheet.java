@@ -920,12 +920,15 @@ public class ItemSpriteSheet {
 	public static final int REMAINS_LUST      = HORSEMEN+9;
 	public static final int REMAINS_ENVY      = HORSEMEN+10;
 	public static final int REMAINS_SLOTH     = HORSEMEN+11;
+	//the vault mirror's slot-expanding case
+	public static final int MIRROR_CASE       = HORSEMEN+12;
 	static{
 		int[][] remains = {
 				{REMAINS_GLUTTONY, PREDATOR_MAW}, {REMAINS_GREED, GOLDEN_CARD}, {REMAINS_WRATH, WAR_DRUM},
 				{REMAINS_PRIDE, PRIDE_CROWN},     {REMAINS_LUST, PERFUME},      {REMAINS_ENVY, ENVY_MIRROR},
 				{REMAINS_SLOTH, SLOTH_PILLOW},
 		};
+		assignItemRect(MIRROR_CASE, 12, 12);
 		for (int[] p : remains){
 			assignItemRect(p[0], (int)film.width(p[1]), (int)film.height(p[1]));
 		}

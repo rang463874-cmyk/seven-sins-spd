@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
@@ -44,7 +45,7 @@ import java.util.ArrayList;
  * Carried gold raises stats; picking up gold fills a payment gauge spent on payment skills,
  * including selling items anywhere at shop prices.
  */
-public class GoldenCard extends Item implements SkillHolder {
+public class GoldenCard extends SinArtifact {
 
 	public static final String AC_PAY = "PAY";
 	public static final String AC_SELL = "SELL";
@@ -105,8 +106,8 @@ public class GoldenCard extends Item implements SkillHolder {
 		ArrayList<String> actions = super.actions(hero);
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
-		actions.add(AC_PAY);
-		actions.add(AC_SELL);
+		if (isEquipped(hero)) actions.add(AC_PAY);
+		if (isEquipped(hero)) actions.add(AC_SELL);
 		return actions;
 	}
 
@@ -126,6 +127,7 @@ public class GoldenCard extends Item implements SkillHolder {
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
+		if (!canUseSkills(hero, action)) return;
 		final GreedVault v = vault(hero);
 
 		if (action.equals(AC_SELL)) {

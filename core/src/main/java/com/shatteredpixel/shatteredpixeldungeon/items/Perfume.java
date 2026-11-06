@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
  * The Lust class's signature item. Doesn't take an equipment slot.
  * Its skills are paid for with the wearer's own blood (HP) instead of charges.
  */
-public class Perfume extends Item implements SkillHolder {
+public class Perfume extends SinArtifact {
 
 	public static final String AC_SPRAY = "SPRAY";
 
@@ -56,7 +57,7 @@ public class Perfume extends Item implements SkillHolder {
 		ArrayList<String> actions = super.actions(hero);
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
-		actions.add(AC_SPRAY);
+		if (isEquipped(hero)) actions.add(AC_SPRAY);
 		return actions;
 	}
 
@@ -111,6 +112,7 @@ public class Perfume extends Item implements SkillHolder {
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
+		if (!canUseSkills(hero, action)) return;
 		if (!action.equals(AC_SPRAY)) return;
 
 		GameScene.show(new WndSkills(this, hero));

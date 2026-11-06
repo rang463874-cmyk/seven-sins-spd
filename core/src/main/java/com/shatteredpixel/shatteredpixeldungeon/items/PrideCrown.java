@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
 import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
  * The Pride class's signature item. Doesn't take an equipment slot.
  * Uses recharging charges (stored in PrideGlory) to command the lesser beings of the dungeon.
  */
-public class PrideCrown extends Item implements SkillHolder {
+public class PrideCrown extends SinArtifact {
 
 	public static final String AC_DECREE = "COMMAND";
 
@@ -56,7 +57,7 @@ public class PrideCrown extends Item implements SkillHolder {
 		ArrayList<String> actions = super.actions(hero);
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
-		actions.add(AC_DECREE);
+		if (isEquipped(hero)) actions.add(AC_DECREE);
 		return actions;
 	}
 
@@ -128,6 +129,7 @@ public class PrideCrown extends Item implements SkillHolder {
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
+		if (!canUseSkills(hero, action)) return;
 		if (!action.equals(AC_DECREE)) return;
 		final PrideGlory g = glory(hero);
 

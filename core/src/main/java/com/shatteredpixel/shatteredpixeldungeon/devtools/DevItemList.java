@@ -373,6 +373,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.Honeypot",
 			"com.shatteredpixel.shatteredpixeldungeon.items.KingsCrown",
 			"com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal",
+			"com.shatteredpixel.shatteredpixeldungeon.items.MirrorCase",
 			"com.shatteredpixel.shatteredpixeldungeon.items.MirrorRelics$BlackCard",
 			"com.shatteredpixel.shatteredpixeldungeon.items.MirrorRelics$BloodDrum",
 			"com.shatteredpixel.shatteredpixeldungeon.items.MirrorRelics$EternalCrown",

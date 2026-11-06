@@ -38,7 +38,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
-import com.shatteredpixel.shatteredpixeldungeon.items.MirrorRelics;
+import com.shatteredpixel.shatteredpixeldungeon.items.MirrorCase;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.VaultMirrorSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
@@ -96,8 +96,8 @@ public class VaultMirror extends NPC {
 					((HolyTome) reward).directCharge(8);
 					break;
 				default:
-					//the seven sins see their signature item as it might have been
-					reward = MirrorRelics.rewardFor(cls);
+					//the seven sins find the case that opens a second shared accessory slot
+					reward = new MirrorCase();
 					break;
 			}
 		Random.popGenerator();
@@ -150,6 +150,15 @@ public class VaultMirror extends NPC {
 										GLog.i( Messages.capitalize(Messages.get(Dungeon.hero, "you_now_have", reward.name())) );
 									} else {
 										Dungeon.level.drop(reward, c.pos).sprite.drop();
+									}
+									//every other class also finds the slot-expanding case alongside its reward
+									if (!(reward instanceof MirrorCase)) {
+										Item extra = new MirrorCase();
+										if (extra.doPickUp((Hero) c)) {
+											GLog.i( Messages.capitalize(Messages.get(Dungeon.hero, "you_now_have", extra.name())) );
+										} else {
+											Dungeon.level.drop(extra, c.pos).sprite.drop();
+										}
 									}
 									Imp.Quest.mirrorUsed = true;
 									reward = null;
