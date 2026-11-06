@@ -1,5 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -30,7 +34,7 @@ import java.util.ArrayList;
  * The Pride class's signature item. Doesn't take an equipment slot.
  * Uses recharging charges (stored in PrideGlory) to command the lesser beings of the dungeon.
  */
-public class PrideCrown extends Item {
+public class PrideCrown extends Item implements SkillHolder {
 
 	public static final String AC_DECREE = "COMMAND";
 
@@ -88,34 +92,46 @@ public class PrideCrown extends Item {
 		return n;
 	}
 
+	// ------------------------------------------------------------------ skills list
+
+	@Override
+	public String skillHeader(Hero hero) {
+		PrideGlory g = glory(hero);
+		return Messages.get(this, "skill_header", g.charges, g.maxCharges());
+	}
+
+	@Override
+	public ArrayList<SinSkill> skills(final Hero hero) {
+		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(PrideCrown.class, "command", 24, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_COMMAND)
+				.usableIf(h -> glory(h).charges >= COST_COMMAND)
+				.descArgs(h -> new Object[]{Math.round(commandDuration(h))})
+				.onUse(h -> GameScene.selectCell(command)));
+		list.add(new BasicSkill(PrideCrown.class, "duel", 25, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_DUEL)
+				.usableIf(h -> glory(h).charges >= COST_DUEL)
+				.onUse(h -> GameScene.selectCell(duel)));
+		list.add(new BasicSkill(PrideCrown.class, "procession", 26, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_PROCESSION)
+				.usableIf(h -> glory(h).charges >= COST_PROCESSION)
+				.descArgs(h -> new Object[]{processionRange(h)})
+				.onUse(h -> GameScene.selectCell(procession)));
+		list.add(new BasicSkill(PrideCrown.class, "decree", 27, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_DECREE)
+				.usableIf(h -> glory(h).charges >= COST_DECREE)
+				.descArgs(h -> new Object[]{1 + h.pointsInTalent(Talent.PRIDE_DECREE)})
+				.onUse(h -> GameScene.selectCell(decree)));
+		return list;
+	}
+
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
 		if (!action.equals(AC_DECREE)) return;
 		final PrideGlory g = glory(hero);
 
-		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "prompt", g.charges, g.maxCharges()),
-				Messages.get(this, "opt_command", COST_COMMAND),
-				Messages.get(this, "opt_duel", COST_DUEL),
-				Messages.get(this, "opt_procession", COST_PROCESSION),
-				Messages.get(this, "opt_decree", COST_DECREE)) {
-			@Override
-			protected boolean enabled(int index) {
-				int[] costs = {COST_COMMAND, COST_DUEL, COST_PROCESSION, COST_DECREE};
-				return g.charges >= costs[index];
-			}
-
-			@Override
-			protected void onSelect(int index) {
-				switch (index) {
-					case 0: GameScene.selectCell(command); break;
-					case 1: GameScene.selectCell(duel); break;
-					case 2: GameScene.selectCell(procession); break;
-					case 3: GameScene.selectCell(decree); break;
-				}
-			}
-		});
+		GameScene.show(new WndSkills(this, hero));
 	}
 
 	// ------------------------------------------------------------------ helpers

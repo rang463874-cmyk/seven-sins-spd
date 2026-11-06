@@ -1,5 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -30,7 +34,7 @@ import java.util.ArrayList;
  * The Lust class's signature item. Doesn't take an equipment slot.
  * Its skills are paid for with the wearer's own blood (HP) instead of charges.
  */
-public class Perfume extends Item {
+public class Perfume extends Item implements SkillHolder {
 
 	public static final String AC_SPRAY = "SPRAY";
 
@@ -74,41 +78,42 @@ public class Perfume extends Item {
 		return 5f + 2f * hero.pointsInTalent(Talent.LUST_WAFT);
 	}
 
+	// ------------------------------------------------------------------ skills list
+
+	@Override
+	public String skillHeader(Hero hero) {
+		return Messages.get(this, "skill_header", hero.HP, hero.HT);
+	}
+
+	@Override
+	public ArrayList<SinSkill> skills(final Hero hero) {
+		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(Perfume.class, "kiss", 32, SinSkill.CostType.HP)
+				.cost(h -> desire(h).hpCost(COST_KISS))
+				.usableIf(h -> desire(h).canPay(desire(h).hpCost(COST_KISS)))
+				.descArgs(h -> new Object[]{kissRange(h), Math.round(3f + 2f * h.pointsInTalent(Talent.LUST_EMBRACE))})
+				.onUse(h -> GameScene.selectCell(bloodKiss)));
+		list.add(new BasicSkill(Perfume.class, "step", 33, SinSkill.CostType.HP)
+				.cost(h -> desire(h).hpCost(COST_STEP))
+				.usableIf(h -> desire(h).canPay(desire(h).hpCost(COST_STEP)))
+				.descArgs(h -> new Object[]{Math.round(stepTurns(h))})
+				.onUse(h -> step(h, desire(h))));
+		list.add(new BasicSkill(Perfume.class, "drain", 34, SinSkill.CostType.NONE)
+				.onUse(h -> drain(h, desire(h))));
+		list.add(new BasicSkill(Perfume.class, "rapture", 35, SinSkill.CostType.HP)
+				.cost(h -> desire(h).hpCost(COST_RAPTURE))
+				.usableIf(h -> desire(h).canPay(desire(h).hpCost(COST_RAPTURE)))
+				.descArgs(h -> new Object[]{Math.round(LustDesire.Rapture.DURATION)})
+				.onUse(h -> rapture(h, desire(h))));
+		return list;
+	}
+
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
 		if (!action.equals(AC_SPRAY)) return;
-		final LustDesire d = desire(hero);
-		final int kiss = d.hpCost(COST_KISS);
-		final int step = d.hpCost(COST_STEP);
-		final int rapture = d.hpCost(COST_RAPTURE);
 
-		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "prompt", hero.HP, hero.HT),
-				Messages.get(this, "opt_kiss", kiss),
-				Messages.get(this, "opt_step", step),
-				Messages.get(this, "opt_drain"),
-				Messages.get(this, "opt_rapture", rapture)) {
-			@Override
-			protected boolean enabled(int index) {
-				switch (index) {
-					case 0: return d.canPay(kiss);
-					case 1: return d.canPay(step);
-					case 2: return true;
-					default: return d.canPay(rapture);
-				}
-			}
-
-			@Override
-			protected void onSelect(int index) {
-				switch (index) {
-					case 0: GameScene.selectCell(bloodKiss); break;
-					case 1: step(hero, d); break;
-					case 2: drain(hero, d); break;
-					case 3: rapture(hero, d); break;
-				}
-			}
-		});
+		GameScene.show(new WndSkills(this, hero));
 	}
 
 	// ------------------------------------------------------------------ skills

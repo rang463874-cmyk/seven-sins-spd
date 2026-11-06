@@ -1,5 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -40,7 +44,7 @@ import java.util.ArrayList;
  * Carried gold raises stats; picking up gold fills a payment gauge spent on payment skills,
  * including selling items anywhere at shop prices.
  */
-public class GoldenCard extends Item {
+public class GoldenCard extends Item implements SkillHolder {
 
 	public static final String AC_PAY = "PAY";
 	public static final String AC_SELL = "SELL";
@@ -137,38 +141,48 @@ public class GoldenCard extends Item {
 	}
 
 	private void showPayMenu(final Hero hero, final GreedVault v) {
-		final boolean usurer = hero.subClass == HeroSubClass.USURER;
-		ArrayList<String> opts = new ArrayList<>();
-		opts.add(Messages.get(this, "pay_coinshot", coinShotCost(hero)));
-		opts.add(Messages.get(this, "pay_guard", guardCost(hero)));
-		opts.add(Messages.get(this, "pay_express", expressCost(hero)));
-		opts.add(Messages.get(this, "pay_bribe"));
-		if (usurer) opts.add(Messages.get(this, "pay_loan"));
+		GameScene.show(new WndSkills(this, hero));
+	}
 
-		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "pay_prompt", v.chargeInt(), Math.round(v.maxCharge())), opts.toArray(new String[0])) {
-			@Override
-			protected boolean enabled(int index) {
-				switch (index) {
-					case 0: return v.charge >= coinShotCost(hero);
-					case 1: return v.charge >= guardCost(hero);
-					case 2: return v.charge >= expressCost(hero);
-					case 3: return v.charge > 0;
-					default: return Dungeon.gold > 0;
-				}
-			}
+	// ------------------------------------------------------------------ skills list
 
-			@Override
-			protected void onSelect(int index) {
-				switch (index) {
-					case 0: GameScene.selectCell(coinShot); break;
-					case 1: goldGuard(hero, v); break;
-					case 2: GameScene.selectCell(express); break;
-					case 3: GameScene.selectCell(bribe); break;
-					case 4: GameScene.selectCell(loan); break;
-				}
-			}
-		});
+	@Override
+	public String skillHeader(Hero hero) {
+		GreedVault v = vault(hero);
+		return Messages.get(this, "skill_header", v.chargeInt(), Math.round(v.maxCharge()), Dungeon.gold);
+	}
+
+	@Override
+	public ArrayList<SinSkill> skills(final Hero hero) {
+		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(GoldenCard.class, "coinshot", 8, SinSkill.CostType.GAUGE)
+				.cost(h -> coinShotCost(h))
+				.usableIf(h -> vault(h).charge >= coinShotCost(h))
+				.descArgs(h -> new Object[]{2 + h.lvl / 2, 6 + h.lvl})
+				.onUse(h -> GameScene.selectCell(coinShot)));
+		list.add(new BasicSkill(GoldenCard.class, "guard", 9, SinSkill.CostType.GAUGE)
+				.cost(h -> guardCost(h))
+				.usableIf(h -> vault(h).charge >= guardCost(h))
+				.descArgs(h -> new Object[]{guardShield(h, vault(h))})
+				.onUse(h -> goldGuard(h, vault(h))));
+		list.add(new BasicSkill(GoldenCard.class, "express", 10, SinSkill.CostType.GAUGE)
+				.cost(h -> expressCost(h))
+				.usableIf(h -> vault(h).charge >= expressCost(h))
+				.descArgs(h -> new Object[]{expressRange(h)})
+				.onUse(h -> GameScene.selectCell(express)));
+		list.add(new BasicSkill(GoldenCard.class, "bribe", 11, SinSkill.CostType.VARIES)
+				.usableIf(h -> vault(h).charge > 0)
+				.descArgs(h -> new Object[]{Math.round(10f * (1f + 0.5f * h.pointsInTalent(Talent.GREED_BRIBERY)))})
+				.onUse(h -> GameScene.selectCell(bribe)));
+		list.add(new BasicSkill(GoldenCard.class, "loan", 12, SinSkill.CostType.VARIES)
+				.visibleIf(h -> h.subClass == HeroSubClass.USURER)
+				.usableIf(h -> Dungeon.gold > 0)
+				.onUse(h -> GameScene.selectCell(loan)));
+		list.add(new BasicSkill(GoldenCard.class, "sell", 13, SinSkill.CostType.GAUGE)
+				.cost(h -> sellCost(h))
+				.usableIf(h -> vault(h).charge >= sellCost(h))
+				.onUse(h -> GameScene.selectItem(sellSelector)));
+		return list;
 	}
 
 	// ------------------------------------------------------------------ payment skills

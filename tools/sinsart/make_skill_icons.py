@@ -1,0 +1,412 @@
+#!/usr/bin/env python3
+"""Generates core/src/main/assets/interfaces/skill_icons.png: placeholder skill-bar icons.
+
+16x16 icons on an 8-column grid (index = row * 8 + col). Row k belongs to sin k
+(gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6); row 7 is spare.
+Each icon is a white 12x12 glyph on a rounded tile in the sin's colour.
+To add a skill icon: add a glyph (or reuse one) to ICONS with its index, then re-run
+`python3 tools/sinsart/make_skill_icons.py` and use that index in the skill's constructor.
+"""
+import os
+from PIL import Image
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join(ROOT, "core", "src", "main", "assets", "interfaces", "skill_icons.png")
+
+SIZE = 16
+COLS = 8
+ROWS = 8
+
+SIN_COLORS = [
+    (150, 50, 180),   # gluttony
+    (200, 160, 40),   # greed
+    (190, 40, 40),    # wrath
+    (120, 80, 200),   # pride
+    (210, 60, 120),   # lust
+    (50, 150, 80),    # envy
+    (70, 110, 200),   # sloth
+    (100, 100, 100),  # spare
+]
+
+G = {
+    "JAW": [
+        "............",
+        ".XXXXXXXXXX.",
+        ".X.X.X.X.XX.",
+        ".XX.X.X.X.X.",
+        ".X........X.",
+        "............",
+        "............",
+        ".X........X.",
+        ".XX.X.X.X.X.",
+        ".X.X.X.X.XX.",
+        ".XXXXXXXXXX.",
+        "............",
+    ],
+    "FANG": [
+        "............",
+        ".XXXXXXXXXX.",
+        ".XXXXXXXXXX.",
+        "..XX....XX..",
+        "..XX....XX..",
+        "..XX....XX..",
+        "...X....X...",
+        "...X....X...",
+        "............",
+        "....X..X....",
+        ".....XX.....",
+        "............",
+    ],
+    "COIN": [
+        "....XXXX....",
+        "..XX....XX..",
+        ".X...XX...X.",
+        ".X..XXXX..X.",
+        "X..XX......X",
+        "X...XXX....X",
+        "X.....XXX..X",
+        "X......XX..X",
+        ".X..XXXX..X.",
+        ".X...XX...X.",
+        "..XX....XX..",
+        "....XXXX....",
+    ],
+    "SHIELD": [
+        ".XXXXXXXXXX.",
+        ".X........X.",
+        ".X..XXXX..X.",
+        ".X..X..X..X.",
+        ".X..XXXX..X.",
+        ".X..X..X..X.",
+        ".X........X.",
+        "..X......X..",
+        "..X......X..",
+        "...X....X...",
+        "....X..X....",
+        ".....XX.....",
+    ],
+    "ARROW": [
+        "............",
+        "......X.....",
+        "......XX....",
+        "......XXX...",
+        "XXXXXXXXXX..",
+        "XXXXXXXXXXX.",
+        "XXXXXXXXXXX.",
+        "XXXXXXXXXX..",
+        "......XXX...",
+        "......XX....",
+        "......X.....",
+        "............",
+    ],
+    "HAND": [
+        "....X.X.....",
+        "...XX.XX.X..",
+        "...XX.XX.XX.",
+        "...XX.XX.XX.",
+        ".X.XXXXXXXX.",
+        ".XXXXXXXXXX.",
+        ".XXXXXXXXXX.",
+        "..XXXXXXXXX.",
+        "..XXXXXXXX..",
+        "...XXXXXXX..",
+        "...XXXXXX...",
+        "............",
+    ],
+    "SCROLL": [
+        "..XXXXXXXX..",
+        ".X.X.....XX.",
+        ".XX......X..",
+        "..X.XXXX.X..",
+        "..X......X..",
+        "..X.XXXX.X..",
+        "..X......X..",
+        "..X.XXX..X..",
+        "..X......X..",
+        "..X.....XX..",
+        ".XX......X..",
+        "..XXXXXXX...",
+    ],
+    "BAG": [
+        "....XXXX....",
+        ".....XX.....",
+        "....X..X....",
+        "...XXXXXX...",
+        "..XX....XX..",
+        ".X...XX...X.",
+        ".X..X.....X.",
+        ".X...XX...X.",
+        ".X.....X..X.",
+        ".X..XXX...X.",
+        "..XX....XX..",
+        "...XXXXXX...",
+    ],
+    "EXCLAIM": [
+        ".....XX.....",
+        "....XXXX....",
+        "....XXXX....",
+        "....XXXX....",
+        "....XXXX....",
+        ".....XX.....",
+        ".....XX.....",
+        ".....XX.....",
+        "............",
+        ".....XX.....",
+        "....XXXX....",
+        ".....XX.....",
+    ],
+    "CROSSARROWS": [
+        "XXX......XXX",
+        "XX........XX",
+        "X.X......X.X",
+        "...X....X...",
+        "....X..X....",
+        ".....XX.....",
+        ".....XX.....",
+        "....X..X....",
+        "...X....X...",
+        "X.X......X.X",
+        "XX........XX",
+        "XXX......XXX",
+    ],
+    "BURST": [
+        ".....X......",
+        "..X..X..X...",
+        "...X.X.X....",
+        "....XXX.....",
+        "XXXXXXXXXXX.",
+        "....XXX.....",
+        "...X.X.X....",
+        "..X..X..X...",
+        ".....X......",
+        "........X..X",
+        ".X........X.",
+        "X....X......",
+    ],
+    "CROWN": [
+        "............",
+        "X....X....X.",
+        "XX..XXX..XX.",
+        "XX..XXX..XX.",
+        "XXXXXXXXXXX.",
+        "XXXXXXXXXXX.",
+        "XX.XX.XX.XX.",
+        "XXXXXXXXXXX.",
+        "XXXXXXXXXXX.",
+        "............",
+        "............",
+        "............",
+    ],
+    "SWORDS": [
+        "X..........X",
+        ".X........X.",
+        "..X......X..",
+        "...X....X...",
+        "....X..X....",
+        ".....XX.....",
+        ".....XX.....",
+        "....X..X....",
+        "..XX....XX..",
+        "..XX....XX..",
+        ".X........X.",
+        "X..........X",
+    ],
+    "STAR": [
+        ".....XX.....",
+        ".....XX.....",
+        "....XXXX....",
+        "XXXXXXXXXXXX",
+        ".XXXXXXXXXX.",
+        "..XXXXXXXX..",
+        "...XXXXXX...",
+        "...XXXXXX...",
+        "..XXX..XXX..",
+        "..XX....XX..",
+        ".XX......XX.",
+        "............",
+    ],
+    "HEART": [
+        "............",
+        "..XXX..XXX..",
+        ".XXXXXXXXXX.",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        ".XXXXXXXXXX.",
+        "..XXXXXXXX..",
+        "...XXXXXX...",
+        "....XXXX....",
+        ".....XX.....",
+        "............",
+    ],
+    "WAVE": [
+        "............",
+        "..XX........",
+        ".XXXX.......",
+        ".XXXX...XX..",
+        "..XX...XXXX.",
+        "..XX...XXXX.",
+        "........XX..",
+        "..XX....XX..",
+        ".XXXX.......",
+        ".XXXX...XX..",
+        "..XX...XXXX.",
+        "........XX..",
+    ],
+    "DROP": [
+        ".....X......",
+        ".....X......",
+        "....XXX.....",
+        "....XXX.....",
+        "...XXXXX....",
+        "..XXXXXXX...",
+        "..XX.XXXX...",
+        ".XX.XXXXXX..",
+        ".XX.XXXXXX..",
+        ".XXXXXXXXX..",
+        "..XXXXXXX...",
+        "...XXXXX....",
+    ],
+    "DHEART": [
+        ".XX.XX......",
+        "XXXXXXX.....",
+        "XXXXXXX.....",
+        ".XXXXX......",
+        "..XXX.......",
+        "...X........",
+        "......XX.XX.",
+        ".....XXXXXXX",
+        ".....XXXXXXX",
+        "......XXXXX.",
+        ".......XXX..",
+        "........X...",
+    ],
+    "EQUAL": [
+        "............",
+        "............",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "............",
+        "............",
+        "............",
+        "............",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "............",
+        "............",
+    ],
+    "SWAP": [
+        "........X...",
+        "........XX..",
+        "XXXXXXXXXXX.",
+        "XXXXXXXXXXXX",
+        "........XX..",
+        "........X...",
+        "...X........",
+        "..XX........",
+        ".XXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "..XX........",
+        "...X........",
+    ],
+    "MASK": [
+        "............",
+        "............",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "XX...XX...XX",
+        "XX...XX...XX",
+        "XXXXX..XXXXX",
+        ".XXXX..XXXX.",
+        "..XX....XX..",
+        "............",
+        "............",
+        "............",
+    ],
+    "GHOST": [
+        "...XXXXXX...",
+        "..XXXXXXXX..",
+        ".XXXXXXXXXX.",
+        ".XX..XX..XX.",
+        ".XX..XX..XX.",
+        ".XXXXXXXXXX.",
+        ".XXXXXXXXXX.",
+        ".XXXX..XXXX.",
+        ".XXXXXXXXXX.",
+        ".XXXXXXXXXX.",
+        ".XX.XX.XX.X.",
+        ".X..X..X..X.",
+    ],
+    "Z": [
+        "............",
+        ".XXXXXXXXXX.",
+        ".XXXXXXXXXX.",
+        "........XX..",
+        ".......XX...",
+        "......XX....",
+        ".....XX.....",
+        "....XX......",
+        "...XX.......",
+        ".XXXXXXXXXX.",
+        ".XXXXXXXXXX.",
+        "............",
+    ],
+    "ZZZ": [
+        "......XXXXX.",
+        "........XX..",
+        ".......XX...",
+        "......XXXXX.",
+        "............",
+        "...XXXX.....",
+        ".....X......",
+        "....X.......",
+        "...XXXX.....",
+        "XXX.........",
+        ".X..........",
+        "XXX.........",
+    ],
+}
+
+ICONS = {
+    0: "JAW", 1: "FANG",
+    8: "COIN", 9: "SHIELD", 10: "ARROW", 11: "HAND", 12: "SCROLL", 13: "BAG",
+    16: "EXCLAIM", 17: "CROSSARROWS", 18: "BURST", 19: "ARROW",
+    24: "CROWN", 25: "SWORDS", 26: "STAR", 27: "SCROLL",
+    32: "HEART", 33: "WAVE", 34: "DROP", 35: "DHEART",
+    40: "HAND", 41: "EQUAL", 42: "SWAP", 43: "MASK",
+    48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ",
+}
+
+
+def tile(color):
+    t = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+    dark = tuple(int(c * 0.45) for c in color) + (255,)
+    fill = tuple(color) + (255,)
+    for y in range(SIZE):
+        for x in range(SIZE):
+            corner = (x in (0, SIZE - 1)) and (y in (0, SIZE - 1))
+            if corner:
+                continue
+            edge = x in (0, SIZE - 1) or y in (0, SIZE - 1)
+            t.putpixel((x, y), dark if edge else fill)
+    return t
+
+
+def main():
+    sheet = Image.new("RGBA", (SIZE * COLS, SIZE * ROWS), (0, 0, 0, 0))
+    for index, glyph in ICONS.items():
+        row, col = divmod(index, COLS)
+        ic = tile(SIN_COLORS[row])
+        pattern = G[glyph]
+        assert len(pattern) == 12 and all(len(r) == 12 for r in pattern), glyph
+        for y, line in enumerate(pattern):
+            for x, ch in enumerate(line):
+                if ch == "X":
+                    ic.putpixel((x + 2, y + 2), (255, 255, 255, 255))
+        sheet.paste(ic, (col * SIZE, row * SIZE))
+    sheet.save(OUT)
+    print("wrote", OUT)
+
+
+if __name__ == "__main__":
+    main()

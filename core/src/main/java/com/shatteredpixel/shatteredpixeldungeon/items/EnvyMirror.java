@@ -1,5 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -34,7 +38,7 @@ import java.util.ArrayList;
  * The Envy class's signature item. Doesn't take an equipment slot.
  * Uses recharging charges (stored in EnvyCovet) to take what others have.
  */
-public class EnvyMirror extends Item {
+public class EnvyMirror extends Item implements SkillHolder {
 
 	public static final String AC_GAZE = "GAZE";
 	public static final String AC_CODEX = "CODEX";
@@ -85,6 +89,38 @@ public class EnvyMirror extends Item {
 		return ch.properties().contains(Char.Property.BOSS) || ch.properties().contains(Char.Property.MINIBOSS);
 	}
 
+	// ------------------------------------------------------------------ skills list
+
+	@Override
+	public String skillHeader(Hero hero) {
+		EnvyCovet g = covet(hero);
+		return Messages.get(this, "skill_header", g.charges, g.maxCharges());
+	}
+
+	@Override
+	public ArrayList<SinSkill> skills(final Hero hero) {
+		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(EnvyMirror.class, "snatch", 40, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_SNATCH)
+				.usableIf(h -> covet(h).charges >= COST_SNATCH)
+				.descArgs(h -> new Object[]{Math.round(snatchDuration(h))})
+				.onUse(h -> GameScene.selectCell(snatch)));
+		list.add(new BasicSkill(EnvyMirror.class, "equalize", 41, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_EQUALIZE)
+				.usableIf(h -> covet(h).charges >= COST_EQUALIZE)
+				.onUse(h -> GameScene.selectCell(equalize)));
+		list.add(new BasicSkill(EnvyMirror.class, "swap", 42, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_SWAP)
+				.usableIf(h -> covet(h).charges >= COST_SWAP)
+				.descArgs(h -> new Object[]{swapRange(h)})
+				.onUse(h -> GameScene.selectCell(swap)));
+		list.add(new BasicSkill(EnvyMirror.class, "mimic", 43, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_MIMIC)
+				.usableIf(h -> covet(h).charges >= COST_MIMIC)
+				.onUse(h -> GameScene.selectCell(mimic)));
+		return list;
+	}
+
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
@@ -97,28 +133,7 @@ public class EnvyMirror extends Item {
 		}
 		if (!action.equals(AC_GAZE)) return;
 
-		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "prompt", c.charges, c.maxCharges()),
-				Messages.get(this, "opt_snatch", COST_SNATCH),
-				Messages.get(this, "opt_equalize", COST_EQUALIZE),
-				Messages.get(this, "opt_swap", COST_SWAP),
-				Messages.get(this, "opt_mimic", COST_MIMIC)) {
-			@Override
-			protected boolean enabled(int index) {
-				int[] costs = {COST_SNATCH, COST_EQUALIZE, COST_SWAP, COST_MIMIC};
-				return c.charges >= costs[index];
-			}
-
-			@Override
-			protected void onSelect(int index) {
-				switch (index) {
-					case 0: GameScene.selectCell(snatch); break;
-					case 1: GameScene.selectCell(equalize); break;
-					case 2: GameScene.selectCell(swap); break;
-					case 3: GameScene.selectCell(mimic); break;
-				}
-			}
-		});
+		GameScene.show(new WndSkills(this, hero));
 	}
 
 	// ------------------------------------------------------------------ helpers

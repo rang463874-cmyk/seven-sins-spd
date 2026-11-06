@@ -1,5 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -33,7 +37,7 @@ import java.util.ArrayList;
  * Uses recharging charges (stored in SlothRepose) to summon dream puppets, nap,
  * swap places with a puppet and lull enemies to sleep.
  */
-public class SlothPillow extends Item {
+public class SlothPillow extends Item implements SkillHolder {
 
 	public static final String AC_LAZE = "LAZE";
 
@@ -71,37 +75,45 @@ public class SlothPillow extends Item {
 		return Buff.affect(hero, SlothRepose.class);
 	}
 
+	// ------------------------------------------------------------------ skills list
+
+	@Override
+	public String skillHeader(Hero hero) {
+		SlothRepose r = repose(hero);
+		return Messages.get(this, "skill_header", r.charges, r.maxCharges(), DreamPuppet.puppets(false).size(), r.maxPuppets());
+	}
+
+	@Override
+	public ArrayList<SinSkill> skills(final Hero hero) {
+		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(SlothPillow.class, "summon", 48, SinSkill.CostType.CHARGES)
+				.nameFrom(h -> DreamPuppet.puppets(false).size() >= repose(h).maxPuppets() ? "mend" : "summon")
+				.cost(h -> COST_SUMMON)
+				.usableIf(h -> repose(h).charges >= COST_SUMMON)
+				.descArgs(h -> new Object[]{repose(h).maxPuppets()})
+				.onUse(h -> summon(h, repose(h))));
+		list.add(new BasicSkill(SlothPillow.class, "nap", 49, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_NAP)
+				.usableIf(h -> repose(h).charges >= COST_NAP)
+				.onUse(h -> nap(h, repose(h))));
+		list.add(new BasicSkill(SlothPillow.class, "swap", 50, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_SWAP)
+				.usableIf(h -> repose(h).charges >= COST_SWAP && !DreamPuppet.active().isEmpty())
+				.onUse(h -> GameScene.selectCell(swap)));
+		list.add(new BasicSkill(SlothPillow.class, "yawn", 51, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_YAWN)
+				.usableIf(h -> repose(h).charges >= COST_YAWN)
+				.descArgs(h -> new Object[]{YAWN_RADIUS})
+				.onUse(h -> yawn(h, repose(h))));
+		return list;
+	}
+
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
 		if (!action.equals(AC_LAZE)) return;
-		final SlothRepose r = repose(hero);
-		final boolean full = DreamPuppet.puppets(false).size() >= r.maxPuppets();
 
-		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "prompt", r.charges, r.maxCharges(),
-						DreamPuppet.puppets(false).size(), r.maxPuppets()),
-				Messages.get(this, full ? "opt_mend" : "opt_summon", COST_SUMMON),
-				Messages.get(this, "opt_nap", COST_NAP),
-				Messages.get(this, "opt_swap", COST_SWAP),
-				Messages.get(this, "opt_yawn", COST_YAWN)) {
-			@Override
-			protected boolean enabled(int index) {
-				int[] costs = {COST_SUMMON, COST_NAP, COST_SWAP, COST_YAWN};
-				if (index == 2 && DreamPuppet.active().isEmpty()) return false;
-				return r.charges >= costs[index];
-			}
-
-			@Override
-			protected void onSelect(int index) {
-				switch (index) {
-					case 0: summon(hero, r); break;
-					case 1: nap(hero, r); break;
-					case 2: GameScene.selectCell(swap); break;
-					case 3: yawn(hero, r); break;
-				}
-			}
-		});
+		GameScene.show(new WndSkills(this, hero));
 	}
 
 	// ------------------------------------------------------------------ skills

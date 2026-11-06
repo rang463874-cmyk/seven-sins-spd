@@ -110,6 +110,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.StyledButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Tag;
 import com.shatteredpixel.shatteredpixeldungeon.ui.TargetHealthIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Toast;
+import com.shatteredpixel.shatteredpixeldungeon.ui.SkillBar;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Toolbar;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
@@ -210,6 +211,7 @@ public class GameScene extends PixelScene {
 	private static boolean invVisible = true;
 
 	private Toolbar toolbar;
+	private SkillBar skillBar;
 	private Toast prompt;
 
 	private AttackIndicator attack;
@@ -550,6 +552,12 @@ public class GameScene extends PixelScene {
 			toolbar.setRect( insets.left, uiCamera.height - toolbar.height() - insets.bottom, uiCamera.width - insets.right, toolbar.height() );
 		}
 
+		skillBar = new SkillBar();
+		skillBar.camera = uiCamera;
+		add( skillBar );
+		skillBar.refresh();
+		syncSkillBar();
+
 		if (insets.bottom > 0){
 			SkinnedBlock bar = new SkinnedBlock(uiCamera.width, insets.bottom, TextureCache.createSolid(0x88000000));
 			bar.camera = uiCamera;
@@ -867,6 +875,8 @@ public class GameScene extends PixelScene {
 
 	@Override
 	public synchronized void update() {
+		syncSkillBar();
+
 		lastOffset = null;
 
 		if (updateItemDisplays){
@@ -1003,7 +1013,7 @@ public class GameScene extends PixelScene {
 		float tagWidth = Tag.SIZE + (tagsOnLeft ? insets.left : insets.right);
 		float tagLeft = tagsOnLeft ? 0 : uiCamera.width - tagWidth;
 
-		float y = SPDSettings.interfaceSize() == 0 ? scene.toolbar.top()-2 : scene.status.top()-2;
+		float y = SPDSettings.interfaceSize() == 0 ? scene.toolbarAreaTop()-2 : scene.status.top()-2;
 		if (SPDSettings.interfaceSize() == 0){
 			if (tagsOnLeft) {
 				scene.log.setRect(tagWidth, y, uiCamera.width - tagWidth - insets.right, 0);
@@ -1018,7 +1028,7 @@ public class GameScene extends PixelScene {
 			}
 		}
 
-		float pos = scene.toolbar.top();
+		float pos = scene.toolbarAreaTop();
 		if (tagsOnLeft && SPDSettings.interfaceSize() > 0){
 			pos = scene.status.top();
 		}
@@ -1475,6 +1485,22 @@ public class GameScene extends PixelScene {
 		}
 
 		return false;
+	}
+
+	/** top of the toolbar, or of the skill bar above it when one is shown */
+	private float toolbarAreaTop(){
+		float top = toolbar.top();
+		if (skillBar != null && skillBar.visible) top -= skillBar.barHeight();
+		return top;
+	}
+
+	/** keeps the skill bar right above the toolbar, and hidden whenever the toolbar is */
+	private void syncSkillBar(){
+		if (skillBar == null || toolbar == null) return;
+		skillBar.visible = skillBar.active = toolbar.visible;
+		float x = toolbar.left() + 1;
+		float y = toolbar.top() - skillBar.barHeight();
+		if (skillBar.left() != x || skillBar.top() != y) skillBar.setPos(x, y);
 	}
 
 	public static void toggleInvPane(){

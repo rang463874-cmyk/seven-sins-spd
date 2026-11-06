@@ -1,5 +1,8 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -25,7 +28,7 @@ import java.util.ArrayList;
  * The Predator's signature tool: devours equipment to grant permanent stats,
  * and can spend satiety on a ravenous bite that heals from the flesh it tears.
  */
-public class PredatorMaw extends Item {
+public class PredatorMaw extends Item implements SkillHolder {
 
 	public static final String AC_DEVOUR = "DEVOUR";
 	public static final String AC_BITE = "BITE";
@@ -73,6 +76,29 @@ public class PredatorMaw extends Item {
 			}
 			GameScene.selectCell(biteSelector);
 		}
+	}
+
+	// ------------------------------------------------------------------ skills list
+
+	@Override
+	public String skillHeader(Hero hero) {
+		return null;
+	}
+
+	@Override
+	public ArrayList<SinSkill> skills(final Hero hero) {
+		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(PredatorMaw.class, "devour", 0, SinSkill.CostType.NONE)
+				.onUse(h -> selectDevour(h, devoursPerUse(), false)));
+		list.add(new BasicSkill(PredatorMaw.class, "bite", 1, SinSkill.CostType.SATIETY)
+				.cost(h -> BITE_HUNGER)
+				.usableIf(h -> {
+					Hunger hunger = h.buff(Hunger.class);
+					return hunger != null && hunger.hunger() + BITE_HUNGER <= Hunger.STARVING;
+				})
+				.descArgs(h -> new Object[]{BITE_HUNGER, Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100)})
+				.onUse(h -> GameScene.selectCell(biteSelector)));
+		return list;
 	}
 
 	/** how many items one use can devour (the mirror's Golden Maw eats two) */

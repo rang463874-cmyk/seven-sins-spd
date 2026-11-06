@@ -1,5 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -23,7 +27,9 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
+import com.watabou.noosa.Game;
 import com.watabou.noosa.audio.Sample;
+import com.watabou.utils.Callback;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
@@ -33,7 +39,7 @@ import java.util.ArrayList;
  * The Wrath class's signature item. Doesn't take an equipment slot.
  * Uses recharging charges (stored in WrathGrudge) to set enemies against each other.
  */
-public class WarDrum extends Item {
+public class WarDrum extends Item implements SkillHolder {
 
 	public static final String AC_BEAT = "BEAT";
 
@@ -73,34 +79,47 @@ public class WarDrum extends Item {
 		return 3 + hero.pointsInTalent(Talent.WRATH_DASH_STRIKE) / 2;
 	}
 
+	// ------------------------------------------------------------------ skills list
+
+	@Override
+	public String skillHeader(Hero hero) {
+		WrathGrudge g = grudge(hero);
+		return Messages.get(this, "skill_header", g.charges, g.maxCharges());
+	}
+
+	@Override
+	public ArrayList<SinSkill> skills(final Hero hero) {
+		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(WarDrum.class, "provoke", 16, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_PROVOKE)
+				.usableIf(h -> grudge(h).charges >= COST_PROVOKE)
+				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 8f))})
+				.onUse(h -> GameScene.selectCell(provoke)));
+		list.add(new BasicSkill(WarDrum.class, "discord", 17, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_DISCORD)
+				.usableIf(h -> grudge(h).charges >= COST_DISCORD)
+				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 12f))})
+				.onUse(h -> GameScene.selectCell(discordFirst)));
+		list.add(new BasicSkill(WarDrum.class, "contagion", 18, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_CONTAGION)
+				.usableIf(h -> grudge(h).charges >= COST_CONTAGION)
+				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 10f))})
+				.onUse(h -> GameScene.selectCell(contagion)));
+		list.add(new BasicSkill(WarDrum.class, "dash", 19, SinSkill.CostType.CHARGES)
+				.cost(h -> COST_DASH)
+				.usableIf(h -> grudge(h).charges >= COST_DASH)
+				.descArgs(h -> new Object[]{dashRange(h)})
+				.onUse(h -> GameScene.selectCell(dash)));
+		return list;
+	}
+
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
 		if (!action.equals(AC_BEAT)) return;
 		final WrathGrudge g = grudge(hero);
 
-		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "beat_prompt", g.charges, g.maxCharges()),
-				Messages.get(this, "opt_provoke", COST_PROVOKE),
-				Messages.get(this, "opt_discord", COST_DISCORD),
-				Messages.get(this, "opt_contagion", COST_CONTAGION),
-				Messages.get(this, "opt_dash", COST_DASH)) {
-			@Override
-			protected boolean enabled(int index) {
-				int[] costs = {COST_PROVOKE, COST_DISCORD, COST_CONTAGION, COST_DASH};
-				return g.charges >= costs[index];
-			}
-
-			@Override
-			protected void onSelect(int index) {
-				switch (index) {
-					case 0: GameScene.selectCell(provoke); break;
-					case 1: GameScene.selectCell(discordFirst); break;
-					case 2: GameScene.selectCell(contagion); break;
-					case 3: GameScene.selectCell(dash); break;
-				}
-			}
-		});
+		GameScene.show(new WndSkills(this, hero));
 	}
 
 	// ------------------------------------------------------------------ helpers
@@ -179,7 +198,14 @@ public class WarDrum extends Item {
 			Mob mob = rageTarget(cell);
 			if (mob == null) return;
 			discordPick = mob;
-			GameScene.selectCell(discordSecond);
+			//the scene resets the cell selector right after this returns, so ask for the
+			//second target on the next frame instead of immediately
+			Game.runOnRenderThread(new Callback() {
+				@Override
+				public void call() {
+					GameScene.selectCell(discordSecond);
+				}
+			});
 		}
 
 		@Override

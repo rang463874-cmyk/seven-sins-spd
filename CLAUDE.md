@@ -47,6 +47,20 @@ Greed loot chance (Mob.lootChance), Pride debuff resistance (Char.resist, negati
 Lust move speed (Hero.speed), Envy exp (Hero.earnExp), Sloth slower hunger (Hunger.act).
 Each sin buff's `statsText()` appends `UniqueStats.line(target)`.
 
+## Skills and the skill bar
+
+Every sin's signature item implements `skills/SkillHolder` and lists its active skills as
+`skills/SinSkill`s (usually `BasicSkill` built from lambdas: cost type/amount, usable, onUse, desc args).
+The same list drives the item's skill window (`windows/WndSkills`, name + cost + description) and the
+skill bar (`ui/SkillBar`, icon buttons right above the quickslot toolbar; tap = use, long-press = info).
+`GameScene.syncSkillBar` keeps it above the toolbar; tags/log are laid out from `toolbarAreaTop()`.
+Adding a skill: add a `BasicSkill` to the item's `skills()`, strings `skill_<id>` and `skill_<id>_desc`
+in the item's namespace, and an icon in `tools/sinsart/make_skill_icons.py`
+(`interfaces/skill_icons.png`, 16x16, row = sin index, 8 per row; re-run the script).
+Cost labels live under `skills.sinskill.cost_*`. Two-step cell selections must open the second
+selector on the next frame (`Game.runOnRenderThread`), because the scene resets the selector after
+each pick (that was the Discord bug).
+
 ## Four horsemen artifacts and the sewer prophet
 
 `items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use, levels 0-10 by uses,
