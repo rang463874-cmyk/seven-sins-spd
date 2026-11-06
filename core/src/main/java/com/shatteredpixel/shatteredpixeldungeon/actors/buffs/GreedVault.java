@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -99,7 +100,7 @@ public class GreedVault extends Buff {
 	public float maxCharge() {
 		Hero h = hero();
 		int hoard = h == null ? 0 : h.pointsInTalent(Talent.GREED_HOARD);
-		return (100 + 50 * Math.max(1, Dungeon.depth)) * (1f + 0.25f * hoard);
+		return (100 + 50 * Math.max(1, Dungeon.depth)) * (1f + 0.25f * hoard) * SinArtifact.gaugeScale(h);
 	}
 
 	public void addCharge(float amount) {
@@ -113,6 +114,7 @@ public class GreedVault extends Buff {
 	public boolean spend(int cost) {
 		if (cost > charge) return false;
 		charge -= cost;
+		SinArtifact.onSpent(hero(), cost / 20f);
 		BuffIndicator.refreshHero();
 		Item.updateQuickslot();
 		return true;
@@ -125,7 +127,7 @@ public class GreedVault extends Buff {
 	/** called when gold is picked up from the floor (not from selling items) */
 	public void onGoldPickup(Hero hero, int amount) {
 		if (amount <= 0) return;
-		addCharge(amount);
+		addCharge(amount * SinArtifact.gaugeScale(hero));
 
 		int skin = hero.pointsInTalent(Talent.GREED_GILDED_SKIN);
 		if (skin > 0) {

@@ -149,6 +149,11 @@ public class GoldenCard extends SinArtifact {
 	// ------------------------------------------------------------------ skills list
 
 	@Override
+	protected String levelEffects(Hero hero) {
+		return Messages.get(SinArtifact.class, "effects_gauge", Math.round((SinArtifact.gaugeScale(hero) - 1f) * 100), Math.round((SinArtifact.gaugeScale(hero) - 1f) * 100));
+	}
+
+	@Override
 	public String skillHeader(Hero hero) {
 		GreedVault v = vault(hero);
 		return Messages.get(this, "skill_header", v.chargeInt(), Math.round(v.maxCharge()), Dungeon.gold);

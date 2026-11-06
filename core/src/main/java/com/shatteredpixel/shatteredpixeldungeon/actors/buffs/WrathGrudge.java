@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -85,12 +86,12 @@ public class WrathGrudge extends Buff {
 
 	public int maxCharges() {
 		Hero h = hero();
-		return 3 + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.WRATH_DRUMMER));
+		return 3 + SinArtifact.bonusCharges(h) + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.WRATH_DRUMMER));
 	}
 
 	public float turnsPerCharge() {
 		Hero h = hero();
-		float t = 35f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_TEMPO)));
+		float t = SinArtifact.rechargeScale(h) * 35f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_TEMPO)));
 		return mirrored ? t / 1.25f : t;
 	}
 
@@ -112,6 +113,7 @@ public class WrathGrudge extends Buff {
 	public boolean useCharges(int n) {
 		if (charges < n) return false;
 		charges -= n;
+		SinArtifact.onSpent(hero(), n);
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
 		return true;

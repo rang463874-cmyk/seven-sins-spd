@@ -82,6 +82,11 @@ public class Perfume extends SinArtifact {
 	// ------------------------------------------------------------------ skills list
 
 	@Override
+	protected String levelEffects(Hero hero) {
+		return Messages.get(SinArtifact.class, "effects_hp", Math.round((1f - SinArtifact.costScale(hero)) * 100));
+	}
+
+	@Override
 	public String skillHeader(Hero hero) {
 		return Messages.get(this, "skill_header", hero.HP, hero.HT);
 	}
@@ -154,6 +159,7 @@ public class Perfume extends SinArtifact {
 			d.drain(dmg, 1f);
 			if (m.sprite != null) m.sprite.emitter().burst(Speck.factory(Speck.HEALING), 3);
 		}
+		SinArtifact.onSpent(hero, 1);
 		hero.sprite.operate(hero.pos);
 		Sample.INSTANCE.play(Assets.Sounds.DRINK);
 		hero.spendAndNext(1f);

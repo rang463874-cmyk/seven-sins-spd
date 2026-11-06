@@ -12,7 +12,10 @@ Done and pushed (see `git log`):
   identify all.
 - Cleric is hidden from hero select (kept for old saves). Hero select fits 12 classes.
 - Seven sin classes, each with: signature artifact (`items/artifacts/SinArtifact`, starts worn in the
-  artifact slot; growth/stats always work, skills and the skill bar only while worn), a permanent-growth buff,
+  artifact slot; growth/stats always work, skills and the skill bar only while worn; levels +0..+10 like
+  the cloak of shadows from resource spent via `SinArtifact.onSpent`, 3+level per level: charge sins +1 max
+  charge per 3 levels and up to +60% recharge, Lust -30% HP costs, Greed +60% gauge, Gluttony cheaper bite
+  and +50% devour points), a permanent-growth buff,
   2 subclasses, 26 talents, 3 armor abilities, class armor, en/ko strings, placeholder art.
 - Tier 1 sin weapons (starting weapons) and tier 5 sin weapons (via the blacksmith's
   Sigil of Sin, 3000 favor, keeps upgrades/enchantment). Effects only work for the owning sin.

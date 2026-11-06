@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -120,12 +121,12 @@ public class SlothRepose extends Buff {
 
 	public int maxCharges() {
 		Hero h = hero();
-		return 3 + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_PILLOW));
+		return 3 + SinArtifact.bonusCharges(h) + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_PILLOW));
 	}
 
 	public float turnsPerCharge() {
 		Hero h = hero();
-		return 30f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_RESTFUL)));
+		return SinArtifact.rechargeScale(h) * 30f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_RESTFUL)));
 	}
 
 	public void gainCharge(float amount) {
@@ -146,6 +147,7 @@ public class SlothRepose extends Buff {
 	public boolean useCharges(int n) {
 		if (charges < n) return false;
 		charges -= n;
+		SinArtifact.onSpent(hero(), n);
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
 		return true;

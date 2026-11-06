@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -139,6 +140,7 @@ public class LustDesire extends Buff {
 		float mult = 1f - 0.15f * h.pointsInTalent(Talent.LUST_BOTTLE);
 		if (mirrored) mult *= 0.75f;
 		if (h.subClass == HeroSubClass.CRIMSON_NOBLE) mult *= 0.5f;
+		mult *= SinArtifact.costScale(h);
 		return Math.max(1, Math.round(h.HT * share * mult));
 	}
 
@@ -153,6 +155,7 @@ public class LustDesire extends Buff {
 		if (h == null || h.HP <= cost) return false;
 		h.HP -= cost;
 		h.sprite.showStatus(CharSprite.NEGATIVE, Integer.toString(cost));
+		SinArtifact.onSpent(h, 1);
 		int price = h.subClass == HeroSubClass.CRIMSON_NOBLE ? h.pointsInTalent(Talent.NOBLE_PRICE) : 0;
 		if (price > 0) Buff.affect(h, Barrier.class).incShield(Math.round(cost * 0.2f * price));
 		return true;

@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -160,6 +161,7 @@ public class PredatorStomach extends Buff {
 		if (SinWeapons.wields(hero, GluttonScythe.class, com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.GLUTTONY)) mult *= 1.5f;
 		PredatorStomach st = hero.buff(PredatorStomach.class);
 		if (st != null && st.mirrored) mult *= 1.25f;
+		mult *= SinArtifact.devourScale(hero);
 		return s * mult;
 	}
 
@@ -179,6 +181,7 @@ public class PredatorStomach extends Buff {
 
 		float pts = score(hero, item);
 		addPoints(cat, pts);
+		SinArtifact.onSpent(hero, 2);
 
 		// Adaptive digestion: some points also flow into the other combat category
 		int adapt = hero.pointsInTalent(Talent.PREDATOR_ADAPT);

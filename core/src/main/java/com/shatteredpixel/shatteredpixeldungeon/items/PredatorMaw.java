@@ -72,7 +72,7 @@ public class PredatorMaw extends SinArtifact {
 			selectDevour(hero, devoursPerUse(), false);
 		} else if (action.equals(AC_BITE)) {
 			Hunger hunger = hero.buff(Hunger.class);
-			if (hunger == null || hunger.hunger() + BITE_HUNGER > Hunger.STARVING) {
+			if (hunger == null || hunger.hunger() + SinArtifact.biteHunger(hero) > Hunger.STARVING) {
 				GLog.w(Messages.get(PredatorMaw.class, "bite_hungry"));
 				return;
 			}
@@ -88,17 +88,23 @@ public class PredatorMaw extends SinArtifact {
 	}
 
 	@Override
+	protected String levelEffects(Hero hero) {
+		return Messages.get(SinArtifact.class, "effects_maw", 60 - SinArtifact.biteHunger(hero),
+				Math.round((SinArtifact.devourScale(hero) - 1f) * 100));
+	}
+
+	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
 		list.add(new BasicSkill(PredatorMaw.class, "devour", 0, SinSkill.CostType.NONE)
 				.onUse(h -> selectDevour(h, devoursPerUse(), false)));
 		list.add(new BasicSkill(PredatorMaw.class, "bite", 1, SinSkill.CostType.SATIETY)
-				.cost(h -> BITE_HUNGER)
+				.cost(h -> SinArtifact.biteHunger(h))
 				.usableIf(h -> {
 					Hunger hunger = h.buff(Hunger.class);
-					return hunger != null && hunger.hunger() + BITE_HUNGER <= Hunger.STARVING;
+					return hunger != null && hunger.hunger() + SinArtifact.biteHunger(h) <= Hunger.STARVING;
 				})
-				.descArgs(h -> new Object[]{BITE_HUNGER, Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100)})
+				.descArgs(h -> new Object[]{SinArtifact.biteHunger(h), Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100)})
 				.onUse(h -> GameScene.selectCell(biteSelector)));
 		return list;
 	}
@@ -158,11 +164,12 @@ public class PredatorMaw extends SinArtifact {
 				return;
 			}
 			Hunger hunger = hero.buff(Hunger.class);
-			if (hunger == null || hunger.hunger() + BITE_HUNGER > Hunger.STARVING) {
+			if (hunger == null || hunger.hunger() + SinArtifact.biteHunger(hero) > Hunger.STARVING) {
 				GLog.w(Messages.get(PredatorMaw.class, "bite_hungry"));
 				return;
 			}
-			hunger.affectHunger(-BITE_HUNGER);
+			hunger.affectHunger(-SinArtifact.biteHunger(hero));
+			SinArtifact.onSpent(hero, 1);
 
 			int before = enemy.HP + enemy.shielding();
 			hero.sprite.turnTo(hero.pos, cell);
