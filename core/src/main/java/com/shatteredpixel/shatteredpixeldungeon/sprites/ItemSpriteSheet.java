@@ -912,7 +912,24 @@ public class ItemSpriteSheet {
 	public static final int ARTIFACT_FAMINE   = HORSEMEN+2;
 	public static final int ARTIFACT_DEATH    = HORSEMEN+3;
 	public static final int SEAL_FRAGMENT     = HORSEMEN+4;
+	//remains of the seven sins (recolored, broken-looking signature items)
+	public static final int REMAINS_GLUTTONY  = HORSEMEN+5;
+	public static final int REMAINS_GREED     = HORSEMEN+6;
+	public static final int REMAINS_WRATH     = HORSEMEN+7;
+	public static final int REMAINS_PRIDE     = HORSEMEN+8;
+	public static final int REMAINS_LUST      = HORSEMEN+9;
+	public static final int REMAINS_ENVY      = HORSEMEN+10;
+	public static final int REMAINS_SLOTH     = HORSEMEN+11;
 	static{
+		int[][] remains = {
+				{REMAINS_GLUTTONY, PREDATOR_MAW}, {REMAINS_GREED, GOLDEN_CARD}, {REMAINS_WRATH, WAR_DRUM},
+				{REMAINS_PRIDE, PRIDE_CROWN},     {REMAINS_LUST, PERFUME},      {REMAINS_ENVY, ENVY_MIRROR},
+				{REMAINS_SLOTH, SLOTH_PILLOW},
+		};
+		for (int[] p : remains){
+			assignItemRect(p[0], (int)film.width(p[1]), (int)film.height(p[1]));
+		}
+
 		assignItemRect(ARTIFACT_CONQUEST, 14, 11);
 		assignItemRect(ARTIFACT_WAR,      (int)film.width(GREATSWORD), (int)film.height(GREATSWORD));
 		assignItemRect(ARTIFACT_FAMINE,   12, 12);

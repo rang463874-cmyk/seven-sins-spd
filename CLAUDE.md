@@ -15,14 +15,16 @@ Done and pushed (see `git log`):
 - Imp quest vault mirror gives each sin a "reflection" of its signature item with bonuses.
 - GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
-
 - Four horsemen artifacts (all classes) from the sewer "prophet of seals" quest, see below.
+- Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
+  BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
+  CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
+- Gluttony's maw also has Bite: spends 60 satiety, 150% damage, heals 30% of damage dealt.
 
 Not yet done / known gaps:
 - Never play-tested on a device until the first APK; expect UI/layout fixes.
 - Balance is untuned (Hibernator armor, Pride's Duel, Banker interest are on the strong side).
 - Sigil costs 3000 favor, which is the quest maximum (owner's choice, may lower to 2000).
-- Remains items for sins fall back to the warrior's seal shard.
 - Talent/hero icons for the sins are recolored cleric icons (placeholders).
 
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
@@ -87,7 +89,7 @@ Reserved layout (must match the Java constants):
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
 - `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 576):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
-  row 36 horsemen artifacts + seal fragment
+  row 36 horsemen artifacts + seal fragment (+0..4), sin remains (+5..11)
 - `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
 k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
 
@@ -99,7 +101,8 @@ English and Korean only. Source copies live in `tools/strings/*.properties` and 
 (new keys land after the key that precedes them, a new file gets its own section at the end;
 delete removed keys by hand). Keep both languages in sync; a missing key shows as
 "!!!NO TEXT FOUND!!!" in game. Messages fall back to superclass keys, so sin weapons inherit
-their base weapon's ability text.
+their base weapon's ability text. Gluttony's strings predate the source copies; only the keys in
+`gluttony_*.properties` are mirrored there, the rest live only in the game files.
 
 ## Building and checking
 

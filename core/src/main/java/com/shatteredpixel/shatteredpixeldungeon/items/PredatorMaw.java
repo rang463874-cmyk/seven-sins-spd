@@ -1,6 +1,15 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hunger;
+import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
+import com.watabou.noosa.audio.Sample;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PredatorStomach;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -12,10 +21,19 @@ import com.shatteredpixel.shatteredpixeldungeon.windows.WndBag;
 
 import java.util.ArrayList;
 
-/** The Predator's signature tool: devours equipment to grant permanent stats. */
+/**
+ * The Predator's signature tool: devours equipment to grant permanent stats,
+ * and can spend satiety on a ravenous bite that heals from the flesh it tears.
+ */
 public class PredatorMaw extends Item {
 
 	public static final String AC_DEVOUR = "DEVOUR";
+	public static final String AC_BITE = "BITE";
+
+	/** satiety spent per bite */
+	public static final int BITE_HUNGER = 60;
+	public static final float BITE_DAMAGE = 1.5f;
+	public static final float BITE_LIFESTEAL = 0.30f;
 
 	{
 		image = ItemSpriteSheet.PREDATOR_MAW;
@@ -31,12 +49,14 @@ public class PredatorMaw extends Item {
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
 		actions.add(AC_DEVOUR);
+		actions.add(AC_BITE);
 		return actions;
 	}
 
 	@Override
 	public String actionName(String action, Hero hero) {
 		if (action.equals(AC_DEVOUR)) return Messages.get(this, "ac_devour");
+		if (action.equals(AC_BITE)) return Messages.get(this, "ac_bite");
 		return super.actionName(action, hero);
 	}
 
@@ -45,6 +65,13 @@ public class PredatorMaw extends Item {
 		super.execute(hero, action);
 		if (action.equals(AC_DEVOUR)) {
 			selectDevour(hero, devoursPerUse(), false);
+		} else if (action.equals(AC_BITE)) {
+			Hunger hunger = hero.buff(Hunger.class);
+			if (hunger == null || hunger.hunger() + BITE_HUNGER > Hunger.STARVING) {
+				GLog.w(Messages.get(PredatorMaw.class, "bite_hungry"));
+				return;
+			}
+			GameScene.selectCell(biteSelector);
 		}
 	}
 
@@ -90,6 +117,45 @@ public class PredatorMaw extends Item {
 		});
 	}
 
+
+	private final CellSelector.Listener biteSelector = new CellSelector.Listener() {
+		@Override
+		public void onSelect(Integer cell) {
+			if (cell == null) return;
+			final Hero hero = Dungeon.hero;
+			Char enemy = Actor.findChar(cell);
+			if (enemy == null || enemy == hero || enemy.alignment == Char.Alignment.ALLY
+					|| !Dungeon.level.adjacent(hero.pos, cell)) {
+				GLog.w(Messages.get(PredatorMaw.class, "bite_target"));
+				return;
+			}
+			Hunger hunger = hero.buff(Hunger.class);
+			if (hunger == null || hunger.hunger() + BITE_HUNGER > Hunger.STARVING) {
+				GLog.w(Messages.get(PredatorMaw.class, "bite_hungry"));
+				return;
+			}
+			hunger.affectHunger(-BITE_HUNGER);
+
+			int before = enemy.HP + enemy.shielding();
+			hero.sprite.turnTo(hero.pos, cell);
+			hero.sprite.operate(hero.pos);
+			hero.attack(enemy, BITE_DAMAGE, 0f, 1000f);
+			int dealt = Math.max(0, before - (enemy.isAlive() ? enemy.HP + enemy.shielding() : 0));
+			int heal = Math.min(hero.HT - hero.HP, Math.round(dealt * BITE_LIFESTEAL));
+			if (heal > 0) {
+				hero.HP += heal;
+				hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(heal), FloatingText.HEALING);
+			}
+			Sample.INSTANCE.play(Assets.Sounds.EAT);
+			Invisibility.dispel();
+			hero.spendAndNext(1f);
+		}
+
+		@Override
+		public String prompt() {
+			return Messages.get(PredatorMaw.class, "bite_prompt");
+		}
+	};
 
 	@Override
 	public String desc() {

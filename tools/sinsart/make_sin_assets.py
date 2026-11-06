@@ -278,6 +278,16 @@ CONQUEST_PAL = {
 }
 
 
+def remains_icon(sig, hue):
+    """a faded, chipped copy of a signature item for that sin's remains"""
+    ic = recolor(sig, relic_px(hue, 0.35, 0.7))
+    # knock a chunk out of the top-right corner, leaving a jagged edge
+    for y in range(6):
+        for x in range(16 - 6 + y, 16):
+            ic.putpixel((x, y), (0, 0, 0, 0))
+    return ic
+
+
 def horsemen_art(items):
     """conquest crown, war blade, famine scales, death scythe, seal fragment"""
     items.paste(draw(CROWN, CONQUEST_PAL), cell(HORSEMEN_ROW + 0, 16)[:2])
@@ -477,6 +487,7 @@ def main():
             for x, y in [(4, 3), (5, 4), (6, 5), (6, 6), (7, 7), (5, 6), (4, 7), (8, 6)]:
                 relic.putpixel((x, y), (20, 30, 24, 255))
         items.paste(relic, cell(MIRROR_ROW + k, 16)[:2])
+        items.paste(remains_icon(sig, hue), cell(HORSEMEN_ROW + 5 + k, 16)[:2])
         for j, base in enumerate((BASE_T1[name], BASE_T5[name])):
             w = recolor(items.crop(cell(base, 16)), weapon_px(hue))
             items.paste(w, cell(SIN_WEAPON_ROW + 2 * k + j, 16)[:2])

@@ -1645,6 +1645,7 @@ public class Hero extends Char {
 		damage = EnvyHooks.onDefense( this, enemy, damage );
 		damage = SlothHooks.onDefense( this, enemy, damage );
 		damage = HorsemenHooks.onDefense( this, enemy, damage );
+		damage = com.shatteredpixel.shatteredpixeldungeon.items.remains.CrackedGem.Ward.absorb( this, damage );
 		
 		if (belongings.armor() != null) {
 			damage = belongings.armor().proc( enemy, this, damage );

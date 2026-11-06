@@ -92,6 +92,20 @@ public abstract class RemainsItem extends Item {
 				return new BrokenHilt();
 			case CLERIC:
 				return new TornPage();
+			case GLUTTONY:
+				return new MawFang();
+			case GREED:
+				return new MeltedCard();
+			case WRATH:
+				return new TornDrumhead();
+			case PRIDE:
+				return new CrackedGem();
+			case LUST:
+				return new BrokenPerfume();
+			case ENVY:
+				return new MirrorShard();
+			case SLOTH:
+				return new PillowStuffing();
 		}
 	}
 
