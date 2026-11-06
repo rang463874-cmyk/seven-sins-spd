@@ -136,6 +136,8 @@ their base weapon's ability text. Gluttony's strings predate the source copies; 
 
 - Normal PC: open in Android Studio, or `./gradlew android:assembleDebug`.
 - Phone testing: push to GitHub; `.github/workflows/build-apk.yml` builds and publishes the APK.
+  Debug builds are signed with the committed `android/sevensins-debug.keystore` (password `android`),
+  so new APKs install over old ones. Don't replace it, or the owner has to uninstall (and lose saves).
 - Sandboxes without Maven/Google access: `bash tools/compilecheck/check.sh` compiles against
   libGDX built from GitHub sources (prints `exit: 0` on success). Headless logic tests can be run
   with `java -cp <out>/spdcls:<deps.jar>`; anything touching Messages/UI needs the real game.
