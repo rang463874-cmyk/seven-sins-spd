@@ -6,10 +6,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.GreedVault;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.watabou.utils.Random;
 
 /**
@@ -64,9 +62,7 @@ public final class GreedHooks {
 
 		int midas = hero.pointsInTalent(Talent.GREED_MIDAS);
 		if (melee && midas > 0 && Random.Float() < 0.05f * midas) {
-			int gold = 5 + Dungeon.depth;
-			v.addBalance(gold);
-			hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(gold), FloatingText.GOLD);
+			v.earnGold(hero, 5 + Dungeon.depth);
 		}
 		return dmg;
 	}
@@ -83,12 +79,23 @@ public final class GreedHooks {
 
 		int comp = hero.pointsInTalent(Talent.GREED_COMPENSATION);
 		if (comp > 0 && dmg > 0) {
-			v.addBalance(Math.round(dmg * 0.5f * comp));
+			v.addCharge(dmg * 0.5f * comp);
 		}
 		return dmg;
 	}
 
 	// ------------------------------------------------------------------ gold & kills
+
+	/** true while an item is being sold, so sale proceeds don't fill the payment gauge */
+	public static boolean selling = false;
+
+	/** Called from Gold.doPickUp after the gold is added to the wallet. */
+	public static void onGoldPickup(Hero hero, int quantity) {
+		GreedVault v = vault(hero);
+		if (v == null) return;
+		if (selling) v.goldChanged();
+		else v.onGoldPickup(hero, quantity);
+	}
 
 	/** Extra gold granted when picking up a gold pile (Penny Pincher talent). */
 	public static int bonusGold(Hero hero, int quantity) {
@@ -107,7 +114,7 @@ public final class GreedHooks {
 
 		int loot = hero.pointsInTalent(Talent.GREED_LOOT);
 		if (loot > 0 && mob.alignment == Char.Alignment.ENEMY) {
-			v.addBalance((long) (2 + Dungeon.depth) * loot);
+			v.earnGold(hero, (2 + Dungeon.depth) * loot);
 		}
 	}
 }

@@ -19,19 +19,23 @@ Done and pushed (see `git log`):
 Not yet done / known gaps:
 - Never play-tested on a device until the first APK; expect UI/layout fixes.
 - Balance is untuned (Hibernator armor, Pride's Duel, Banker interest are on the strong side).
+- Sloth is getting a full rework toward an "auto-battle" style (owner's request, Nov 2026).
 - Sigil costs 3000 favor, which is the quest maximum (owner's choice, may lower to 2000).
 - Remains items for sins fall back to the warrior's seal shard.
 - Talent/hero icons for the sins are recolored cleric icons (placeholders).
 
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
 a points value that never decreases; accuracy/evasion are capped at 40%/30%).
+Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
+Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
+spend a gauge filled 1:1 by gold pickups (`GreedHooks.selling` keeps sale proceeds from filling it).
 
 ## The seven sins
 
 | Sin | Enum | Signature item | Buff (progress) | Hooks | Subclasses | Armor abilities |
 |---|---|---|---|---|---|---|
 | Gluttony 식탐 | GLUTTONY | PredatorMaw | PredatorStomach (devour points) | predator/PredatorHooks | GOURMAND, INHERITOR | abilities/predator/* |
-| Greed 탐욕 | GREED | GoldenCard | GreedVault (lifetime deposits) | greed/GreedHooks | BANKER, USURER | abilities/greed/* |
+| Greed 탐욕 | GREED | GoldenCard | GreedVault (stats from carried gold; payment gauge filled by gold pickups) | greed/GreedHooks | BANKER, USURER | abilities/greed/* |
 | Wrath 분노 | WRATH | WarDrum | WrathGrudge (grudge from infighting) | wrath/WrathHooks | INSTIGATOR, AVENGER | abilities/wrath/* |
 | Pride 교만 | PRIDE | PrideCrown | PrideGlory (glory from flawless kills, dignity) | pride/PrideHooks | MONARCH, PARAGON | abilities/pride/* |
 | Lust 색욕 | LUST | Perfume | LustDesire (drain/charmed kills) | lust/LustHooks | SIREN, DREAMWEAVER | abilities/lust/* |
@@ -74,7 +78,8 @@ k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, 
 
 English and Korean only. Source copies live in `tools/strings/*.properties` and are appended to
 `core/src/main/assets/messages/{actors,items,windows}/*.properties` under
-`###### Seven Sins: ... ######` headers. Keep both languages in sync; a missing key shows as
+`###### Seven Sins: ... ######` headers. After editing a source copy, run `python3 tools/strings/sync.py` to update the game files
+(new keys land after the key that precedes them; delete removed keys by hand). Keep both languages in sync; a missing key shows as
 "!!!NO TEXT FOUND!!!" in game. Messages fall back to superclass keys, so sin weapons inherit
 their base weapon's ability text.
 

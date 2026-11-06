@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.utils.Random;
 
-/** Greed's tier 5 weapon: hits deal bonus damage based on the card balance, kills pay gold into the card. */
+/** Greed's tier 5 weapon: hits deal bonus damage based on carried gold, kills pay out gold. */
 public class MidasAxe extends Greataxe {
 
 	{
@@ -24,9 +24,9 @@ public class MidasAxe extends Greataxe {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
 			GreedVault v = Buff.affect(hero, GreedVault.class);
-			damage += (int) Math.min(v.balance / 200, 10 + 2L * buffedLvl());
+			damage += (int) Math.min(Math.max(0, Dungeon.gold) / 200, 10 + 2L * buffedLvl());
 			if (SinWeapons.lethal(defender, damage)) {
-				v.addBalance(5 + 2L * Dungeon.depth);
+				v.earnGold(hero, 5 + 2 * Dungeon.depth);
 			}
 		}
 		return super.proc(attacker, defender, damage);

@@ -21,7 +21,7 @@ import com.watabou.utils.Random;
 
 import java.util.ArrayList;
 
-/** Showers every visible enemy nearby with gold coins. Scales with credit. */
+/** Showers every visible enemy nearby with gold coins. Scales with carried gold. */
 public class GoldRain extends ArmorAbility {
 
 	{
@@ -38,7 +38,7 @@ public class GoldRain extends ArmorAbility {
 		Item.updateQuickslot();
 
 		GreedVault v = hero.buff(GreedVault.class);
-		float credit = v == null ? 0 : v.creditPts();
+		float credit = v == null ? 0 : v.pts();
 		int r = radius(hero);
 		int dazzle = hero.pointsInTalent(Talent.RAIN_DAZZLE);
 		int refund = hero.pointsInTalent(Talent.RAIN_REFUND);
@@ -57,7 +57,7 @@ public class GoldRain extends ArmorAbility {
 			CellEmitter.get(ch.pos).burst(Speck.factory(Speck.COIN), 6);
 			ch.damage(dmg, this);
 			if (ch.isAlive() && dazzle > 0) Buff.prolong(ch, Blindness.class, 2f * dazzle);
-			if (v != null && refund > 0) v.addBalance(5L * refund * Math.max(1, Dungeon.depth / 5 + 1));
+			if (v != null && refund > 0) v.addCharge(5f * refund * Math.max(1, Dungeon.depth / 5 + 1));
 		}
 
 		hero.sprite.operate(hero.pos);

@@ -7,6 +7,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
@@ -17,27 +18,29 @@ import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
 /**
- * The Greed class's bank account, held by the Golden Card.
+ * The Greed class's purse, tied to the Golden Card.
  *
- * Stats scale with the lifetime amount deposited ("credit"), which never goes down,
- * so withdrawing or spending the balance on payment skills keeps every stat bonus.
+ * Stats scale with the gold the hero is carrying right now, so spending gold in a shop
+ * lowers them again. Payment skills use a separate "payment limit" gauge, which is
+ * filled by picking up gold (the gold itself still goes into the wallet).
  */
 public class GreedVault extends Buff {
 
 	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
 	public boolean mirrored = false;
 
-	/** gold currently in the account, spendable on payment skills or withdrawable */
-	public long balance = 0;
-	/** lifetime gold credited to the account; drives the permanent stats */
-	public long credited = 0;
+	/** payment limit gauge, spent by the Golden Card's payment skills */
+	public float charge = 0;
 
 	/** deepest floor that has already paid out banker interest */
 	public int interestDepth = 0;
 	/** turns since the last banker dividend */
 	public float dividendTurns = 0;
 
-	public static final long MAX_BALANCE = 2_000_000_000L;
+	/** gold seen on the last tick, so max HP follows the wallet */
+	private int lastGold = -1;
+	/** card balance from saves made before the rework, returned to the wallet on the next tick */
+	private long legacyRefund = 0;
 
 	{
 		type = buffType.POSITIVE;
@@ -48,33 +51,33 @@ public class GreedVault extends Buff {
 		return target instanceof Hero ? (Hero) target : null;
 	}
 
-	// ------------------------------------------------------------------ permanent stats
+	// ------------------------------------------------------------------ stats from carried gold
 
-	/** credit points: one per 100 gold credited, unbounded */
-	public float creditPts() {
+	/** wealth points: one per 100 gold carried */
+	public float pts() {
 		Hero h = hero();
 		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.GREED_PRESTIGE);
-		return credited / 100f * mult;
+		return Math.max(0, Dungeon.gold) / 100f * mult;
 	}
 
 	public int meleeBonus() {
-		return (int) (0.20f * creditPts());
+		return (int) (0.20f * pts());
 	}
 
 	public float accuracyBonus() {
-		return Math.min(0.40f, 0.005f * creditPts());
+		return Math.min(0.40f, 0.005f * pts());
 	}
 
 	public float evasionBonus() {
-		return Math.min(0.30f, 0.004f * creditPts());
+		return Math.min(0.30f, 0.004f * pts());
 	}
 
 	public int hpBonus() {
-		return (int) (1.0f * creditPts());
+		return (int) (1.0f * pts());
 	}
 
 	public int drMax() {
-		return (int) (0.12f * creditPts());
+		return (int) (0.12f * pts());
 	}
 
 	public int drRoll() {
@@ -82,57 +85,62 @@ public class GreedVault extends Buff {
 		return max <= 0 ? 0 : Random.IntRange(max / 2, max);
 	}
 
-	// ------------------------------------------------------------------ money flow
+	/** re-syncs max HP with the wallet; safe to call any time gold changes */
+	public void goldChanged() {
+		Hero h = hero();
+		lastGold = Dungeon.gold;
+		if (h != null) h.updateHT(true);
+		BuffIndicator.refreshHero();
+		Item.updateQuickslot();
+	}
 
-	/** moves gold from the hero's wallet into the account */
-	public void deposit(Hero hero, int amount) {
-		amount = Math.min(amount, Dungeon.gold);
+	// ------------------------------------------------------------------ payment limit gauge
+
+	public float maxCharge() {
+		Hero h = hero();
+		int hoard = h == null ? 0 : h.pointsInTalent(Talent.GREED_HOARD);
+		return (100 + 50 * Math.max(1, Dungeon.depth)) * (1f + 0.25f * hoard);
+	}
+
+	public void addCharge(float amount) {
 		if (amount <= 0) return;
-		Dungeon.gold -= amount;
-		addBalance(amount);
-		credit(amount * (1f + 0.10f * hero.pointsInTalent(Talent.GREED_HOARD)));
+		charge = Math.min(maxCharge(), charge + amount);
+		BuffIndicator.refreshHero();
+		Item.updateQuickslot();
+	}
+
+	/** pays a cost out of the gauge. Returns false (and spends nothing) if it can't be afforded */
+	public boolean spend(int cost) {
+		if (cost > charge) return false;
+		charge -= cost;
+		BuffIndicator.refreshHero();
+		Item.updateQuickslot();
+		return true;
+	}
+
+	public int chargeInt() {
+		return (int) charge;
+	}
+
+	/** called when gold is picked up from the floor (not from selling items) */
+	public void onGoldPickup(Hero hero, int amount) {
+		if (amount <= 0) return;
+		addCharge(amount);
 
 		int skin = hero.pointsInTalent(Talent.GREED_GILDED_SKIN);
 		if (skin > 0) {
 			int shield = Math.min(Math.round(amount * 0.04f * skin), Math.round(hero.HT * 0.15f * skin));
 			if (shield > 0) Buff.affect(hero, Barrier.class).setShield(shield);
 		}
-
-		hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(amount), FloatingText.GOLD);
-		Sample.INSTANCE.play(Assets.Sounds.GOLD);
+		goldChanged();
 	}
 
-	/** moves gold from the account back to the hero's wallet */
-	public void withdraw(Hero hero, int amount) {
-		amount = (int) Math.min(amount, balance);
+	/** gold earned by talents, weapons or debts: goes to the wallet and fills the gauge like a pickup */
+	public void earnGold(Hero hero, int amount) {
 		if (amount <= 0) return;
-		balance -= amount;
 		Dungeon.gold += amount;
-		hero.sprite.showStatusWithIcon(CharSprite.NEUTRAL, Integer.toString(amount), FloatingText.GOLD);
-		Sample.INSTANCE.play(Assets.Sounds.GOLD);
-		BuffIndicator.refreshHero();
-	}
-
-	/** adds lifetime credit, which permanently raises stats */
-	public void credit(float amount) {
-		if (amount <= 0) return;
-		credited = Math.min(MAX_BALANCE, credited + Math.round(amount));
-		Hero h = hero();
-		if (h != null) h.updateHT(true);
-		BuffIndicator.refreshHero();
-	}
-
-	public void addBalance(long amount) {
-		balance = Math.min(MAX_BALANCE, balance + Math.max(0, amount));
-		BuffIndicator.refreshHero();
-	}
-
-	/** pays a cost out of the balance. Returns false (and spends nothing) if it can't be afforded */
-	public boolean spend(int cost) {
-		if (cost > balance) return false;
-		balance -= cost;
-		BuffIndicator.refreshHero();
-		return true;
+		hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(amount), FloatingText.GOLD);
+		onGoldPickup(hero, amount);
 	}
 
 	// ------------------------------------------------------------------ banker interest
@@ -143,12 +151,13 @@ public class GreedVault extends Buff {
 	}
 
 	private void payInterest(Hero h, float rate) {
-		long interest = (long) Math.floor(balance * rate);
+		int interest = (int) Math.min(Integer.MAX_VALUE / 4, (long) Math.floor(Math.max(0, Dungeon.gold) * (double) rate));
 		if (interest <= 0) return;
-		addBalance(interest);
+		Dungeon.gold += interest;
 		int cap = h.pointsInTalent(Talent.BANKER_CAPITALIZE);
-		if (cap > 0) credit(interest * 0.25f * cap);
-		h.sprite.showStatusWithIcon(CharSprite.POSITIVE, Long.toString(interest), FloatingText.GOLD);
+		if (cap > 0) addCharge(interest * 0.5f * cap);
+		goldChanged();
+		h.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(interest), FloatingText.GOLD);
 		GLog.p(Messages.get(GreedVault.class, "interest", interest));
 	}
 
@@ -156,6 +165,12 @@ public class GreedVault extends Buff {
 	public boolean act() {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
+			if (legacyRefund > 0) {
+				Dungeon.gold += (int) Math.min(Integer.MAX_VALUE / 4, legacyRefund);
+				legacyRefund = 0;
+			}
+			if (Dungeon.gold != lastGold) goldChanged();
+
 			if (Dungeon.depth > interestDepth) {
 				//interest is paid once per new floor, to bankers and to holders of the black card
 				float rate = (h.subClass == HeroSubClass.BANKER ? interestRate() : 0f) + (mirrored ? 0.02f : 0f);
@@ -191,10 +206,13 @@ public class GreedVault extends Buff {
 	}
 
 	@Override
+	public float iconFadePercent() {
+		return Math.max(0, 1f - charge / maxCharge());
+	}
+
+	@Override
 	public String iconTextDisplay() {
-		if (balance >= 1_000_000) return (balance / 1_000_000) + "M";
-		if (balance >= 10_000) return (balance / 1000) + "K";
-		return Long.toString(balance);
+		return Integer.toString(chargeInt());
 	}
 
 	@Override
@@ -209,7 +227,7 @@ public class GreedVault extends Buff {
 
 	public String statsText() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(Messages.get(GreedVault.class, "desc_money", balance, credited)).append("\n\n");
+		sb.append(Messages.get(GreedVault.class, "desc_money", Dungeon.gold, chargeInt(), Math.round(maxCharge()))).append("\n\n");
 		sb.append(Messages.get(GreedVault.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
@@ -223,29 +241,29 @@ public class GreedVault extends Buff {
 		return sb.toString();
 	}
 
-	private static final String BALANCE = "balance";
-	private static final String CREDITED = "credited";
+	private static final String CHARGE = "charge";
 	private static final String INTEREST_DEPTH = "interest_depth";
 	private static final String DIVIDEND = "dividend_turns";
 
 	@Override
 	public void storeInBundle(Bundle bundle) {
 		super.storeInBundle(bundle);
-		bundle.put(BALANCE, balance);
-		bundle.put(CREDITED, credited);
+		bundle.put(CHARGE, charge);
 		bundle.put(INTEREST_DEPTH, interestDepth);
 		bundle.put(DIVIDEND, dividendTurns);
 		bundle.put("mirrored", mirrored);
+		if (legacyRefund > 0) bundle.put("balance", legacyRefund);
 	}
 
 	@Override
 	public void restoreFromBundle(Bundle bundle) {
 		super.restoreFromBundle(bundle);
-		balance = bundle.getLong(BALANCE);
-		credited = bundle.getLong(CREDITED);
+		charge = bundle.getFloat(CHARGE);
 		interestDepth = bundle.getInt(INTEREST_DEPTH);
 		dividendTurns = bundle.getFloat(DIVIDEND);
 		mirrored = bundle.getBoolean("mirrored");
+		//saves from before the rework kept gold in the card; hand it back
+		legacyRefund = bundle.contains("balance") ? bundle.getLong("balance") : 0;
 	}
 
 	// ------------------------------------------------------------------ usurer debt
@@ -314,10 +332,9 @@ public class GreedVault extends Buff {
 			Debt d = debtor.buff(Debt.class);
 			GreedVault v = hero.buff(GreedVault.class);
 			if (d == null || v == null || d.principal <= 0) return;
-			long owed = Math.round(d.principal * repayMultiplier(hero));
-			v.addBalance(owed);
+			int owed = Math.round(d.principal * repayMultiplier(hero));
 			d.principal = 0;
-			hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Long.toString(owed), FloatingText.GOLD);
+			v.earnGold(hero, owed);
 			GLog.p(Messages.get(Debt.class, "collected", owed));
 			Sample.INSTANCE.play(Assets.Sounds.GOLD);
 		}

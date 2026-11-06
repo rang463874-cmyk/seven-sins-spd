@@ -13,8 +13,10 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Shopkeeper;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportation;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
@@ -24,7 +26,9 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndBag;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndTradeItem;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Callback;
 import com.watabou.utils.Random;
@@ -33,13 +37,13 @@ import java.util.ArrayList;
 
 /**
  * The Greed class's signature item. Doesn't take an equipment slot.
- * Deposit gold to permanently raise stats, then spend the balance on payment skills.
+ * Carried gold raises stats; picking up gold fills a payment gauge spent on payment skills,
+ * including selling items anywhere at shop prices.
  */
 public class GoldenCard extends Item {
 
 	public static final String AC_PAY = "PAY";
-	public static final String AC_DEPOSIT = "DEPOSIT";
-	public static final String AC_WITHDRAW = "WITHDRAW";
+	public static final String AC_SELL = "SELL";
 
 	{
 		image = ItemSpriteSheet.GOLDEN_CARD;
@@ -70,6 +74,10 @@ public class GoldenCard extends Item {
 		return discounted(hero, 10 + 2 * Dungeon.depth);
 	}
 
+	public static int sellCost(Hero hero) {
+		return discounted(hero, 10 + 2 * Dungeon.depth);
+	}
+
 	public static int bribeCost(Hero hero, Char target) {
 		return discounted(hero, 2 * target.HT);
 	}
@@ -83,7 +91,7 @@ public class GoldenCard extends Item {
 	}
 
 	public static int guardShield(Hero hero, GreedVault v) {
-		return 6 + hero.lvl + Math.round(v.creditPts() * 0.5f);
+		return 6 + hero.lvl + Math.round(v.pts() * 0.5f);
 	}
 
 	// ------------------------------------------------------------------ actions
@@ -94,8 +102,7 @@ public class GoldenCard extends Item {
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
 		actions.add(AC_PAY);
-		actions.add(AC_DEPOSIT);
-		actions.add(AC_WITHDRAW);
+		actions.add(AC_SELL);
 		return actions;
 	}
 
@@ -103,8 +110,7 @@ public class GoldenCard extends Item {
 	public String actionName(String action, Hero hero) {
 		switch (action) {
 			case AC_PAY: return Messages.get(this, "ac_pay");
-			case AC_DEPOSIT: return Messages.get(this, "ac_deposit");
-			case AC_WITHDRAW: return Messages.get(this, "ac_withdraw");
+			case AC_SELL: return Messages.get(this, "ac_sell");
 		}
 		return super.actionName(action, hero);
 	}
@@ -118,42 +124,12 @@ public class GoldenCard extends Item {
 		super.execute(hero, action);
 		final GreedVault v = vault(hero);
 
-		if (action.equals(AC_DEPOSIT)) {
-			final int gold = Dungeon.gold;
-			if (gold <= 0) {
-				GLog.w(Messages.get(this, "no_gold"));
-				return;
-			}
-			final int[] amounts = {gold, Math.max(1, gold / 2), Math.min(100, gold)};
-			GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-					Messages.get(this, "deposit_prompt", gold),
-					Messages.get(this, "opt_all", amounts[0]),
-					Messages.get(this, "opt_half", amounts[1]),
-					Messages.get(this, "opt_amount", amounts[2])) {
-				@Override
-				protected void onSelect(int index) {
-					v.deposit(hero, amounts[index]);
-					hero.spendAndNext(1f);
-				}
-			});
-
-		} else if (action.equals(AC_WITHDRAW)) {
-			if (v.balance <= 0) {
+		if (action.equals(AC_SELL)) {
+			if (v.charge < sellCost(hero)) {
 				GLog.w(Messages.get(this, "no_balance"));
 				return;
 			}
-			final int all = (int) Math.min(Integer.MAX_VALUE / 2, v.balance);
-			final int[] amounts = {all, Math.min(500, all), Math.min(100, all)};
-			GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-					Messages.get(this, "withdraw_prompt", v.balance),
-					Messages.get(this, "opt_all", amounts[0]),
-					Messages.get(this, "opt_amount", amounts[1]),
-					Messages.get(this, "opt_amount", amounts[2])) {
-				@Override
-				protected void onSelect(int index) {
-					v.withdraw(hero, amounts[index]);
-				}
-			});
+			GameScene.selectItem(sellSelector);
 
 		} else if (action.equals(AC_PAY)) {
 			showPayMenu(hero, v);
@@ -170,14 +146,15 @@ public class GoldenCard extends Item {
 		if (usurer) opts.add(Messages.get(this, "pay_loan"));
 
 		GameScene.show(new WndOptions(new ItemSprite(this), Messages.titleCase(name()),
-				Messages.get(this, "pay_prompt", v.balance), opts.toArray(new String[0])) {
+				Messages.get(this, "pay_prompt", v.chargeInt(), Math.round(v.maxCharge())), opts.toArray(new String[0])) {
 			@Override
 			protected boolean enabled(int index) {
 				switch (index) {
-					case 0: return v.balance >= coinShotCost(hero);
-					case 1: return v.balance >= guardCost(hero);
-					case 2: return v.balance >= expressCost(hero);
-					default: return v.balance > 0;
+					case 0: return v.charge >= coinShotCost(hero);
+					case 1: return v.charge >= guardCost(hero);
+					case 2: return v.charge >= expressCost(hero);
+					case 3: return v.charge > 0;
+					default: return Dungeon.gold > 0;
 				}
 			}
 
@@ -338,10 +315,12 @@ public class GoldenCard extends Item {
 			}
 			GreedVault v = vault(hero);
 			int amount = loanAmount(enemy);
-			if (!v.spend(amount)) {
-				GLog.w(Messages.get(GoldenCard.class, "too_expensive", amount));
+			if (Dungeon.gold < amount) {
+				GLog.w(Messages.get(GoldenCard.class, "loan_no_gold", amount));
 				return;
 			}
+			Dungeon.gold -= amount;
+			v.goldChanged();
 			Buff.affect(enemy, GreedVault.Debt.class).principal = amount;
 			enemy.sprite.showStatusWithIcon(CharSprite.NEGATIVE, Integer.toString(amount), com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText.GOLD);
 			GLog.i(Messages.get(GoldenCard.class, "loaned", enemy.name(), amount));
@@ -356,7 +335,60 @@ public class GoldenCard extends Item {
 		}
 	};
 
+	// ------------------------------------------------------------------ remote selling
+
+	private final WndBag.ItemSelector sellSelector = new WndBag.ItemSelector() {
+		@Override
+		public String textPrompt() {
+			return Messages.get(GoldenCard.class, "sell_prompt", sellCost(Dungeon.hero));
+		}
+
+		@Override
+		public boolean itemSelectable(Item item) {
+			return Shopkeeper.canSell(item);
+		}
+
+		@Override
+		public void onSelect(final Item item) {
+			final Hero hero = Dungeon.hero;
+			if (item == null || hero == null || !hero.isAlive()) return;
+			final GreedVault v = vault(hero);
+			final int cost = sellCost(hero);
+			final boolean stack = item.quantity() > 1 && !(item instanceof MissileWeapon && item.isUpgradable());
+			final int priceAll = item.value();
+			ArrayList<String> opts = new ArrayList<>();
+			if (stack) {
+				opts.add(Messages.get(GoldenCard.class, "sell_one", priceAll / item.quantity()));
+				opts.add(Messages.get(GoldenCard.class, "sell_all", priceAll));
+			} else {
+				opts.add(Messages.get(GoldenCard.class, "sell_all", priceAll));
+			}
+			GameScene.show(new WndOptions(new ItemSprite(item), Messages.titleCase(item.name()),
+					Messages.get(GoldenCard.class, "sell_confirm", cost, v.chargeInt()),
+					opts.toArray(new String[0])) {
+				@Override
+				protected void onSelect(int index) {
+					if (!v.spend(cost)) {
+						GLog.w(Messages.get(GoldenCard.class, "no_balance"));
+						return;
+					}
+					if (stack && index == 0) WndTradeItem.sellOne(item);
+					else WndTradeItem.sell(item);
+					hero.sprite.centerEmitter().burst(Speck.factory(Speck.COIN), 6);
+					updateQuickslot();
+				}
+			});
+		}
+	};
+
 	// ------------------------------------------------------------------ info
+
+	@Override
+	public String status() {
+		Hero h = Dungeon.hero;
+		GreedVault v = h == null ? null : h.buff(GreedVault.class);
+		return v == null ? null : Integer.toString(v.chargeInt());
+	}
 
 	@Override
 	public String desc() {

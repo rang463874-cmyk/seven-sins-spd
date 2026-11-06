@@ -21,6 +21,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
+import com.shatteredpixel.shatteredpixeldungeon.greed.GreedHooks;
+
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -251,7 +253,9 @@ public class WndTradeItem extends WndInfoItem {
 		//selling items in the sell interface doesn't spend time
 		hero.spend(-hero.cooldown());
 
+		GreedHooks.selling = true;
 		new Gold( item.value() ).doPickUp( hero );
+		GreedHooks.selling = false;
 
 		if (shop != null){
 			shop.buybackItems.add(item);
@@ -278,7 +282,9 @@ public class WndTradeItem extends WndInfoItem {
 			//selling items in the sell interface doesn't spend time
 			hero.spend(-hero.cooldown());
 
-			new Gold( item.value() ).doPickUp( hero );
+			GreedHooks.selling = true;
+		new Gold( item.value() ).doPickUp( hero );
+		GreedHooks.selling = false;
 
 			if (shop != null){
 				shop.buybackItems.add(item);

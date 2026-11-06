@@ -24,7 +24,7 @@ public class CollectorRod extends Cudgel {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
 			if (Random.Float() < 0.30f) {
-				Buff.affect(hero, GreedVault.class).addBalance(1 + Dungeon.depth);
+				Buff.affect(hero, GreedVault.class).earnGold(hero, 1 + Dungeon.depth);
 			}
 		}
 		return super.proc(attacker, defender, damage);

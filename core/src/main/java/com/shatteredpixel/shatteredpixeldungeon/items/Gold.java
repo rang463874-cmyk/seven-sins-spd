@@ -67,6 +67,7 @@ public class Gold extends Item {
 
 		quantity += GreedHooks.bonusGold( hero, quantity ) + EnvyHooks.bonusGold( hero, quantity );
 		Dungeon.gold += quantity;
+		GreedHooks.onGoldPickup( hero, quantity );
 		Statistics.goldCollected += quantity;
 		Badges.validateGoldCollected();
 
