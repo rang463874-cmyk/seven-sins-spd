@@ -95,6 +95,32 @@ public class GreedVault extends Buff {
 		Item.updateQuickslot();
 	}
 
+	// ------------------------------------------------------------------ mail order & gilding
+
+	/** consumables on offer through the card's mail order, restocked on every new floor */
+	public final java.util.ArrayList<Item> catalog = new java.util.ArrayList<>();
+	public int catalogDepth = -1;
+	/** equipment upgrades bought with the card so far (each one costs more) */
+	public int gilded = 0;
+
+	public java.util.ArrayList<Item> catalog() {
+		if (catalogDepth != Dungeon.depth) {
+			catalogDepth = Dungeon.depth;
+			catalog.clear();
+			catalog.add(new com.shatteredpixel.shatteredpixeldungeon.items.food.Food());
+			catalog.add(new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing().identify());
+			for (int i = 0; i < 2; i++) catalog.add(com.shatteredpixel.shatteredpixeldungeon.items.Generator.random(
+					com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.POTION));
+			for (int i = 0; i < 2; i++) catalog.add(com.shatteredpixel.shatteredpixeldungeon.items.Generator.random(
+					com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.SCROLL));
+			catalog.add(com.shatteredpixel.shatteredpixeldungeon.items.Generator.random(
+					com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.STONE));
+			catalog.add(com.shatteredpixel.shatteredpixeldungeon.items.Generator.random(
+					com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.SEED));
+		}
+		return catalog;
+	}
+
 	// ------------------------------------------------------------------ payment limit gauge
 
 	public float maxCharge() {
@@ -257,6 +283,9 @@ public class GreedVault extends Buff {
 		bundle.put(INTEREST_DEPTH, interestDepth);
 		bundle.put(DIVIDEND, dividendTurns);
 		bundle.put("mirrored", mirrored);
+		bundle.put("catalog", catalog);
+		bundle.put("catalog_depth", catalogDepth);
+		bundle.put("gilded", gilded);
 		if (legacyRefund > 0) bundle.put("balance", legacyRefund);
 	}
 
@@ -267,6 +296,12 @@ public class GreedVault extends Buff {
 		interestDepth = bundle.getInt(INTEREST_DEPTH);
 		dividendTurns = bundle.getFloat(DIVIDEND);
 		mirrored = bundle.getBoolean("mirrored");
+		catalog.clear();
+		if (bundle.contains("catalog")) {
+			for (com.watabou.utils.Bundlable b : bundle.getCollection("catalog")) if (b instanceof Item) catalog.add((Item) b);
+		}
+		catalogDepth = bundle.contains("catalog_depth") ? bundle.getInt("catalog_depth") : -1;
+		gilded = bundle.getInt("gilded");
 		//saves from before the rework kept gold in the card; hand it back
 		legacyRefund = bundle.contains("balance") ? bundle.getLong("balance") : 0;
 	}

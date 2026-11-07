@@ -43,6 +43,8 @@ Max HP growth from sin points was halved (Nov 2026), and starvation damage scale
 Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
 Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
 spend a gauge filled 1:1 by gold pickups (`GreedHooks.selling` keeps sale proceeds from filling it).
+Greed also has Mail Order (`GreedVault.catalog`, 8 consumables restocked per floor, gold at shop price +
+gauge fee) and Gilding (+1 upgrade for 300 + 150 per previous use of gauge, `GreedVault.gilded`).
 Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies (DirectableAlly that roam the
 level on their own via a `Roaming` wandering state, `intelligentAlly = false`; they vanish when the hero changes floors (`Mob.holdAllies` drops them); max puppets +1 at pillow +3/+5/+10 (`SlothRepose.pillowPuppets`); `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
 `SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.

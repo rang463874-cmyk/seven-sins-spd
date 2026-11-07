@@ -79,6 +79,16 @@ public class GoldenCard extends SinArtifact {
 		return discounted(hero, 10 + 2 * Dungeon.depth);
 	}
 
+	public static int buyCost(Hero hero) {
+		return discounted(hero, 10 + 2 * Dungeon.depth);
+	}
+
+	/** gauge cost of the next upgrade bought with the card */
+	public static int gildCost(Hero hero) {
+		GreedVault v = hero.buff(GreedVault.class);
+		return discounted(hero, 300 + 150 * (v == null ? 0 : v.gilded));
+	}
+
 	public static int sellCost(Hero hero) {
 		return discounted(hero, 10 + 2 * Dungeon.depth);
 	}
@@ -189,6 +199,15 @@ public class GoldenCard extends SinArtifact {
 				.cost(h -> sellCost(h))
 				.usableIf(h -> vault(h).charge >= sellCost(h))
 				.onUse(h -> GameScene.selectItem(sellSelector)));
+		list.add(new BasicSkill(GoldenCard.class, "shop", 14, SinSkill.CostType.GAUGE)
+				.cost(h -> buyCost(h))
+				.usableIf(h -> vault(h).charge >= buyCost(h))
+				.onUse(GoldenCard::mailOrder));
+		list.add(new BasicSkill(GoldenCard.class, "gild", 15, SinSkill.CostType.GAUGE)
+				.cost(h -> gildCost(h))
+				.usableIf(h -> vault(h).charge >= gildCost(h))
+				.descArgs(h -> new Object[]{vault(h).gilded})
+				.onUse(h -> GameScene.selectItem(gildSelector)));
 		return list;
 	}
 
@@ -399,6 +418,97 @@ public class GoldenCard extends SinArtifact {
 					updateQuickslot();
 				}
 			});
+		}
+	};
+
+	// ------------------------------------------------------------------ mail order
+
+	public static int buyPrice(Item item) {
+		return Shopkeeper.sellPrice(item);
+	}
+
+	private static void mailOrder(final Hero hero) {
+		final GreedVault v = vault(hero);
+		final ArrayList<Item> stock = v.catalog();
+		if (stock.isEmpty()) {
+			GLog.w(Messages.get(GoldenCard.class, "shop_empty"));
+			return;
+		}
+		String[] labels = new String[stock.size()];
+		for (int i = 0; i < stock.size(); i++) {
+			Item it = stock.get(i);
+			labels[i] = Messages.titleCase(it.name()) + "  (" + buyPrice(it) + "g)";
+		}
+		GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.GOLDEN_CARD),
+				Messages.get(GoldenCard.class, "shop_title"),
+				Messages.get(GoldenCard.class, "shop_msg", buyCost(hero), Dungeon.gold), labels) {
+			@Override
+			protected void onSelect(int index) {
+				Item it = stock.get(index);
+				int price = buyPrice(it);
+				if (Dungeon.gold < price) {
+					GLog.w(Messages.get(GoldenCard.class, "shop_no_gold"));
+					return;
+				}
+				if (!v.spend(buyCost(hero))) {
+					GLog.w(Messages.get(GoldenCard.class, "no_balance"));
+					return;
+				}
+				Dungeon.gold -= price;
+				stock.remove(index);
+				if (!it.doPickUp(hero)) {
+					Dungeon.level.drop(it, hero.pos).sprite.drop();
+				}
+				hero.updateHT(false);
+				GLog.i(Messages.get(GoldenCard.class, "shop_bought", it.name(), price));
+				Sample.INSTANCE.play(Assets.Sounds.GOLD);
+				hero.sprite.centerEmitter().burst(Speck.factory(Speck.COIN), 6);
+				updateQuickslot();
+			}
+
+			@Override
+			protected boolean hasInfo(int index) {
+				return true;
+			}
+
+			@Override
+			protected void onInfo(int index) {
+				Item it = stock.get(index);
+				GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndTitledMessage(
+						new ItemSprite(it), Messages.titleCase(it.name()), it.info()));
+			}
+		});
+	}
+
+	// ------------------------------------------------------------------ gilding (upgrades)
+
+	private final WndBag.ItemSelector gildSelector = new WndBag.ItemSelector() {
+		@Override
+		public String textPrompt() {
+			return Messages.get(GoldenCard.class, "gild_prompt", gildCost(Dungeon.hero));
+		}
+
+		@Override
+		public boolean itemSelectable(Item item) {
+			return item.isUpgradable();
+		}
+
+		@Override
+		public void onSelect(Item item) {
+			final Hero hero = Dungeon.hero;
+			if (item == null || hero == null || !hero.isAlive() || !item.isUpgradable()) return;
+			GreedVault v = vault(hero);
+			if (!v.spend(gildCost(hero))) {
+				GLog.w(Messages.get(GoldenCard.class, "no_balance"));
+				return;
+			}
+			v.gilded++;
+			item.upgrade();
+			com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade.upgrade(hero);
+			GLog.p(Messages.get(GoldenCard.class, "gilded", item.name()));
+			hero.sprite.centerEmitter().burst(Speck.factory(Speck.COIN), 10);
+			hero.spendAndNext(1f);
+			updateQuickslot();
 		}
 	};
 
