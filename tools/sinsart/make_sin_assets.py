@@ -337,6 +337,104 @@ def horsemen_art(items):
     items.paste(draw(MIRROR_CASE, MIRROR_CASE_PAL), cell(HORSEMEN_ROW + 12, 16)[:2])
 
 
+ELITE_ROW = 576  # row 37 of items.png: elite drops and the mod's alchemy items
+
+# 12x12 sin essence: a dark flame inside a cut gem
+ESSENCE = [
+    ".....OO.....",
+    "....ORRO....",
+    "...ORYRRO...",
+    "..ORRYYRRO..",
+    ".ORRYHHYRRO.",
+    "ORRYHHHHYRRO",
+    "ORRYHHHHYRRO",
+    ".ORRYHHYRRO.",
+    "..ORRYYRRO..",
+    "...ORRRRO...",
+    "....ORRO....",
+    ".....OO.....",
+]
+ESSENCE_PAL = {"O": (30, 6, 30, 255), "R": (120, 20, 90, 255), "Y": (220, 60, 120, 255), "H": (255, 190, 220, 255)}
+
+# 12x14 elixir of sin: a crimson flask with a gold stopper
+ELIXIR = [
+    "....YYYY....",
+    "....YSSY....",
+    ".....OO.....",
+    ".....OO.....",
+    "....OLLO....",
+    "...OLRRLO...",
+    "..ORRRRRRO..",
+    ".ORRHRRRRRO.",
+    ".ORHRRRRRRO.",
+    ".ORRRRRRRRO.",
+    ".ODRRRRRRDO.",
+    "..ODDRRDDO..",
+    "...OODDOO...",
+    "............",
+]
+ELIXIR_PAL = {"O": (40, 10, 20, 255), "R": (170, 20, 50, 255), "D": (110, 10, 34, 255), "H": (255, 170, 190, 255),
+              "L": (210, 200, 220, 255), "Y": (230, 190, 80, 255), "S": (160, 120, 40, 255)}
+
+# 13x11 rolled herbal bandage
+BANDAGE = [
+    ".............",
+    "...OOOOOOO...",
+    "..OWWWWWWWO..",
+    ".OWWGWWWGWWO.",
+    ".OWWWWWWWWWOO",
+    ".OWWWOOOWWWOW",
+    ".OWWWOGOWWWOW",
+    ".OWWWOOOWWWOW",
+    ".OWWGWWWGWWOW",
+    "..OWWWWWWWOWW",
+    "...OOOOOOO...",
+]
+BANDAGE_PAL = {"O": (90, 80, 60, 255), "W": (240, 232, 210, 255), "G": (110, 170, 70, 255)}
+
+# 12x12 stimulant: a syringe with a yellow-green dose
+STIMULANT = [
+    "..........OO",
+    ".........OHO",
+    "........OHO.",
+    ".......OGGO.",
+    "......OGGO..",
+    ".....OGGO...",
+    "....OGGO....",
+    "..OOGGO.....",
+    ".OSOOO......",
+    "O.SO........",
+    ".O..........",
+    "............",
+]
+STIMULANT_PAL = {"O": (50, 60, 70, 255), "H": (200, 210, 220, 255), "G": (180, 230, 60, 255), "S": (160, 170, 180, 255)}
+
+BOMB_ICON = 80
+
+
+def tint_px(hue, sat, vmul):
+    """paints a mostly grey sprite in a strong colour (keeps near-white highlights and outlines)"""
+    def f(p):
+        if p[3] == 0:
+            return p
+        h, s_, v, a = hsv(p)
+        if v < 0.12 or v > 0.85:
+            return p
+        return rgb(hue, sat, min(1, v * vmul), a)
+    return f
+
+
+def elite_art(items):
+    """sin essence, elixir of sin, bomb of seven sins, sticky bomb, bandage, stimulant"""
+    items.paste(draw(ESSENCE, ESSENCE_PAL), cell(ELITE_ROW + 0, 16)[:2])
+    items.paste(draw(ELIXIR, ELIXIR_PAL), cell(ELITE_ROW + 1, 16)[:2])
+    bomb = items.crop(cell(BOMB_ICON, 16))
+    items.paste(recolor(bomb, tint_px(290, 0.65, 1.8)), cell(ELITE_ROW + 2, 16)[:2])
+    items.paste(recolor(bomb, tint_px(85, 0.6, 1.7)), cell(ELITE_ROW + 3, 16)[:2])
+    items.paste(draw(BANDAGE, BANDAGE_PAL), cell(ELITE_ROW + 4, 16)[:2])
+    items.paste(draw(STIMULANT, STIMULANT_PAL), cell(ELITE_ROW + 5, 16)[:2])
+
+
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the
 #            cleric row, one per talent in Talent order, last entry = heroic energy.
@@ -476,7 +574,7 @@ def main():
     hero_icons = Image.open(p("interfaces/hero_icons.png")).convert("RGBA")
     hero_icons = grow(hero_icons, 128, 16 * (16 + 7))
     items = Image.open(p("sprites/items.png")).convert("RGBA")
-    items = grow(items, 256, 16 * 36)
+    items = grow(items, 256, 16 * 37)
 
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]
@@ -533,6 +631,7 @@ def main():
 
     items.paste(draw(SIGIL, SIGIL_PAL), cell(SIN_WEAPON_ROW + 14, 16)[:2])
     horsemen_art(items)
+    elite_art(items)
     avatars.save(p("sprites/avatars.png"))
     talents.save(p("interfaces/talent_icons.png"))
     hero_icons.save(p("interfaces/hero_icons.png"))

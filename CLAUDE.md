@@ -26,6 +26,20 @@ Done and pushed (see `git log`):
 - GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
 - Four horsemen relics (all classes) from the sewer "prophet of seals" quest, see below.
+- Elite monsters (Nov 2026, `elites/EliteHooks`, called from the end of `RegularLevel.createMobs`, `Mob.die`,
+  `Mob.name`; region record saved with the quests in `Dungeon`). Sin elites (`elites/SinElite`, built on
+  `ChampionEnemy`: aura, factors and attack procs are already wired; +50% HT once via `boosted`, x2 exp, name
+  prefix; 7 kinds gluttony..sloth) appear on 25% of floors 2-24. `Char.buff(Class)` matches exact classes, so use
+  `EliteHooks.sinElite(ch)`. Region elites (`actors/mobs/elites/`, base `RegionElite` = Seal Warden style telegraphed
+  skills via `prepare/release`): RatChieftain (sewers), ChainWarden (prison), GnollForeman (caves), FallenPriest
+  (city), Hellhound twins (halls, `twin` id, survivor enrages); one per region (chance 1/floors left, forced on the
+  region's last regular floor), listed in the bestiary's QUEST group. Drops: sin elite 1 `items/SinEssence` (+ own
+  sin: `sins/SinRewards.grant` 15 pts; greedy: stolen gold x2), region elite 2 essences + uncursed +1
+  weapon/armor/ring (`EliteHooks.regionReward`).
+- Alchemy (Nov 2026): `items/elite/ElixirOfSin` (2 essences + any potion: +20 sin points and resource refill,
+  else full heal + bless), `items/bombs/SinBomb` (bomb + essence, random sin debuff), `items/bombs/StickyBomb`
+  (bomb + earthroot seed, roots + webs, no blast; both in `Bomb.EnhanceBomb`), `items/elite/Bandage` (2 sungrass
+  seeds -> 2), `items/elite/Stimulant` (swiftthistle + blindweed seeds, instant haste/adrenaline). Art: items.png row 37.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -186,9 +200,10 @@ mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.
 Reserved layout (must match the Java constants):
 - `talent_icons.png`: row 8 + k (icon 256 + 32k + i), heroic energy at +26
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
-- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 576):
+- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 592):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
-  row 36 horsemen relics (gun, war sword, scales, scythe) + seal fragment (+0..4), sin remains (+5..11), mirror case (+12)
+  row 36 horsemen relics (gun, war sword, scales, scythe) + seal fragment (+0..4), sin remains (+5..11), mirror case (+12),
+  row 37 sin essence, elixir of sin, sin bomb, sticky bomb, bandage, stimulant (`elite_art`)
 - `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
 k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
 

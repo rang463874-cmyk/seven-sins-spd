@@ -305,6 +305,8 @@ public abstract class RegularLevel extends Level {
 			}
 		}
 
+		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.onLevelMobs(this, rooms, roomEntrance);
+
 		for (Mob m : mobs){
 			if (map[m.pos] == Terrain.HIGH_GRASS || map[m.pos] == Terrain.FURROWED_GRASS) {
 				map[m.pos] = Terrain.GRASS;

@@ -277,7 +277,9 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.bombs.Noisemaker",
 			"com.shatteredpixel.shatteredpixeldungeon.items.bombs.RegrowthBomb",
 			"com.shatteredpixel.shatteredpixeldungeon.items.bombs.ShrapnelBomb",
+			"com.shatteredpixel.shatteredpixeldungeon.items.bombs.SinBomb",
 			"com.shatteredpixel.shatteredpixeldungeon.items.bombs.SmokeBomb",
+			"com.shatteredpixel.shatteredpixeldungeon.items.bombs.StickyBomb",
 			"com.shatteredpixel.shatteredpixeldungeon.items.bombs.WoollyBomb",
 		},
 		{"음식",
@@ -385,6 +387,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.Perfume",
 			"com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw",
 			"com.shatteredpixel.shatteredpixeldungeon.items.PrideCrown",
+			"com.shatteredpixel.shatteredpixeldungeon.items.SinEssence",
 			"com.shatteredpixel.shatteredpixeldungeon.items.SinSigil",
 			"com.shatteredpixel.shatteredpixeldungeon.items.SlothPillow",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Stylus",
@@ -392,6 +395,9 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.Torch",
 			"com.shatteredpixel.shatteredpixeldungeon.items.WarDrum",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Waterskin",
+			"com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage",
+			"com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin",
+			"com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant",
 		},
 	};
 }

@@ -1053,6 +1053,7 @@ public abstract class Mob extends Char {
 		LustHooks.onMobDeath( this, cause );
 		EnvyHooks.onMobDeath( this, cause );
 		SlothHooks.onMobDeath( this, cause );
+		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.onMobDeath( this, cause );
 
 		if (cause == Chasm.class){
 			//50% chance to round up, 50% to round down
@@ -1219,6 +1220,11 @@ public abstract class Mob extends Char {
 	
 	public String description() {
 		return Messages.get(this, "desc");
+	}
+
+	@Override
+	public String name() {
+		return com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.name(this, super.name());
 	}
 
 	public String info(){

@@ -242,7 +242,13 @@ public enum Bestiary {
 		QUEST.addEntities(FetidRat.class, GnollTrickster.class, GreatCrab.class,
 				Elemental.NewbornFireElemental.class, RotLasher.class, RotHeart.class,
 				CrystalWisp.class, CrystalGuardian.class, CrystalSpire.class, GnollGuard.class, GnollSapper.class, GnollGeomancer.class,
-				VaultSkeleton.class, VaultDM100.class, VaultShaman.class, VaultDM200.class, VaultSentry.class, VaultLaser.class, VaultBossElemental.class);
+				VaultSkeleton.class, VaultDM100.class, VaultShaman.class, VaultDM200.class, VaultSentry.class, VaultLaser.class, VaultBossElemental.class,
+				//seven sins mod: region elites
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.RatChieftain.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.ChainWarden.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.GnollForeman.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.FallenPriest.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.Hellhound.class);
 
 		NEUTRAL.addEntities(Ghost.class, RatKing.class, Shopkeeper.class, Wandmaker.class, Blacksmith.class, Imp.class, Sheep.class, Bee.class);
 

@@ -29,7 +29,7 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
-	private static final int TX_HEIGHT = 576; //extended by four rows for the seven sins mod
+	private static final int TX_HEIGHT = 592; //extended by five rows for the seven sins mod
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
 
@@ -938,6 +938,23 @@ public class ItemSpriteSheet {
 		assignItemRect(ARTIFACT_FAMINE,   12, 12);
 		assignItemRect(ARTIFACT_DEATH,    (int)film.width(WAR_SCYTHE), (int)film.height(WAR_SCYTHE));
 		assignItemRect(SEAL_FRAGMENT,     10, 10);
+	}
+
+	//elite drops and the mod's alchemy items
+	private static final int ELITE      =                                   xy(1, 37);  //16 slots
+	public static final int SIN_ESSENCE       = ELITE+0;
+	public static final int ELIXIR_OF_SIN     = ELITE+1;
+	public static final int SIN_BOMB          = ELITE+2;
+	public static final int STICKY_BOMB       = ELITE+3;
+	public static final int BANDAGE           = ELITE+4;
+	public static final int STIMULANT         = ELITE+5;
+	static{
+		assignItemRect(SIN_ESSENCE,   12, 12);
+		assignItemRect(ELIXIR_OF_SIN, 12, 14);
+		assignItemRect(SIN_BOMB,      10, 13);
+		assignItemRect(STICKY_BOMB,   10, 13);
+		assignItemRect(BANDAGE,       13, 11);
+		assignItemRect(STIMULANT,     12, 12);
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite

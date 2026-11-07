@@ -279,6 +279,7 @@ public class Dungeon {
 		Blacksmith.Quest.reset();
 		Imp.Quest.reset();
 		Prophet.Quest.reset();
+		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.reset();
 
 		hero = new Hero();
 		hero.live();
@@ -666,6 +667,7 @@ public class Dungeon {
 			Blacksmith	.Quest.storeInBundle( quests );
 			Imp			.Quest.storeInBundle( quests );
 			Prophet		.Quest.storeInBundle( quests );
+			com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.storeInBundle( quests );
 			bundle.put( QUESTS, quests );
 			
 			SpecialRoom.storeRoomsInBundle( bundle );
@@ -773,12 +775,14 @@ public class Dungeon {
 				Blacksmith.Quest.restoreFromBundle( quests );
 				Imp.Quest.restoreFromBundle( quests );
 				Prophet.Quest.restoreFromBundle( quests );
+				com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.restoreFromBundle( quests );
 			} else {
 				Ghost.Quest.reset();
 				Wandmaker.Quest.reset();
 				Blacksmith.Quest.reset();
 				Imp.Quest.reset();
 				Prophet.Quest.reset();
+		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.reset();
 			}
 			
 			SpecialRoom.restoreRoomsFromBundle(bundle);

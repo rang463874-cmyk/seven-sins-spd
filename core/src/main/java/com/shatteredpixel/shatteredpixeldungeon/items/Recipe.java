@@ -194,7 +194,8 @@ public abstract class Recipe {
 		new SummonElemental.Recipe(),
 		new StewedMeat.oneMeat(),
 		new TrinketCatalyst.Recipe(),
-		new Trinket.UpgradeTrinket()
+		new Trinket.UpgradeTrinket(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe()
 	};
 	
 	private static Recipe[] twoIngredientRecipes = new Recipe[]{
@@ -210,7 +211,9 @@ public abstract class Recipe {
 		new CurseInfusion.Recipe(),
 		new ReclaimTrap.Recipe(),
 		new WildEnergy.Recipe(),
-		new StewedMeat.twoMeat()
+		new StewedMeat.twoMeat(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.Recipe()
 	};
 	
 	private static Recipe[] threeIngredientRecipes = new Recipe[]{
