@@ -63,7 +63,8 @@ shown as the "alchemic glutton". Old Inheritor enchant/glyph lists are kept in s
 Skill resources (Nov 2026): Wrath spends **rage** (`WrathGrudge.rage`, 0..maxRage 100+, filled by hits dealt
 (+4) and damage taken (100 per max HP), cools 1/turn with no enemies in view; old charge sources convert at
 1 charge = 25 rage). Pride spends **dignity** stacks (`PrideGlory.useDignity`; dignity also gives +4% melee per
-stack and shatters when hit). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
+stack and shatters when hit); Disdain = 1-dignity ranged bolt, x dignityMult, kills count as flawless via
+`PrideHooks.heroCaused` accepting `PrideCrown.class`). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
 (Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; a meal with SLOTH_PILLOW skips
 dozing). Cost types RAGE/DIGNITY/TURNS/JEALOUSY in `SinSkill.CostType`.
 Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: 12 copies of other

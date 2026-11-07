@@ -28,6 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
 import com.watabou.noosa.audio.Sample;
+import com.watabou.utils.Random;
 
 import java.util.ArrayList;
 
@@ -110,6 +111,11 @@ public class PrideCrown extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(PrideCrown.class, "disdain", 28, SinSkill.CostType.DIGNITY).projectile()
+				.cost(h -> COST_DISDAIN)
+				.usableIf(h -> glory(h).dignity >= COST_DISDAIN)
+				.descArgs(h -> new Object[]{disdainMin(h), disdainMax(h)})
+				.onUse(h -> GameScene.selectCell(disdain)));
 		list.add(new BasicSkill(PrideCrown.class, "command", 24, SinSkill.CostType.DIGNITY).targetsEnemy()
 				.cost(h -> COST_COMMAND)
 				.usableIf(h -> glory(h).dignity >= COST_COMMAND)
@@ -166,6 +172,55 @@ public class PrideCrown extends SinArtifact {
 	}
 
 	// ------------------------------------------------------------------ skills
+
+	// ------------------------------------------------------------------ disdain (ranged)
+
+	public static final int COST_DISDAIN = 1;
+
+	public static int disdainMin(Hero hero) {
+		return 2 + hero.lvl / 3;
+	}
+
+	public static int disdainMax(Hero hero) {
+		PrideGlory g = hero.buff(PrideGlory.class);
+		return 5 + hero.lvl * 2 / 3 + (g == null ? 0 : g.meleeBonus() / 2);
+	}
+
+	/** a contemptuous glance from afar: lets Pride fight without ever being touched */
+	private final CellSelector.Listener disdain = new CellSelector.Listener() {
+		@Override
+		public void onSelect(Integer cell) {
+			if (cell == null) return;
+			final Hero hero = Dungeon.hero;
+			if (cell == hero.pos) return;
+			final int target = new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(hero.pos, cell,
+					com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.PROJECTILE).collisionPos;
+			final Char ch = Actor.findChar(target);
+			if (ch == null || ch == hero || ch.alignment == Char.Alignment.ALLY) {
+				GLog.w(Messages.get(PrideCrown.class, "no_target"));
+				return;
+			}
+			final PrideGlory g = glory(hero);
+			if (!g.useDignity(COST_DISDAIN)) return;
+			hero.sprite.zap(target);
+			hero.busy();
+			com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile.boltFromChar(hero.sprite.parent,
+					com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile.SHAMAN_PURPLE, hero.sprite, target, () -> {
+				com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton.target(ch);
+				int dmg = Math.round(Random.NormalIntRange(disdainMin(hero), disdainMax(hero)) * g.dignityMult());
+				ch.damage(dmg, PrideCrown.class);
+				if (ch.sprite != null) ch.sprite.emitter().burst(Speck.factory(Speck.STAR), 3);
+				Sample.INSTANCE.play(Assets.Sounds.HIT_MAGIC);
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility.dispel();
+				hero.spendAndNext(1f);
+			});
+		}
+
+		@Override
+		public String prompt() {
+			return Messages.get(PrideCrown.class, "prompt_disdain");
+		}
+	};
 
 	private final CellSelector.Listener command = new CellSelector.Listener() {
 		@Override

@@ -44,7 +44,8 @@ public final class PrideHooks {
 				|| cause instanceof Weapon
 				|| cause instanceof Weapon.Enchantment
 				|| cause instanceof Wand
-				|| cause instanceof ArmorAbility;
+				|| cause instanceof ArmorAbility
+				|| cause == com.shatteredpixel.shatteredpixeldungeon.items.PrideCrown.class;
 	}
 
 	// ------------------------------------------------------------------ damage

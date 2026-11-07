@@ -512,7 +512,7 @@ ICONS = {
     0: "JAW", 1: "FANG", 2: "LOOP", 3: "BOLT", 4: "SPLASH",
     8: "COIN", 9: "SHIELD", 10: "ARROW", 11: "HAND", 12: "SCROLL", 13: "BAG", 14: "CART", 15: "UP",
     16: "EXCLAIM", 17: "CROSSARROWS", 18: "BURST", 19: "ARROW",
-    24: "CROWN", 25: "SWORDS", 26: "STAR", 27: "SCROLL",
+    24: "CROWN", 25: "SWORDS", 26: "STAR", 27: "SCROLL", 28: "EYE",
     32: "HEART", 33: "WAVE", 34: "DROP", 35: "DHEART",
     40: "MASK", 41: "SWAP", 42: "SWAP", 43: "MASK",
     48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ",
