@@ -22,7 +22,7 @@ import java.util.HashMap;
  * All scale with that sin's growth points and are capped:
  *   Wrath: attack speed (+50%)        Gluttony: HP regeneration (1.5 HP/turn)
  *   Greed: loot drop chance (+100%)   Pride: debuff resistance (50%)
- *   Lust: movement speed (+30%)       Envy: experience gained (+50%)
+ *   Lust: movement speed (+30%)       Envy: rare variant spawns (+300%)
  *   Sloth: slower hunger (50%)
  * Every method is a cheap pass-through for heroes without the matching buff.
  */
@@ -58,8 +58,29 @@ public final class UniqueStats {
 		return Math.min(0.30f, 0.003f * d.pts());
 	}
 
-	public static float expBonus(EnvyCovet e) {
-		return Math.min(0.50f, 0.004f * e.pts());
+	/** extra rare-variant spawn chance (+300% = 4x at most) */
+	public static final float RARE_CAP = 3.00f;
+
+	public static float rareBonus(EnvyCovet e) {
+		return Math.min(RARE_CAP, 0.02f * e.pts());
+	}
+
+	/** RatSkull.exoticChanceMultiplier: multiply by this */
+	public static float rareMultiplier() {
+		Hero hero = Dungeon.hero;
+		EnvyCovet e = hero == null ? null : hero.buff(EnvyCovet.class);
+		return e == null ? 1f : 1f + rareBonus(e);
+	}
+
+	/** Envy at the cap: kills have a 5% chance to grant mind vision for 3 turns */
+	public static void onKill(Hero hero) {
+		EnvyCovet e = hero == null ? null : hero.buff(EnvyCovet.class);
+		if (e == null || rareBonus(e) < RARE_CAP || com.watabou.utils.Random.Float() >= 0.05f) return;
+		Buff.prolong(hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MindVision.class, 3f);
+		Dungeon.observe();
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.updateFog();
+		hero.sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.POSITIVE,
+				Messages.get(UniqueStats.class, "envy_sight"));
 	}
 
 	/** fraction by which hunger is slowed */
@@ -81,11 +102,9 @@ public final class UniqueStats {
 		return d == null ? 1f : 1f + moveSpeedBonus(d);
 	}
 
-	/** Hero.earnExp */
+	/** Hero.earnExp (Envy used to gain bonus exp; no sin does now) */
 	public static int bonusExp(Hero hero, int exp) {
-		EnvyCovet e = hero.buff(EnvyCovet.class);
-		if (e == null || exp <= 0) return exp;
-		return Math.round(exp * (1f + expBonus(e)));
+		return exp;
 	}
 
 	/** Mob.lootChance: added to the drop bonus */
@@ -161,7 +180,7 @@ public final class UniqueStats {
 		} else if (ch.buff(LustDesire.class) != null) {
 			s = Messages.get(UniqueStats.class, "lust", Math.round(moveSpeedBonus(ch.buff(LustDesire.class)) * 100));
 		} else if (ch.buff(EnvyCovet.class) != null) {
-			s = Messages.get(UniqueStats.class, "envy", Math.round(expBonus(ch.buff(EnvyCovet.class)) * 100));
+			s = Messages.get(UniqueStats.class, "envy", Math.round(rareBonus(ch.buff(EnvyCovet.class)) * 100));
 		} else if (ch.buff(SlothRepose.class) != null) {
 			s = Messages.get(UniqueStats.class, "sloth", Math.round(hungerSlow(ch.buff(SlothRepose.class)) * 100));
 		}

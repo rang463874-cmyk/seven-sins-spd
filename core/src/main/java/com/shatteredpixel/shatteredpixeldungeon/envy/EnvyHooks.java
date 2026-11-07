@@ -146,6 +146,7 @@ public final class EnvyHooks {
 
 		if (mob.alignment != Char.Alignment.ENEMY) return;
 		mimicKill(hero, c, mob, cause);
+		if (heroCaused(cause)) com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.onKill(hero);
 		EnvyCovet.Robbed r = mob.buff(EnvyCovet.Robbed.class);
 		if (r == null || r.stacks <= 0) return;
 

@@ -46,7 +46,9 @@ public class RatSkull extends Trinket {
 	}
 
 	public static float exoticChanceMultiplier(){
-		return exoticChanceMultiplier(trinketLevel(RatSkull.class));
+		//Envy's unique stat stacks multiplicatively with the skull
+		return exoticChanceMultiplier(trinketLevel(RatSkull.class))
+				* com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.rareMultiplier();
 	}
 
 	public static float exoticChanceMultiplier( int level ){

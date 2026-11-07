@@ -79,7 +79,8 @@ Siren infighting is gone. Old lust talent names are mapped in `Talent.renamedTal
 Unique stats (one per sin, on top of the shared five; all in `sins/UniqueStats`, scaled by the sin's
 points, capped): Wrath attack speed (Hero.attackDelay), Gluttony HP regen (ticked from Hunger.act),
 Greed loot chance (Mob.lootChance), Pride debuff resistance (Char.resist, negative buffs only),
-Lust move speed (Hero.speed), Envy exp (Hero.earnExp), Sloth slower hunger (Hunger.act).
+Lust move speed (Hero.speed), Envy rare variant spawns (x up to 4, via `RatSkull.exoticChanceMultiplier`;
+at the cap, kills have a 5% chance of 3 turns of mind vision), Sloth slower hunger (Hunger.act).
 Each sin buff's `statsText()` appends `UniqueStats.line(target)`.
 
 ## Skills and the skill bar
