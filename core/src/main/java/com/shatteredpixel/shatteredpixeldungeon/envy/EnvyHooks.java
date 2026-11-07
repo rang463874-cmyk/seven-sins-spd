@@ -67,28 +67,22 @@ public final class EnvyHooks {
 		}
 		if (hero.buff(EnvyCovet.Stolen.class) != null) mult *= 1.25f;
 
-		EnvyCovet.Robbed robbed = enemy.buff(EnvyCovet.Robbed.class);
-		if (hero.subClass == HeroSubClass.USURPER && robbed != null) {
-			mult *= 1f + (0.03f + 0.02f * hero.pointsInTalent(Talent.USURP_TYRANNY)) * robbed.stacks;
+		EnvyCovet.Spite spite = hero.buff(EnvyCovet.Spite.class);
+		if (melee && spite != null) {
+			mult *= EnvyCovet.Spite.mult(hero);
+			spite.detach();
 		}
 		dmg = Math.round(dmg * mult);
 
 		//imitating lust: drink from charmed enemies
-		if (melee && c.growth == EnvyMimicry.Growth.LUST && LustDesire.charmedByHero(enemy) && dmg > 0) {
-			int stolen = Math.round(dmg * LustDesire.BASE_LIFESTEAL * EnvyMimicry.growthEfficiency(hero));
+		if (melee && c.imitating(EnvyMimicry.Growth.LUST) && LustDesire.charmedByHero(enemy) && dmg > 0) {
+			int stolen = Math.round(dmg * LustDesire.BASE_LIFESTEAL * c.efficiency(EnvyMimicry.Growth.LUST));
 			int heal = Math.min(stolen, hero.HT - hero.HP);
 			if (heal > 0) {
 				hero.HP += heal;
 				hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(heal), FloatingText.HEALING);
 			}
 			c.addEnvy(stolen * LustDesire.DESIRE_PER_HP);
-		}
-
-		//every hit takes a little more
-		EnvyCovet.rob(hero, enemy, hero.subClass == HeroSubClass.USURPER ? 2 : 1);
-		int drain = hero.pointsInTalent(Talent.USURP_DRAIN);
-		if (drain > 0 && hero.subClass == HeroSubClass.USURPER && hero.HP < hero.HT) {
-			hero.HP = Math.min(hero.HT, hero.HP + drain);
 		}
 
 		//bestiary traits that trigger on hit
@@ -104,12 +98,9 @@ public final class EnvyHooks {
 		return dmg;
 	}
 
-	/** Called from Char.damage before damage is applied: robbed enemies hit weaker. */
+	/** Called from Char.damage before damage is applied (robbed stacks are gone; nothing to do now). */
 	public static int modifyDamage(Char victim, Object src, int dmg) {
-		if (dmg <= 0 || !(src instanceof Char)) return dmg;
-		EnvyCovet.Robbed r = ((Char) src).buff(EnvyCovet.Robbed.class);
-		if (r == null || covet(Dungeon.hero) == null) return dmg;
-		return Math.max(1, Math.round(dmg * r.damageMult()));
+		return dmg;
 	}
 
 	/** Called from Hero.defenseProc. */
@@ -120,11 +111,9 @@ public final class EnvyHooks {
 		if (thorns > 0 && attacker.isAlive() && Dungeon.level.adjacent(hero.pos, attacker.pos)) {
 			attacker.damage(Math.max(1, Math.round(dmg * thorns)), hero);
 		}
-		if (c.growth == EnvyMimicry.Growth.PRIDE) Buff.affect(attacker, PrideGlory.Insolent.class);
+		if (c.imitating(EnvyMimicry.Growth.PRIDE)) Buff.affect(attacker, PrideGlory.Insolent.class);
 		int resent = hero.pointsInTalent(Talent.ENVY_RESENT);
-		if (resent > 0 && attacker.isAlive() && Random.Float() < 0.15f * resent) {
-			EnvyCovet.rob(hero, attacker, 1);
-		}
+		if (resent > 0) c.addJealousy(resent);
 		return dmg;
 	}
 
@@ -141,30 +130,39 @@ public final class EnvyHooks {
 		if (t != null && c.register(t)) {
 			GLog.p(Messages.get(EnvyCovet.class, "registered", t.title(), t.desc()));
 			hero.sprite.emitter().burst(Speck.factory(Speck.STAR), 8);
+			//Envy's own growth: learning from what it has seen
+			float pts = registerEnvy(mob);
+			c.addEnvy(pts);
+			hero.sprite.showStatus(CharSprite.POSITIVE, "+" + Math.round(pts));
 			c.refreshSlots();
 		}
 
 		if (mob.alignment != Char.Alignment.ENEMY) return;
 		mimicKill(hero, c, mob, cause);
-		if (heroCaused(cause)) com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.onKill(hero);
-		EnvyCovet.Robbed r = mob.buff(EnvyCovet.Robbed.class);
-		if (r == null || r.stacks <= 0) return;
+		if (!heroCaused(cause)) return;
+		com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.onKill(hero);
 
-		float base = 1f + mob.HT / 15f;
-		//Envy's own growth is meagre; it lives off what it copies
-		c.addEnvy(base * (0.5f + 0.1f * r.stacks) * 0.5f);
-
-		int echo = hero.pointsInTalent(Talent.COPY_ECHO);
-		if (known && echo > 0 && hero.subClass == HeroSubClass.COPYCAT) c.addEnvy(base * 0.5f * echo);
-
-		int crown = hero.pointsInTalent(Talent.USURP_CROWN);
-		if (crown > 0 && hero.subClass == HeroSubClass.USURPER && r.stacks >= 5) c.addJealousy(5f * crown);
+		if (t != null) {
+			int grasp = hero.pointsInTalent(Talent.ENVY_GRASP);
+			if (grasp > 0) c.addJealousy(10f * grasp);
+			int echo = hero.pointsInTalent(Talent.COPY_ECHO);
+			if (known && echo > 0 && hero.subClass == HeroSubClass.COPYCAT) {
+				c.addEnvy(registerEnvy(mob) * 0.25f * echo);
+			}
+		}
 
 		float heal = c.trait(Trait.SPECTRAL_NECRO, 3f);
 		if (heal > 0 && hero.HP < hero.HT) {
 			hero.HP = Math.min(hero.HT, hero.HP + Math.round(heal));
 			hero.sprite.emitter().burst(Speck.factory(Speck.HEALING), 1);
 		}
+	}
+
+	/** envy for registering a new bestiary entry */
+	public static float registerEnvy(Mob mob) {
+		float pts = 10f + mob.HT / 5f;
+		if (mob.properties().contains(Char.Property.BOSS)) pts *= 2f;
+		return pts;
 	}
 
 	// ------------------------------------------------------------------ imitated growth
@@ -176,8 +174,13 @@ public final class EnvyHooks {
 
 	/** kill-based growth of the sin being imitated (wrath, pride, sloth) */
 	private static void mimicKill(Hero hero, EnvyCovet c, Mob mob, Object cause) {
-		float eff = EnvyMimicry.growthEfficiency(hero);
-		switch (c.growth) {
+		for (EnvyMimicry.Growth g : new EnvyMimicry.Growth[]{c.growth, c.growth2}) {
+			if (c.imitating(g)) mimicKill(hero, c, mob, cause, g, c.efficiency(g));
+		}
+	}
+
+	private static void mimicKill(Hero hero, EnvyCovet c, Mob mob, Object cause, EnvyMimicry.Growth g, float eff) {
+		switch (g) {
 			case WRATH:
 				if (cause instanceof Mob && cause != mob && ((Mob) cause).alignment == Char.Alignment.ENEMY) {
 					c.addEnvy((1f + mob.HT / 20f) * eff);
@@ -205,9 +208,9 @@ public final class EnvyHooks {
 	/** Called from PredatorHooks.onConsumed: imitating gluttony. */
 	public static void onConsumed(Hero hero, Item item) {
 		EnvyCovet c = covet(hero);
-		if (c == null || c.growth != EnvyMimicry.Growth.GLUTTONY) return;
+		if (c == null || !c.imitating(EnvyMimicry.Growth.GLUTTONY)) return;
 		if (PredatorStomach.category(item) < 0) return;
-		float pts = PredatorStomach.baseScore(item) * EnvyMimicry.growthEfficiency(hero);
+		float pts = PredatorStomach.baseScore(item) * c.efficiency(EnvyMimicry.Growth.GLUTTONY);
 		c.addEnvy(pts);
 		hero.sprite.showStatus(CharSprite.POSITIVE, "+" + PredatorStomach.fmt(pts));
 	}

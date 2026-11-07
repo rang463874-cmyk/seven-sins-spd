@@ -43,7 +43,8 @@ public class Downfall extends ArmorAbility {
 			if (mob.alignment == Char.Alignment.ENEMY && Dungeon.level.heroFOV[mob.pos]
 					&& Dungeon.level.distance(hero.pos, mob.pos) <= r) {
 				EnvyMirror.dragDown(hero, mob, mult, this);
-				if (rob > 0 && mob.isAlive()) EnvyCovet.rob(hero, mob, 2 * rob);
+				EnvyCovet c = hero.buff(EnvyCovet.class);
+				if (rob > 0 && c != null) c.addJealousy(3f * rob);
 				mob.sprite.emitter().burst(Speck.factory(Speck.LIGHT), 3);
 			}
 		}

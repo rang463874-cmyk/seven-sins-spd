@@ -18,6 +18,8 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.ui.HeroIcon;
 import com.watabou.noosa.audio.Sample;
 
+import com.watabou.utils.Random;
+
 import java.util.ArrayList;
 
 /** Robs every visible enemy nearby at once. */
@@ -37,15 +39,16 @@ public class Plunder extends ArmorAbility {
 		Item.updateQuickslot();
 
 		int r = reach(hero);
-		int stacks = 4 + 2 * hero.pointsInTalent(Talent.PLUNDER_STACKS);
+		float jealousy = 5f + 2.5f * hero.pointsInTalent(Talent.PLUNDER_STACKS);
 		int spoils = hero.pointsInTalent(Talent.PLUNDER_SPOILS);
 		EnvyCovet c = hero.buff(EnvyCovet.class);
 
 		for (Mob mob : new ArrayList<>(Dungeon.level.mobs)) {
 			if (mob.alignment == Char.Alignment.ENEMY && Dungeon.level.heroFOV[mob.pos]
 					&& Dungeon.level.distance(hero.pos, mob.pos) <= r) {
-				EnvyCovet.rob(hero, mob, stacks);
-				Buff.prolong(mob, Weakness.class, 5f);
+				mob.damage(Random.NormalIntRange(hero.lvl / 2 + 2, hero.lvl + 5), this);
+				if (mob.isAlive()) Buff.prolong(mob, Weakness.class, 5f);
+				if (c != null) c.addJealousy(jealousy);
 				if (c != null && spoils > 0) c.addEnvy(0.5f * spoils);
 				mob.sprite.emitter().burst(Speck.factory(Speck.LIGHT), 3);
 			}

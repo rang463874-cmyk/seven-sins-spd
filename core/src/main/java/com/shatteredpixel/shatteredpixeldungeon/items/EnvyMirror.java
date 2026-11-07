@@ -89,7 +89,7 @@ public class EnvyMirror extends SinArtifact {
 	public String skillHeader(Hero hero) {
 		EnvyCovet c = covet(hero);
 		return Messages.get(this, "skill_header", (int) c.jealousy, Math.round(EnvyCovet.MAX_JEALOUSY),
-				c.slots.size(), c.maxSlots(), c.growth.title());
+				c.slots.size(), c.maxSlots(), c.growthTitle());
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class EnvyMirror extends SinArtifact {
 				.descArgs(h -> new Object[]{covet(h).maxSlots()})
 				.onUse(EnvyMirror::chooseCategory));
 		list.add(new BasicSkill(EnvyMirror.class, "growth", 41, SinSkill.CostType.NONE)
-				.descArgs(h -> new Object[]{Math.round(EnvyMimicry.growthEfficiency(h) * 100), covet(h).growth.title()})
+				.descArgs(h -> new Object[]{Math.round(EnvyMimicry.growthEfficiency(h) * 100), covet(h).growthTitle()})
 				.onUse(EnvyMirror::chooseGrowth));
 		return list;
 	}
@@ -219,18 +219,37 @@ public class EnvyMirror extends SinArtifact {
 		final Growth[] all = Growth.values();
 		String[] labels = new String[all.length];
 		for (int i = 0; i < all.length; i++) {
-			labels[i] = (c.growth == all[i] ? "[v] " : "[ ] ") + all[i].title();
+			String mark = c.growth == all[i] ? "[1] " : (c.doppelganger() && c.growth2 == all[i] ? "[2] " : "[ ] ");
+			if (i == 0) mark = "";
+			labels[i] = mark + all[i].title();
 		}
 		GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
 				Messages.get(EnvyMirror.class, "growth_title"),
-				Messages.get(EnvyMirror.class, "growth_msg", Math.round(EnvyMimicry.growthEfficiency(hero) * 100)),
+				Messages.get(EnvyMirror.class, "growth_msg", Math.round(EnvyMimicry.growthEfficiency(hero) * 100))
+						+ (c.doppelganger() ? "\n\n" + Messages.get(EnvyMirror.class, "growth_msg_doppel",
+						Math.round(c.secondEfficiency() * 100)) : ""),
 				labels) {
 			@Override
 			protected void onSelect(int index) {
-				c.growth = all[index];
+				Growth g = all[index];
+				if (g == Growth.NONE) {
+					c.growth = Growth.NONE;
+					c.growth2 = Growth.NONE;
+				} else if (!c.doppelganger()) {
+					c.growth = g;
+				} else if (c.growth == g) {
+					c.growth = c.growth2;
+					c.growth2 = Growth.NONE;
+				} else if (c.growth2 == g) {
+					c.growth2 = Growth.NONE;
+				} else if (c.growth == Growth.NONE) {
+					c.growth = g;
+				} else {
+					c.growth2 = g;
+				}
 				hero.updateHT(true);
 				BuffIndicator.refreshHero();
-				GLog.i(Messages.get(EnvyMirror.class, "growth_set", c.growth.title()));
+				GLog.i(Messages.get(EnvyMirror.class, "growth_set", c.growthTitle()));
 			}
 
 			@Override

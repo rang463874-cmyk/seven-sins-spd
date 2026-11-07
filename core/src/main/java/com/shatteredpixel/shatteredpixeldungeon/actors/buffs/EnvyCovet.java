@@ -47,6 +47,8 @@ public class EnvyCovet extends Buff {
 	public final ArrayList<EnvyMimicry.Mimic> slots = new ArrayList<>();
 	/** the other sin whose growth is being imitated */
 	public EnvyMimicry.Growth growth = EnvyMimicry.Growth.NONE;
+	/** the Doppelganger's second imitated growth */
+	public EnvyMimicry.Growth growth2 = EnvyMimicry.Growth.NONE;
 	public float regenTurns = 0;
 
 	/** registered bestiary entries, by trait */
@@ -137,8 +139,8 @@ public class EnvyCovet extends Buff {
 		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.ENVY_JEALOUSY);
 		float p = envy;
 		//imitating greed: the gold being carried counts, like it does for Greed
-		if (growth == EnvyMimicry.Growth.GREED && h != null) {
-			p += Dungeon.gold / 100f * EnvyMimicry.growthEfficiency(h);
+		if (imitating(EnvyMimicry.Growth.GREED)) {
+			p += Dungeon.gold / 100f * efficiency(EnvyMimicry.Growth.GREED);
 		}
 		return p * mult;
 	}
@@ -212,26 +214,51 @@ public class EnvyCovet extends Buff {
 		return true;
 	}
 
-	// ------------------------------------------------------------------ robbing
+	// ------------------------------------------------------------------ imitated growth
 
-	public static int maxRobbed(Hero hero) {
-		int base = hero.subClass == HeroSubClass.USURPER ? 10 : 5;
-		return base + 2 * hero.pointsInTalent(Talent.ENVY_GRASP);
+	public String growthTitle() {
+		if (doppelganger() && growth2 != EnvyMimicry.Growth.NONE) return growth.title() + " + " + growth2.title();
+		return growth.title();
 	}
 
-	public static void rob(Hero hero, Char enemy, int stacks) {
-		if (enemy == null || !enemy.isAlive() || enemy == hero) return;
-		Robbed r = Buff.affect(enemy, Robbed.class);
-		r.stacks = Math.min(maxRobbed(hero), r.stacks + stacks);
-		BuffIndicator.refreshHero();
+	public boolean doppelganger() {
+		Hero h = hero();
+		return h != null && h.subClass == HeroSubClass.USURPER;
 	}
 
-	/** Enemies robbed by Envy are weaker; Petty talent strengthens the effect. */
+	/** true if this sin's growth is being imitated (the Doppelganger imitates two) */
+	public boolean imitating(EnvyMimicry.Growth g) {
+		return g != EnvyMimicry.Growth.NONE && (growth == g || (doppelganger() && growth2 == g));
+	}
+
+	/** efficiency of imitating this sin's growth (the Doppelganger's second one is weaker) */
+	public float efficiency(EnvyMimicry.Growth g) {
+		Hero h = hero();
+		if (h == null) return 0;
+		float eff = EnvyMimicry.growthEfficiency(h);
+		if (growth == g) return eff;
+		if (doppelganger() && growth2 == g) return secondEfficiency();
+		return 0;
+	}
+
+	public float secondEfficiency() {
+		Hero h = hero();
+		if (h == null) return 0;
+		return EnvyMimicry.growthEfficiency(h) * (0.5f + 0.15f * h.pointsInTalent(Talent.USURP_TYRANNY));
+	}
+
+	/** old robbed stacks (from before the Envy rework), kept only so old saves load; they fade at once */
 	public static class Robbed extends Buff {
 		public int stacks = 0;
 
 		{
 			type = buffType.NEGATIVE;
+		}
+
+		@Override
+		public boolean act() {
+			detach();
+			return true;
 		}
 
 		public float damageMult() {
@@ -270,6 +297,38 @@ public class EnvyCovet extends Buff {
 		public void restoreFromBundle(Bundle bundle) {
 			super.restoreFromBundle(bundle);
 			stacks = bundle.getInt("stacks");
+		}
+	}
+
+	/** Petty talent: the next melee hit after using a copied skill is stronger */
+	public static class Spite extends FlavourBuff {
+		{
+			type = buffType.POSITIVE;
+		}
+
+		public static float mult(Hero hero) {
+			return 1f + 0.15f * hero.pointsInTalent(Talent.ENVY_PETTY);
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.UPGRADE;
+		}
+
+		@Override
+		public void tintIcon(Image icon) {
+			icon.hardlight(0.3f, 0.9f, 0.3f);
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return Math.max(0, 1f - visualcooldown() / 10f);
+		}
+
+		@Override
+		public String desc() {
+			Hero h = Dungeon.hero;
+			return Messages.get(this, "desc", h == null ? 0 : Math.round((mult(h) - 1f) * 100), dispTurns());
 		}
 	}
 
@@ -456,7 +515,7 @@ public class EnvyCovet extends Buff {
 	}
 
 	private String statsTextBase() {
-		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), (int) jealousy, Math.round(MAX_JEALOUSY), growth.title(), codex.size(), CODEX.size())
+		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), (int) jealousy, Math.round(MAX_JEALOUSY), growthTitle(), codex.size(), CODEX.size())
 				+ "\n\n" + Messages.get(EnvyCovet.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
@@ -481,6 +540,7 @@ public class EnvyCovet extends Buff {
 		bundle.put("envy", envy);
 		bundle.put("jealousy", jealousy);
 		bundle.put("growth", growth.name());
+		bundle.put("growth2", growth2.name());
 		ArrayList<String> sl = new ArrayList<>();
 		for (EnvyMimicry.Mimic m : slots) sl.add(m.name());
 		bundle.put("slots", sl.toArray(new String[0]));
@@ -503,6 +563,11 @@ public class EnvyCovet extends Buff {
 			growth = bundle.contains("growth") ? EnvyMimicry.Growth.valueOf(bundle.getString("growth")) : EnvyMimicry.Growth.NONE;
 		} catch (IllegalArgumentException e) {
 			growth = EnvyMimicry.Growth.NONE;
+		}
+		try {
+			growth2 = bundle.contains("growth2") ? EnvyMimicry.Growth.valueOf(bundle.getString("growth2")) : EnvyMimicry.Growth.NONE;
+		} catch (IllegalArgumentException e) {
+			growth2 = EnvyMimicry.Growth.NONE;
 		}
 		slots.clear();
 		known.clear();

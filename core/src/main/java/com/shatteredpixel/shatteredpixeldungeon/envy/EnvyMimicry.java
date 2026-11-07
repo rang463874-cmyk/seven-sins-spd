@@ -153,7 +153,11 @@ public final class EnvyMimicry {
 	}
 
 	public static int cost(Hero hero, Mimic m) {
-		return Math.max(1, Math.round(m.baseCost * (1f - 0.10f * hero.pointsInTalent(Talent.ENVY_LEVEL))));
+		float mult = 1f - 0.10f * hero.pointsInTalent(Talent.ENVY_LEVEL);
+		if (m.kind == Kind.SIN && hero.subClass == HeroSubClass.USURPER) {
+			mult *= 0.75f - 0.05f * hero.pointsInTalent(Talent.USURP_DRAIN);
+		}
+		return Math.max(1, Math.round(m.baseCost * mult));
 	}
 
 	/** Copycat's Mask: monster abilities hit harder */
@@ -237,7 +241,12 @@ public final class EnvyMimicry {
 
 	private static boolean pay(Hero hero, Mimic m) {
 		EnvyCovet c = hero.buff(EnvyCovet.class);
-		return c != null && c.useJealousy(cost(hero, m));
+		if (c == null || !c.useJealousy(cost(hero, m))) return false;
+		if (hero.pointsInTalent(Talent.ENVY_PETTY) > 0) Buff.prolong(hero, EnvyCovet.Spite.class, 10f);
+		//Doppelganger: wearing another sin's skill teaches a little of its strength
+		int crown = hero.pointsInTalent(Talent.USURP_CROWN);
+		if (m.kind == Kind.SIN && crown > 0 && hero.subClass == HeroSubClass.USURPER) c.addEnvy(crown);
+		return true;
 	}
 
 	private static void finish(Hero hero, int pos) {

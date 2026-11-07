@@ -230,7 +230,8 @@ public class WndHeroInfo extends WndTabbed {
 					break;
 				case GLUTTONY:
 					icons = new Image[]{ new ItemSprite(ItemSpriteSheet.PREDATOR_MAW),
-							new ItemSprite(ItemSpriteSheet.ARMOR_LEATHER),
+							new ItemSprite(ItemSpriteSheet.RATION),
+							new ItemSprite(ItemSpriteSheet.POTION_CRIMSON),
 							new ItemSprite(ItemSpriteSheet.WORN_SHORTSWORD)};
 					break;
 				case GREED:
@@ -255,6 +256,7 @@ public class WndHeroInfo extends WndTabbed {
 					break;
 				case ENVY:
 					icons = new Image[]{ new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+							Icons.get(Icons.TALENT),
 							Icons.get(Icons.TALENT),
 							new ItemSprite(ItemSpriteSheet.WORN_SHORTSWORD)};
 					break;
@@ -282,12 +284,17 @@ public class WndHeroInfo extends WndTabbed {
 				info[i].maxWidth((int)width - 20);
 				info[i].setPos(20, pos);
 
-				icons[i].x = (20-icons[i].width())/2;
-				icons[i].y = info[i].top() + (info[i].height() - icons[i].height())/2;
-				PixelScene.align(icons[i]);
+				//descriptions can have more paragraphs than icons; extra paragraphs just go without
+				if (i < icons.length) {
+					icons[i].x = (20 - icons[i].width()) / 2;
+					icons[i].y = info[i].top() + (info[i].height() - icons[i].height()) / 2;
+					PixelScene.align(icons[i]);
+				}
 
 				pos = info[i].bottom() + 4*MARGIN;
 			}
+
+			for (int i = info.length; i < icons.length; i++) icons[i].visible = false;
 
 			height = Math.max(height, pos - 4*MARGIN);
 
