@@ -8,7 +8,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile;
 import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
@@ -36,7 +35,7 @@ import java.util.ArrayList;
  * Gun of Conquest, the white horseman (the class keeps its old name for saves).
  * It devours weapons and armor to load bullets, then fires them at anything in sight.
  * Loading an enchanted weapon makes the bullets carry that enchantment.
- * It levels up (0..10) as it fires: more damage and a bigger magazine.
+ * It levels up (0..10) as it fires: more damage. There is no magazine limit.
  */
 public class ConquestCrown extends HorsemanArtifact {
 
@@ -63,8 +62,9 @@ public class ConquestCrown extends HorsemanArtifact {
 		return false;
 	}
 
+	/** no magazine limit any more: load as many bullets as you like */
 	public int maxAmmo() {
-		return 20 + 2 * level();
+		return Integer.MAX_VALUE;
 	}
 
 	@Override
@@ -77,6 +77,13 @@ public class ConquestCrown extends HorsemanArtifact {
 		super.upgrade();
 		chargeCap = maxAmmo();
 		return this;
+	}
+
+	@Override
+	public void resetForTrinity(int visibleLevel) {
+		super.resetForTrinity(visibleLevel);
+		//the base version fills to the cap, which no longer exists
+		charge = 20;
 	}
 
 	@Override
@@ -176,15 +183,11 @@ public class ConquestCrown extends HorsemanArtifact {
 				if (item == null) return;
 				int bullets = bulletsFor(hero, item);
 				if (bullets <= 0) return;
-				if (charge >= maxAmmo()) {
-					GLog.w(Messages.get(ConquestCrown.class, "full_mag"));
-					return;
-				}
 				if (item instanceof Weapon && ((Weapon) item).hasGoodEnchant()) {
 					enchant = ((Weapon) item).enchantment.getClass();
 					GLog.p(Messages.get(ConquestCrown.class, "enchanted", ((Weapon) item).enchantment.name()));
 				}
-				int loaded = Math.min(bullets, maxAmmo() - charge);
+				int loaded = (int) Math.min((long) bullets, (long) maxAmmo() - charge);
 				charge += loaded;
 				item.detachAll(hero.belongings.backpack);
 				Item.updateQuickslot();
@@ -218,7 +221,11 @@ public class ConquestCrown extends HorsemanArtifact {
 		hero.sprite.zap(target);
 		Sample.INSTANCE.play(Assets.Sounds.BLAST, 0.6f, 1.6f);
 		hero.busy();
-		MagicMissile.boltFromChar(hero.sprite.parent, MagicMissile.LIGHT_MISSILE, hero.sprite, target, () -> {
+		Char aimed = Actor.findChar(target);
+		com.watabou.utils.PointF to = aimed != null && aimed.sprite != null
+				? aimed.sprite.center()
+				: com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap.raisedTileCenterToWorld(target);
+		com.shatteredpixel.shatteredpixeldungeon.effects.Bullet.fire(hero.sprite.parent, hero.sprite.center(), to, () -> {
 			Char ch = Actor.findChar(target);
 			if (ch != null && ch != hero) {
 				com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton.target(ch);
@@ -264,12 +271,12 @@ public class ConquestCrown extends HorsemanArtifact {
 	@Override
 	public String status() {
 		if (cursed) return null;
-		return Messages.format("%d/%d", charge, maxAmmo());
+		return Integer.toString(charge);
 	}
 
 	@Override
 	protected String statsDesc() {
-		String s = Messages.get(this, "stats", charge, maxAmmo(), minDamage(), maxDamage());
+		String s = Messages.get(this, "stats", charge, minDamage(), maxDamage());
 		if (enchant != null) {
 			try {
 				s += "\n" + Messages.get(this, "stats_enchant", enchant.newInstance().name());
