@@ -14,8 +14,8 @@ Done and pushed (see `git log`):
 - Seven sin classes, each with: signature artifact (`items/artifacts/SinArtifact`, starts worn in the
   artifact slot; growth/stats always work, skills and the skill bar only while worn; levels +0..+10 like
   the cloak of shadows from resource spent via `SinArtifact.onSpent`, 3+level per level: charge sins +1 max
-  charge per 3 levels and up to +60% recharge, Lust -30% HP costs, Greed +60% gauge, Gluttony cheaper bite
-  and +50% devour points), a permanent-growth buff,
+  charge per 3 levels and up to +60% recharge, Lust -30% HP costs, Greed +60% gauge, Gluttony -33% satiety
+  costs and +50% consumable points), a permanent-growth buff,
   2 subclasses, 26 talents, 3 armor abilities, class armor, en/ko strings, placeholder art.
 - Tier 1 sin weapons (starting weapons) and tier 5 sin weapons (via the blacksmith's
   Sigil of Sin, 3000 favor, keeps upgrades/enchantment). Effects only work for the owning sin.
@@ -29,7 +29,6 @@ Done and pushed (see `git log`):
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
-- Gluttony's maw also has Bite: spends 60 satiety, 150% damage, heals 30% of damage dealt.
 
 Not yet done / known gaps:
 - Never play-tested on a device until the first APK; expect UI/layout fixes.
@@ -46,6 +45,17 @@ Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies 
 level on their own via a `Roaming` wandering state, `intelligentAlly = false`; still carried between floors; `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
 `SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
+Gluttony (reworked Nov 2026, "eats anything"): no more equipment devouring (that moved to the conquest gun).
+`PredatorStomach.consume` runs from `PredatorHooks.onConsumed` for potions (`Potion.drink`), scrolls
+(`Scroll.readAnimation` -> `onScrollRead`), food (`Food.execute` -> `onFoodEaten`), runestones
+(`Runestone.onThrow`, `InventoryStone.useAnimation`) and eaten seeds (`Plant.Seed`, AC_EAT_SEED). Pools keep
+their old field names: weaponPts = potions, armorPts = food/seeds, trinketPts = scrolls/stones. New kinds go in
+the `codex` (class names) with milestones 5/10/20/30/40/50/60 (`PredatorStomach.CODEX_*`). Harmful potions and
+scroll of rage become `GluttonImbue` buffs (`PredatorHooks.drinkOverride/readRage`), psionic blast has no
+backlash. Maw skills: Bite, Hunger Dash (haste), Acid Spray, Swallow Whole (free, 3x points, identifies),
+Ruminate (repeat `lastUsed`, growth items excluded via `PredatorHooks.canRepeat`); satiety costs via
+`PredatorMaw.hungerCost`. Talent enum names are unchanged (meanings and strings changed); INHERITOR is now
+shown as the "alchemic glutton". Old Inheritor enchant/glyph lists are kept in saves but unused.
 Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.hpCost/pay`), lifesteal
 on charmed enemies via `LustDesire.drain` from `LustHooks.onAttack`; dodging charms the attacker
 (`LustHooks.onDodge`, called from the miss branch of `Char.attack`; Night Dancer counters there).
@@ -62,7 +72,7 @@ Each sin buff's `statsText()` appends `UniqueStats.line(target)`.
 Every sin's signature item implements `skills/SkillHolder` and lists its active skills as
 `skills/SinSkill`s (usually `BasicSkill` built from lambdas: cost type/amount, usable, onUse, desc args).
 The same list drives the item's skill window (`windows/WndSkills`, name + cost + description) and the
-skill bar (`ui/SkillBar`, icon buttons right above the quickslot toolbar; tap = use, long-press = info).
+skill bar (`ui/SkillBar`, icon buttons right above the quickslot toolbar, right-aligned; tap = use, long-press = info).
 `GameScene.syncSkillBar` keeps it above the toolbar; tags/log are laid out from `toolbarAreaTop()`.
 Adding a skill: add a `BasicSkill` to the item's `skills()`, strings `skill_<id>` and `skill_<id>_desc`
 in the item's namespace, and an icon in `tools/sinsart/make_skill_icons.py`
@@ -96,7 +106,7 @@ pick one artifact. `SealBearer` (the old 4-champion version) is kept only for ol
 
 | Sin | Enum | Signature item | Buff (progress) | Hooks | Subclasses | Armor abilities |
 |---|---|---|---|---|---|---|
-| Gluttony 식탐 | GLUTTONY | PredatorMaw | PredatorStomach (devour points) | predator/PredatorHooks | GOURMAND, INHERITOR | abilities/predator/* |
+| Gluttony 식탐 | GLUTTONY | PredatorMaw | PredatorStomach (consumable points + gourmet codex) | predator/PredatorHooks | GOURMAND, INHERITOR | abilities/predator/* |
 | Greed 탐욕 | GREED | GoldenCard | GreedVault (stats from carried gold; payment gauge filled by gold pickups) | greed/GreedHooks | BANKER, USURER | abilities/greed/* |
 | Wrath 분노 | WRATH | WarDrum | WrathGrudge (grudge from infighting) | wrath/WrathHooks | INSTIGATOR, AVENGER | abilities/wrath/* |
 | Pride 교만 | PRIDE | PrideCrown | PrideGlory (glory from flawless kills, dignity) | pride/PrideHooks | MONARCH, PARAGON | abilities/pride/* |

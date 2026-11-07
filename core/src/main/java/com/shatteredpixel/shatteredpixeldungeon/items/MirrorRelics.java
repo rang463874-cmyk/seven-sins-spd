@@ -62,11 +62,6 @@ public final class MirrorRelics {
 		}
 
 		@Override
-		public int devoursPerUse() {
-			return 2;
-		}
-
-		@Override
 		public boolean doPickUp(Hero hero, int pos) {
 			replaceOld(hero, this, PredatorMaw.class);
 			Buff.affect(hero, PredatorStomach.class).mirrored = true;

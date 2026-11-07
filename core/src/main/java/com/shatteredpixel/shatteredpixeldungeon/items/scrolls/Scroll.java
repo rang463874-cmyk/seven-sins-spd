@@ -144,6 +144,10 @@ public abstract class Scroll extends Item {
 	//and their sprite is replaced by a placeholder if they are not known,
 	//useful for items that appear in UIs, or which are only spawned for their effects
 	protected boolean anonymous = false;
+	public boolean isAnonymous(){
+		return anonymous;
+	}
+
 	public void anonymize(){
 		if (!isKnown()) image = ItemSpriteSheet.SCROLL_HOLDER;
 		anonymous = true;
@@ -205,6 +209,7 @@ public abstract class Scroll extends Item {
 		if (Random.Float() < talentChance) {
 			Talent.onScrollUsed(curUser, curUser.pos, talentFactor, getClass());
 		}
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onScrollRead(curUser, this);
 
 	}
 	

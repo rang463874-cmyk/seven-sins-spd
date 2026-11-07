@@ -147,6 +147,7 @@ public abstract class Plant implements Bundlable {
 		public ArrayList<String> actions( Hero hero ) {
 			ArrayList<String> actions = super.actions( hero );
 			actions.add( AC_PLANT );
+			if (com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.canEatSeeds(hero)) actions.add( com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.AC_EAT_SEED );
 			return actions;
 		}
 		
@@ -179,7 +180,9 @@ public abstract class Plant implements Bundlable {
 
 			super.execute (hero, action );
 
-			if (action.equals( AC_PLANT )) {
+			if (action.equals( com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.AC_EAT_SEED )) {
+				com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.eatSeed( hero, this );
+			} else if (action.equals( AC_PLANT )) {
 
 				hero.busy();
 				((Seed)detach( hero.belongings.backpack )).onThrow( hero.pos );
@@ -190,6 +193,14 @@ public abstract class Plant implements Bundlable {
 			}
 		}
 		
+		@Override
+		public String actionName( String action, Hero hero ) {
+			if (action.equals( com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.AC_EAT_SEED )) {
+				return Messages.get( com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PredatorStomach.class, "ac_eat_seed" );
+			}
+			return super.actionName( action, hero );
+		}
+
 		public Plant couch( int pos, Level level ) {
 			if (level != null && level.heroFOV != null && level.heroFOV[pos]) {
 				Sample.INSTANCE.play(Assets.Sounds.PLANT);

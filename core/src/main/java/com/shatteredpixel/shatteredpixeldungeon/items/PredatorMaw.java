@@ -1,47 +1,62 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
-import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
-import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
-import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Cripple;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Haste;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hunger;
-import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
-import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
-import com.watabou.noosa.audio.Sample;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PredatorStomach;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
+import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
+import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
+import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+import com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndBag;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
+import com.watabou.noosa.audio.Sample;
+import com.watabou.utils.Random;
+import com.watabou.utils.Reflection;
 
 import java.util.ArrayList;
 
 /**
- * The Predator's signature tool: devours equipment to grant permanent stats,
- * and can spend satiety on a ravenous bite that heals from the flesh it tears.
+ * The Glutton's signature maw. Its growth comes from consumables (see PredatorStomach);
+ * its skills are paid for with satiety, except for swallowing a consumable whole.
  */
 public class PredatorMaw extends SinArtifact {
 
-	public static final String AC_DEVOUR = "DEVOUR";
-	public static final String AC_BITE = "BITE";
+	public static final String AC_FEED = "FEED";
 
-	/** satiety spent per bite */
-	public static final int BITE_HUNGER = 60;
+	/** base satiety costs, before talents, codex and the maw's level */
+	public static final int COST_BITE = 60;
+	public static final int COST_DASH = 50;
+	public static final int COST_ACID = 80;
+	public static final int COST_RUMINATE = 150;
+
 	public static final float BITE_DAMAGE = 1.5f;
 	public static final float BITE_LIFESTEAL = 0.30f;
+	public static final int ACID_RADIUS = 2;
 
 	{
 		image = ItemSpriteSheet.PREDATOR_MAW;
-		defaultAction = AC_DEVOUR;
+		defaultAction = AC_FEED;
 		unique = true;
 		bones = false;
 		keptThoughLostInvent = true;
@@ -52,15 +67,13 @@ public class PredatorMaw extends SinArtifact {
 		ArrayList<String> actions = super.actions(hero);
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
-		if (isEquipped(hero)) actions.add(AC_DEVOUR);
-		if (isEquipped(hero)) actions.add(AC_BITE);
+		if (isEquipped(hero)) actions.add(AC_FEED);
 		return actions;
 	}
 
 	@Override
 	public String actionName(String action, Hero hero) {
-		if (action.equals(AC_DEVOUR)) return Messages.get(this, "ac_devour");
-		if (action.equals(AC_BITE)) return Messages.get(this, "ac_bite");
+		if (action.equals(AC_FEED)) return Messages.get(this, "ac_feed");
 		return super.actionName(action, hero);
 	}
 
@@ -68,91 +81,192 @@ public class PredatorMaw extends SinArtifact {
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
 		if (!canUseSkills(hero, action)) return;
-		if (action.equals(AC_DEVOUR)) {
-			selectDevour(hero, devoursPerUse(), false);
-		} else if (action.equals(AC_BITE)) {
-			Hunger hunger = hero.buff(Hunger.class);
-			if (hunger == null || hunger.hunger() + SinArtifact.biteHunger(hero) > Hunger.STARVING) {
-				GLog.w(Messages.get(PredatorMaw.class, "bite_hungry"));
-				return;
-			}
-			GameScene.selectCell(biteSelector);
+		if (action.equals(AC_FEED)) GameScene.show(new WndSkills(this, hero));
+	}
+
+	// ------------------------------------------------------------------ costs
+
+	/** satiety cost of a skill with this base cost */
+	public static int hungerCost(Hero hero, int base) {
+		float mult = SinArtifact.satietyScale(hero);
+		mult *= 1f - 0.15f * hero.pointsInTalent(Talent.PREDATOR_GLUTTONY);
+		if (PredatorStomach.hasCodex(hero, PredatorStomach.CODEX_FRUGAL)) mult *= 0.5f;
+		return Math.max(1, Math.round(base * mult));
+	}
+
+	public static boolean canAfford(Hero hero, int base) {
+		Hunger hunger = hero.buff(Hunger.class);
+		return hunger != null && hunger.hunger() + hungerCost(hero, base) <= Hunger.STARVING;
+	}
+
+	private static boolean pay(Hero hero, int base) {
+		if (!canAfford(hero, base)) {
+			GLog.w(Messages.get(PredatorMaw.class, "bite_hungry"));
+			return false;
 		}
+		hero.buff(Hunger.class).affectHunger(-hungerCost(hero, base));
+		SinArtifact.onSpent(hero, 1);
+		return true;
+	}
+
+	public static float dashTurns(Hero hero) {
+		return 5f + SinArtifact.level(hero) / 2f;
+	}
+
+	public static int acidMin(Hero hero) {
+		return 1 + hero.lvl / 4;
+	}
+
+	public static int acidMax(Hero hero) {
+		return 3 + hero.lvl / 2;
 	}
 
 	// ------------------------------------------------------------------ skills list
 
 	@Override
 	public String skillHeader(Hero hero) {
-		return null;
+		Hunger hunger = hero.buff(Hunger.class);
+		int left = hunger == null ? 0 : Math.max(0, Math.round(Hunger.STARVING - hunger.hunger()));
+		return Messages.get(this, "skill_header", left);
 	}
 
 	@Override
 	protected String levelEffects(Hero hero) {
-		return Messages.get(SinArtifact.class, "effects_maw", 60 - SinArtifact.biteHunger(hero),
+		return Messages.get(SinArtifact.class, "effects_maw", Math.round((1f - SinArtifact.satietyScale(hero)) * 100),
 				Math.round((SinArtifact.devourScale(hero) - 1f) * 100));
 	}
 
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(PredatorMaw.class, "devour", 0, SinSkill.CostType.NONE)
-				.onUse(h -> selectDevour(h, devoursPerUse(), false)));
 		list.add(new BasicSkill(PredatorMaw.class, "bite", 1, SinSkill.CostType.SATIETY)
-				.cost(h -> SinArtifact.biteHunger(h))
-				.usableIf(h -> {
-					Hunger hunger = h.buff(Hunger.class);
-					return hunger != null && hunger.hunger() + SinArtifact.biteHunger(h) <= Hunger.STARVING;
-				})
-				.descArgs(h -> new Object[]{SinArtifact.biteHunger(h), Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100)})
+				.cost(h -> hungerCost(h, COST_BITE))
+				.usableIf(h -> canAfford(h, COST_BITE))
+				.descArgs(h -> new Object[]{Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100)})
 				.onUse(h -> GameScene.selectCell(biteSelector)));
+		list.add(new BasicSkill(PredatorMaw.class, "dash", 3, SinSkill.CostType.SATIETY)
+				.cost(h -> hungerCost(h, COST_DASH))
+				.usableIf(h -> canAfford(h, COST_DASH))
+				.descArgs(h -> new Object[]{Math.round(dashTurns(h))})
+				.onUse(PredatorMaw::dash));
+		list.add(new BasicSkill(PredatorMaw.class, "acid", 4, SinSkill.CostType.SATIETY)
+				.cost(h -> hungerCost(h, COST_ACID))
+				.usableIf(h -> canAfford(h, COST_ACID))
+				.descArgs(h -> new Object[]{ACID_RADIUS, acidMin(h), acidMax(h)})
+				.onUse(PredatorMaw::acid));
+		list.add(new BasicSkill(PredatorMaw.class, "swallow", 0, SinSkill.CostType.NONE)
+				.descArgs(h -> new Object[]{Math.round(3 + 1.5f * h.pointsInTalent(Talent.PREDATOR_SCRAPS))})
+				.onUse(PredatorMaw::selectSwallow));
+		list.add(new BasicSkill(PredatorMaw.class, "ruminate", 2, SinSkill.CostType.SATIETY)
+				.cost(h -> hungerCost(h, COST_RUMINATE))
+				.usableIf(h -> canAfford(h, COST_RUMINATE) && ruminable(h) != null)
+				.descArgs(h -> {
+					Class c = ruminable(h);
+					return new Object[]{c == null ? Messages.get(PredatorMaw.class, "nothing") : Messages.get(c, "name")};
+				})
+				.onUse(PredatorMaw::ruminate));
 		return list;
 	}
 
-	/** how many items one use can devour (the mirror's Golden Maw eats two) */
-	public int devoursPerUse() {
-		return 1;
+	// ------------------------------------------------------------------ skills
+
+	private static void dash(Hero hero) {
+		if (!pay(hero, COST_DASH)) return;
+		Buff.prolong(hero, Haste.class, dashTurns(hero));
+		hero.sprite.emitter().burst(Speck.factory(Speck.JET), 6);
+		Sample.INSTANCE.play(Assets.Sounds.EAT, 1f, 1.4f);
+		hero.spendAndNext(Actor.TICK);
 	}
 
-	private void selectDevour(final Hero hero, final int remaining, final boolean ateAlready) {
+	private static void acid(Hero hero) {
+		ArrayList<Char> targets = new ArrayList<>();
+		for (Char ch : Actor.chars()) {
+			if (ch != hero && ch.alignment == Char.Alignment.ENEMY && ch.isAlive()
+					&& Dungeon.level.heroFOV[ch.pos]
+					&& Dungeon.level.distance(hero.pos, ch.pos) <= ACID_RADIUS) {
+				targets.add(ch);
+			}
+		}
+		if (targets.isEmpty()) {
+			GLog.w(Messages.get(PredatorMaw.class, "acid_none"));
+			return;
+		}
+		if (!pay(hero, COST_ACID)) return;
+		Splash.at(hero.pos, 0x99BB22, 16);
+		for (Char ch : targets) {
+			Splash.at(ch.pos, 0x99BB22, 8);
+			ch.damage(Random.NormalIntRange(acidMin(hero), acidMax(hero)), PredatorMaw.class);
+			if (ch.isAlive()) {
+				Buff.prolong(ch, Weakness.class, 6f);
+				Buff.prolong(ch, Cripple.class, 4f);
+			}
+		}
+		hero.sprite.operate(hero.pos);
+		Sample.INSTANCE.play(Assets.Sounds.GAS);
+		Invisibility.dispel();
+		hero.spendAndNext(Actor.TICK);
+	}
+
+	/** the last potion or scroll, if it can be brought back up */
+	public static Class ruminable(Hero hero) {
+		PredatorStomach st = hero.buff(PredatorStomach.class);
+		if (st == null || st.lastUsed == null || !PredatorHooks.canRepeat(st.lastUsed)) return null;
+		return st.lastUsed;
+	}
+
+	private static void ruminate(Hero hero) {
+		Class c = ruminable(hero);
+		if (c == null) {
+			GLog.w(Messages.get(PredatorMaw.class, "ruminate_none"));
+			return;
+		}
+		if (!pay(hero, COST_RUMINATE)) return;
+		Item it = (Item) Reflection.newInstance(c);
+		if (it == null) return;
+		if (it instanceof Potion) ((Potion) it).anonymize();
+		if (it instanceof Scroll) ((Scroll) it).anonymize();
+		GLog.p(Messages.get(PredatorMaw.class, "ruminated", it.name()));
+		Sample.INSTANCE.play(Assets.Sounds.EAT, 1f, 0.7f);
+		Item.curUser = hero;
+		Item.curItem = it;
+		if (it instanceof Potion) {
+			hero.sprite.operate(hero.pos);
+			if (!PredatorHooks.drinkOverride(hero, (Potion) it)) ((Potion) it).apply(hero);
+			hero.spendAndNext(Actor.TICK);
+		} else if (it instanceof Scroll) {
+			//reading takes its own turn through readAnimation
+			((Scroll) it).doRead();
+		}
+	}
+
+	private static void selectSwallow(final Hero hero) {
 		GameScene.selectItem(new WndBag.ItemSelector() {
 			@Override
 			public String textPrompt() {
-				return Messages.get(PredatorMaw.class, ateAlready ? "prompt_more" : "prompt");
+				return Messages.get(PredatorMaw.class, "prompt_swallow");
 			}
 
 			@Override
 			public boolean itemSelectable(Item item) {
-				return PredatorStomach.category(hero, item) >= 0;
+				return PredatorStomach.category(item) >= 0;
 			}
 
 			@Override
 			public void onSelect(Item item) {
-				if (item == null) {
-					//stopping after the first bite still takes the turn
-					if (ateAlready) hero.spendAndNext(1f);
-					return;
-				}
-				PredatorStomach stomach = Buff.affect(hero, PredatorStomach.class);
-				if (stomach.devour(hero, item)) {
-					GLog.p(Messages.get(PredatorMaw.class, "devoured", item.name()));
-					hero.sprite.operate(hero.pos);
-					Invisibility.dispel();
-					if (remaining > 1) {
-						selectDevour(hero, remaining - 1, true);
-					} else {
-						hero.spendAndNext(1f);
-					}
-				} else {
-					GLog.w(Messages.get(PredatorMaw.class, "cant"));
-					if (ateAlready) hero.spendAndNext(1f);
-				}
+				if (item == null || PredatorStomach.category(item) < 0) return;
+				Item one = item.detach(hero.belongings.backpack);
+				if (one == null) return;
+				Buff.affect(hero, PredatorStomach.class).consume(hero, one, true);
+				GLog.p(Messages.get(PredatorMaw.class, "swallowed", one.name()));
+				hero.sprite.operate(hero.pos);
+				Sample.INSTANCE.play(Assets.Sounds.EAT);
+				Invisibility.dispel();
+				hero.spendAndNext(Actor.TICK);
 			}
 		});
 	}
 
-
-	private final CellSelector.Listener biteSelector = new CellSelector.Listener() {
+	private static final CellSelector.Listener biteSelector = new CellSelector.Listener() {
 		@Override
 		public void onSelect(Integer cell) {
 			if (cell == null) return;
@@ -163,13 +277,7 @@ public class PredatorMaw extends SinArtifact {
 				GLog.w(Messages.get(PredatorMaw.class, "bite_target"));
 				return;
 			}
-			Hunger hunger = hero.buff(Hunger.class);
-			if (hunger == null || hunger.hunger() + SinArtifact.biteHunger(hero) > Hunger.STARVING) {
-				GLog.w(Messages.get(PredatorMaw.class, "bite_hungry"));
-				return;
-			}
-			hunger.affectHunger(-SinArtifact.biteHunger(hero));
-			SinArtifact.onSpent(hero, 1);
+			if (!pay(hero, COST_BITE)) return;
 
 			int before = enemy.HP + enemy.shielding();
 			hero.sprite.turnTo(hero.pos, cell);
@@ -195,11 +303,9 @@ public class PredatorMaw extends SinArtifact {
 	@Override
 	public String desc() {
 		String d = Messages.get(this, "desc");
-		if (curUser != null || com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero != null) {
-			Hero h = com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
-			PredatorStomach s = h == null ? null : h.buff(PredatorStomach.class);
-			if (s != null) d += "\n\n" + s.statsText();
-		}
+		Hero h = Dungeon.hero;
+		PredatorStomach s = h == null ? null : h.buff(PredatorStomach.class);
+		if (s != null) d += "\n\n" + s.statsText();
 		return d;
 	}
 

@@ -8,6 +8,15 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
+import com.shatteredpixel.shatteredpixeldungeon.items.food.Food;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.Brew;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.Elixir;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.ExoticPotion;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ExoticScroll;
+import com.shatteredpixel.shatteredpixeldungeon.items.stones.Runestone;
+import com.shatteredpixel.shatteredpixeldungeon.plants.Plant;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.ClassArmor;
@@ -34,17 +43,14 @@ import com.watabou.utils.Random;
 import java.util.ArrayList;
 
 /**
- * Permanent stat storage for the Predator class. Points are earned by devouring equipment
+ * Permanent stat storage for the Gluttony class. Points are earned by using consumables
+ * (potions, food and seeds, scrolls and runestones), and new kinds fill the gourmet codex,
  * and converted into combat bonuses through the hooks in PredatorHooks.
  */
 public class PredatorStomach extends Buff {
 
 	/** set once the Imp quest's vault mirror reflection of the signature item is taken */
 	public boolean mirrored = false;
-
-	public static final int CAT_WEAPON = 0;
-	public static final int CAT_ARMOR = 1;
-	public static final int CAT_TRINKET = 2;
 
 	/** accumulated points per category */
 	public float weaponPts = 0;
@@ -54,7 +60,12 @@ public class PredatorStomach extends Buff {
 	/** permanent max HP from the Gourmand "Leftovers" talent */
 	public int leftoverHP = 0;
 
-	/** Inheritor: enchantments / glyphs kept from devoured gear (most recent last) */
+	/** consumables tasted so far (class names), for the gourmet codex */
+	public final java.util.HashSet<String> codex = new java.util.HashSet<>();
+	/** last potion or scroll used, for Rumination */
+	public Class lastUsed = null;
+
+	/** old Inheritor saves: enchantments / glyphs kept from devoured gear (no longer used) */
 	public final ArrayList<Class> enchants = new ArrayList<Class>();
 	public final ArrayList<Class> glyphs = new ArrayList<Class>();
 
@@ -99,160 +110,143 @@ public class PredatorStomach extends Buff {
 		return max <= 0 ? 0 : Random.IntRange(max / 2, max);
 	}
 
-	public int maxInherit() {
-		Hero h = hero();
-		return 1 + (h == null ? 0 : h.pointsInTalent(Talent.INHERITOR_MEMORY));
+	// ------------------------------------------------------------------ consuming
+
+	/** potions (and elixirs) feed the weapon pool: melee damage and accuracy */
+	public static final int CAT_POTION = 0;
+	/** food and seeds feed the armor pool: max HP and armor */
+	public static final int CAT_FOOD = 1;
+	/** scrolls and runestones feed the trinket pool: a bit of everything, mostly evasion */
+	public static final int CAT_SCROLL = 2;
+
+	/** codex milestones: number of different consumables tasted to unlock each perk */
+	public static final int CODEX_HEAL     = 5;
+	public static final int CODEX_SEEDS    = 10;
+	public static final int CODEX_LINGER   = 20;
+	public static final int CODEX_PRESERVE = 30;
+	public static final int CODEX_FRUGAL   = 40;
+	public static final int CODEX_FEAST    = 50;
+	public static final int CODEX_ECHO     = 60;
+	public static final int[] MILESTONES = {CODEX_HEAL, CODEX_SEEDS, CODEX_LINGER, CODEX_PRESERVE,
+			CODEX_FRUGAL, CODEX_FEAST, CODEX_ECHO};
+
+	/** points for the first taste of a new kind of consumable */
+	public static final float CODEX_BONUS = 5f;
+
+	public boolean codex(int milestone) {
+		return codex.size() >= milestone;
 	}
 
-	// ------------------------------------------------------------------ devouring
+	public static boolean hasCodex(Hero hero, int milestone) {
+		PredatorStomach st = hero == null ? null : hero.buff(PredatorStomach.class);
+		return st != null && st.codex(milestone);
+	}
 
-	/** Category of an item, or -1 if it cannot be devoured. */
-	public static int category(Hero hero, Item item) {
-		if (item == null || item.unique) return -1;
-		if (item instanceof EquipableItem && item.isEquipped(hero)) return -1;
-		if (item instanceof MeleeWeapon) return CAT_WEAPON;
-		if (item instanceof MissileWeapon) return hero.pointsInTalent(Talent.PREDATOR_SCRAPS) >= 1 ? CAT_WEAPON : -1;
-		if (item instanceof ClassArmor) return -1;
-		if (item instanceof Armor) return CAT_ARMOR;
-		if (item instanceof Ring || item instanceof Artifact || item instanceof Trinket) return CAT_TRINKET;
-		if (item instanceof Wand) return hero.pointsInTalent(Talent.PREDATOR_SCRAPS) >= 2 ? CAT_TRINKET : -1;
+	/** Category of a consumable, or -1 if it doesn't feed the stomach. */
+	public static int category(Item item) {
+		if (item instanceof Potion) return CAT_POTION;
+		if (item instanceof Food || item instanceof Plant.Seed) return CAT_FOOD;
+		if (item instanceof Scroll || item instanceof Runestone) return CAT_SCROLL;
 		return -1;
 	}
 
 	/** Raw points an item is worth before multipliers. */
 	public static float baseScore(Item item) {
-		int lvl = Math.max(0, item.level());
-		float s;
-		if (item instanceof MeleeWeapon) {
-			s = ((MeleeWeapon) item).tier + 2 * lvl;
-			if (((Weapon) item).hasGoodEnchant()) s += 1;
-		} else if (item instanceof MissileWeapon) {
-			s = Math.min(2f * ((MissileWeapon) item).tier, 0.4f * ((MissileWeapon) item).tier * item.quantity()) + lvl;
-		} else if (item instanceof Armor) {
-			Armor a = (Armor) item;
-			s = a.tier + 2 * lvl;
-			if (a.glyph != null && !a.glyph.curse()) s += 1;
-		} else if (item instanceof Artifact) {
-			int cap = Math.max(1, ((Artifact) item).levelCap());
-			s = 3 + Math.round(6f * lvl / cap);
-		} else if (item instanceof Trinket) {
-			s = 3 + 2 * lvl;
-		} else if (item instanceof Wand) {
-			s = 2 + lvl;
-		} else {
-			s = 3 + 2 * lvl;
-		}
-		return Math.max(1, s);
+		if (item instanceof Food) return Math.max(1f, ((Food) item).energy / 100f);
+		if (item instanceof Plant.Seed) return 1f;
+		if (item instanceof Runestone) return 1f;
+		if (item instanceof ExoticPotion || item instanceof Elixir || item instanceof Brew) return 4f;
+		if (item instanceof ExoticScroll) return 4f;
+		return 2f;
 	}
 
-	/** Final points for an item, including curse handling and talents. */
-	public static float score(Hero hero, Item item) {
+	/** Final points for an item, including talents and subclass bonuses. */
+	public static float score(Hero hero, Item item, boolean swallowed) {
+		int cat = category(item);
 		float s = baseScore(item);
-		if (item.cursed) {
-			int ce = hero.pointsInTalent(Talent.PREDATOR_CURSE_EATER);
-			if (ce == 0) s *= 0.5f;
-			else if (ce >= 2) s *= 1.5f;
-			if (hero.pointsInTalent(Talent.INHERITOR_PURIFY) >= 3) s *= 1.5f;
-		}
 		float mult = 1f + 0.10f * hero.pointsInTalent(Talent.PREDATOR_EFFICIENCY);
 		if (hero.subClass == HeroSubClass.GOURMAND) {
-			mult += 0.30f + 0.10f * hero.pointsInTalent(Talent.GOURMAND_SECOND_STOMACH);
+			mult += 0.10f * hero.pointsInTalent(Talent.GOURMAND_SECOND_STOMACH);
+			if (cat == CAT_FOOD) mult += 1f;
+		} else if (hero.subClass == HeroSubClass.INHERITOR) {
+			if (cat == CAT_POTION || cat == CAT_SCROLL) mult += 0.5f;
 		}
 		if (SinWeapons.wields(hero, GluttonScythe.class, com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.GLUTTONY)) mult *= 1.5f;
 		PredatorStomach st = hero.buff(PredatorStomach.class);
 		if (st != null && st.mirrored) mult *= 1.25f;
 		mult *= SinArtifact.devourScale(hero);
+		if (swallowed) mult *= 3f + 1.5f * hero.pointsInTalent(Talent.PREDATOR_SCRAPS);
 		return s * mult;
 	}
 
 	public void addPoints(int cat, float pts) {
-		if (cat == CAT_WEAPON) weaponPts += pts;
-		else if (cat == CAT_ARMOR) armorPts += pts;
+		if (cat == CAT_POTION) weaponPts += pts;
+		else if (cat == CAT_FOOD) armorPts += pts;
 		else trinketPts += pts;
 		Hero h = hero();
 		if (h != null) h.updateHT(true);
 		BuffIndicator.refreshHero();
 	}
 
-	/** Devour an item. Returns true if it was consumed. */
-	public boolean devour(Hero hero, Item item) {
-		int cat = category(hero, item);
-		if (cat < 0) return false;
+	/**
+	 * Called whenever the glutton uses (or swallows) a consumable. Adds points, registers it in
+	 * the codex and runs the talents. Returns the points gained.
+	 */
+	public float consume(Hero hero, Item item, boolean swallowed) {
+		int cat = category(item);
+		if (cat < 0) return 0;
 
-		float pts = score(hero, item);
+		//the glutton knows what it swallowed by taste
+		if (swallowed && !item.isIdentified()) item.identify();
+		float pts = score(hero, item, swallowed);
+		String key = item.getClass().getName();
+		boolean fresh = codex.add(key);
+		if (fresh) pts += CODEX_BONUS;
 		addPoints(cat, pts);
-		SinArtifact.onSpent(hero, 2);
 
-		// Adaptive digestion: some points also flow into the other combat category
+		// Adaptive digestion: some points also flow into the other two pools
 		int adapt = hero.pointsInTalent(Talent.PREDATOR_ADAPT);
 		if (adapt > 0) {
-			if (cat == CAT_WEAPON) addPoints(CAT_ARMOR, pts * 0.10f * adapt);
-			else if (cat == CAT_ARMOR) addPoints(CAT_WEAPON, pts * 0.10f * adapt);
+			for (int c = 0; c < 3; c++) if (c != cat) addPoints(c, pts * 0.05f * adapt);
 		}
 
-		// Gourmand: leftovers turn upgrades into max HP
-		if (hero.subClass == HeroSubClass.GOURMAND) {
-			int lo = hero.pointsInTalent(Talent.GOURMAND_LEFTOVERS);
-			if (lo > 0) leftoverHP += lo * Math.max(0, item.level());
-		}
-
-		// Inheritor: keep enchantments and glyphs
-		if (hero.subClass == HeroSubClass.INHERITOR) {
-			inherit(hero, item);
+		if (!swallowed && (item instanceof Potion || item instanceof Scroll)) {
+			lastUsed = item.getClass();
 		}
 
 		eaten++;
-		item.detachAll(hero.belongings.backpack);
+		SinArtifact.onSpent(hero, 1);
 		Item.updateQuickslot();
 
-		afterDevour(hero, cat, pts);
-		return true;
-	}
-
-	private void inherit(Hero hero, Item item) {
-		int purify = hero.pointsInTalent(Talent.INHERITOR_PURIFY);
-		if (item instanceof Weapon && ((Weapon) item).enchantment != null) {
-			Weapon.Enchantment e = ((Weapon) item).enchantment;
-			Class c = e.getClass();
-			if (e.curse()) {
-				if (purify >= 2) c = Weapon.Enchantment.random().getClass();
-				else if (purify >= 1) c = null;
-			}
-			if (c != null) {
-				enchants.remove(c);
-				enchants.add(c);
-				while (enchants.size() > maxInherit()) enchants.remove(0);
-				GLog.p(Messages.get(PredatorStomach.class, "inherit_enchant"));
+		String catName = Messages.get(PredatorStomach.class, "cat_" + cat);
+		hero.sprite.showStatus(CharSprite.POSITIVE, Messages.get(PredatorStomach.class, "gain_status", catName, fmt(pts)));
+		if (fresh) {
+			GLog.p(Messages.get(PredatorStomach.class, "codex_new", item.trueName(), codex.size()));
+			for (int m : MILESTONES) {
+				if (codex.size() == m) {
+					GLog.h(Messages.get(PredatorStomach.class, "codex_unlock", Messages.get(PredatorStomach.class, "codex_" + m)));
+					hero.sprite.emitter().burst(Speck.factory(Speck.STAR), 8);
+				}
 			}
 		}
-		if (item instanceof Armor && ((Armor) item).glyph != null) {
-			Armor.Glyph g = ((Armor) item).glyph;
-			Class c = g.getClass();
-			if (g.curse()) {
-				if (purify >= 2) c = Armor.Glyph.random().getClass();
-				else if (purify >= 1) c = null;
-			}
-			if (c != null) {
-				glyphs.remove(c);
-				glyphs.add(c);
-				while (glyphs.size() > maxInherit()) glyphs.remove(0);
-				GLog.p(Messages.get(PredatorStomach.class, "inherit_glyph"));
-			}
-		}
+
+		afterConsume(hero, item, cat);
+		return pts;
 	}
 
-	private void afterDevour(Hero hero, int cat, float pts) {
+	private void afterConsume(Hero hero, Item item, int cat) {
+		// codex: a little health back from everything
+		if (codex(CODEX_HEAL)) heal(hero, Math.round(hero.HT * 0.03f));
+		// codex: every meal is a feast
+		if (codex(CODEX_FEAST)) {
+			Hunger hunger = hero.buff(Hunger.class);
+			if (hunger != null) hunger.satisfy(30f);
+			Buff.affect(hero, Barrier.class).incShield(Math.max(1, Math.round(hero.HT * 0.05f)));
+		}
+
 		// tier 1
 		int feast = hero.pointsInTalent(Talent.PREDATOR_FEAST);
-		if (feast > 0) {
-			int heal = Math.round(hero.HT * (feast == 1 ? 0.10f : 0.20f));
-			heal = Math.min(heal, hero.HT - hero.HP);
-			if (heal > 0) {
-				hero.HP += heal;
-				hero.sprite.emitter().burst(Speck.factory(Speck.HEALING), 2);
-				hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(heal), com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText.HEALING);
-			}
-		}
+		if (feast > 0 && cat == CAT_FOOD) heal(hero, Math.round(hero.HT * (feast == 1 ? 0.10f : 0.20f)));
 		int taste = hero.pointsInTalent(Talent.PREDATOR_TASTE);
 		if (taste > 0) {
 			for (Item it : hero.belongings.backpack.items) {
@@ -269,72 +263,82 @@ public class PredatorStomach extends Buff {
 				}
 			}
 		}
-		int fang = hero.pointsInTalent(Talent.PREDATOR_FANG);
-		if (fang > 0) {
+		if (hero.pointsInTalent(Talent.PREDATOR_FANG) > 0) {
 			Buff.affect(hero, Fang.class).hits = 3;
 		}
 		int hide = hero.pointsInTalent(Talent.PREDATOR_HIDE);
 		if (hide > 0) {
-			Buff.affect(hero, Barrier.class).setShield(Math.round(hero.HT * (hide == 1 ? 0.08f : 0.15f)));
-		}
-		// tier 2
-		int glut = hero.pointsInTalent(Talent.PREDATOR_GLUTTONY);
-		if (glut > 0) {
-			Hunger hunger = hero.buff(Hunger.class);
-			if (hunger != null) hunger.satisfy(100f * glut);
-		}
-		// gourmand
-		if (hero.subClass == HeroSubClass.GOURMAND && hero.pointsInTalent(Talent.GOURMAND_FOOD_COMA) > 0) {
-			Buff.affect(hero, Coma.class);
+			Buff.affect(hero, Barrier.class).incShield(Math.max(1, Math.round(hero.HT * (hide == 1 ? 0.04f : 0.08f))));
 		}
 
-		String catName = Messages.get(PredatorStomach.class, "cat_" + cat);
-		hero.sprite.showStatus(CharSprite.POSITIVE, Messages.get(PredatorStomach.class, "gain_status", catName, fmt(pts)));
-		hero.sprite.emitter().burst(Speck.factory(Speck.BONE), 6);
-		Sample.INSTANCE.play("sounds/eat.mp3");
+		// gourmand: food makes you sturdier
+		if (hero.subClass == HeroSubClass.GOURMAND && cat == CAT_FOOD) {
+			int lo = hero.pointsInTalent(Talent.GOURMAND_LEFTOVERS);
+			if (lo > 0) {
+				leftoverHP += lo;
+				hero.updateHT(true);
+			}
+			if (hero.pointsInTalent(Talent.GOURMAND_FOOD_COMA) > 0) Buff.affect(hero, Coma.class);
+		}
+
+		// alchemic glutton: potions resonate, scrolls cleanse
+		if (hero.subClass == HeroSubClass.INHERITOR) {
+			int res = hero.pointsInTalent(Talent.INHERITOR_RESONANCE);
+			if (item instanceof Potion && res > 0 && Random.Float() < 0.15f * res) {
+				switch (Random.Int(3)) {
+					case 0: Buff.prolong(hero, Haste.class, 5f); break;
+					case 1: Buff.prolong(hero, Bless.class, 10f); break;
+					default: Buff.affect(hero, Barrier.class).incShield(Math.round(hero.HT * 0.10f)); break;
+				}
+				hero.sprite.emitter().burst(Speck.factory(Speck.LIGHT), 6);
+			}
+			int purify = hero.pointsInTalent(Talent.INHERITOR_PURIFY);
+			if (item instanceof Scroll && purify > 0) {
+				int cleansed = 0;
+				for (Buff b : hero.buffs()) {
+					if (b.type == buffType.NEGATIVE && !(b instanceof AllyBuff) && !(b instanceof Hunger)
+							&& !(b instanceof LostInventory) && (purify >= 2 || cleansed == 0)) {
+						b.detach();
+						cleansed++;
+					}
+				}
+				if (purify >= 3) Buff.affect(hero, Barrier.class).incShield(Math.round(hero.HT * 0.10f));
+			}
+		}
+
+		hero.sprite.emitter().burst(Speck.factory(Speck.BONE), 3);
+	}
+
+	private static void heal(Hero hero, int amount) {
+		amount = Math.min(amount, hero.HT - hero.HP);
+		if (amount <= 0) return;
+		hero.HP += amount;
+		hero.sprite.emitter().burst(Speck.factory(Speck.HEALING), 2);
+		hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(amount), com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText.HEALING);
 	}
 
 	public static String fmt(float f) {
 		return String.format(java.util.Locale.ENGLISH, "%.1f", f);
 	}
 
-	// ------------------------------------------------------------------ inherited procs
+	// ------------------------------------------------------------------ acid stomach talent
 
-	public int procEnchants(Hero hero, Char enemy, int damage) {
-		if (enchants.isEmpty()) return damage;
-		Weapon wep = hero.belongings.weapon() instanceof Weapon ? (Weapon) hero.belongings.weapon() : null;
-		Weapon procWep = wep != null ? wep : new WornShortsword();
-		int resonance = hero.pointsInTalent(Talent.INHERITOR_RESONANCE);
-		for (Class c : new ArrayList<Class>(enchants)) {
-			if (!enemy.isAlive()) break;
-			if (wep != null && wep.enchantment != null && wep.enchantment.getClass() == c) continue;
-			try {
-				Weapon.Enchantment e = (Weapon.Enchantment) c.newInstance();
-				damage = e.proc(procWep, hero, enemy, damage);
-				if (resonance > 0 && enemy.isAlive() && Random.Float() < 0.15f * resonance) {
-					damage = e.proc(procWep, hero, enemy, damage);
-				}
-			} catch (Throwable t) {
-				// ignore broken enchantments
-			}
-		}
-		return damage;
+	private static final Class[] ACIDS = {Poison.class, Ooze.class, Corrosion.class};
+
+	@Override
+	public java.util.HashSet<Class> resistances() {
+		java.util.HashSet<Class> r = super.resistances();
+		Hero h = hero();
+		if (h != null && h.pointsInTalent(Talent.PREDATOR_CURSE_EATER) == 1) r.addAll(java.util.Arrays.asList(ACIDS));
+		return r;
 	}
 
-	public int procGlyphs(Hero hero, Char attacker, int damage) {
-		if (glyphs.isEmpty() || attacker == null) return damage;
-		Armor arm = hero.belongings.armor();
-		Armor procArm = arm != null ? arm : new ClothArmor();
-		for (Class c : new ArrayList<Class>(glyphs)) {
-			if (arm != null && arm.glyph != null && arm.glyph.getClass() == c) continue;
-			try {
-				Armor.Glyph g = (Armor.Glyph) c.newInstance();
-				damage = g.proc(procArm, attacker, hero, damage);
-			} catch (Throwable t) {
-				// ignore
-			}
-		}
-		return damage;
+	@Override
+	public java.util.HashSet<Class> immunities() {
+		java.util.HashSet<Class> r = super.immunities();
+		Hero h = hero();
+		if (h != null && h.pointsInTalent(Talent.PREDATOR_CURSE_EATER) >= 2) r.addAll(java.util.Arrays.asList(ACIDS));
+		return r;
 	}
 
 	// ------------------------------------------------------------------ buff ui
@@ -384,10 +388,10 @@ public class PredatorStomach extends Buff {
 				hpBonus(),
 				drMax(),
 				Math.round(evasionBonus() * 100)));
-		if (!enchants.isEmpty() || !glyphs.isEmpty()) {
-			sb.append("\n\n").append(Messages.get(PredatorStomach.class, "desc_inherit"));
-			for (Class c : enchants) sb.append("\n- ").append(Messages.get(c, "name", ""));
-			for (Class c : glyphs) sb.append("\n- ").append(Messages.get(c, "name", ""));
+		sb.append("\n\n").append(Messages.get(PredatorStomach.class, "desc_codex", codex.size()));
+		for (int m : MILESTONES) {
+			sb.append("\n").append(codex(m) ? "_" : "").append(m).append(": ")
+					.append(Messages.get(PredatorStomach.class, "codex_" + m)).append(codex(m) ? "_" : "");
 		}
 		return sb.toString();
 	}
@@ -411,6 +415,8 @@ public class PredatorStomach extends Buff {
 		bundle.put(ENCHANTS, enchants.toArray(new Class[0]));
 		bundle.put(GLYPHS, glyphs.toArray(new Class[0]));
 		bundle.put("mirrored", mirrored);
+		bundle.put("codex", codex.toArray(new String[0]));
+		if (lastUsed != null) bundle.put("last_used", lastUsed);
 	}
 
 	@Override
@@ -422,6 +428,11 @@ public class PredatorStomach extends Buff {
 		eaten = bundle.getInt(EATEN);
 		leftoverHP = bundle.getInt(LEFTOVER);
 		mirrored = bundle.getBoolean("mirrored");
+		codex.clear();
+		if (bundle.contains("codex")) {
+			for (String c : bundle.getStringArray("codex")) if (c != null) codex.add(c);
+		}
+		lastUsed = bundle.contains("last_used") ? bundle.getClass("last_used") : null;
 		enchants.clear();
 		glyphs.clear();
 		if (bundle.contains(ENCHANTS)) {

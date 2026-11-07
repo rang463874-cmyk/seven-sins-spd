@@ -58,6 +58,7 @@ public abstract class Runestone extends Item {
 				Talent.onRunestoneUsed(curUser, cell, getClass());
 			}
 			activate(cell);
+			if (!(this instanceof InventoryStone)) com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onStoneUsed(this);
 			if (Actor.findChar(cell) == null) Dungeon.level.pressCell( cell );
 			Invisibility.dispel();
 		}

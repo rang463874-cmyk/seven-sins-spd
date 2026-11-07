@@ -24,7 +24,7 @@ public class GnawingFang extends WornShortsword {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
 			if (SinWeapons.lethal(defender, damage)) {
-				Buff.affect(hero, PredatorStomach.class).addPoints(PredatorStomach.CAT_WEAPON, 0.5f);
+				Buff.affect(hero, PredatorStomach.class).addPoints(PredatorStomach.CAT_FOOD, 0.5f);
 			}
 		}
 		return super.proc(attacker, defender, damage);

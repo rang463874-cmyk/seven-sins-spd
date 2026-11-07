@@ -41,6 +41,7 @@ public class ScrollOfRage extends Scroll {
 
 	@Override
 	public void doRead() {
+		if (com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.readRage(curUser, this)) return;
 
 		detach(curUser.belongings.backpack);
 		for (Mob mob : Dungeon.level.mobs.toArray( new Mob[0] )) {

@@ -70,6 +70,12 @@ public class ScrollOfPsionicBlast extends ExoticScroll {
 			}
 		}
 		
+		if (com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.backlashImmune(curUser)) {
+			Dungeon.observe();
+			readAnimation();
+			identify();
+			return;
+		}
 		curUser.damage(Math.max(0, Math.round(curUser.HT*(0.5f * (float)Math.pow(0.9, targets.size())))), this);
 		if (curUser.isAlive()) {
 			Buff.prolong(curUser, Blindness.class, Blindness.DURATION);

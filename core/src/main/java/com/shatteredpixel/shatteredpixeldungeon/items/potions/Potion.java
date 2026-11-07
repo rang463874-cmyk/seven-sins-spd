@@ -209,7 +209,9 @@ public class Potion extends Item {
 
 	@Override
 	public String defaultAction() {
-		if (isKnown() && mustThrowPots.contains(this.getClass())) {
+		if (com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.drinksSafely(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero, this)) {
+			return AC_DRINK;
+		} else if (isKnown() && mustThrowPots.contains(this.getClass())) {
 			return AC_THROW;
 		} else if (isKnown() &&canThrowPots.contains(this.getClass())){
 			return AC_CHOOSE;
@@ -236,7 +238,7 @@ public class Potion extends Item {
 			
 		} else if (action.equals( AC_DRINK )) {
 			
-			if (isKnown() && mustThrowPots.contains(getClass())) {
+			if (isKnown() && mustThrowPots.contains(getClass()) && !com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.drinksSafely(hero, this)) {
 				
 					GameScene.show(
 						new WndOptions(new ItemSprite(this),
@@ -291,7 +293,11 @@ public class Potion extends Item {
 		
 		hero.spend( TIME_TO_DRINK );
 		hero.busy();
-		apply( hero );
+		if (!com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.drinkOverride( hero, this )) {
+			apply( hero );
+			if (com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.drinkTwice( hero, this )) apply( hero );
+		}
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed( hero, this );
 		
 		Sample.INSTANCE.play( Assets.Sounds.DRINK );
 		

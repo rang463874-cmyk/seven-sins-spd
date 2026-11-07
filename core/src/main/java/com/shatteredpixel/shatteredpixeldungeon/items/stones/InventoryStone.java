@@ -73,6 +73,7 @@ public abstract class InventoryStone extends Runestone {
 
 		Sample.INSTANCE.play( Assets.Sounds.READ );
 		Invisibility.dispel();
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onStoneUsed(this);
 	}
 
 	private String inventoryTitle(){

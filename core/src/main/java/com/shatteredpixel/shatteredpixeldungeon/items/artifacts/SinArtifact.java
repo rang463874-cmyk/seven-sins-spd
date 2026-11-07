@@ -88,12 +88,12 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 		return 1f + 0.06f * level(hero);
 	}
 
-	/** Gluttony: satiety per bite, 60 down to 40 at +10 */
-	public static int biteHunger(Hero hero) {
-		return 60 - 2 * level(hero);
+	/** Gluttony: satiety costs, down to -33% at +10 */
+	public static float satietyScale(Hero hero) {
+		return 1f - level(hero) / 30f;
 	}
 
-	/** Gluttony: devour points, up to +50% at +10 */
+	/** Gluttony: consumable points, up to +50% at +10 */
 	public static float devourScale(Hero hero) {
 		return 1f + 0.05f * level(hero);
 	}

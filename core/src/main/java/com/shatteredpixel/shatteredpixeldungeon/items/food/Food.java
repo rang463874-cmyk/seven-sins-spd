@@ -78,6 +78,7 @@ public class Food extends Item {
 			
 			satisfy(hero);
 			GLog.i( Messages.get(this, "eat_msg") );
+			com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onFoodEaten(hero, this);
 			
 			hero.sprite.operate( hero.pos );
 			hero.busy();

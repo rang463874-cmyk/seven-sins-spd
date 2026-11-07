@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.utils.Random;
 
-/** Gluttony's tier 5 weapon: kills feed the stomach, and devoured gear is worth 50% more (see PredatorStomach.score). */
+/** Gluttony's tier 5 weapon: kills feed the stomach, and consumables are worth 50% more (see PredatorStomach.score). */
 public class GluttonScythe extends WarScythe {
 
 	{
@@ -24,7 +24,7 @@ public class GluttonScythe extends WarScythe {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
 			if (SinWeapons.lethal(defender, damage)) {
-				Buff.affect(hero, PredatorStomach.class).addPoints(PredatorStomach.CAT_WEAPON, 2f);
+				Buff.affect(hero, PredatorStomach.class).addPoints(PredatorStomach.CAT_FOOD, 2f);
 			}
 		}
 		return super.proc(attacker, defender, damage);

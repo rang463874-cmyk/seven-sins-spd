@@ -82,7 +82,7 @@ public class GorgeBite extends ArmorAbility {
 		if (!enemy.isAlive()) {
 			PredatorStomach s = Buff.affect(hero, PredatorStomach.class);
 			float pts = 2 + hero.pointsInTalent(Talent.BITE_DIGEST);
-			s.addPoints(PredatorStomach.CAT_WEAPON, pts);
+			s.addPoints(PredatorStomach.CAT_FOOD, pts);
 			int heal = Math.min(Math.round(hero.HT * 0.15f), hero.HT - hero.HP);
 			if (heal > 0) {
 				hero.HP += heal;

@@ -116,9 +116,10 @@ public class WndDevSins extends Window {
 		if (h == null) return;
 		final PredatorStomach st = h.buff(PredatorStomach.class);
 		if (st != null) {
-			rows.add(new Row("식탐 · 무기 점수", () -> st.weaponPts, v -> st.weaponPts += v));
-			rows.add(new Row("식탐 · 방어구 점수", () -> st.armorPts, v -> st.armorPts += v));
-			rows.add(new Row("식탐 · 장신구 점수", () -> st.trinketPts, v -> st.trinketPts += v));
+			rows.add(new Row("식탐 · 물약 점수", () -> st.weaponPts, v -> st.weaponPts += v));
+			rows.add(new Row("식탐 · 음식 점수", () -> st.armorPts, v -> st.armorPts += v));
+			rows.add(new Row("식탐 · 주문서 점수", () -> st.trinketPts, v -> st.trinketPts += v));
+			rows.add(new Row("식탐 · 미식 도감", () -> (float) st.codex.size(), v -> { for (int i = 0; i < Math.min(v, 100); i++) st.codex.add("dev." + st.codex.size()); }));
 		}
 		final GreedVault gv = h.buff(GreedVault.class);
 		if (gv != null) {

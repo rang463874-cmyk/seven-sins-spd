@@ -43,6 +43,11 @@ public class SkillBar extends Component {
 		return buttons.isEmpty() ? 0 : BTN_SIZE + GAP;
 	}
 
+	/** width of the row of buttons (0 when hidden) */
+	public float barWidth() {
+		return buttons.isEmpty() ? 0 : buttons.size() * (BTN_SIZE + GAP) - GAP;
+	}
+
 	private String keyFor(Item item, ArrayList<SinSkill> skills) {
 		StringBuilder sb = new StringBuilder(item == null ? "-" : item.getClass().getName());
 		for (SinSkill s : skills) sb.append('|').append(s.id);
@@ -72,6 +77,7 @@ public class SkillBar extends Component {
 		}
 		layout();
 		GameScene.layoutTags();
+		GameScene.syncSkillBarPos();
 	}
 
 	@Override

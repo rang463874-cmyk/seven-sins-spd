@@ -1498,9 +1498,14 @@ public class GameScene extends PixelScene {
 	private void syncSkillBar(){
 		if (skillBar == null || toolbar == null) return;
 		skillBar.visible = skillBar.active = toolbar.visible;
-		float x = toolbar.left() + 1;
+		//right-aligned, just above the toolbar
+		float x = toolbar.right() - skillBar.barWidth() - 1;
 		float y = toolbar.top() - skillBar.barHeight();
 		if (skillBar.left() != x || skillBar.top() != y) skillBar.setPos(x, y);
+	}
+
+	public static void syncSkillBarPos(){
+		if (scene != null) scene.syncSkillBar();
 	}
 
 	public static void toggleInvPane(){
