@@ -17,6 +17,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.PrideEffigy;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportation;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
@@ -135,6 +136,12 @@ public class PrideCrown extends SinArtifact {
 				.usableIf(h -> glory(h).dignity >= COST_DECREE)
 				.descArgs(h -> new Object[]{1 + h.pointsInTalent(Talent.PRIDE_DECREE)})
 				.onUse(h -> GameScene.selectCell(decree)));
+		list.add(new BasicSkill(PrideCrown.class, "effigy", 29, SinSkill.CostType.DIGNITY)
+				.cost(h -> COST_EFFIGY)
+				.visibleIf(h -> h.subClass == HeroSubClass.PARAGON)
+				.usableIf(h -> glory(h).dignity >= COST_EFFIGY)
+				.descArgs(h -> new Object[]{effigyHP(h), Math.round(EFFIGY_LIFE), PrideEffigy.TAUNT_RADIUS})
+				.onUse(h -> GameScene.selectCell(effigy)));
 		return list;
 	}
 
@@ -183,7 +190,7 @@ public class PrideCrown extends SinArtifact {
 
 	public static int disdainMax(Hero hero) {
 		PrideGlory g = hero.buff(PrideGlory.class);
-		return 5 + hero.lvl * 2 / 3 + (g == null ? 0 : g.meleeBonus() / 2);
+		return 5 + hero.lvl * 2 / 3 + (g == null ? 0 : g.meleeBonus());
 	}
 
 	/** a contemptuous glance from afar: lets Pride fight without ever being touched */
@@ -301,6 +308,54 @@ public class PrideCrown extends SinArtifact {
 		@Override
 		public String prompt() {
 			return Messages.get(PrideCrown.class, "prompt_procession", processionRange(Dungeon.hero));
+		}
+	};
+
+	// ------------------------------------------------------------------ effigy (paragon only)
+
+	public static final int COST_EFFIGY = 3;
+	public static final int EFFIGY_RANGE = 4;
+	public static final float EFFIGY_LIFE = 20f;
+
+	public static int effigyHP(Hero hero) {
+		PrideGlory g = glory(hero);
+		return 15 + 5 * hero.lvl + (g == null ? 0 : Math.round(g.glory) / 5);
+	}
+
+	/** a golden statue of the paragon that draws enemies away, so it can keep fighting alone from afar */
+	private final CellSelector.Listener effigy = new CellSelector.Listener() {
+		@Override
+		public void onSelect(Integer cell) {
+			Hero hero = Dungeon.hero;
+			if (cell == null || cell == hero.pos) return;
+			boolean ok = Dungeon.level.heroFOV[cell]
+					&& Dungeon.level.passable[cell]
+					&& Actor.findChar(cell) == null
+					&& Dungeon.level.distance(hero.pos, cell) <= EFFIGY_RANGE;
+			if (!ok) {
+				GLog.w(Messages.get(PrideCrown.class, "bad_cell"));
+				return;
+			}
+			if (!glory(hero).useDignity(COST_EFFIGY)) return;
+
+			//only one effigy stands at a time
+			for (PrideEffigy old : PrideEffigy.active()) old.die(null);
+
+			PrideGlory g = glory(hero);
+			PrideEffigy e = PrideEffigy.create(hero.lvl, g == null ? 0 : Math.round(g.glory), EFFIGY_LIFE);
+			e.HT = e.HP = effigyHP(hero);
+			e.pos = cell;
+			GameScene.add(e);
+			Dungeon.level.occupyCell(e);
+			e.sprite.emitter().burst(Speck.factory(Speck.STAR), 8);
+			com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.ROCKS);
+			hero.sprite.zap(cell);
+			hero.spendAndNext(1f);
+		}
+
+		@Override
+		public String prompt() {
+			return Messages.get(PrideCrown.class, "prompt_effigy", EFFIGY_RANGE);
 		}
 	};
 

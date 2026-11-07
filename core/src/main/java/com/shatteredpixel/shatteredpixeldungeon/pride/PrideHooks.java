@@ -27,6 +27,9 @@ public final class PrideHooks {
 
 	private PrideHooks() {}
 
+	/** pride is a ranged class: its melee attacks deal 30% less */
+	public static final float MELEE_PENALTY = 0.7f;
+
 	private static PrideGlory glory(Hero hero) {
 		return hero == null ? null : hero.buff(PrideGlory.class);
 	}
@@ -34,7 +37,8 @@ public final class PrideHooks {
 	/** true when the hero has no allies in sight (for the Paragon) */
 	public static boolean alone(Hero hero) {
 		for (Mob m : Dungeon.level.mobs) {
-			if (m.alignment == Char.Alignment.ALLY && Dungeon.level.heroFOV[m.pos]) return false;
+			if (m.alignment == Char.Alignment.ALLY && Dungeon.level.heroFOV[m.pos]
+					&& !(m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.PrideEffigy)) return false;
 		}
 		return true;
 	}
@@ -164,9 +168,18 @@ public final class PrideHooks {
 		if (g == null) return dmg;
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
 		float mult = 1f;
-		if (!(wep instanceof MissileWeapon)) {
+		if (wep instanceof MissileWeapon) {
+			//pride fights from afar: glory and dignity feed arrows and thrown weapons
 			dmg += g.meleeBonus();
 			mult *= g.dignityMult();
+			if (com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.SinWeapons.wields(hero,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.KingsAegis.class,
+					com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.PRIDE)) {
+				mult *= 1f + com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.KingsAegis.RANGED_BONUS;
+			}
+		} else {
+			//and is clumsy up close
+			mult *= MELEE_PENALTY;
 		}
 		if (hero.subClass == HeroSubClass.PARAGON) {
 			if (alone(hero)) mult *= 1.25f + 0.10f * hero.pointsInTalent(Talent.PARAGON_SOLITUDE);

@@ -948,7 +948,12 @@ public class ItemSpriteSheet {
 	public static final int STICKY_BOMB       = ELITE+3;
 	public static final int BANDAGE           = ELITE+4;
 	public static final int STIMULANT         = ELITE+5;
+	//pride's royal longbow and its arrow
+	public static final int ROYAL_BOW         = ELITE+6;
+	public static final int ROYAL_ARROW       = ELITE+7;
 	static{
+		assignItemRect(ROYAL_BOW,     16, 16);
+		assignItemRect(ROYAL_ARROW,   11, 11);
 		assignItemRect(SIN_ESSENCE,   12, 12);
 		assignItemRect(ELIXIR_OF_SIN, 12, 14);
 		assignItemRect(SIN_BOMB,      10, 13);

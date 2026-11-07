@@ -410,6 +410,8 @@ STIMULANT = [
 STIMULANT_PAL = {"O": (50, 60, 70, 255), "H": (200, 210, 220, 255), "G": (180, 230, 60, 255), "S": (160, 170, 180, 255)}
 
 BOMB_ICON = 80
+SPIRIT_BOW_ICON = 144     # MISSILE_WEP + 0 (row 10)
+SPIRIT_ARROW_ICON = 24    # UNCOLLECTIBLE + 6 (row 2, col 3 + 6 - 1)
 
 
 def tint_px(hue, sat, vmul):
@@ -433,6 +435,9 @@ def elite_art(items):
     items.paste(recolor(bomb, tint_px(85, 0.6, 1.7)), cell(ELITE_ROW + 3, 16)[:2])
     items.paste(draw(BANDAGE, BANDAGE_PAL), cell(ELITE_ROW + 4, 16)[:2])
     items.paste(draw(STIMULANT, STIMULANT_PAL), cell(ELITE_ROW + 5, 16)[:2])
+    # pride's royal longbow and arrow: the spirit bow and arrow, gilded
+    items.paste(recolor(items.crop(cell(SPIRIT_BOW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 6, 16)[:2])
+    items.paste(recolor(items.crop(cell(SPIRIT_ARROW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 7, 16)[:2])
 
 
 # One entry per sin, in HeroClass order. hue/accent in degrees.

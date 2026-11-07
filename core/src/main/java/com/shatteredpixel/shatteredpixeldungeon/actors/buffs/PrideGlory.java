@@ -80,7 +80,6 @@ public class PrideGlory extends Buff {
 	public void addGlory(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.PRIDE_VANITY);
-		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) amount *= 1.5f;
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
 		glory += amount;
@@ -115,7 +114,10 @@ public class PrideGlory extends Buff {
 		return Math.max(0.5f, t);
 	}
 
-	/** multiplier on melee damage from dignity: +4% per stack */
+	/** set once the hero has been handed the royal longbow (new heroes start with it) */
+	public boolean bowGiven = false;
+
+	/** multiplier on ranged damage from dignity: +4% per stack */
 	public float dignityMult() {
 		return 1f + 0.04f * dignity;
 	}
@@ -153,6 +155,16 @@ public class PrideGlory extends Buff {
 	@Override
 	public boolean act() {
 		Hero h = hero();
+		if (h != null && h.isAlive() && !bowGiven) {
+			//pride became a ranged class: heroes from older saves get their bow once
+			bowGiven = true;
+			if (h.heroClass == HeroClass.PRIDE && h.belongings.getItem(com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow.class) == null) {
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow bow = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow();
+				bow.identify();
+				if (!bow.collect(h.belongings.backpack)) Dungeon.level.drop(bow, h.pos);
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(Messages.get(PrideGlory.class, "bow_given"));
+			}
+		}
 		if (h != null && h.isAlive()) {
 			calmTurns += TICK;
 			if (calmTurns >= turnsPerDignity()) {
@@ -218,6 +230,7 @@ public class PrideGlory extends Buff {
 		bundle.put("dignity", dignity);
 		bundle.put("calm", calmTurns);
 		bundle.put("mirrored", mirrored);
+		bundle.put("bow_given", bowGiven);
 	}
 
 	@Override
@@ -227,6 +240,7 @@ public class PrideGlory extends Buff {
 		dignity = bundle.getInt("dignity");
 		calmTurns = bundle.getFloat("calm");
 		mirrored = bundle.getBoolean("mirrored");
+		bowGiven = bundle.getBoolean("bow_given");
 	}
 
 	// ------------------------------------------------------------------ marks on enemies

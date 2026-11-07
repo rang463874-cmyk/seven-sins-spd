@@ -19,11 +19,14 @@ public class KingsAegis extends Greatshield {
 
 	public static final HeroClass OWNER = HeroClass.PRIDE;
 
+	/** while held, pride's arrows and thrown weapons hit this much harder (see PrideHooks) */
+	public static final float RANGED_BONUS = 0.30f;
+
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
-			//passive: more glory and higher maximum dignity (see PrideGlory)
+			//passive: +30% ranged damage (PrideHooks) and higher maximum dignity (PrideGlory)
 		}
 		return super.proc(attacker, defender, damage);
 	}

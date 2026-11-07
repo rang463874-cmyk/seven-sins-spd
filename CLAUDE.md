@@ -79,6 +79,13 @@ backlash. Maw skills: Bite, Hunger Dash (haste), Acid Spray, Swallow Whole (free
 Ruminate (repeat `lastUsed`, growth items excluded via `PredatorHooks.canRepeat`); satiety costs via
 `PredatorMaw.hungerCost`. Talent enum names are unchanged (meanings and strings changed); INHERITOR is now
 shown as the "alchemic glutton". Old Inheritor enchant/glyph lists are kept in saves but unused.
+Pride is a ranged class (Nov 2026): starts with `items/weapon/RoyalBow` (SpiritBow subclass, endless arrows,
+level = hero lvl/5 + upgrades, takes scrolls of upgrade; gilded art row 37 +6/+7) in quickslot 0, crown in slot 1;
+older Pride saves get the bow once via `PrideGlory.bowGiven`. `PrideHooks.onAttack` gives glory's flat bonus
+(`meleeBonus`, name kept) and the dignity multiplier to MissileWeapon attacks only, and melee deals x0.7
+(`MELEE_PENALTY`). KingsAegis: +30% ranged damage (`RANGED_BONUS`) and +5 max dignity (no more glory bonus).
+Paragon-only crown skill Effigy (`actors/mobs/npcs/PrideEffigy`, immovable ALLY statue, taunts enemies within 4 via
+`SlothRepose.Taunted`, 20 turns, excluded from `PrideHooks.alone`).
 Skill resources (Nov 2026): Wrath spends **rage** (`WrathGrudge.rage`, 0..maxRage 100+, filled by hits dealt
 (+4) and damage taken (100 per max HP), cools 1/turn with no enemies in view; old charge sources convert at
 1 charge = 25 rage). Pride spends **dignity** stacks (`PrideGlory.useDignity`; dignity also gives +4% melee per

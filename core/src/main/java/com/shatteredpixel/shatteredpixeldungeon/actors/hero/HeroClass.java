@@ -399,9 +399,14 @@ public enum HeroClass {
 		PrideCrown crown = new PrideCrown();
 		(hero.belongings.artifact = crown).identify();
 		hero.belongings.artifact.activate( hero );
-		Dungeon.quickslot.setSlot(0, crown);
 
-		Buff.affect(hero, PrideGlory.class);
+		//pride fights from afar
+		com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow bow = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow();
+		bow.identify().collect();
+		Dungeon.quickslot.setSlot(0, bow);
+		Dungeon.quickslot.setSlot(1, crown);
+
+		Buff.affect(hero, PrideGlory.class).bowGiven = true;
 
 		new PotionOfHealing().identify();
 		new ScrollOfMirrorImage().identify();

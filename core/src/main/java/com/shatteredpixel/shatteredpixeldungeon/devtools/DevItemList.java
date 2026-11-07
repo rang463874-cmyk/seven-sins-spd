@@ -398,6 +398,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant",
+			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow",
 		},
 	};
 }
