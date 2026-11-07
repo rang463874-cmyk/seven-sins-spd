@@ -152,6 +152,7 @@ public final class WrathHooks {
 	public static int onAttack(Hero hero, Char enemy, int dmg) {
 		WrathGrudge g = grudge(hero);
 		if (g == null) return dmg;
+		g.onHit();
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
 		if (!(wep instanceof MissileWeapon)) {
 			dmg += g.meleeBonus();
@@ -169,6 +170,7 @@ public final class WrathHooks {
 	public static int onDefense(Hero hero, Char attacker, int dmg) {
 		WrathGrudge g = grudge(hero);
 		if (g == null || dmg <= 0) return dmg;
+		g.onHurt(dmg);
 		int fuel = hero.pointsInTalent(Talent.WRATH_FUEL);
 		if (fuel > 0) g.gainCharge(0.10f * fuel);
 		return dmg;

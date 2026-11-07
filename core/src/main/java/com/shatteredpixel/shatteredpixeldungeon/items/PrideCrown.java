@@ -33,16 +33,16 @@ import java.util.ArrayList;
 
 /**
  * The Pride class's signature item. Doesn't take an equipment slot.
- * Uses recharging charges (stored in PrideGlory) to command the lesser beings of the dungeon.
+ * Spends dignity (stored in PrideGlory) to command the lesser beings of the dungeon.
  */
 public class PrideCrown extends SinArtifact {
 
 	public static final String AC_DECREE = "COMMAND";
 
-	public static final int COST_COMMAND = 1;
-	public static final int COST_DUEL = 2;
-	public static final int COST_PROCESSION = 1;
-	public static final int COST_DECREE = 1;
+	public static final int COST_COMMAND = 3;
+	public static final int COST_DUEL = 5;
+	public static final int COST_PROCESSION = 3;
+	public static final int COST_DECREE = 4;
 
 	{
 		image = ItemSpriteSheet.PRIDE_CROWN;
@@ -98,29 +98,35 @@ public class PrideCrown extends SinArtifact {
 	@Override
 	public String skillHeader(Hero hero) {
 		PrideGlory g = glory(hero);
-		return Messages.get(this, "skill_header", g.charges, g.maxCharges());
+		return Messages.get(this, "skill_header", g.dignity, g.maxDignity());
+	}
+
+	@Override
+	protected String levelEffects(Hero hero) {
+		return Messages.get(SinArtifact.class, "effects_dignity", 2 * SinArtifact.bonusCharges(hero),
+				Math.round((1f / SinArtifact.rechargeScale(hero) - 1f) * 100));
 	}
 
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(PrideCrown.class, "command", 24, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(PrideCrown.class, "command", 24, SinSkill.CostType.DIGNITY)
 				.cost(h -> COST_COMMAND)
-				.usableIf(h -> glory(h).charges >= COST_COMMAND)
+				.usableIf(h -> glory(h).dignity >= COST_COMMAND)
 				.descArgs(h -> new Object[]{Math.round(commandDuration(h))})
 				.onUse(h -> GameScene.selectCell(command)));
-		list.add(new BasicSkill(PrideCrown.class, "duel", 25, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(PrideCrown.class, "duel", 25, SinSkill.CostType.DIGNITY)
 				.cost(h -> COST_DUEL)
-				.usableIf(h -> glory(h).charges >= COST_DUEL)
+				.usableIf(h -> glory(h).dignity >= COST_DUEL)
 				.onUse(h -> GameScene.selectCell(duel)));
-		list.add(new BasicSkill(PrideCrown.class, "procession", 26, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(PrideCrown.class, "procession", 26, SinSkill.CostType.DIGNITY)
 				.cost(h -> COST_PROCESSION)
-				.usableIf(h -> glory(h).charges >= COST_PROCESSION)
+				.usableIf(h -> glory(h).dignity >= COST_PROCESSION)
 				.descArgs(h -> new Object[]{processionRange(h)})
 				.onUse(h -> GameScene.selectCell(procession)));
-		list.add(new BasicSkill(PrideCrown.class, "decree", 27, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(PrideCrown.class, "decree", 27, SinSkill.CostType.DIGNITY)
 				.cost(h -> COST_DECREE)
-				.usableIf(h -> glory(h).charges >= COST_DECREE)
+				.usableIf(h -> glory(h).dignity >= COST_DECREE)
 				.descArgs(h -> new Object[]{1 + h.pointsInTalent(Talent.PRIDE_DECREE)})
 				.onUse(h -> GameScene.selectCell(decree)));
 		return list;
@@ -167,7 +173,7 @@ public class PrideCrown extends SinArtifact {
 			Hero hero = Dungeon.hero;
 			Mob mob = enemyAt(cell, false);
 			if (mob == null) return;
-			if (!glory(hero).useCharges(COST_COMMAND)) return;
+			if (!glory(hero).useDignity(COST_COMMAND)) return;
 
 			boolean vassal = hero.subClass == HeroSubClass.MONARCH
 					&& mob.HP <= mob.HT * vassalThreshold(hero)
@@ -197,7 +203,7 @@ public class PrideCrown extends SinArtifact {
 			Hero hero = Dungeon.hero;
 			Mob mob = enemyAt(cell, true);
 			if (mob == null) return;
-			if (!glory(hero).useCharges(COST_DUEL)) return;
+			if (!glory(hero).useDignity(COST_DUEL)) return;
 
 			Buff.prolong(hero, PrideGlory.Duel.class, 12f).object = mob.id();
 			mob.aggro(hero);
@@ -227,7 +233,7 @@ public class PrideCrown extends SinArtifact {
 				GLog.w(Messages.get(PrideCrown.class, "bad_cell"));
 				return;
 			}
-			if (!glory(hero).useCharges(COST_PROCESSION)) return;
+			if (!glory(hero).useDignity(COST_PROCESSION)) return;
 
 			ScrollOfTeleportation.appear(hero, cell);
 			Dungeon.level.occupyCell(hero);
@@ -249,7 +255,7 @@ public class PrideCrown extends SinArtifact {
 			Hero hero = Dungeon.hero;
 			Mob mob = enemyAt(cell, true);
 			if (mob == null) return;
-			if (!glory(hero).useCharges(COST_DECREE)) return;
+			if (!glory(hero).useDignity(COST_DECREE)) return;
 
 			PrideGlory.Decree d = Buff.affect(mob, PrideGlory.Decree.class);
 			d.uses = Math.max(d.uses, 1 + hero.pointsInTalent(Talent.PRIDE_DECREE));
@@ -268,7 +274,7 @@ public class PrideCrown extends SinArtifact {
 	@Override
 	public String status() {
 		PrideGlory g = PrideGlory.of();
-		return g == null ? null : g.charges + "/" + g.maxCharges();
+		return g == null ? null : g.dignity + "/" + g.maxDignity();
 	}
 
 	@Override

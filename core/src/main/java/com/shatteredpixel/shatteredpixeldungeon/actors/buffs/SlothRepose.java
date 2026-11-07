@@ -27,7 +27,8 @@ import java.util.Comparator;
  * The Sloth would rather not fight: dream puppets (summoned with the Cozy Pillow) do it instead.
  * Enemies defeated by puppets, nightmares or automatic attacks grant sloth points, which raise
  * the stats of the Sloth and its puppets without limit. The Sloth's own kills count for a third.
- * Also holds the pillow's recharging charges and the Sleepwalker's automatic attacks.
+ * The pillow's skills cost time: the sloth dozes off for a few turns after each one (Doze).
+ * Also runs the Sleepwalker's automatic attacks.
  */
 public class SlothRepose extends Buff {
 
@@ -40,8 +41,6 @@ public class SlothRepose extends Buff {
 	/** consecutive turns the hero has stayed on the same tile */
 	public int stillTurns = 0;
 
-	public int charges = 2;
-	public float partialCharge = 0;
 
 	/** true while an automatic attack is being made, so its kills count in full */
 	public static boolean autoAttacking = false;
@@ -117,40 +116,49 @@ public class SlothRepose extends Buff {
 		return 10f + 5f * h.pointsInTalent(Talent.LORD_NIGHTMARE);
 	}
 
-	// ------------------------------------------------------------------ charges
+	// ------------------------------------------------------------------ dozing (skill cost)
 
-	public int maxCharges() {
-		Hero h = hero();
-		return 3 + SinArtifact.bonusCharges(h) + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_PILLOW));
+	/** turns a pillow skill with this base cost puts the sloth to sleep for */
+	public static int turnCost(Hero h, int base) {
+		float t = base * SinArtifact.rechargeScale(h);
+		t *= 1f - 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_RESTFUL));
+		return Math.max(1, Math.round(t));
 	}
 
-	public float turnsPerCharge() {
-		Hero h = hero();
-		return SinArtifact.rechargeScale(h) * 30f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_RESTFUL)));
-	}
-
-	public void gainCharge(float amount) {
-		if (charges >= maxCharges()) {
-			partialCharge = 0;
-			return;
+	/** pays a skill's cost: the hero dozes off and loses that many turns */
+	public static void doze(Hero h, int turns) {
+		SlothRepose r = h.buff(SlothRepose.class);
+		if (r != null) {
+			//dozing doesn't count as moving
+			r.lastPos = h.pos;
 		}
-		partialCharge += amount;
-		while (partialCharge >= 1f && charges < maxCharges()) {
-			partialCharge -= 1f;
-			charges++;
-		}
-		if (charges >= maxCharges()) partialCharge = 0;
-		Item.updateQuickslot();
-		BuffIndicator.refreshHero();
+		SinArtifact.onSpent(h, turns);
+		Buff.prolong(h, Doze.class, turns);
+		h.sprite.showStatus(CharSprite.NEUTRAL, Messages.get(SlothRepose.class, "doze"));
+		h.spendAndNext(turns);
 	}
 
-	public boolean useCharges(int n) {
-		if (charges < n) return false;
-		charges -= n;
-		SinArtifact.onSpent(hero(), n);
-		Item.updateQuickslot();
-		BuffIndicator.refreshHero();
-		return true;
+	/** dozing after a pillow skill; the Pillow Fort talent softens blows taken meanwhile */
+	public static class Doze extends FlavourBuff {
+
+		{
+			type = buffType.NEUTRAL;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.DROWSY;
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return Math.max(0, 1f - visualcooldown() / 6f);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", dispTurns());
+		}
 	}
 
 	// ------------------------------------------------------------------ sleepwalking
@@ -216,7 +224,6 @@ public class SlothRepose extends Buff {
 	public boolean act() {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
-			if (charges < maxCharges()) gainCharge(TICK / turnsPerCharge());
 
 			boolean wasAsleep = asleep();
 			if (lastPos == h.pos) {
@@ -256,11 +263,6 @@ public class SlothRepose extends Buff {
 	}
 
 	@Override
-	public float iconFadePercent() {
-		return 1f - charges / (float) maxCharges();
-	}
-
-	@Override
 	public String iconTextDisplay() {
 		return Integer.toString(DreamPuppet.puppets(false).size());
 	}
@@ -281,7 +283,7 @@ public class SlothRepose extends Buff {
 
 	private String statsTextBase() {
 		String s = Messages.get(SlothRepose.class, "desc_head", Math.round(sloth),
-				DreamPuppet.puppets(false).size(), maxPuppets(), charges, maxCharges())
+				DreamPuppet.puppets(false).size(), maxPuppets())
 				+ "\n\n" + Messages.get(SlothRepose.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
@@ -298,8 +300,6 @@ public class SlothRepose extends Buff {
 		bundle.put("sloth", sloth);
 		bundle.put("last_pos", lastPos);
 		bundle.put("still", stillTurns);
-		bundle.put("charges", charges);
-		bundle.put("partial", partialCharge);
 		bundle.put("mirrored", mirrored);
 	}
 
@@ -309,8 +309,6 @@ public class SlothRepose extends Buff {
 		sloth = bundle.getFloat("sloth");
 		lastPos = bundle.getInt("last_pos");
 		stillTurns = bundle.getInt("still");
-		charges = bundle.getInt("charges");
-		partialCharge = bundle.getFloat("partial");
 		mirrored = bundle.getBoolean("mirrored");
 	}
 

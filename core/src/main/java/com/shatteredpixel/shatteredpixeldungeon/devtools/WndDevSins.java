@@ -130,14 +130,14 @@ public class WndDevSins extends Window {
 		final WrathGrudge wg = h.buff(WrathGrudge.class);
 		if (wg != null) {
 			rows.add(new Row("분노 · 원한", () -> wg.grudge, v -> wg.grudge += v));
-			refillLabel = "충전 가득";
-			refill = () -> wg.charges = wg.maxCharges();
+			refillLabel = "분노 가득";
+			refill = () -> wg.rage = wg.maxRage();
 		}
 		final PrideGlory pg = h.buff(PrideGlory.class);
 		if (pg != null) {
 			rows.add(new Row("교만 · 영광", () -> pg.glory, v -> pg.glory += v));
-			refillLabel = "충전 가득";
-			refill = () -> pg.charges = pg.maxCharges();
+			refillLabel = "위엄 가득";
+			refill = () -> pg.dignity = pg.maxDignity();
 		}
 		final LustDesire ld = h.buff(LustDesire.class);
 		if (ld != null) {
@@ -154,8 +154,8 @@ public class WndDevSins extends Window {
 		final SlothRepose sr = h.buff(SlothRepose.class);
 		if (sr != null) {
 			rows.add(new Row("나태 · 나태 점수", () -> sr.sloth, v -> sr.sloth += v));
-			refillLabel = "충전 가득";
-			refill = () -> sr.charges = sr.maxCharges();
+			refillLabel = "체력 가득";
+			refill = () -> h.HP = h.HT;
 		}
 	}
 

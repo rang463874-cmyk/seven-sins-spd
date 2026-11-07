@@ -35,17 +35,17 @@ import java.util.ArrayList;
 
 /**
  * The Sloth class's signature item. Doesn't take an equipment slot.
- * Uses recharging charges (stored in SlothRepose) to summon dream puppets, nap,
+ * Each skill costs time: the sloth dozes off for a few turns afterwards. Summons dream puppets, naps,
  * swap places with a puppet and lull enemies to sleep.
  */
 public class SlothPillow extends SinArtifact {
 
 	public static final String AC_LAZE = "LAZE";
 
-	public static final int COST_SUMMON = 2;
-	public static final int COST_NAP = 1;
-	public static final int COST_SWAP = 1;
-	public static final int COST_YAWN = 2;
+	public static final int COST_SUMMON = 4;
+	public static final int COST_NAP = 3;
+	public static final int COST_SWAP = 2;
+	public static final int COST_YAWN = 3;
 
 	public static final int YAWN_RADIUS = 2;
 
@@ -81,29 +81,31 @@ public class SlothPillow extends SinArtifact {
 	@Override
 	public String skillHeader(Hero hero) {
 		SlothRepose r = repose(hero);
-		return Messages.get(this, "skill_header", r.charges, r.maxCharges(), DreamPuppet.puppets(false).size(), r.maxPuppets());
+		return Messages.get(this, "skill_header", DreamPuppet.puppets(false).size(), r.maxPuppets());
+	}
+
+	@Override
+	protected String levelEffects(Hero hero) {
+		return Messages.get(SinArtifact.class, "effects_turns", Math.round((1f - SinArtifact.rechargeScale(hero)) * 100));
 	}
 
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(SlothPillow.class, "summon", 48, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(SlothPillow.class, "summon", 48, SinSkill.CostType.TURNS)
 				.nameFrom(h -> DreamPuppet.puppets(false).size() >= repose(h).maxPuppets() ? "mend" : "summon")
-				.cost(h -> COST_SUMMON)
-				.usableIf(h -> repose(h).charges >= COST_SUMMON)
+				.cost(h -> SlothRepose.turnCost(h, COST_SUMMON))
 				.descArgs(h -> new Object[]{repose(h).maxPuppets()})
 				.onUse(h -> summon(h, repose(h))));
-		list.add(new BasicSkill(SlothPillow.class, "nap", 49, SinSkill.CostType.CHARGES)
-				.cost(h -> COST_NAP)
-				.usableIf(h -> repose(h).charges >= COST_NAP)
+		list.add(new BasicSkill(SlothPillow.class, "nap", 49, SinSkill.CostType.TURNS)
+				.cost(h -> SlothRepose.turnCost(h, COST_NAP))
 				.onUse(h -> nap(h, repose(h))));
-		list.add(new BasicSkill(SlothPillow.class, "swap", 50, SinSkill.CostType.CHARGES)
-				.cost(h -> COST_SWAP)
-				.usableIf(h -> repose(h).charges >= COST_SWAP && !DreamPuppet.active().isEmpty())
+		list.add(new BasicSkill(SlothPillow.class, "swap", 50, SinSkill.CostType.TURNS)
+				.cost(h -> SlothRepose.turnCost(h, COST_SWAP))
+				.usableIf(h -> !DreamPuppet.active().isEmpty())
 				.onUse(h -> GameScene.selectCell(swap)));
-		list.add(new BasicSkill(SlothPillow.class, "yawn", 51, SinSkill.CostType.CHARGES)
-				.cost(h -> COST_YAWN)
-				.usableIf(h -> repose(h).charges >= COST_YAWN)
+		list.add(new BasicSkill(SlothPillow.class, "yawn", 51, SinSkill.CostType.TURNS)
+				.cost(h -> SlothRepose.turnCost(h, COST_YAWN))
 				.descArgs(h -> new Object[]{YAWN_RADIUS})
 				.onUse(h -> yawn(h, repose(h))));
 		return list;
@@ -124,7 +126,6 @@ public class SlothPillow extends SinArtifact {
 		ArrayList<DreamPuppet> mine = DreamPuppet.puppets(false);
 		if (mine.size() >= r.maxPuppets()) {
 			//all puppets are out already: patch them up instead
-			if (!r.useCharges(COST_SUMMON)) return;
 			for (DreamPuppet p : mine) {
 				int heal = p.HT - p.HP;
 				if (heal > 0) {
@@ -138,17 +139,15 @@ public class SlothPillow extends SinArtifact {
 				GLog.w(Messages.get(SlothPillow.class, "no_room"));
 				return;
 			}
-			r.useCharges(COST_SUMMON);
 			int snore = hero.pointsInTalent(Talent.SLOTH_SNORE);
 			if (snore > 0) SlothRepose.Taunted.applyAround(p, 3, 1f + 2f * snore);
 		}
 		hero.sprite.operate(hero.pos);
 		Sample.INSTANCE.play(Assets.Sounds.LULLABY, 0.6f);
-		hero.spendAndNext(1f);
+		SlothRepose.doze(hero, SlothRepose.turnCost(hero, COST_SUMMON));
 	}
 
 	private static void nap(Hero hero, SlothRepose r) {
-		if (!r.useCharges(COST_NAP)) return;
 		int heal = Math.min(hero.HT - hero.HP, Math.round(hero.HT * 0.10f));
 		if (heal > 0) {
 			hero.HP += heal;
@@ -159,11 +158,10 @@ public class SlothPillow extends SinArtifact {
 		}
 		hero.sprite.emitter().burst(Speck.factory(Speck.NOTE), 3);
 		Sample.INSTANCE.play(Assets.Sounds.LULLABY, 0.6f);
-		hero.spendAndNext(1f);
+		SlothRepose.doze(hero, SlothRepose.turnCost(hero, COST_NAP));
 	}
 
 	private static void yawn(Hero hero, SlothRepose r) {
-		if (!r.useCharges(COST_YAWN)) return;
 		int n = 0;
 		for (Mob mob : new ArrayList<>(Dungeon.level.mobs)) {
 			if (mob.alignment == Char.Alignment.ENEMY && Dungeon.level.heroFOV[mob.pos]
@@ -179,7 +177,7 @@ public class SlothPillow extends SinArtifact {
 		if (n == 0) GLog.i(Messages.get(SlothPillow.class, "yawn_none"));
 		hero.sprite.operate(hero.pos);
 		Sample.INSTANCE.play(Assets.Sounds.LULLABY);
-		hero.spendAndNext(1f);
+		SlothRepose.doze(hero, SlothRepose.turnCost(hero, COST_YAWN));
 	}
 
 	private final CellSelector.Listener swap = new CellSelector.Listener() {
@@ -193,7 +191,6 @@ public class SlothPillow extends SinArtifact {
 				return;
 			}
 			SlothRepose r = repose(hero);
-			if (!r.useCharges(COST_SWAP)) return;
 
 			DreamPuppet p = (DreamPuppet) ch;
 			int heroPos = hero.pos;
@@ -219,7 +216,7 @@ public class SlothPillow extends SinArtifact {
 			}
 			CellEmitter.bottom(hero.pos).burst(Speck.factory(Speck.DUST), 5);
 			Sample.INSTANCE.play(Assets.Sounds.PUFF);
-			hero.spendAndNext(1f);
+			SlothRepose.doze(hero, SlothRepose.turnCost(hero, COST_SWAP));
 		}
 
 		@Override
@@ -233,7 +230,7 @@ public class SlothPillow extends SinArtifact {
 	@Override
 	public String status() {
 		SlothRepose r = SlothRepose.of();
-		return r == null ? null : r.charges + "/" + r.maxCharges();
+		return r == null ? null : DreamPuppet.puppets(false).size() + "/" + r.maxPuppets();
 	}
 
 	@Override

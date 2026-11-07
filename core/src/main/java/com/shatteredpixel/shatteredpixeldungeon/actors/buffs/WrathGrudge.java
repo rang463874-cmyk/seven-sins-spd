@@ -18,7 +18,8 @@ import com.watabou.utils.Random;
 
 /**
  * The Wrath class's grudge. Grudge points are earned whenever enemies hurt or kill each other
- * and permanently raise stats without limit. Also holds the War Drum's recharging charges.
+ * and permanently raise stats without limit. Also holds the War Drum's rage gauge, filled by
+ * dealing and taking damage, which pays for its skills.
  */
 public class WrathGrudge extends Buff {
 
@@ -26,8 +27,8 @@ public class WrathGrudge extends Buff {
 	public boolean mirrored = false;
 
 	public float grudge = 0;
-	public int charges = 2;
-	public float partialCharge = 0;
+	/** rage gauge that pays for the War Drum's skills */
+	public float rage = 0;
 
 	{
 		type = buffType.POSITIVE;
@@ -82,38 +83,49 @@ public class WrathGrudge extends Buff {
 		BuffIndicator.refreshHero();
 	}
 
-	// ------------------------------------------------------------------ charges
+	// ------------------------------------------------------------------ rage gauge
 
-	public int maxCharges() {
+	public int maxRage() {
 		Hero h = hero();
-		return 3 + SinArtifact.bonusCharges(h) + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.WRATH_DRUMMER));
+		return 100 + 10 * SinArtifact.bonusCharges(h) + (mirrored ? 20 : 0)
+				+ 25 * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_DRUMMER));
 	}
 
-	public float turnsPerCharge() {
+	/** multiplier on all rage gained */
+	public float rageGainMult() {
 		Hero h = hero();
-		float t = SinArtifact.rechargeScale(h) * 35f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_TEMPO)));
-		return mirrored ? t / 1.25f : t;
+		float m = (1f / SinArtifact.rechargeScale(h)) * (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_TEMPO)));
+		return mirrored ? m * 1.25f : m;
 	}
 
-	public void gainCharge(float amount) {
-		if (charges >= maxCharges()) {
-			partialCharge = 0;
-			return;
-		}
-		partialCharge += amount;
-		while (partialCharge >= 1f && charges < maxCharges()) {
-			partialCharge -= 1f;
-			charges++;
-		}
-		if (charges >= maxCharges()) partialCharge = 0;
+	public void addRage(float amount) {
+		if (amount <= 0) return;
+		rage = Math.min(maxRage(), rage + amount * rageGainMult());
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
 	}
 
-	public boolean useCharges(int n) {
-		if (charges < n) return false;
-		charges -= n;
-		SinArtifact.onSpent(hero(), n);
+	/** old charge-based sources: one old charge is worth 25 rage */
+	public void gainCharge(float amount) {
+		addRage(amount * 25f);
+	}
+
+	/** rage from being hurt: a hit for your whole max HP fills 100 */
+	public void onHurt(int dmg) {
+		Hero h = hero();
+		if (h == null || dmg <= 0) return;
+		addRage(dmg * 100f / Math.max(1, h.HT));
+	}
+
+	/** rage from landing a melee hit */
+	public void onHit() {
+		addRage(4f);
+	}
+
+	public boolean useRage(int n) {
+		if (rage < n) return false;
+		rage -= n;
+		SinArtifact.onSpent(hero(), Math.max(1, n / 25));
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
 		return true;
@@ -129,8 +141,10 @@ public class WrathGrudge extends Buff {
 	@Override
 	public boolean act() {
 		Hero h = hero();
-		if (h != null && h.isAlive() && charges < maxCharges()) {
-			gainCharge(TICK / turnsPerCharge());
+		//rage cools down slowly once there's nothing left to be angry at
+		if (h != null && h.isAlive() && rage > 0 && h.visibleEnemies() == 0) {
+			rage = Math.max(0, rage - 1f);
+			Item.updateQuickslot();
 		}
 		spend(TICK);
 		return true;
@@ -150,12 +164,12 @@ public class WrathGrudge extends Buff {
 
 	@Override
 	public float iconFadePercent() {
-		return charges >= maxCharges() ? 0 : 1f - partialCharge;
+		return 1f - rage / Math.max(1f, maxRage());
 	}
 
 	@Override
 	public String iconTextDisplay() {
-		return Integer.toString(charges);
+		return Integer.toString((int) rage);
 	}
 
 	@Override
@@ -173,7 +187,7 @@ public class WrathGrudge extends Buff {
 	}
 
 	private String statsTextBase() {
-		return Messages.get(WrathGrudge.class, "desc_head", Math.round(grudge), charges, maxCharges())
+		return Messages.get(WrathGrudge.class, "desc_head", Math.round(grudge), (int) rage, maxRage())
 				+ "\n\n" + Messages.get(WrathGrudge.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
@@ -186,8 +200,7 @@ public class WrathGrudge extends Buff {
 	public void storeInBundle(Bundle bundle) {
 		super.storeInBundle(bundle);
 		bundle.put("grudge", grudge);
-		bundle.put("charges", charges);
-		bundle.put("partial", partialCharge);
+		bundle.put("rage", rage);
 		bundle.put("mirrored", mirrored);
 	}
 
@@ -195,8 +208,7 @@ public class WrathGrudge extends Buff {
 	public void restoreFromBundle(Bundle bundle) {
 		super.restoreFromBundle(bundle);
 		grudge = bundle.getFloat("grudge");
-		charges = bundle.getInt("charges");
-		partialCharge = bundle.getFloat("partial");
+		rage = bundle.getFloat("rage");
 		mirrored = bundle.getBoolean("mirrored");
 	}
 

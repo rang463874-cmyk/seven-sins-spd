@@ -22,7 +22,7 @@ import com.watabou.utils.Random;
  *
  * Glory is earned by killing enemies that never managed to hurt the hero, and permanently
  * raises stats without limit. Dignity builds while the hero goes unhurt and shatters when hit.
- * Also holds the Crown of Hubris's recharging charges.
+ * Dignity (built up while unhurt, shattered by hits) also pays for the Crown of Hubris's skills.
  */
 public class PrideGlory extends Buff {
 
@@ -34,8 +34,6 @@ public class PrideGlory extends Buff {
 	public int dignity = 0;
 	public float calmTurns = 0;
 
-	public int charges = 2;
-	public float partialCharge = 0;
 
 	{
 		type = buffType.POSITIVE;
@@ -102,7 +100,8 @@ public class PrideGlory extends Buff {
 
 	public int maxDignity() {
 		Hero h = hero();
-		int max = 10 + 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_COMPOSURE));
+		int max = 10 + 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_COMPOSURE))
+				+ 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_REGALIA)) + 2 * SinArtifact.bonusCharges(h);
 		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) max += 5;
 		if (mirrored) max += 5;
 		return max;
@@ -112,7 +111,8 @@ public class PrideGlory extends Buff {
 		Hero h = hero();
 		float t = 3f - 0.5f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_POISE));
 		if (SinWeapons.wields(h, DuelingSword.class, HeroClass.PRIDE)) t -= 1f;
-		return Math.max(1f, t);
+		t *= SinArtifact.rechargeScale(h) / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_SWIFT_CROWN)));
+		return Math.max(0.5f, t);
 	}
 
 	/** multiplier on melee damage from dignity: +4% per stack */
@@ -139,36 +139,11 @@ public class PrideGlory extends Buff {
 		BuffIndicator.refreshHero();
 	}
 
-	// ------------------------------------------------------------------ charges
+	// ------------------------------------------------------------------ paying with dignity
 
-	public int maxCharges() {
-		Hero h = hero();
-		return 3 + SinArtifact.bonusCharges(h) + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_REGALIA));
-	}
-
-	public float turnsPerCharge() {
-		Hero h = hero();
-		return SinArtifact.rechargeScale(h) * 30f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_SWIFT_CROWN)));
-	}
-
-	public void gainCharge(float amount) {
-		if (charges >= maxCharges()) {
-			partialCharge = 0;
-			return;
-		}
-		partialCharge += amount;
-		while (partialCharge >= 1f && charges < maxCharges()) {
-			partialCharge -= 1f;
-			charges++;
-		}
-		if (charges >= maxCharges()) partialCharge = 0;
-		Item.updateQuickslot();
-		BuffIndicator.refreshHero();
-	}
-
-	public boolean useCharges(int n) {
-		if (charges < n) return false;
-		charges -= n;
+	public boolean useDignity(int n) {
+		if (dignity < n) return false;
+		dignity -= n;
 		SinArtifact.onSpent(hero(), n);
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
@@ -179,7 +154,6 @@ public class PrideGlory extends Buff {
 	public boolean act() {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
-			if (charges < maxCharges()) gainCharge(TICK / turnsPerCharge());
 			calmTurns += TICK;
 			if (calmTurns >= turnsPerDignity()) {
 				calmTurns = 0;
@@ -228,7 +202,7 @@ public class PrideGlory extends Buff {
 
 	private String statsTextBase() {
 		return Messages.get(PrideGlory.class, "desc_head", Math.round(glory), dignity, maxDignity(),
-				Math.round((dignityMult() - 1f) * 100), charges, maxCharges())
+				Math.round((dignityMult() - 1f) * 100))
 				+ "\n\n" + Messages.get(PrideGlory.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
@@ -243,8 +217,6 @@ public class PrideGlory extends Buff {
 		bundle.put("glory", glory);
 		bundle.put("dignity", dignity);
 		bundle.put("calm", calmTurns);
-		bundle.put("charges", charges);
-		bundle.put("partial", partialCharge);
 		bundle.put("mirrored", mirrored);
 	}
 
@@ -254,8 +226,6 @@ public class PrideGlory extends Buff {
 		glory = bundle.getFloat("glory");
 		dignity = bundle.getInt("dignity");
 		calmTurns = bundle.getFloat("calm");
-		charges = bundle.getInt("charges");
-		partialCharge = bundle.getFloat("partial");
 		mirrored = bundle.getBoolean("mirrored");
 	}
 

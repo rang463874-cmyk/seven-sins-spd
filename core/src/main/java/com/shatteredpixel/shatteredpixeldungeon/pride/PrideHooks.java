@@ -129,7 +129,7 @@ public final class PrideHooks {
 			}
 		}
 		int legend = hero.pointsInTalent(Talent.PARAGON_LEGEND);
-		if (hero.subClass == HeroSubClass.PARAGON && legend > 0) g.gainCharge(0.2f * legend);
+		if (hero.subClass == HeroSubClass.PARAGON && legend > 0) g.addDignity(legend);
 	}
 
 	// ------------------------------------------------------------------ hero stats

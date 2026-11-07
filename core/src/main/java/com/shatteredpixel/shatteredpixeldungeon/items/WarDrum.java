@@ -38,16 +38,16 @@ import java.util.ArrayList;
 
 /**
  * The Wrath class's signature item. Doesn't take an equipment slot.
- * Uses recharging charges (stored in WrathGrudge) to set enemies against each other.
+ * Spends rage (stored in WrathGrudge) to set enemies against each other.
  */
 public class WarDrum extends SinArtifact {
 
 	public static final String AC_BEAT = "BEAT";
 
-	public static final int COST_PROVOKE = 1;
-	public static final int COST_DISCORD = 1;
-	public static final int COST_CONTAGION = 2;
-	public static final int COST_DASH = 1;
+	public static final int COST_PROVOKE = 25;
+	public static final int COST_DISCORD = 25;
+	public static final int COST_CONTAGION = 50;
+	public static final int COST_DASH = 25;
 
 	{
 		image = ItemSpriteSheet.WAR_DRUM;
@@ -85,30 +85,36 @@ public class WarDrum extends SinArtifact {
 	@Override
 	public String skillHeader(Hero hero) {
 		WrathGrudge g = grudge(hero);
-		return Messages.get(this, "skill_header", g.charges, g.maxCharges());
+		return Messages.get(this, "skill_header", (int) g.rage, g.maxRage());
+	}
+
+	@Override
+	protected String levelEffects(Hero hero) {
+		return Messages.get(SinArtifact.class, "effects_rage", 10 * SinArtifact.bonusCharges(hero),
+				Math.round((1f / SinArtifact.rechargeScale(hero) - 1f) * 100));
 	}
 
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(WarDrum.class, "provoke", 16, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(WarDrum.class, "provoke", 16, SinSkill.CostType.RAGE)
 				.cost(h -> COST_PROVOKE)
-				.usableIf(h -> grudge(h).charges >= COST_PROVOKE)
+				.usableIf(h -> grudge(h).rage >= COST_PROVOKE)
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 8f))})
 				.onUse(h -> GameScene.selectCell(provoke)));
-		list.add(new BasicSkill(WarDrum.class, "discord", 17, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(WarDrum.class, "discord", 17, SinSkill.CostType.RAGE)
 				.cost(h -> COST_DISCORD)
-				.usableIf(h -> grudge(h).charges >= COST_DISCORD)
+				.usableIf(h -> grudge(h).rage >= COST_DISCORD)
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 12f))})
 				.onUse(h -> GameScene.selectCell(discordFirst)));
-		list.add(new BasicSkill(WarDrum.class, "contagion", 18, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(WarDrum.class, "contagion", 18, SinSkill.CostType.RAGE)
 				.cost(h -> COST_CONTAGION)
-				.usableIf(h -> grudge(h).charges >= COST_CONTAGION)
+				.usableIf(h -> grudge(h).rage >= COST_CONTAGION)
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 10f))})
 				.onUse(h -> GameScene.selectCell(contagion)));
-		list.add(new BasicSkill(WarDrum.class, "dash", 19, SinSkill.CostType.CHARGES)
+		list.add(new BasicSkill(WarDrum.class, "dash", 19, SinSkill.CostType.RAGE)
 				.cost(h -> COST_DASH)
-				.usableIf(h -> grudge(h).charges >= COST_DASH)
+				.usableIf(h -> grudge(h).rage >= COST_DASH)
 				.descArgs(h -> new Object[]{dashRange(h)})
 				.onUse(h -> GameScene.selectCell(dash)));
 		return list;
@@ -166,7 +172,7 @@ public class WarDrum extends SinArtifact {
 			Hero hero = Dungeon.hero;
 			Mob mob = rageTarget(cell);
 			if (mob == null) return;
-			if (!grudge(hero).useCharges(COST_PROVOKE)) return;
+			if (!grudge(hero).useRage(COST_PROVOKE)) return;
 
 			enrage(hero, mob, 8f);
 
@@ -228,7 +234,7 @@ public class WarDrum extends SinArtifact {
 				GLog.w(Messages.get(WarDrum.class, "same_target"));
 				return;
 			}
-			if (!grudge(hero).useCharges(COST_DISCORD)) return;
+			if (!grudge(hero).useRage(COST_DISCORD)) return;
 
 			float dur = WrathGrudge.rageDuration(hero, 12f);
 			setRivals(hero, a, b, dur);
@@ -259,7 +265,7 @@ public class WarDrum extends SinArtifact {
 			Hero hero = Dungeon.hero;
 			Mob mob = rageTarget(cell);
 			if (mob == null) return;
-			if (!grudge(hero).useCharges(COST_CONTAGION)) return;
+			if (!grudge(hero).useRage(COST_CONTAGION)) return;
 
 			float dur = WrathGrudge.rageDuration(hero, 10f);
 			enrage(hero, mob, 10f);
@@ -288,7 +294,7 @@ public class WarDrum extends SinArtifact {
 				GLog.w(Messages.get(WarDrum.class, "bad_cell"));
 				return;
 			}
-			if (!grudge(hero).useCharges(COST_DASH)) return;
+			if (!grudge(hero).useRage(COST_DASH)) return;
 
 			ScrollOfTeleportation.appear(hero, cell);
 			Dungeon.level.occupyCell(hero);
@@ -322,7 +328,7 @@ public class WarDrum extends SinArtifact {
 	@Override
 	public String status() {
 		WrathGrudge g = Dungeon.hero == null ? null : Dungeon.hero.buff(WrathGrudge.class);
-		return g == null ? null : g.charges + "/" + g.maxCharges();
+		return g == null ? null : (int) g.rage + "/" + g.maxRage();
 	}
 
 	@Override

@@ -56,6 +56,12 @@ backlash. Maw skills: Bite, Hunger Dash (haste), Acid Spray, Swallow Whole (free
 Ruminate (repeat `lastUsed`, growth items excluded via `PredatorHooks.canRepeat`); satiety costs via
 `PredatorMaw.hungerCost`. Talent enum names are unchanged (meanings and strings changed); INHERITOR is now
 shown as the "alchemic glutton". Old Inheritor enchant/glyph lists are kept in saves but unused.
+Skill resources (Nov 2026): Wrath spends **rage** (`WrathGrudge.rage`, 0..maxRage 100+, filled by hits dealt
+(+4) and damage taken (100 per max HP), cools 1/turn with no enemies in view; old charge sources convert at
+1 charge = 25 rage). Pride spends **dignity** stacks (`PrideGlory.useDignity`; dignity also gives +4% melee per
+stack and shatters when hit). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
+(Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; SLOTH_PILLOW cuts damage while
+dozing). Cost types RAGE/DIGNITY/TURNS in `SinSkill.CostType`. Envy still uses recharging charges (rework pending).
 Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.hpCost/pay`), lifesteal
 on charmed enemies via `LustDesire.drain` from `LustHooks.onAttack`; dodging charms the attacker
 (`LustHooks.onDodge`, called from the miss branch of `Char.attack`; Night Dancer counters there).
