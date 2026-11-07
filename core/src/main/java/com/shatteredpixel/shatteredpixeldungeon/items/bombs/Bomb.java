@@ -373,6 +373,7 @@ public class Bomb extends Item {
 			//seven sins mod
 			validIngredients.put(com.shatteredpixel.shatteredpixeldungeon.items.SinEssence.class, SinBomb.class);
 			validIngredients.put(com.shatteredpixel.shatteredpixeldungeon.plants.Earthroot.Seed.class, StickyBomb.class);
+			validIngredients.put(com.shatteredpixel.shatteredpixeldungeon.plants.Blindweed.Seed.class, CaltropBomb.class);
 		}
 		
 		private static final HashMap<Class<?extends Bomb>, Integer> bombCosts = new HashMap<>();
@@ -394,6 +395,7 @@ public class Bomb extends Item {
 
 			bombCosts.put(SinBomb.class,        3);
 			bombCosts.put(StickyBomb.class,     1);
+			bombCosts.put(CaltropBomb.class,    1);
 		}
 		
 		@Override

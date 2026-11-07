@@ -435,10 +435,54 @@ def elite_art(items):
     items.paste(recolor(bomb, tint_px(85, 0.6, 1.7)), cell(ELITE_ROW + 3, 16)[:2])
     items.paste(draw(BANDAGE, BANDAGE_PAL), cell(ELITE_ROW + 4, 16)[:2])
     items.paste(draw(STIMULANT, STIMULANT_PAL), cell(ELITE_ROW + 5, 16)[:2])
+    items.paste(recolor(items.crop(cell(CURSE_INFUSE_ICON, 16)), tint_px(330, 0.75, 1.3)), cell(ELITE_ROW + 8, 16)[:2])
+    items.paste(draw(MOLD, MOLD_PAL), cell(ELITE_ROW + 9, 16)[:2])
+    items.paste(recolor(bomb, tint_px(205, 0.35, 1.5)), cell(ELITE_ROW + 10, 16)[:2])
+    items.paste(draw(DOLL, DOLL_PAL), cell(ELITE_ROW + 11, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
     items.paste(recolor(items.crop(cell(SPIRIT_BOW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 6, 16)[:2])
     items.paste(recolor(items.crop(cell(SPIRIT_ARROW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 7, 16)[:2])
 
+
+# 14x12 casting mold: an open iron mold with a silvery blade-shaped cavity
+MOLD = [
+    "..............",
+    ".OOOOOOOOOOOO.",
+    "OIIIIIIIIIIIIO",
+    "OIDDDDDDDDDDIO",
+    "OIDSSSSSSSSDIO",
+    "OIDSHHHHHHSDIO",
+    "OIDSSSSSSSSDIO",
+    "OIDDDDDDDDDDIO",
+    "OIIIIIIIIIIIIO",
+    ".OOOOOOOOOOOO.",
+    "..O........O..",
+    "..............",
+]
+MOLD_PAL = {"O": (30, 30, 36, 255), "I": (96, 96, 108, 255), "D": (60, 60, 70, 255),
+            "S": (170, 190, 210, 255), "H": (235, 245, 255, 255)}
+
+# 12x14 decoy doll: a little straw dummy on a stake
+DOLL = [
+    "....OOOO....",
+    "...OYYYYO...",
+    "...OYKYKO...",
+    "...OYYYYO...",
+    "....OOOO....",
+    ".OOOORROOOO.",
+    "OYYYYRRYYYYO",
+    ".OOOYRRYOOO.",
+    "...OYYYYO...",
+    "...OYOOYO...",
+    "....O..O....",
+    ".....OO.....",
+    ".....BB.....",
+    ".....BB.....",
+]
+DOLL_PAL = {"O": (70, 50, 20, 255), "Y": (220, 190, 100, 255), "K": (40, 30, 20, 255),
+            "R": (180, 40, 40, 255), "B": (110, 80, 40, 255)}
+
+CURSE_INFUSE_ICON = 420  # SPELLS + 4 (row 27)
 
 # One entry per sin, in HeroClass order. hue/accent in degrees.
 #   talents: optional list of source talent icons (vanilla indices) to recolor instead of the

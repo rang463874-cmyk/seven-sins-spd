@@ -272,7 +272,7 @@ public class WndUpgrade extends Window {
 
 			bottom = fillFields(Messages.get(this, "quantity"),
 					Integer.toString(toUpgrade.quantity()),
-					Integer.toString(((MissileWeapon) toUpgrade).defaultQuantity()),
+					Integer.toString(((MissileWeapon) toUpgrade).setSize()),
 					bottom);
 
 		}

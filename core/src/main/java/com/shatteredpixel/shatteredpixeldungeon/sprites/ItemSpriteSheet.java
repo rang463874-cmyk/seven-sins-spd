@@ -951,7 +951,15 @@ public class ItemSpriteSheet {
 	//pride's royal longbow and its arrow
 	public static final int ROYAL_BOW         = ELITE+6;
 	public static final int ROYAL_ARROW       = ELITE+7;
+	public static final int SIN_INFUSION      = ELITE+8;
+	public static final int CASTING_MOLD      = ELITE+9;
+	public static final int CALTROP_BOMB      = ELITE+10;
+	public static final int DECOY_DOLL        = ELITE+11;
 	static{
+		assignItemRect(SIN_INFUSION,  12, 12);
+		assignItemRect(CASTING_MOLD,  14, 12);
+		assignItemRect(CALTROP_BOMB,  10, 13);
+		assignItemRect(DECOY_DOLL,    12, 14);
 		assignItemRect(ROYAL_BOW,     16, 16);
 		assignItemRect(ROYAL_ARROW,   11, 11);
 		assignItemRect(SIN_ESSENCE,   12, 12);

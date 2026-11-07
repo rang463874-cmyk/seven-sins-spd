@@ -131,6 +131,8 @@ abstract public class Weapon extends KindOfWeapon {
 	public Enchantment enchantment;
 	public boolean enchantHardened = false;
 	public boolean curseInfusionBonus = false;
+	/** stacks of sin infusion: +1 level each, lost when the curse is removed */
+	public int sinInfusions = 0;
 	public boolean masteryPotionBonus = false;
 	
 	@Override
@@ -231,6 +233,7 @@ abstract public class Weapon extends KindOfWeapon {
 		bundle.put( ENCHANTMENT, enchantment );
 		bundle.put( ENCHANT_HARDENED, enchantHardened );
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
+		bundle.put( "sin_infusions", sinInfusions );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( AUGMENT, augment );
 	}
@@ -243,6 +246,7 @@ abstract public class Weapon extends KindOfWeapon {
 		enchantment = (Enchantment)bundle.get( ENCHANTMENT );
 		enchantHardened = bundle.getBoolean( ENCHANT_HARDENED );
 		curseInfusionBonus = bundle.getBoolean( CURSE_INFUSION_BONUS );
+		sinInfusions = bundle.getInt( "sin_infusions" );
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
 
 		augment = bundle.getEnum(AUGMENT, Augment.class);
@@ -366,6 +370,7 @@ abstract public class Weapon extends KindOfWeapon {
 	public int level() {
 		int level = super.level();
 		if (curseInfusionBonus) level += 1 + level/6;
+		level += sinInfusions;
 		return level;
 	}
 	
@@ -452,7 +457,7 @@ abstract public class Weapon extends KindOfWeapon {
 	}
 	
 	public Weapon enchant( Enchantment ench ) {
-		if (ench == null || !ench.curse()) curseInfusionBonus = false;
+		if (ench == null || !ench.curse()) { curseInfusionBonus = false; sinInfusions = 0; }
 		enchantment = ench;
 		updateQuickslot();
 		if (ench != null && isIdentified() && Dungeon.hero != null

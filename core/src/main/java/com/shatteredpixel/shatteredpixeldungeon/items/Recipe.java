@@ -195,7 +195,8 @@ public abstract class Recipe {
 		new StewedMeat.oneMeat(),
 		new TrinketCatalyst.Recipe(),
 		new Trinket.UpgradeTrinket(),
-		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe()
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.Recipe()
 	};
 	
 	private static Recipe[] twoIngredientRecipes = new Recipe[]{
@@ -213,7 +214,9 @@ public abstract class Recipe {
 		new WildEnergy.Recipe(),
 		new StewedMeat.twoMeat(),
 		new com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.Recipe(),
-		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.Recipe()
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.Recipe()
 	};
 	
 	private static Recipe[] threeIngredientRecipes = new Recipe[]{

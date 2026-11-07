@@ -148,7 +148,7 @@ abstract public class MissileWeapon extends Weapon {
 		if (!bundleRestoring) {
 			durability = MAX_DURABILITY;
 			extraThrownLeft = false;
-			quantity = defaultQuantity();
+			quantity = setSize();
 			Buff.affect(Dungeon.hero, UpgradedSetTracker.class).levelThresholds.put(setID, trueLevel()+1);
 		}
 		//thrown weapons don't get curse weakened
@@ -165,7 +165,7 @@ abstract public class MissileWeapon extends Weapon {
 		if (!bundleRestoring) {
 			durability = MAX_DURABILITY;
 			extraThrownLeft = false;
-			quantity = defaultQuantity();
+			quantity = setSize();
 			Buff.affect(Dungeon.hero, UpgradedSetTracker.class).levelThresholds.put(setID, trueLevel()+1);
 		}
 		return super.upgrade();
@@ -356,6 +356,14 @@ abstract public class MissileWeapon extends Weapon {
 
 	public int defaultQuantity(){
 		return 3;
+	}
+
+	/** extra weapons added to this set by casting molds (seven sins mod) */
+	public int bonusSetSize = 0;
+
+	/** how many weapons this set holds when complete */
+	public int setSize(){
+		return defaultQuantity() + bonusSetSize;
 	}
 
 	//mainly used to track warnings relating to throwing the last upgraded one, not super accurate
@@ -568,8 +576,9 @@ abstract public class MissileWeapon extends Weapon {
 			}
 
 			//hashcode check is for pre-3.2 saves, 0 check is for darts
-			if (quantity > defaultQuantity() && setID != 0 && setID != getClass().getSimpleName().hashCode()){
-				quantity = defaultQuantity();
+			bonusSetSize = Math.max(bonusSetSize, ((MissileWeapon) other).bonusSetSize);
+			if (quantity > setSize() && setID != 0 && setID != getClass().getSimpleName().hashCode()){
+				quantity = setSize();
 				durability = MAX_DURABILITY;
 			}
 
@@ -718,6 +727,7 @@ abstract public class MissileWeapon extends Weapon {
 			}
 		}
 		
+		if (bonusSetSize > 0) info += "\n\n" + Messages.get(com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.class, "info_line", setSize());
 		return info;
 	}
 
@@ -755,6 +765,7 @@ abstract public class MissileWeapon extends Weapon {
 		bundle.put(SET_ID, setID);
 		bundle.put(SPAWNED, spawnedForEffect);
 		bundle.put(DURABILITY, durability);
+		bundle.put("bonus_set_size", bonusSetSize);
 		bundle.put(EXTRA_LEFT, extraThrownLeft);
 	}
 	
@@ -765,6 +776,7 @@ abstract public class MissileWeapon extends Weapon {
 		bundleRestoring = true;
 		super.restoreFromBundle(bundle);
 		bundleRestoring = false;
+		bonusSetSize = bundle.getInt("bonus_set_size");
 
 		if (bundle.contains(SET_ID)){
 			setID = bundle.getLong(SET_ID);

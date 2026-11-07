@@ -145,7 +145,7 @@ public class LiquidMetal extends Item {
 				if (toUse == 0 ||
 						Math.ceil(m.durabilityLeft()/ m.durabilityPerUse()) >= Math.ceil(m.MAX_DURABILITY/ m.durabilityPerUse()) ){
 
-					if (m.quantity() < m.defaultQuantity()){
+					if (m.quantity() < m.setSize()){
 						if (quantity()*durabilityPerMetal >= m.durabilityPerUse()){
 							m.quantity(m.quantity()+1);
 							if (Math.ceil(maxToUse) < quantity()){

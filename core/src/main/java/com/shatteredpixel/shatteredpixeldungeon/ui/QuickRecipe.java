@@ -263,6 +263,31 @@ public class QuickRecipe extends Component {
 	
 	//gets recipes for a particular alchemy guide page
 	//a null entry indicates a break in section
+	/** the seven sins mod's recipes, on their own page of the alchemy guide */
+	private static ArrayList<QuickRecipe> sevenSinsRecipes(){
+		ArrayList<QuickRecipe> result = new ArrayList<>();
+		Item essence2 = new com.shatteredpixel.shatteredpixeldungeon.items.SinEssence().quantity(2);
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.Recipe(),
+				new ArrayList<>(Arrays.asList(essence2, new Potion.PlaceHolder())),
+				new com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin()));
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.Recipe()));
+		result.add(null);
+		Recipe bombs = new Bomb.EnhanceBomb();
+		for (Item add : new Item[]{new com.shatteredpixel.shatteredpixeldungeon.items.SinEssence(),
+				new com.shatteredpixel.shatteredpixeldungeon.plants.Earthroot.Seed(),
+				new com.shatteredpixel.shatteredpixeldungeon.plants.Blindweed.Seed()}){
+			ArrayList<Item> in = new ArrayList<>(Arrays.asList(new Bomb(), add));
+			result.add(new QuickRecipe(bombs, in, bombs.sampleOutput(in)));
+		}
+		result.add(null);
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.Recipe()));
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe()));
+		result.add(null);
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.Recipe()));
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.Recipe()));
+		return result;
+	}
+
 	public static ArrayList<QuickRecipe> getRecipes( int pageIdx ){
 		ArrayList<QuickRecipe> result = new ArrayList<>();
 		switch (pageIdx){
@@ -367,6 +392,8 @@ public class QuickRecipe extends Component {
 				result.add(new QuickRecipe(new ElixirOfFeatherFall.Recipe()));
 				result.add(new QuickRecipe(new ElixirOfMight.Recipe()));
 				return result;
+			case 9:
+				return sevenSinsRecipes();
 			case 8:
 				result.add(new QuickRecipe(new UnstableSpell.Recipe(), new ArrayList<>(Arrays.asList(new Scroll.PlaceHolder(), new  Runestone.PlaceHolder())), new UnstableSpell()));
 				result.add(new QuickRecipe(new WildEnergy.Recipe()));

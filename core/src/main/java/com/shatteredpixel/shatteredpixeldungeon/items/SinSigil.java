@@ -85,6 +85,7 @@ public class SinSigil extends Item {
 		neu.enchant(old.enchantment);
 		neu.enchantHardened = old.enchantHardened;
 		neu.curseInfusionBonus = old.curseInfusionBonus;
+		neu.sinInfusions = old.sinInfusions;
 		neu.masteryPotionBonus = old.masteryPotionBonus;
 		neu.augment = old.augment;
 		neu.cursed = old.cursed;

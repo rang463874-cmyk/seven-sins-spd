@@ -88,6 +88,8 @@ public abstract class Wand extends Item {
 	public boolean curChargeKnown = false;
 	
 	public boolean curseInfusionBonus = false;
+	/** stacks of sin infusion: +1 level each, lost when the curse is removed */
+	public int sinInfusions = 0;
 	public int resinBonus = 0;
 
 	private static final int USES_TO_ID = 10;
@@ -293,6 +295,7 @@ public abstract class Wand extends Item {
 		String desc = super.info();
 
 		desc += "\n\n" + statsDesc();
+		if (sinInfusions > 0) desc += "\n\n" + com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.infoLine(sinInfusions);
 
 		if (resinBonus == 1){
 			desc += "\n\n" + Messages.get(Wand.class, "resin_one");
@@ -349,8 +352,13 @@ public abstract class Wand extends Item {
 			curseInfusionBonus = false;
 			updateLevel();
 		}
+		if (!cursed && sinInfusions > 0){
+			sinInfusions = 0;
+			updateLevel();
+		}
 		int level = super.level();
 		if (curseInfusionBonus) level += 1 + level/6;
+		level += sinInfusions;
 		level += resinBonus;
 		return level;
 	}
@@ -609,6 +617,7 @@ public abstract class Wand extends Item {
 		bundle.put( CUR_CHARGE_KNOWN, curChargeKnown );
 		bundle.put( PARTIALCHARGE , partialCharge );
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
+		bundle.put( "sin_infusions", sinInfusions );
 		bundle.put( RESIN_BONUS, resinBonus );
 	}
 	
@@ -618,6 +627,7 @@ public abstract class Wand extends Item {
 		usesLeftToID = bundle.getInt( USES_LEFT_TO_ID );
 		availableUsesToID = bundle.getInt( AVAILABLE_USES );
 		curseInfusionBonus = bundle.getBoolean(CURSE_INFUSION_BONUS);
+		sinInfusions = bundle.getInt( "sin_infusions" );
 		resinBonus = bundle.getInt(RESIN_BONUS);
 
 		updateLevel();

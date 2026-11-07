@@ -400,10 +400,10 @@ public enum HeroClass {
 		(hero.belongings.artifact = crown).identify();
 		hero.belongings.artifact.activate( hero );
 
-		//pride fights from afar
-		com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow bow = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow();
-		bow.identify().collect();
-		Dungeon.quickslot.setSlot(0, bow);
+		//pride fights from afar, with a set of throwing knives
+		com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingKnife knives = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingKnife();
+		knives.identify().collect();
+		Dungeon.quickslot.setSlot(0, knives);
 		Dungeon.quickslot.setSlot(1, crown);
 
 		Buff.affect(hero, PrideGlory.class).bowGiven = true;

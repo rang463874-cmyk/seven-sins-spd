@@ -156,12 +156,13 @@ public class PrideGlory extends Buff {
 	public boolean act() {
 		Hero h = hero();
 		if (h != null && h.isAlive() && !bowGiven) {
-			//pride became a ranged class: heroes from older saves get their bow once
+			//pride became a ranged class: heroes from older saves get a set of throwing knives once
 			bowGiven = true;
-			if (h.heroClass == HeroClass.PRIDE && h.belongings.getItem(com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow.class) == null) {
-				com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow bow = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow();
-				bow.identify();
-				if (!bow.collect(h.belongings.backpack)) Dungeon.level.drop(bow, h.pos);
+			if (h.heroClass == HeroClass.PRIDE
+					&& h.belongings.getItem(com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow.class) == null) {
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingKnife knives = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingKnife();
+				knives.identify();
+				if (!knives.collect(h.belongings.backpack)) Dungeon.level.drop(knives, h.pos);
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(Messages.get(PrideGlory.class, "bow_given"));
 			}
 		}

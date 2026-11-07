@@ -39,7 +39,15 @@ Done and pushed (see `git log`):
 - Alchemy (Nov 2026): `items/elite/ElixirOfSin` (2 essences + any potion: +20 sin points and resource refill,
   else full heal + bless), `items/bombs/SinBomb` (bomb + essence, random sin debuff), `items/bombs/StickyBomb`
   (bomb + earthroot seed, roots + webs, no blast; both in `Bomb.EnhanceBomb`), `items/elite/Bandage` (2 sungrass
-  seeds -> 2), `items/elite/Stimulant` (swiftthistle + blindweed seeds, instant haste/adrenaline). Art: items.png row 37.
+  seeds -> 2), `items/elite/Stimulant` (swiftthistle + blindweed seeds, instant haste/adrenaline),
+  `items/elite/SinInfusion` (curse infusion + 2 essences: curses a melee weapon/armor/wand, +1 level per stack via
+  `sinInfusions` on Weapon/Armor/Wand, reset wherever curseInfusionBonus is cleared, copied by transmutation/sigil/
+  class armor), `items/elite/CastingMold` (12 liquid metal: +1 weapon to a thrown set via
+  `MissileWeapon.bonusSetSize`/`setSize()`, which upgrade/merge/liquid metal/WndUpgrade use instead of
+  defaultQuantity), `items/bombs/CaltropBomb` (bomb + blindweed: damage, bleed, cripple; the original SmokeBomb is
+  untouched), `items/elite/DecoyDoll` (stormvine + fadeleaf -> 2, thrown: `DecoyDoll.Decoy` = PrideEffigy subclass).
+  All mod recipes are on the alchemy guide's 10th page "Seven_Sins" (`QuickRecipe.sevenSinsRecipes`, always READ;
+  strings in messages/journal, not synced). Art: items.png row 37 (+8 sin infusion .. +11 decoy doll).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -79,9 +87,9 @@ backlash. Maw skills: Bite, Hunger Dash (haste), Acid Spray, Swallow Whole (free
 Ruminate (repeat `lastUsed`, growth items excluded via `PredatorHooks.canRepeat`); satiety costs via
 `PredatorMaw.hungerCost`. Talent enum names are unchanged (meanings and strings changed); INHERITOR is now
 shown as the "alchemic glutton". Old Inheritor enchant/glyph lists are kept in saves but unused.
-Pride is a ranged class (Nov 2026): starts with `items/weapon/RoyalBow` (SpiritBow subclass, endless arrows,
-level = hero lvl/5 + upgrades, takes scrolls of upgrade; gilded art row 37 +6/+7) in quickslot 0, crown in slot 1;
-older Pride saves get the bow once via `PrideGlory.bowGiven`. `PrideHooks.onAttack` gives glory's flat bonus
+Pride is a ranged class (Nov 2026): starts with a set of throwing knives in quickslot 0, crown in slot 1; older
+Pride saves get a knife set once via `PrideGlory.bowGiven` (unless they already got the bow). `items/weapon/RoyalBow`
+(SpiritBow subclass) was the first starter and is kept only for saves that received it. `PrideHooks.onAttack` gives glory's flat bonus
 (`meleeBonus`, name kept) and the dignity multiplier to MissileWeapon attacks only, and melee deals x0.7
 (`MELEE_PENALTY`). KingsAegis: +30% ranged damage (`RANGED_BONUS`) and +5 max dignity (no more glory bonus).
 Paragon-only crown skill Effigy (`actors/mobs/npcs/PrideEffigy`, immovable ALLY statue, taunts enemies within 4 via

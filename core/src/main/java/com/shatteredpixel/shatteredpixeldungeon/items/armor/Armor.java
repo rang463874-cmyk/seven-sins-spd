@@ -116,6 +116,8 @@ public class Armor extends EquipableItem {
 	public Glyph glyph;
 	public boolean glyphHardened = false;
 	public boolean curseInfusionBonus = false;
+	/** stacks of sin infusion: +1 level each, lost when the curse is removed */
+	public int sinInfusions = 0;
 	public boolean masteryPotionBonus = false;
 	
 	protected BrokenSeal seal;
@@ -147,6 +149,7 @@ public class Armor extends EquipableItem {
 		bundle.put( GLYPH, glyph );
 		bundle.put( GLYPH_HARDENED, glyphHardened );
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
+		bundle.put( "sin_infusions", sinInfusions );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( SEAL, seal);
 		bundle.put( AUGMENT, augment);
@@ -160,6 +163,7 @@ public class Armor extends EquipableItem {
 		inscribe((Glyph) bundle.get(GLYPH));
 		glyphHardened = bundle.getBoolean(GLYPH_HARDENED);
 		curseInfusionBonus = bundle.getBoolean( CURSE_INFUSION_BONUS );
+		sinInfusions = bundle.getInt( "sin_infusions" );
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
 		seal = (BrokenSeal)bundle.get(SEAL);
 		
@@ -447,6 +451,7 @@ public class Armor extends EquipableItem {
 		//TODO warrior's seal upgrade should probably be considered here too
 		// instead of being part of true level
 		if (curseInfusionBonus) level += 1 + level/6;
+		level += sinInfusions;
 		return level;
 	}
 	
@@ -637,6 +642,7 @@ public class Armor extends EquipableItem {
 			info += "\n\n" + Messages.get(Armor.class, "seal_attached", seal.maxShield(tier, level()));
 		}
 		
+		if (sinInfusions > 0) info += "\n\n" + com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.infoLine(sinInfusions);
 		return info;
 	}
 
@@ -723,7 +729,7 @@ public class Armor extends EquipableItem {
 	}
 
 	public Armor inscribe( Glyph glyph ) {
-		if (glyph == null || !glyph.curse()) curseInfusionBonus = false;
+		if (glyph == null || !glyph.curse()) { curseInfusionBonus = false; sinInfusions = 0; }
 		this.glyph = glyph;
 		updateQuickslot();
 		//the hero needs runic transference to actually transfer, but we still attach the glyph here

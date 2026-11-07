@@ -366,6 +366,7 @@ public class MeleeWeapon extends Weapon {
 			info += "\n\n" + abilityInfo();
 		}
 		
+		if (sinInfusions > 0) info += "\n\n" + com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.infoLine(sinInfusions);
 		return info;
 	}
 	
