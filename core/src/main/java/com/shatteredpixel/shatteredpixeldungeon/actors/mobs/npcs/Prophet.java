@@ -9,6 +9,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.SealWarden;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.SealFragment;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room;
+import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.quest.SealSanctumRoom;
+import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.standard.StandardRoom;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ProphetSprite;
@@ -24,8 +26,8 @@ import com.watabou.utils.Random;
 import java.util.ArrayList;
 
 /**
- * The Prophet of Seals, a sewer quest NPC. The Seal Warden, a miniboss on the prophet's floor,
- * guards the apocalypse's seal; bring the seal back to choose one of the four horsemen artifacts.
+ * The Prophet of Seals, a sewer quest NPC. The Seal Warden, a miniboss waiting in its own arena
+ * ({@link SealSanctumRoom}) on the prophet's floor, guards the apocalypse's seal; bring the seal back to choose one of the four horsemen artifacts.
  */
 public class Prophet extends NPC {
 
@@ -169,35 +171,47 @@ public class Prophet extends NPC {
 			}
 		}
 
-		/** called while a sewer level is generated; same odds as the sad ghost (forced by floor 4) */
-		public static void spawn(Level level, ArrayList<Room> rooms, Room entrance, Room exit) {
-			if (spawned || Dungeon.depth < 2 || Dungeon.depth > 4) return;
-			if (Random.Int(5 - Dungeon.depth) != 0) return;
+		/** set while a sewer level's rooms are chosen, read when its mobs are placed */
+		private static boolean questRoomSpawned = false;
 
+		/**
+		 * Called from {@code SewerLevel.initRooms}: rolls the quest (same odds as the sad ghost,
+		 * forced by floor 4) and adds the Seal Warden's arena to the level.
+		 */
+		public static ArrayList<Room> spawnRoom(ArrayList<Room> rooms) {
+			questRoomSpawned = false;
+			if (spawned || Dungeon.depth < 2 || Dungeon.depth > 4) return rooms;
+			if (Random.Int(5 - Dungeon.depth) != 0) return rooms;
+			rooms.add(new SealSanctumRoom());
+			questRoomSpawned = true;
+			return rooms;
+		}
+
+		/** called while a sewer level's mobs are placed; puts the warden in its arena */
+		public static void spawn(Level level, ArrayList<Room> rooms, Room entrance, Room exit) {
+			if (spawned || !questRoomSpawned) return;
+			questRoomSpawned = false;
+
+			SealSanctumRoom sanctum = null;
 			ArrayList<Room> candidates = new ArrayList<>();
 			for (Room r : rooms) {
-				if (r != entrance && r != exit && r.width() > 3 && r.height() > 3) candidates.add(r);
+				if (r instanceof SealSanctumRoom) sanctum = (SealSanctumRoom) r;
+				else if (r != entrance && r != exit && r instanceof StandardRoom
+						&& r.width() > 3 && r.height() > 3) candidates.add(r);
 			}
-			if (candidates.size() < 2) return;
+			if (sanctum == null || candidates.isEmpty()) return;
 
 			Prophet prophet = new Prophet();
-			prophet.pos = freeCell(level, Random.element(candidates));
-			if (prophet.pos == -1) return;
+			for (int tries = 0; tries < 10 && prophet.pos <= 0; tries++) {
+				int c = freeCell(level, Random.element(candidates));
+				if (c != -1) prophet.pos = c;
+			}
+			if (prophet.pos <= 0) return;
 			level.mobs.add(prophet);
 
-			//the seal's guardian, kept away from the prophet's own room when possible
 			SealWarden warden = new SealWarden();
-			int cell = -1;
-			for (int tries = 0; tries < 10 && cell == -1; tries++) {
-				int c = freeCell(level, Random.element(candidates));
-				if (c != -1 && level.distance(c, prophet.pos) > 4) cell = c;
-			}
-			if (cell == -1) cell = freeCell(level, Random.element(candidates));
-			if (cell == -1) {
-				level.mobs.remove(prophet);
-				return;
-			}
-			warden.pos = cell;
+			warden.pos = level.pointToCell(sanctum.altar());
+			warden.home = warden.pos;
 			level.mobs.add(warden);
 
 			spawned = true;

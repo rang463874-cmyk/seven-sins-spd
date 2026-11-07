@@ -16,13 +16,13 @@ import com.watabou.noosa.audio.Sample;
 import java.util.ArrayList;
 
 /**
- * Given by the blacksmith for 3000 favor. Reforges a melee weapon into the hero's tier 5
+ * Given by the blacksmith for 2000 favor. Reforges a melee weapon into the hero's tier 5
  * sin weapon, keeping its upgrades and enchantment.
  */
 public class SinSigil extends Item {
 
 	public static final String AC_IMPRINT = "IMPRINT";
-	public static final int COST = 3000;
+	public static final int COST = 2000;
 
 	{
 		image = ItemSpriteSheet.SIN_SIGIL;

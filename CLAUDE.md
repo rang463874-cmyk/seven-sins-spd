@@ -18,7 +18,7 @@ Done and pushed (see `git log`):
   costs and +50% consumable points), a permanent-growth buff,
   2 subclasses, 26 talents, 3 armor abilities, class armor, en/ko strings, placeholder art.
 - Tier 1 sin weapons (starting weapons) and tier 5 sin weapons (via the blacksmith's
-  Sigil of Sin, 3000 favor, keeps upgrades/enchantment). Effects only work for the owning sin.
+  Sigil of Sin, 2000 favor, keeps upgrades/enchantment). Effects only work for the owning sin.
 - Imp quest vault mirror gives `items/MirrorCase` (every class; originals get it alongside their usual
   reward): one use per run, sets `Belongings.extraSlot`, opening `Belongings.misc2`, a second shared
   artifact/ring slot (equip logic in `KindofMisc`, shown in `WndBag`; `InventoryPane` lists it first in
@@ -33,7 +33,7 @@ Done and pushed (see `git log`):
 Not yet done / known gaps:
 - Never play-tested on a device until the first APK; expect UI/layout fixes.
 - Balance is untuned (Hibernator armor, Pride's Duel, Banker interest are on the strong side).
-- Sigil costs 3000 favor, which is the quest maximum (owner's choice, may lower to 2000).
+- Sigil costs 2000 favor (lowered from 3000, the quest maximum, in Nov 2026).
 - Talent/hero icons for the sins are recolored cleric icons (placeholders).
 
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
@@ -129,9 +129,15 @@ damage from kill stacks: +stacks/36 min, +stacks/12 max; upgrades don't add dama
 stacks per kill). The old `WarBlade` artifact is kept only for old saves.
 Hooks: `horsemen/HorsemenHooks` (Hero.attackProc/defenseProc/die/speed/attackDelay, Char.damage, Mob.die).
 Quest: `actors/mobs/npcs/Prophet` (+ `Prophet.Quest`, saved with the other quests in `Dungeon`) spawns on
-sewer floor 2-4 from `SewerLevel.createMobs`, with one miniboss, `actors/mobs/SealWarden` (45 HP, shifts
-aspect every 25% HP lost: Conquest armor, War 1.5x attack speed, Famine weakness + satiety drain, Death
-+50% vs a hero below half HP; placeholder art = tinted armored statue). It drops one
+sewer floor 2-4: the roll happens in `SewerLevel.initRooms` (`Prophet.Quest.spawnRoom` adds
+`levels/rooms/quest/SealSanctumRoom`, 11x11 dead end, 4 statues, pedestal) and `Quest.spawn` (from `createMobs`)
+puts the miniboss `actors/mobs/SealWarden` on the pedestal (`home`). The warden (60 HP) never leaves the arena,
+walls up the door (`sealedDoors`) once it hunts a hero inside, reopens it on death or when the hero is gone.
+It shifts aspect every 25% HP lost (Conquest armor, War 1.5x attack speed, Famine weakness + satiety drain,
+Death +50% vs a hero below half HP) and each aspect adds a telegraphed skill (`TargetedCell` marks, released on
+its next turn; skills accumulate, newest preferred): Volley (plus shape on the hero), Charge (straight dash
+through the hero, cripple), Blight (3x3, weakness/hunger, heals it), Reap (all 8 cells around it).
+Wardens from old saves have `home = -1` and fight without an arena. Placeholder art = tinted armored statue. It drops one
 `items/quest/SealFragment` (shown as "seal of the apocalypse"); `Prophet.FRAGMENTS` = 1 -> `WndProphet`,
 pick one artifact. `SealBearer` (the old 4-champion version) is kept only for old saves. Art: items.png row 36.
 

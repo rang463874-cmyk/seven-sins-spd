@@ -33,6 +33,7 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.Ripple;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
 import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
 import com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition;
+import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room;
 import com.shatteredpixel.shatteredpixeldungeon.levels.painters.Painter;
 import com.shatteredpixel.shatteredpixeldungeon.levels.painters.SewerPainter;
 import com.shatteredpixel.shatteredpixeldungeon.levels.traps.AlarmTrap;
@@ -60,6 +61,8 @@ import com.watabou.utils.Callback;
 import com.watabou.utils.ColorMath;
 import com.watabou.utils.PointF;
 import com.watabou.utils.Random;
+
+import java.util.ArrayList;
 
 public class SewerLevel extends RegularLevel {
 
@@ -135,6 +138,11 @@ public class SewerLevel extends RegularLevel {
 						4, 4, 4, 4,
 						2, 2,
 						1, 1, 1, 1, 1};
+	}
+
+	@Override
+	protected ArrayList<Room> initRooms() {
+		return Prophet.Quest.spawnRoom(super.initRooms());
 	}
 
 	@Override
