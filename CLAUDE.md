@@ -62,12 +62,12 @@ Skill resources (Nov 2026): Wrath spends **rage** (`WrathGrudge.rage`, 0..maxRag
 (+4) and damage taken (100 per max HP), cools 1/turn with no enemies in view; old charge sources convert at
 1 charge = 25 rage). Pride spends **dignity** stacks (`PrideGlory.useDignity`; dignity also gives +4% melee per
 stack and shatters when hit). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
-(Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; SLOTH_PILLOW cuts damage while
+(Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; a meal with SLOTH_PILLOW skips
 dozing). Cost types RAGE/DIGNITY/TURNS/JEALOUSY in `SinSkill.CostType`.
 Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: 12 copies of other
 sins' skills (unlocked by hero level 2,4..24) and 8 monster abilities (unlocked by bestiary traits); their own
-implementations live there (not the other sins' code). The mirror holds `EnvyCovet.slots` (3 + ENVY_MIRROR +
-Copycat + mirrored), chosen in `EnvyMirror.chooseMimic`; newly learned copies fill free slots (`refreshSlots`).
+implementations live there (not the other sins' code). The mirror holds `EnvyCovet.slots` (3 + Copycat +
+mirrored), chosen in `EnvyMirror.chooseMimic`; newly learned copies fill free slots (`refreshSlots`).
 Paid from `EnvyCovet.jealousy` (0..maxJealousy, ~3 turns per point, x2 with a rival in view). `EnvyCovet.growth`
 imitates another sin's growth at 50% (+15%/pt ENVY_SWITCH) in `EnvyHooks` (gluttony via
 `PredatorHooks.onConsumed`, greed = carried gold in `pts()`, wrath/pride/sloth kills in `mimicKill`, lust
