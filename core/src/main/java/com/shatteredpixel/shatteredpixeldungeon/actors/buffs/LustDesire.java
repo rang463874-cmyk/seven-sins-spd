@@ -137,7 +137,7 @@ public class LustDesire extends Buff {
 	public int hpCost(float share) {
 		Hero h = hero();
 		if (h == null) return 0;
-		float mult = 1f - 0.15f * h.pointsInTalent(Talent.LUST_BOTTLE);
+		float mult = 1f;
 		if (mirrored) mult *= 0.75f;
 		if (h.subClass == HeroSubClass.CRIMSON_NOBLE) mult *= 0.5f;
 		mult *= SinArtifact.costScale(h);

@@ -88,13 +88,14 @@ public class EnvyMirror extends SinArtifact {
 	@Override
 	public String skillHeader(Hero hero) {
 		EnvyCovet c = covet(hero);
-		return Messages.get(this, "skill_header", (int) c.jealousy, Math.round(EnvyCovet.MAX_JEALOUSY),
+		return Messages.get(this, "skill_header", (int) c.jealousy, Math.round(c.maxJealousy()),
 				c.slots.size(), c.maxSlots(), c.growthTitle());
 	}
 
 	@Override
 	protected String levelEffects(Hero hero) {
-		return Messages.get(SinArtifact.class, "effects_jealousy", Math.round((1f / SinArtifact.rechargeScale(hero) - 1f) * 100));
+		return Messages.get(SinArtifact.class, "effects_jealousy", Math.round((1f / SinArtifact.rechargeScale(hero) - 1f) * 100),
+				10 * SinArtifact.level(hero));
 	}
 
 	@Override

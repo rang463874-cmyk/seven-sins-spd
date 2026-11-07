@@ -87,8 +87,7 @@ public class WrathGrudge extends Buff {
 
 	public int maxRage() {
 		Hero h = hero();
-		return 100 + 10 * SinArtifact.bonusCharges(h) + (mirrored ? 20 : 0)
-				+ 25 * (h == null ? 0 : h.pointsInTalent(Talent.WRATH_DRUMMER));
+		return 100 + 10 * SinArtifact.bonusCharges(h) + (mirrored ? 20 : 0);
 	}
 
 	/** multiplier on all rage gained */

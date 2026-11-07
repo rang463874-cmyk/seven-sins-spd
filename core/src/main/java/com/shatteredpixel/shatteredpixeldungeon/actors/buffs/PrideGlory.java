@@ -101,7 +101,7 @@ public class PrideGlory extends Buff {
 	public int maxDignity() {
 		Hero h = hero();
 		int max = 10 + 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_COMPOSURE))
-				+ 3 * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_REGALIA)) + 2 * SinArtifact.bonusCharges(h);
+				+ 2 * SinArtifact.bonusCharges(h);
 		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) max += 5;
 		if (mirrored) max += 5;
 		return max;

@@ -149,7 +149,7 @@ public class WndDevSins extends Window {
 		if (ec != null) {
 			rows.add(new Row("시기 · 시기", () -> ec.envy, v -> ec.envy += v));
 			refillLabel = "질투 가득";
-			refill = () -> ec.jealousy = EnvyCovet.MAX_JEALOUSY;
+			refill = () -> ec.jealousy = ec.maxJealousy();
 		}
 		final SlothRepose sr = h.buff(SlothRepose.class);
 		if (sr != null) {

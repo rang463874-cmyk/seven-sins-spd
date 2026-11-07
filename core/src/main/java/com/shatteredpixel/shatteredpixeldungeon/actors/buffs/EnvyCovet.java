@@ -42,7 +42,13 @@ public class EnvyCovet extends Buff {
 	public float envy = 0;
 	/** jealousy gauge: fills slowly, faster with rivals in sight; pays for mimicked skills */
 	public float jealousy = 0;
+	/** base gauge size (the gauge itself grows with the mirror's level and Polished Mirror) */
 	public static final float MAX_JEALOUSY = 100f;
+
+	public float maxJealousy() {
+		Hero h = hero();
+		return MAX_JEALOUSY + 10f * SinArtifact.level(h) + 25f * (h == null ? 0 : h.pointsInTalent(Talent.ENVY_POLISH));
+	}
 	/** skills currently held by the mirror */
 	public final ArrayList<EnvyMimicry.Mimic> slots = new ArrayList<>();
 	/** the other sin whose growth is being imitated */
@@ -393,7 +399,7 @@ public class EnvyCovet extends Buff {
 	public int maxSlots() {
 		Hero h = hero();
 		if (h == null) return 3;
-		return 3 + h.pointsInTalent(Talent.ENVY_MIRROR) + (h.subClass == HeroSubClass.COPYCAT ? 1 : 0)
+		return 3 + (h.subClass == HeroSubClass.COPYCAT ? 1 : 0)
 				+ (mirrored ? 1 : 0);
 	}
 
@@ -408,7 +414,6 @@ public class EnvyCovet extends Buff {
 		Hero h = hero();
 		if (h == null) return 0;
 		float rate = (MAX_JEALOUSY / 300f) / SinArtifact.rechargeScale(h);
-		rate *= 1f + 0.2f * h.pointsInTalent(Talent.ENVY_POLISH);
 		if (mirrored) rate *= 1.25f;
 		if (SinWeapons.wields(h, UsurpersGauntlets.class, HeroClass.ENVY)) rate *= 1.5f;
 		boolean rivals = false;
@@ -424,7 +429,7 @@ public class EnvyCovet extends Buff {
 
 	public void addJealousy(float amount) {
 		if (amount <= 0) return;
-		jealousy = Math.min(MAX_JEALOUSY, jealousy + amount);
+		jealousy = Math.min(maxJealousy(), jealousy + amount);
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
 	}
@@ -463,7 +468,7 @@ public class EnvyCovet extends Buff {
 	public boolean act() {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
-			if (jealousy < MAX_JEALOUSY) addJealousy(jealousyRate() * TICK);
+			if (jealousy < maxJealousy()) addJealousy(jealousyRate() * TICK);
 			if (Random.Int(10) == 0) refreshSlots();
 			float regen = trait(Trait.ROT_HEART, 1f) + trait(Trait.FUNGAL_CORE, 1f);
 			if (regen > 0 && h.HP < h.HT) {
@@ -492,7 +497,7 @@ public class EnvyCovet extends Buff {
 
 	@Override
 	public float iconFadePercent() {
-		return 1f - jealousy / MAX_JEALOUSY;
+		return 1f - jealousy / maxJealousy();
 	}
 
 	@Override
@@ -515,7 +520,7 @@ public class EnvyCovet extends Buff {
 	}
 
 	private String statsTextBase() {
-		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), (int) jealousy, Math.round(MAX_JEALOUSY), growthTitle(), codex.size(), CODEX.size())
+		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), (int) jealousy, Math.round(maxJealousy()), growthTitle(), codex.size(), CODEX.size())
 				+ "\n\n" + Messages.get(EnvyCovet.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),

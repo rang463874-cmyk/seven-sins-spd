@@ -99,8 +99,7 @@ public class GreedVault extends Buff {
 
 	public float maxCharge() {
 		Hero h = hero();
-		int hoard = h == null ? 0 : h.pointsInTalent(Talent.GREED_HOARD);
-		return (100 + 50 * Math.max(1, Dungeon.depth)) * (1f + 0.25f * hoard) * SinArtifact.gaugeScale(h);
+		return (100 + 50 * Math.max(1, Dungeon.depth)) * SinArtifact.gaugeScale(h);
 	}
 
 	public void addCharge(float amount) {

@@ -68,7 +68,7 @@ Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` li
 sins' skills (unlocked by hero level 2,4..24) and 8 monster abilities (unlocked by bestiary traits); their own
 implementations live there (not the other sins' code). The mirror holds `EnvyCovet.slots` (3 + ENVY_MIRROR +
 Copycat + mirrored), chosen in `EnvyMirror.chooseMimic`; newly learned copies fill free slots (`refreshSlots`).
-Paid from `EnvyCovet.jealousy` (0..100, ~300 turns to fill, x2 with a rival in view). `EnvyCovet.growth`
+Paid from `EnvyCovet.jealousy` (0..maxJealousy, ~3 turns per point, x2 with a rival in view). `EnvyCovet.growth`
 imitates another sin's growth at 50% (+15%/pt ENVY_SWITCH) in `EnvyHooks` (gluttony via
 `PredatorHooks.onConsumed`, greed = carried gold in `pts()`, wrath/pride/sloth kills in `mimicKill`, lust
 lifesteal in `onAttack`). Robbed stacks are gone (`EnvyCovet.Robbed` kept only for old saves, detaches
@@ -80,6 +80,12 @@ Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.
 on charmed enemies via `LustDesire.drain` from `LustHooks.onAttack`; dodging charms the attacker
 (`LustHooks.onDodge`, called from the miss branch of `Char.attack`; Night Dancer counters there).
 Siren infighting is gone. Old lust talent names are mapped in `Talent.renamedTalents` too.
+
+Meal talents (Nov 2026): each sin's first tier-2 talent (PREDATOR_GLUTTONY, GREED_HOARD, WRATH_DRUMMER,
+PRIDE_REGALIA, LUST_BOTTLE, ENVY_MIRROR, SLOTH_PILLOW) makes eating take 1 turn and refills the sin's resource
+(`sins/SinMeals`, from `Talent.onFoodEaten` / `Food.eatingTime`); their old effects are gone. Sloth's meal gives
+`SlothRepose.Refreshed` (next skills skip dozing). Envy's gauge max = 100 + 10/mirror level + 25/pt ENVY_POLISH
+(`EnvyCovet.maxJealousy`).
 
 Unique stats (one per sin, on top of the shared five; all in `sins/UniqueStats`, scaled by the sin's
 points, capped): Wrath attack speed (Hero.attackDelay), Gluttony HP regen (ticked from Hunger.act),

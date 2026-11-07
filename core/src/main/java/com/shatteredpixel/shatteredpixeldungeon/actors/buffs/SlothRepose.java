@@ -133,6 +133,15 @@ public class SlothRepose extends Buff {
 
 	/** pays a skill's cost: the hero dozes off and loses that many turns */
 	public static void doze(Hero h, int turns) {
+		Refreshed fresh = h.buff(Refreshed.class);
+		if (fresh != null && fresh.skills > 0) {
+			//a good meal keeps the sloth awake for a skill or two
+			if (--fresh.skills <= 0) fresh.detach();
+			SinArtifact.onSpent(h, turns);
+			BuffIndicator.refreshHero();
+			h.spendAndNext(1f);
+			return;
+		}
 		SlothRepose r = h.buff(SlothRepose.class);
 		if (r != null) {
 			//dozing doesn't count as moving
@@ -144,7 +153,44 @@ public class SlothRepose extends Buff {
 		h.spendAndNext(turns);
 	}
 
-	/** dozing after a pillow skill; the Pillow Fort talent softens blows taken meanwhile */
+	/** Well Fed (sloth meal talent): the next few pillow skills don't make the sloth doze off */
+	public static class Refreshed extends Buff {
+
+		public int skills = 0;
+
+		{
+			type = buffType.POSITIVE;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.WELL_FED;
+		}
+
+		@Override
+		public String iconTextDisplay() {
+			return Integer.toString(skills);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", skills);
+		}
+
+		@Override
+		public void storeInBundle(com.watabou.utils.Bundle bundle) {
+			super.storeInBundle(bundle);
+			bundle.put("skills", skills);
+		}
+
+		@Override
+		public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
+			super.restoreFromBundle(bundle);
+			skills = bundle.getInt("skills");
+		}
+	}
+
+	/** dozing after a pillow skill */
 	public static class Doze extends FlavourBuff {
 
 		{

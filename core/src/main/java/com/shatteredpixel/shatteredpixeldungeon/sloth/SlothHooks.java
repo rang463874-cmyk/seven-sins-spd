@@ -58,11 +58,6 @@ public final class SlothHooks {
 		SlothRepose r = repose(hero);
 		if (r == null || dmg <= 0) return dmg;
 
-		//pillow fort: dozing after a skill softens blows
-		int fort = hero.pointsInTalent(Talent.SLOTH_PILLOW);
-		if (fort > 0 && hero.buff(SlothRepose.Doze.class) != null) {
-			dmg = Math.round(dmg * (1f - 0.2f * fort));
-		}
 
 		//comfy: a puppet nearby softens every blow
 		int comfy = hero.pointsInTalent(Talent.SLOTH_COMFY);

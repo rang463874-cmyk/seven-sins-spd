@@ -89,7 +89,6 @@ public class PredatorMaw extends SinArtifact {
 	/** satiety cost of a skill with this base cost */
 	public static int hungerCost(Hero hero, int base) {
 		float mult = SinArtifact.satietyScale(hero);
-		mult *= 1f - 0.15f * hero.pointsInTalent(Talent.PREDATOR_GLUTTONY);
 		if (PredatorStomach.hasCodex(hero, PredatorStomach.CODEX_FRUGAL)) mult *= 0.5f;
 		return Math.max(1, Math.round(base * mult));
 	}
