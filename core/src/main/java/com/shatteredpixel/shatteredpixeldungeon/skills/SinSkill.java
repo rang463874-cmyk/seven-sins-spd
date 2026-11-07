@@ -16,7 +16,7 @@ import com.watabou.noosa.TextureFilm;
  */
 public abstract class SinSkill {
 
-	public enum CostType { NONE, CHARGES, HP, GAUGE, GOLD, SATIETY, RAGE, DIGNITY, TURNS, VARIES }
+	public enum CostType { NONE, CHARGES, HP, GAUGE, GOLD, SATIETY, RAGE, DIGNITY, TURNS, JEALOUSY, VARIES }
 
 	public static final int ICON_SIZE = 16;
 	private static TextureFilm film;

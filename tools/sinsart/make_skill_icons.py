@@ -2,7 +2,8 @@
 """Generates core/src/main/assets/interfaces/skill_icons.png: placeholder skill-bar icons.
 
 16x16 icons on an 8-column grid (index = row * 8 + col). Row k belongs to sin k
-(gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6); row 7 is spare.
+(gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6); row 7 holds the
+monster abilities Envy can mimic.
 Each icon is a white 12x12 glyph on a rounded tile in the sin's colour.
 To add a skill icon: add a glyph (or reuse one) to ICONS with its index, then re-run
 `python3 tools/sinsart/make_skill_icons.py` and use that index in the skill's constructor.
@@ -25,7 +26,7 @@ SIN_COLORS = [
     (210, 60, 120),   # lust
     (50, 150, 80),    # envy
     (70, 110, 200),   # sloth
-    (100, 100, 100),  # spare
+    (140, 95, 55),    # envy's mimicked monster abilities
 ]
 
 G = {
@@ -407,6 +408,76 @@ G = {
         "X....X....X.",
         "............",
     ],
+    "ROCK": [
+        "............",
+        "....XXXX....",
+        "..XXXXXXXX..",
+        ".XXX.XXXXXX.",
+        ".XXXXXXX.XX.",
+        "XXXXXXXXXXXX",
+        "XXXX.XXXXXXX",
+        "XXXXXXXXX.XX",
+        ".XXXXXXXXXX.",
+        "..XXXXXXXX..",
+        "............",
+        "............",
+    ],
+    "CLOUD": [
+        "............",
+        "....XXX.....",
+        "...XXXXX.XX.",
+        ".XXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        ".XXXXXXXXXX.",
+        "............",
+        "..X...X...X.",
+        "...X...X....",
+        ".X...X...X..",
+        "............",
+    ],
+    "FLAME": [
+        ".....X......",
+        ".....XX.....",
+        "....XXX.....",
+        "....XXXX....",
+        "...XXXXX.X..",
+        "..XXXXXXXX..",
+        "..XXX.XXXX..",
+        ".XXX...XXXX.",
+        ".XX.....XXX.",
+        ".XX.....XXX.",
+        "..XX...XXX..",
+        "...XXXXXX...",
+    ],
+    "BLOB": [
+        "............",
+        "............",
+        "....XXXX....",
+        "..XXXXXXXX..",
+        ".XXX..XX..X.",
+        ".XXX..XX..X.",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        ".XXXXXXXXXX.",
+        "X.X..X..X.X.",
+        "............",
+    ],
+    "EYE": [
+        "............",
+        "............",
+        "...XXXXXX...",
+        ".XX......XX.",
+        "X....XX....X",
+        "X...XXXX...X",
+        "X...XXXX...X",
+        "X....XX....X",
+        ".XX......XX.",
+        "...XXXXXX...",
+        "............",
+        "............",
+    ],
 }
 
 ICONS = {
@@ -415,8 +486,9 @@ ICONS = {
     16: "EXCLAIM", 17: "CROSSARROWS", 18: "BURST", 19: "ARROW",
     24: "CROWN", 25: "SWORDS", 26: "STAR", 27: "SCROLL",
     32: "HEART", 33: "WAVE", 34: "DROP", 35: "DHEART",
-    40: "HAND", 41: "EQUAL", 42: "SWAP", 43: "MASK",
+    40: "MASK", 41: "SWAP", 42: "SWAP", 43: "MASK",
     48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ",
+    56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
 
 

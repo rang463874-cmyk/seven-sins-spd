@@ -61,7 +61,16 @@ Skill resources (Nov 2026): Wrath spends **rage** (`WrathGrudge.rage`, 0..maxRag
 1 charge = 25 rage). Pride spends **dignity** stacks (`PrideGlory.useDignity`; dignity also gives +4% melee per
 stack and shatters when hit). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
 (Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; SLOTH_PILLOW cuts damage while
-dozing). Cost types RAGE/DIGNITY/TURNS in `SinSkill.CostType`. Envy still uses recharging charges (rework pending).
+dozing). Cost types RAGE/DIGNITY/TURNS/JEALOUSY in `SinSkill.CostType`.
+Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: 12 copies of other
+sins' skills (unlocked by hero level 2,4..24) and 8 monster abilities (unlocked by bestiary traits); their own
+implementations live there (not the other sins' code). The mirror holds `EnvyCovet.slots` (3 + ENVY_MIRROR +
+Copycat + mirrored), chosen in `EnvyMirror.chooseMimic`; newly learned copies fill free slots (`refreshSlots`).
+Paid from `EnvyCovet.jealousy` (0..100, ~300 turns to fill, x2 with a rival in view). `EnvyCovet.growth`
+imitates another sin's growth at 50% (+15%/pt ENVY_SWITCH) in `EnvyHooks` (gluttony via
+`PredatorHooks.onConsumed`, greed = carried gold in `pts()`, wrath/pride/sloth kills in `mimicKill`, lust
+lifesteal in `onAttack`). Envy's own robbed-kill envy is halved. Talent enums unchanged, meanings changed.
+Monster ability icons are row 7 of skill_icons.png.
 Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.hpCost/pay`), lifesteal
 on charmed enemies via `LustDesire.drain` from `LustHooks.onAttack`; dodging charms the attacker
 (`LustHooks.onDodge`, called from the miss branch of `Char.attack`; Night Dancer counters there).
@@ -117,7 +126,7 @@ pick one artifact. `SealBearer` (the old 4-champion version) is kept only for ol
 | Wrath 분노 | WRATH | WarDrum | WrathGrudge (grudge from infighting) | wrath/WrathHooks | INSTIGATOR, AVENGER | abilities/wrath/* |
 | Pride 교만 | PRIDE | PrideCrown | PrideGlory (glory from flawless kills, dignity) | pride/PrideHooks | MONARCH, PARAGON | abilities/pride/* |
 | Lust 색욕 | LUST | Perfume | LustDesire (life stolen; 0.25 desire per HP) | lust/LustHooks | NIGHT_DANCER, CRIMSON_NOBLE | abilities/lust/* |
-| Envy 시기 | ENVY | EnvyMirror | EnvyCovet (robbed kills + bestiary of 27 special mobs) | envy/EnvyHooks | USURPER, COPYCAT | abilities/envy/* |
+| Envy 시기 | ENVY | EnvyMirror | EnvyCovet (robbed kills at half, imitated growth, bestiary of 27 special mobs, mimic slots) | envy/EnvyHooks | USURPER, COPYCAT | abilities/envy/* |
 | Sloth 나태 | SLOTH | SlothPillow | SlothRepose (kills by dream puppets / auto-attacks; own kills 1/3) | sloth/SlothHooks | DREAM_LORD, SLEEPWALKER | abilities/sloth/* |
 
 Paths are under `core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/`

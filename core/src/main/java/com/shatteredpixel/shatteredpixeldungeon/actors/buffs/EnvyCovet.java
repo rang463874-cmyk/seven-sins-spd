@@ -1,6 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
+import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyMimicry;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -27,7 +30,9 @@ import java.util.LinkedHashSet;
  * Every hit robs the enemy a little (Robbed stacks); defeating a robbed enemy turns what was
  * taken into envy points, which raise stats without limit. Defeating special monsters
  * (rare variants, quest monsters and bosses) registers them in the bestiary, permanently
- * granting their trait. Also holds the Mirror of Envy's recharging charges.
+ * granting their trait (and teaching their abilities to the mirror, see envy/EnvyMimicry).
+ * Also holds the jealousy gauge that pays for mimicked skills, the mimic slots and the
+ * imitated growth.
  */
 public class EnvyCovet extends Buff {
 
@@ -35,8 +40,13 @@ public class EnvyCovet extends Buff {
 	public boolean mirrored = false;
 
 	public float envy = 0;
-	public int charges = 2;
-	public float partialCharge = 0;
+	/** jealousy gauge: fills slowly, faster with rivals in sight; pays for mimicked skills */
+	public float jealousy = 0;
+	public static final float MAX_JEALOUSY = 100f;
+	/** skills currently held by the mirror */
+	public final ArrayList<EnvyMimicry.Mimic> slots = new ArrayList<>();
+	/** the other sin whose growth is being imitated */
+	public EnvyMimicry.Growth growth = EnvyMimicry.Growth.NONE;
 	public float regenTurns = 0;
 
 	/** registered bestiary entries, by trait */
@@ -125,7 +135,12 @@ public class EnvyCovet extends Buff {
 	public float pts() {
 		Hero h = hero();
 		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.ENVY_JEALOUSY);
-		return envy * mult;
+		float p = envy;
+		//imitating greed: the gold being carried counts, like it does for Greed
+		if (growth == EnvyMimicry.Growth.GREED && h != null) {
+			p += Dungeon.gold / 100f * EnvyMimicry.growthEfficiency(h);
+		}
+		return p * mult;
 	}
 
 	public int meleeBonus() {
@@ -259,7 +274,36 @@ public class EnvyCovet extends Buff {
 		}
 	}
 
-	/** Snatch: the hero is empowered by what was stolen. */
+	/** mimicked Step: much harder to hit */
+	public static class Sway extends FlavourBuff {
+		public static final float EVASION_MULT = 1.6f;
+
+		{
+			type = buffType.POSITIVE;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.HASTE;
+		}
+
+		@Override
+		public void tintIcon(Image icon) {
+			icon.hardlight(0.4f, 1f, 0.5f);
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return Math.max(0, 1f - visualcooldown() / 6f);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", dispTurns());
+		}
+	}
+
+	/** old Snatch buff (kept for saves) */
 	public static class Stolen extends FlavourBuff {
 		{
 			type = buffType.POSITIVE;
@@ -286,47 +330,82 @@ public class EnvyCovet extends Buff {
 		}
 	}
 
-	// ------------------------------------------------------------------ charges
+	// ------------------------------------------------------------------ jealousy & mimicry
 
-	public int maxCharges() {
+	public int maxSlots() {
 		Hero h = hero();
-		return 3 + SinArtifact.bonusCharges(h) + (mirrored ? 1 : 0) + (h == null ? 0 : h.pointsInTalent(Talent.ENVY_MIRROR));
+		if (h == null) return 3;
+		return 3 + h.pointsInTalent(Talent.ENVY_MIRROR) + (h.subClass == HeroSubClass.COPYCAT ? 1 : 0)
+				+ (mirrored ? 1 : 0);
 	}
 
-	public float turnsPerCharge() {
-		Hero h = hero();
-		return SinArtifact.rechargeScale(h) * 30f / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.ENVY_POLISH)));
+	/** a rival worth envying: a boss, a bestiary monster or anything sturdier than half the hero */
+	private static boolean rival(Hero h, Char ch) {
+		return ch.properties().contains(Char.Property.BOSS) || ch.properties().contains(Char.Property.MINIBOSS)
+				|| CODEX.containsKey(ch.getClass()) || ch.HT >= h.HT / 2;
 	}
 
-	public void gainCharge(float amount) {
-		if (charges >= maxCharges()) {
-			partialCharge = 0;
-			return;
+	/** jealousy gained per turn right now */
+	public float jealousyRate() {
+		Hero h = hero();
+		if (h == null) return 0;
+		float rate = (MAX_JEALOUSY / 300f) / SinArtifact.rechargeScale(h);
+		rate *= 1f + 0.2f * h.pointsInTalent(Talent.ENVY_POLISH);
+		if (mirrored) rate *= 1.25f;
+		boolean rivals = false;
+		for (Char ch : Actor.chars()) {
+			if (ch.alignment == Char.Alignment.ENEMY && ch.isAlive() && Dungeon.level.heroFOV[ch.pos] && rival(h, ch)) {
+				rivals = true;
+				break;
+			}
 		}
-		partialCharge += amount;
-		while (partialCharge >= 1f && charges < maxCharges()) {
-			partialCharge -= 1f;
-			charges++;
-		}
-		if (charges >= maxCharges()) partialCharge = 0;
+		if (rivals) rate *= 2f + 0.5f * h.pointsInTalent(Talent.ENVY_SNATCH);
+		return rate;
+	}
+
+	public void addJealousy(float amount) {
+		if (amount <= 0) return;
+		jealousy = Math.min(MAX_JEALOUSY, jealousy + amount);
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
 	}
 
-	public boolean useCharges(int n) {
-		if (charges < n) return false;
-		charges -= n;
-		SinArtifact.onSpent(hero(), n);
+	public boolean useJealousy(int n) {
+		if (jealousy < n) return false;
+		jealousy -= n;
+		SinArtifact.onSpent(hero(), Math.max(1, n / 10));
 		Item.updateQuickslot();
 		BuffIndicator.refreshHero();
 		return true;
 	}
 
+	/** drops slots that are no longer valid and fills empty ones with newly learned skills */
+	public void refreshSlots() {
+		Hero h = hero();
+		if (h == null) return;
+		while (slots.size() > maxSlots()) slots.remove(slots.size() - 1);
+		for (EnvyMimicry.Mimic m : EnvyMimicry.Mimic.values()) {
+			if (slots.size() >= maxSlots()) break;
+			if (!slots.contains(m) && m.unlocked(h, this) && !known.contains(m)) {
+				slots.add(m);
+			}
+		}
+		for (EnvyMimicry.Mimic m : EnvyMimicry.Mimic.values()) {
+			if (m.unlocked(h, this) && known.add(m)) {
+				GLog.p(Messages.get(EnvyMimicry.class, "learned", m.title()));
+			}
+		}
+	}
+
+	/** mimicries the hero has already been told about (so newly learned ones fill free slots once) */
+	public final java.util.HashSet<EnvyMimicry.Mimic> known = new java.util.HashSet<>();
+
 	@Override
 	public boolean act() {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
-			if (charges < maxCharges()) gainCharge(TICK / turnsPerCharge());
+			if (jealousy < MAX_JEALOUSY) addJealousy(jealousyRate() * TICK);
+			if (Random.Int(10) == 0) refreshSlots();
 			float regen = trait(Trait.ROT_HEART, 1f) + trait(Trait.FUNGAL_CORE, 1f);
 			if (regen > 0 && h.HP < h.HT) {
 				regenTurns += TICK * regen;
@@ -354,12 +433,12 @@ public class EnvyCovet extends Buff {
 
 	@Override
 	public float iconFadePercent() {
-		return charges >= maxCharges() ? 0 : 1f - partialCharge;
+		return 1f - jealousy / MAX_JEALOUSY;
 	}
 
 	@Override
 	public String iconTextDisplay() {
-		return Integer.toString(charges);
+		return Integer.toString((int) jealousy);
 	}
 
 	@Override
@@ -377,7 +456,7 @@ public class EnvyCovet extends Buff {
 	}
 
 	private String statsTextBase() {
-		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), charges, maxCharges(), codex.size(), CODEX.size())
+		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), (int) jealousy, Math.round(MAX_JEALOUSY), growth.title(), codex.size(), CODEX.size())
 				+ "\n\n" + Messages.get(EnvyCovet.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
@@ -400,8 +479,14 @@ public class EnvyCovet extends Buff {
 	public void storeInBundle(Bundle bundle) {
 		super.storeInBundle(bundle);
 		bundle.put("envy", envy);
-		bundle.put("charges", charges);
-		bundle.put("partial", partialCharge);
+		bundle.put("jealousy", jealousy);
+		bundle.put("growth", growth.name());
+		ArrayList<String> sl = new ArrayList<>();
+		for (EnvyMimicry.Mimic m : slots) sl.add(m.name());
+		bundle.put("slots", sl.toArray(new String[0]));
+		ArrayList<String> kn = new ArrayList<>();
+		for (EnvyMimicry.Mimic m : known) kn.add(m.name());
+		bundle.put("known", kn.toArray(new String[0]));
 		bundle.put("mirrored", mirrored);
 		bundle.put("regen", regenTurns);
 		ArrayList<String> names = new ArrayList<>();
@@ -413,8 +498,24 @@ public class EnvyCovet extends Buff {
 	public void restoreFromBundle(Bundle bundle) {
 		super.restoreFromBundle(bundle);
 		envy = bundle.getFloat("envy");
-		charges = bundle.getInt("charges");
-		partialCharge = bundle.getFloat("partial");
+		jealousy = bundle.getFloat("jealousy");
+		try {
+			growth = bundle.contains("growth") ? EnvyMimicry.Growth.valueOf(bundle.getString("growth")) : EnvyMimicry.Growth.NONE;
+		} catch (IllegalArgumentException e) {
+			growth = EnvyMimicry.Growth.NONE;
+		}
+		slots.clear();
+		known.clear();
+		if (bundle.contains("slots")) {
+			for (String n : bundle.getStringArray("slots")) {
+				try { slots.add(EnvyMimicry.Mimic.valueOf(n)); } catch (IllegalArgumentException ignored) {}
+			}
+		}
+		if (bundle.contains("known")) {
+			for (String n : bundle.getStringArray("known")) {
+				try { known.add(EnvyMimicry.Mimic.valueOf(n)); } catch (IllegalArgumentException ignored) {}
+			}
+		}
 		mirrored = bundle.getBoolean("mirrored");
 		regenTurns = bundle.getFloat("regen");
 		codex.clear();

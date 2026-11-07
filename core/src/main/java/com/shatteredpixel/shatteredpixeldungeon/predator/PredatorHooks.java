@@ -97,6 +97,10 @@ public final class PredatorHooks {
 
 	/** Called whenever the hero drinks, reads, eats or uses a consumable. */
 	public static void onConsumed(Hero hero, Item item) {
+		if (hero != null && item != null && hero.heroClass == HeroClass.ENVY) {
+			com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks.onConsumed(hero, item);
+			return;
+		}
 		if (!glutton(hero) || item == null) return;
 		Buff.affect(hero, PredatorStomach.class).consume(hero, item, false);
 	}
@@ -179,7 +183,11 @@ public final class PredatorHooks {
 
 	/** Called from Scroll.readAnimation: consumption, plus the codex chance to keep the scroll. */
 	public static void onScrollRead(Hero hero, Scroll scroll) {
-		if (!glutton(hero) || scroll.isAnonymous()) return;
+		if (scroll.isAnonymous()) return;
+		if (!glutton(hero)) {
+			onConsumed(hero, scroll);
+			return;
+		}
 		onConsumed(hero, scroll);
 		if (PredatorStomach.hasCodex(hero, PredatorStomach.CODEX_PRESERVE) && canRepeat(scroll.getClass())
 				&& Random.Float() < 0.15f) {

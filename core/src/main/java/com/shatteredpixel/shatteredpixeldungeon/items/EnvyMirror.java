@@ -1,53 +1,37 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
-import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
-import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
-import com.shatteredpixel.shatteredpixeldungeon.skills.SkillHolder;
-import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
-import com.shatteredpixel.shatteredpixeldungeon.Assets;
-import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EnvyCovet;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
-import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
+import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyMimicry;
+import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyMimicry.Growth;
+import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyMimicry.Kind;
+import com.shatteredpixel.shatteredpixeldungeon.envy.EnvyMimicry.Mimic;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
-import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
+import com.shatteredpixel.shatteredpixeldungeon.skills.BasicSkill;
+import com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndSkills;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndTitledMessage;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.utils.Reflection;
 
 import java.util.ArrayList;
 
 /**
- * The Envy class's signature item. Doesn't take an equipment slot.
- * Uses recharging charges (stored in EnvyCovet) to take what others have.
+ * The Envy class's signature mirror. It holds a few mimicked skills (other sins' skills and
+ * bestiary monsters' abilities, see EnvyMimicry) paid for from the jealousy gauge, and lets
+ * Envy pick another sin's growth to imitate.
  */
 public class EnvyMirror extends SinArtifact {
 
 	public static final String AC_GAZE = "GAZE";
 	public static final String AC_CODEX = "CODEX";
-
-	public static final int COST_SNATCH = 1;
-	public static final int COST_EQUALIZE = 2;
-	public static final int COST_SWAP = 1;
-	public static final int COST_MIMIC = 1;
 
 	{
 		image = ItemSpriteSheet.ENVY_MIRROR;
@@ -78,47 +62,58 @@ public class EnvyMirror extends SinArtifact {
 		return Buff.affect(hero, EnvyCovet.class);
 	}
 
-	public static int swapRange(Hero hero) {
-		return 6 + 2 * hero.pointsInTalent(Talent.ENVY_SWITCH);
-	}
-
-	public static float snatchDuration(Hero hero) {
-		return 8f + 4f * hero.pointsInTalent(Talent.ENVY_SNATCH);
-	}
-
 	public static boolean royal(Char ch) {
 		return ch.properties().contains(Char.Property.BOSS) || ch.properties().contains(Char.Property.MINIBOSS);
+	}
+
+	/**
+	 * Drags an enemy's health ratio down to the hero's. Bosses only lose half the difference.
+	 * Used by the Downfall armor ability. Returns damage dealt.
+	 */
+	public static int dragDown(Hero hero, Char enemy, float mult, Object src) {
+		float heroRatio = hero.HP / (float) hero.HT;
+		int target = Math.max(1, (int) Math.ceil(heroRatio * enemy.HT));
+		if (enemy.HP <= target) return 0;
+		int dmg = enemy.HP - target;
+		if (royal(enemy)) dmg /= 2;
+		dmg = Math.round(dmg * mult);
+		dmg = Math.min(dmg, enemy.HP - 1);
+		if (dmg <= 0) return 0;
+		enemy.damage(dmg, src);
+		return dmg;
 	}
 
 	// ------------------------------------------------------------------ skills list
 
 	@Override
 	public String skillHeader(Hero hero) {
-		EnvyCovet g = covet(hero);
-		return Messages.get(this, "skill_header", g.charges, g.maxCharges());
+		EnvyCovet c = covet(hero);
+		return Messages.get(this, "skill_header", (int) c.jealousy, Math.round(EnvyCovet.MAX_JEALOUSY),
+				c.slots.size(), c.maxSlots(), c.growth.title());
+	}
+
+	@Override
+	protected String levelEffects(Hero hero) {
+		return Messages.get(SinArtifact.class, "effects_jealousy", Math.round((1f / SinArtifact.rechargeScale(hero) - 1f) * 100));
 	}
 
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(EnvyMirror.class, "snatch", 40, SinSkill.CostType.CHARGES)
-				.cost(h -> COST_SNATCH)
-				.usableIf(h -> covet(h).charges >= COST_SNATCH)
-				.descArgs(h -> new Object[]{Math.round(snatchDuration(h))})
-				.onUse(h -> GameScene.selectCell(snatch)));
-		list.add(new BasicSkill(EnvyMirror.class, "equalize", 41, SinSkill.CostType.CHARGES)
-				.cost(h -> COST_EQUALIZE)
-				.usableIf(h -> covet(h).charges >= COST_EQUALIZE)
-				.onUse(h -> GameScene.selectCell(equalize)));
-		list.add(new BasicSkill(EnvyMirror.class, "swap", 42, SinSkill.CostType.CHARGES)
-				.cost(h -> COST_SWAP)
-				.usableIf(h -> covet(h).charges >= COST_SWAP)
-				.descArgs(h -> new Object[]{swapRange(h)})
-				.onUse(h -> GameScene.selectCell(swap)));
-		list.add(new BasicSkill(EnvyMirror.class, "mimic", 43, SinSkill.CostType.CHARGES)
-				.cost(h -> COST_MIMIC)
-				.usableIf(h -> covet(h).charges >= COST_MIMIC)
-				.onUse(h -> GameScene.selectCell(mimic)));
+		EnvyCovet c = covet(hero);
+		for (final Mimic m : new ArrayList<>(c.slots)) {
+			list.add(new BasicSkill(EnvyMirror.class, m.id(), m.icon, SinSkill.CostType.JEALOUSY)
+					.cost(h -> EnvyMimicry.cost(h, m))
+					.usableIf(h -> covet(h).jealousy >= EnvyMimicry.cost(h, m))
+					.descArgs(h -> EnvyMimicry.descArgs(h, m))
+					.onUse(h -> EnvyMimicry.use(h, m)));
+		}
+		list.add(new BasicSkill(EnvyMirror.class, "copy", 40, SinSkill.CostType.NONE)
+				.descArgs(h -> new Object[]{covet(h).maxSlots()})
+				.onUse(EnvyMirror::chooseCategory));
+		list.add(new BasicSkill(EnvyMirror.class, "growth", 41, SinSkill.CostType.NONE)
+				.descArgs(h -> new Object[]{Math.round(EnvyMimicry.growthEfficiency(h) * 100), covet(h).growth.title()})
+				.onUse(EnvyMirror::chooseGrowth));
 		return list;
 	}
 
@@ -136,179 +131,127 @@ public class EnvyMirror extends SinArtifact {
 		if (!canUseSkills(hero, action)) return;
 		if (!action.equals(AC_GAZE)) return;
 
+		c.refreshSlots();
 		GameScene.show(new WndSkills(this, hero));
 	}
 
-	// ------------------------------------------------------------------ helpers
+	// ------------------------------------------------------------------ choosing what to copy
 
-	private static Mob enemyAt(Integer cell) {
-		if (cell == null) return null;
-		Char ch = Actor.findChar(cell);
-		if (!(ch instanceof Mob) || ch.alignment == Char.Alignment.ALLY || !Dungeon.level.heroFOV[cell]) {
-			GLog.w(Messages.get(EnvyMirror.class, "no_target"));
-			return null;
-		}
-		return (Mob) ch;
-	}
-
-	private static void mirrorFX(Hero hero, int pos) {
-		hero.sprite.zap(pos);
-		CellEmitter.center(pos).burst(Speck.factory(Speck.LIGHT), 4);
-		Sample.INSTANCE.play(Assets.Sounds.TELEPORT, 0.6f, 1.4f);
-		Invisibility.dispel();
-	}
-
-	/**
-	 * Drags an enemy's health ratio down to the hero's. Bosses only lose half the difference.
-	 * Shared with the Downfall armor ability. Returns damage dealt.
-	 */
-	public static int dragDown(Hero hero, Char enemy, float mult, Object src) {
-		float heroRatio = hero.HP / (float) hero.HT;
-		int target = Math.max(1, (int) Math.ceil(heroRatio * enemy.HT));
-		if (enemy.HP <= target) return 0;
-		int dmg = enemy.HP - target;
-		if (royal(enemy)) dmg /= 2;
-		dmg = Math.round(dmg * mult);
-		dmg = Math.min(dmg, enemy.HP - 1);
-		if (dmg <= 0) return 0;
-		enemy.damage(dmg, src);
-		return dmg;
-	}
-
-	// ------------------------------------------------------------------ skills
-
-	private final CellSelector.Listener snatch = new CellSelector.Listener() {
-		@Override
-		public void onSelect(Integer cell) {
-			Hero hero = Dungeon.hero;
-			Mob mob = enemyAt(cell);
-			if (mob == null) return;
-			if (!covet(hero).useCharges(COST_SNATCH)) return;
-
-			float dur = snatchDuration(hero);
-			Buff.prolong(mob, Weakness.class, dur);
-			Buff.prolong(hero, EnvyCovet.Stolen.class, dur);
-			EnvyCovet.rob(hero, mob, 3);
-			mob.sprite.showStatus(CharSprite.NEGATIVE, Messages.get(EnvyMirror.class, "snatched"));
-			mirrorFX(hero, mob.pos);
-			hero.spendAndNext(1f);
-		}
-
-		@Override
-		public String prompt() {
-			return Messages.get(EnvyMirror.class, "prompt_snatch");
-		}
-	};
-
-	private final CellSelector.Listener equalize = new CellSelector.Listener() {
-		@Override
-		public void onSelect(Integer cell) {
-			Hero hero = Dungeon.hero;
-			Mob mob = enemyAt(cell);
-			if (mob == null) return;
-			if (mob.HP / (float) mob.HT <= hero.HP / (float) hero.HT) {
-				GLog.w(Messages.get(EnvyMirror.class, "not_envious"));
-				return;
+	private static void chooseCategory(final Hero hero) {
+		covet(hero).refreshSlots();
+		GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+				Messages.get(EnvyMirror.class, "copy_title"),
+				Messages.get(EnvyMirror.class, "copy_msg", covet(hero).slots.size(), covet(hero).maxSlots()),
+				Messages.get(EnvyMirror.class, "copy_sins"), Messages.get(EnvyMirror.class, "copy_monsters")) {
+			@Override
+			protected void onSelect(int index) {
+				chooseMimic(hero, index == 0 ? Kind.SIN : Kind.MONSTER);
 			}
-			if (!covet(hero).useCharges(COST_EQUALIZE)) return;
+		});
+	}
 
-			int dmg = dragDown(hero, mob, 1f, EnvyMirror.class);
-			int lvl = hero.pointsInTalent(Talent.ENVY_LEVEL);
-			if (lvl > 0 && mob.isAlive()) Buff.prolong(mob, Weakness.class, 1f + 2f * lvl);
-			if (dmg > 0) GLog.i(Messages.get(EnvyMirror.class, "equalized", mob.name()));
-			mirrorFX(hero, mob.pos);
-			hero.spendAndNext(1f);
-		}
-
-		@Override
-		public String prompt() {
-			return Messages.get(EnvyMirror.class, "prompt_equalize");
-		}
-	};
-
-	private final CellSelector.Listener swap = new CellSelector.Listener() {
-		@Override
-		public void onSelect(Integer cell) {
-			Hero hero = Dungeon.hero;
-			Mob mob = enemyAt(cell);
-			if (mob == null) return;
-			if (royal(mob) || mob.properties().contains(Char.Property.IMMOVABLE)
-					|| Dungeon.level.distance(hero.pos, mob.pos) > swapRange(hero)) {
-				GLog.w(Messages.get(EnvyMirror.class, "cant_swap"));
-				return;
+	private static void chooseMimic(final Hero hero, final Kind kind) {
+		final EnvyCovet c = covet(hero);
+		final ArrayList<Mimic> options = new ArrayList<>();
+		ArrayList<String> labels = new ArrayList<>();
+		Mimic nextLocked = null;
+		int locked = 0;
+		for (Mimic m : Mimic.values()) {
+			if (m.kind != kind) continue;
+			if (!m.unlocked(hero, c)) {
+				locked++;
+				if (nextLocked == null && kind == Kind.SIN) nextLocked = m;
+				continue;
 			}
-			if (!covet(hero).useCharges(COST_SWAP)) return;
-
-			int heroPos = hero.pos;
-			int mobPos = mob.pos;
-			hero.sprite.interruptMotion();
-			mob.sprite.interruptMotion();
-			hero.pos = mobPos;
-			mob.pos = heroPos;
-			hero.sprite.place(mobPos);
-			mob.sprite.place(heroPos);
-			Dungeon.level.occupyCell(hero);
-			Dungeon.level.occupyCell(mob);
-			Dungeon.observe();
-			GameScene.updateFog();
-
-			CellEmitter.center(heroPos).burst(Speck.factory(Speck.LIGHT), 4);
-			CellEmitter.center(mobPos).burst(Speck.factory(Speck.LIGHT), 4);
-			Sample.INSTANCE.play(Assets.Sounds.TELEPORT);
-			hero.spendAndNext(1f);
+			options.add(m);
+			labels.add((c.slots.contains(m) ? "[v] " : "[ ] ") + m.title());
 		}
-
-		@Override
-		public String prompt() {
-			return Messages.get(EnvyMirror.class, "prompt_swap", swapRange(Dungeon.hero));
+		String msg;
+		if (kind == Kind.SIN) {
+			msg = nextLocked == null ? Messages.get(EnvyMirror.class, "copy_all_sins")
+					: Messages.get(EnvyMirror.class, "copy_next_sin", nextLocked.level, nextLocked.title());
+		} else {
+			msg = Messages.get(EnvyMirror.class, "copy_monsters_msg", locked);
 		}
-	};
-
-	private final CellSelector.Listener mimic = new CellSelector.Listener() {
-		@Override
-		public void onSelect(Integer cell) {
-			Hero hero = Dungeon.hero;
-			Mob mob = enemyAt(cell);
-			if (mob == null) return;
-			if (!covet(hero).useCharges(COST_MIMIC)) return;
-
-			//take every positive timed effect the enemy has
-			int taken = 0;
-			for (Buff b : mob.buffs()) {
-				if (b.type == Buff.buffType.POSITIVE && b instanceof FlavourBuff && !(b instanceof AllyBuff)) {
-					float left = ((FlavourBuff) b).cooldown();
-					try {
-						Buff.prolong(hero, ((FlavourBuff) b).getClass(), left);
-						b.detach();
-						taken++;
-					} catch (Throwable t) {
-						//not every buff can be moved
-					}
+		if (options.isEmpty()) {
+			GameScene.show(new WndTitledMessage(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+					Messages.get(EnvyMirror.class, "copy_title"), msg));
+			return;
+		}
+		GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+				Messages.get(EnvyMirror.class, "copy_title"),
+				msg + "\n\n" + Messages.get(EnvyMirror.class, "copy_toggle", c.slots.size(), c.maxSlots()),
+				labels.toArray(new String[0])) {
+			@Override
+			protected void onSelect(int index) {
+				Mimic m = options.get(index);
+				if (c.slots.contains(m)) {
+					c.slots.remove(m);
+				} else if (c.slots.size() >= c.maxSlots()) {
+					GLog.w(Messages.get(EnvyMirror.class, "slots_full"));
+					return;
+				} else {
+					c.slots.add(m);
 				}
+				BuffIndicator.refreshHero();
+				Item.updateQuickslot();
+				chooseMimic(hero, kind);
 			}
 
-			//and mirror a share of its vitality as shielding
-			float mult = 1f + 0.5f * hero.pointsInTalent(Talent.COPY_MASK);
-			int shield = Math.min(Math.round(hero.HT * 0.5f), Math.round(mob.HT * 0.2f * mult));
-			Buff.affect(hero, Barrier.class).setShield(shield);
-			hero.sprite.showStatus(CharSprite.POSITIVE, Integer.toString(shield));
-			if (taken > 0) GLog.p(Messages.get(EnvyMirror.class, "mimicked", taken));
-			mirrorFX(hero, mob.pos);
-			hero.spendAndNext(1f);
-		}
+			@Override
+			protected boolean hasInfo(int index) {
+				return true;
+			}
 
-		@Override
-		public String prompt() {
-			return Messages.get(EnvyMirror.class, "prompt_mimic");
+			@Override
+			protected void onInfo(int index) {
+				Mimic m = options.get(index);
+				GameScene.show(new WndTitledMessage(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR), m.title(),
+						Messages.get(EnvyMirror.class, "skill_" + m.id() + "_desc", EnvyMimicry.descArgs(hero, m))
+								+ "\n\n" + m.source()
+								+ "\n" + Messages.get(EnvyMirror.class, "copy_cost", EnvyMimicry.cost(hero, m))));
+			}
+		});
+	}
+
+	private static void chooseGrowth(final Hero hero) {
+		final EnvyCovet c = covet(hero);
+		final Growth[] all = Growth.values();
+		String[] labels = new String[all.length];
+		for (int i = 0; i < all.length; i++) {
+			labels[i] = (c.growth == all[i] ? "[v] " : "[ ] ") + all[i].title();
 		}
-	};
+		GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+				Messages.get(EnvyMirror.class, "growth_title"),
+				Messages.get(EnvyMirror.class, "growth_msg", Math.round(EnvyMimicry.growthEfficiency(hero) * 100)),
+				labels) {
+			@Override
+			protected void onSelect(int index) {
+				c.growth = all[index];
+				hero.updateHT(true);
+				BuffIndicator.refreshHero();
+				GLog.i(Messages.get(EnvyMirror.class, "growth_set", c.growth.title()));
+			}
+
+			@Override
+			protected boolean hasInfo(int index) {
+				return index > 0;
+			}
+
+			@Override
+			protected void onInfo(int index) {
+				GameScene.show(new WndTitledMessage(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+						all[index].title(), all[index].desc()));
+			}
+		});
+	}
 
 	// ------------------------------------------------------------------ info
 
 	@Override
 	public String status() {
 		EnvyCovet c = EnvyCovet.of();
-		return c == null ? null : c.charges + "/" + c.maxCharges();
+		return c == null ? null : Integer.toString((int) c.jealousy);
 	}
 
 	@Override
