@@ -41,6 +41,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sword",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarHammer",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarScythe",
+			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarSword",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Whip",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.CollectorRod",

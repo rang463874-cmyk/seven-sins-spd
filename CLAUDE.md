@@ -25,7 +25,7 @@ Done and pushed (see `git log`):
   the bag). The old mirror relics (`MirrorRelics`, buffs' `mirrored` flag) are kept only for old saves.
 - GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
-- Four horsemen artifacts (all classes) from the sewer "prophet of seals" quest, see below.
+- Four horsemen relics (all classes) from the sewer "prophet of seals" quest, see below.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -73,11 +73,18 @@ each pick (that was the Discord bug).
 
 ## Four horsemen artifacts and the sewer prophet
 
-`items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use, levels 0-10 by uses,
-never cursed) with `ConquestCrown` (surrender a wounded enemy -> temporary ally `Subjugated`),
-`WarBlade` (more damage at low HP, charges from hits taken, Amok on nearby enemies), `FamineScales`
-(Weakness aura, +10% hunger, satiety -> HP) and `DeathScythe` (reap enemies near death, survive a
-lethal hit once per floor). Hooks: `horsemen/HorsemenHooks` (Hero.attackProc/defenseProc/die, Mob.die).
+Reworked for combat (Nov 2026). `items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use,
+levels 0-10 by uses, never cursed; `timeCharges()` off for the gun) with `ConquestCrown` (class name kept for
+saves, now the **gun of conquest**: loads bullets by devouring unequipped weapons/armor, tier+2*lvl each,
+keeps the last good enchantment for its bullets; fire = one bullet, ranged hit; levels by shots, magazine
+20+2*lvl; `Subjugated` kept for old saves), `FamineScales` (hunger factor 0..1 at HUNGRY, 1.25 starving,
+1.5 in `Frenzy`: attack speed/move speed/damage bonuses; power burns satiety down to HUNGRY, heals, Frenzy)
+and `DeathScythe` (hits leave `DeathScythe.Mark`s = dmg*rate; reaped when marks >= HP via
+`HorsemenHooks.afterDamage` in `Char.damage`; bosses burst at 15% HT; power bursts all marks in sight;
+survive a lethal hit once per floor). War is now a weapon, `items/weapon/melee/WarSword` (tier 3 sword,
+damage from kill stacks: +stacks/36 min, +stacks/12 max; upgrades don't add damage, each level +20%
+stacks per kill). The old `WarBlade` artifact is kept only for old saves.
+Hooks: `horsemen/HorsemenHooks` (Hero.attackProc/defenseProc/die/speed/attackDelay, Char.damage, Mob.die).
 Quest: `actors/mobs/npcs/Prophet` (+ `Prophet.Quest`, saved with the other quests in `Dungeon`) spawns on
 sewer floor 2-4 from `SewerLevel.createMobs`, with one miniboss, `actors/mobs/SealWarden` (45 HP, shifts
 aspect every 25% HP lost: Conquest armor, War 1.5x attack speed, Famine weakness + satiety drain, Death
@@ -127,7 +134,7 @@ Reserved layout (must match the Java constants):
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
 - `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 576):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
-  row 36 horsemen artifacts + seal fragment (+0..4), sin remains (+5..11), mirror case (+12)
+  row 36 horsemen relics (gun, war sword, scales, scythe) + seal fragment (+0..4), sin remains (+5..11), mirror case (+12)
 - `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
 k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
 

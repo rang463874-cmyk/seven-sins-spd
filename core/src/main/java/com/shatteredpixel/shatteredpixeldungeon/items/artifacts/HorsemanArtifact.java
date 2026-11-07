@@ -34,6 +34,11 @@ public abstract class HorsemanArtifact extends Artifact {
 	/** the active power; return true if it was used (a charge is then spent) */
 	protected abstract boolean usePower(Hero hero);
 
+	/** false for artifacts that don't charge over time (the conquest gun loads ammo instead) */
+	protected boolean timeCharges() {
+		return true;
+	}
+
 	/** extra lines for the description while equipped */
 	protected String statsDesc() {
 		return null;
@@ -141,7 +146,7 @@ public abstract class HorsemanArtifact extends Artifact {
 
 		@Override
 		public boolean act() {
-			if (!isCursed() && charge < chargeCap && target instanceof Hero
+			if (timeCharges() && !isCursed() && charge < chargeCap && target instanceof Hero
 					&& target.buff(MagicImmune.class) == null) {
 				gainCharge(100f / rechargeTurns() * RingOfEnergy.artifactChargeMultiplier(target));
 			}

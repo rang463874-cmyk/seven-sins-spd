@@ -5,9 +5,18 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
+import com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile;
+import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.ClassArmor;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -15,79 +24,225 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndBag;
 import com.watabou.noosa.Image;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
+import com.watabou.utils.Random;
+
+import java.util.ArrayList;
 
 /**
- * Crown of Conquest, the white horseman. Its power forces a badly wounded enemy to surrender:
- * it fights for the hero for a while (granting exp and loot right away), then collapses.
+ * Gun of Conquest, the white horseman (the class keeps its old name for saves).
+ * It devours weapons and armor to load bullets, then fires them at anything in sight.
+ * Loading an enchanted weapon makes the bullets carry that enchantment.
+ * It levels up (0..10) as it fires: more damage and a bigger magazine.
  */
 public class ConquestCrown extends HorsemanArtifact {
 
+	public static final String AC_LOAD = "LOAD";
+
+	/** last good enchantment taken from a loaded weapon */
+	public Class<? extends Weapon.Enchantment> enchant = null;
+
 	{
 		image = ItemSpriteSheet.ARTIFACT_CONQUEST;
+		charge = 0;
+		chargeCap = maxAmmo();
 	}
 
 	@Override
 	protected float rechargeTurns() {
-		return 150f - 7f * level();
+		return 100f;
 	}
 
-	/** fraction of max HP an enemy must be at or below to surrender */
-	public float threshold() {
-		return 0.30f + 0.03f * level();
+	@Override
+	protected boolean timeCharges() {
+		return false;
 	}
 
-	public float serviceTurns() {
-		return 10f + 2f * level();
+	public int maxAmmo() {
+		return 20 + 2 * level();
+	}
+
+	@Override
+	public int expToLevel() {
+		return 10 + 5 * level();
+	}
+
+	@Override
+	public Item upgrade() {
+		super.upgrade();
+		chargeCap = maxAmmo();
+		return this;
+	}
+
+	@Override
+	public void charge(Hero target, float amount) {
+		//recharging doesn't make bullets
+	}
+
+	public int minDamage() {
+		int lvl = Dungeon.hero == null ? 1 : Dungeon.hero.lvl;
+		return 2 + level() + lvl / 3;
+	}
+
+	public int maxDamage() {
+		int lvl = Dungeon.hero == null ? 1 : Dungeon.hero.lvl;
+		return Math.round(6 + 1.5f * level() + 0.8f * lvl);
+	}
+
+	/** bullets an item loads, or 0 if it can't be loaded */
+	public static int bulletsFor(Hero hero, Item item) {
+		if (item == null || item.unique) return 0;
+		if (item instanceof EquipableItem && item.isEquipped(hero)) return 0;
+		int lvl = Math.max(0, item.level());
+		float b;
+		if (item instanceof MeleeWeapon) {
+			b = ((MeleeWeapon) item).tier + 2 * lvl;
+			if (((Weapon) item).hasGoodEnchant()) b += 1;
+		} else if (item instanceof Armor && !(item instanceof ClassArmor)) {
+			Armor a = (Armor) item;
+			b = a.tier + 2 * lvl;
+			if (a.glyph != null && !a.glyph.curse()) b += 1;
+		} else {
+			return 0;
+		}
+		if (item.cursed) b *= 0.5f;
+		return Math.max(1, Math.round(b));
+	}
+
+	// ------------------------------------------------------------------ actions
+
+	@Override
+	public ArrayList<String> actions(Hero hero) {
+		ArrayList<String> actions = super.actions(hero);
+		if (isEquipped(hero) && !cursed && hero.buff(MagicImmune.class) == null) {
+			actions.add(AC_LOAD);
+		}
+		return actions;
+	}
+
+	@Override
+	public String actionName(String action, Hero hero) {
+		if (action.equals(AC_LOAD)) return Messages.get(this, "ac_load");
+		return super.actionName(action, hero);
+	}
+
+	@Override
+	public void execute(Hero hero, String action) {
+		chargeCap = maxAmmo();
+		if (action.equals(AC_USE)) {
+			//firing only needs one bullet, not a full charge
+			if (hero.buff(MagicImmune.class) != null) return;
+			if (!isEquipped(hero)) {
+				GLog.i(Messages.get(Artifact.class, "need_to_equip"));
+			} else if (cursed) {
+				GLog.i(Messages.get(HorsemanArtifact.class, "cursed"));
+			} else if (charge <= 0) {
+				GLog.w(Messages.get(this, "empty"));
+			} else {
+				usePower(hero);
+			}
+			return;
+		}
+		super.execute(hero, action);
+		if (action.equals(AC_LOAD)) {
+			if (hero.buff(MagicImmune.class) != null) return;
+			if (!isEquipped(hero)) {
+				GLog.i(Messages.get(Artifact.class, "need_to_equip"));
+			} else if (!cursed) {
+				selectLoad(hero);
+			}
+		}
+	}
+
+	private void selectLoad(final Hero hero) {
+		GameScene.selectItem(new WndBag.ItemSelector() {
+			@Override
+			public String textPrompt() {
+				return Messages.get(ConquestCrown.class, "prompt_load");
+			}
+
+			@Override
+			public boolean itemSelectable(Item item) {
+				return bulletsFor(hero, item) > 0;
+			}
+
+			@Override
+			public void onSelect(Item item) {
+				if (item == null) return;
+				int bullets = bulletsFor(hero, item);
+				if (bullets <= 0) return;
+				if (charge >= maxAmmo()) {
+					GLog.w(Messages.get(ConquestCrown.class, "full_mag"));
+					return;
+				}
+				if (item instanceof Weapon && ((Weapon) item).hasGoodEnchant()) {
+					enchant = ((Weapon) item).enchantment.getClass();
+					GLog.p(Messages.get(ConquestCrown.class, "enchanted", ((Weapon) item).enchantment.name()));
+				}
+				int loaded = Math.min(bullets, maxAmmo() - charge);
+				charge += loaded;
+				item.detachAll(hero.belongings.backpack);
+				Item.updateQuickslot();
+				hero.sprite.showStatus(CharSprite.POSITIVE, Messages.get(ConquestCrown.class, "loaded", loaded));
+				hero.sprite.operate(hero.pos);
+				Sample.INSTANCE.play(Assets.Sounds.EVOKE);
+				Invisibility.dispel();
+				hero.spendAndNext(1f);
+			}
+		});
 	}
 
 	@Override
 	protected boolean usePower(Hero hero) {
-		GameScene.selectCell(selector);
+		GameScene.selectCell(shooter);
 		return true;
 	}
 
-	@Override
-	protected String statsDesc() {
-		return Messages.get(this, "stats", Math.round(threshold() * 100), Math.round(serviceTurns()));
+	private void shoot(final Hero hero, int cell) {
+		final Ballistica shot = new Ballistica(hero.pos, cell, Ballistica.PROJECTILE);
+		final int target = shot.collisionPos;
+		charge--;
+		gainExp(1);
+		Item.updateQuickslot();
+		Invisibility.dispel();
+		hero.sprite.zap(target);
+		Sample.INSTANCE.play(Assets.Sounds.BLAST, 0.6f, 1.6f);
+		hero.busy();
+		MagicMissile.boltFromChar(hero.sprite.parent, MagicMissile.LIGHT_MISSILE, hero.sprite, target, () -> {
+			Char ch = Actor.findChar(target);
+			if (ch != null && ch != hero) {
+				if (Char.hit(hero, ch, false)) {
+					int dmg = Random.NormalIntRange(minDamage(), maxDamage());
+					dmg = Math.max(0, dmg - ch.drRoll());
+					if (enchant != null) {
+						Weapon w = new WornShortsword();
+						try {
+							w.enchant(enchant.newInstance());
+							dmg = w.enchantment.proc(w, hero, ch, dmg);
+						} catch (Exception e) {
+							enchant = null;
+						}
+					}
+					ch.damage(dmg, ConquestCrown.this);
+					Sample.INSTANCE.play(Assets.Sounds.HIT_ARROW);
+				} else if (ch.sprite != null) {
+					ch.sprite.showStatus(CharSprite.NEUTRAL, ch.defenseVerb());
+				}
+			}
+			hero.spendAndNext(1f);
+		});
 	}
 
-	private final CellSelector.Listener selector = new CellSelector.Listener() {
+	private final CellSelector.Listener shooter = new CellSelector.Listener() {
 		@Override
 		public void onSelect(Integer cell) {
 			if (cell == null) return;
 			Hero hero = Dungeon.hero;
-			Char ch = Actor.findChar(cell);
-			if (!(ch instanceof Mob) || ch.alignment != Char.Alignment.ENEMY || !Dungeon.level.heroFOV[cell]) {
-				GLog.w(Messages.get(ConquestCrown.class, "no_target"));
-				return;
-			}
-			Mob mob = (Mob) ch;
-			if (mob.properties().contains(Char.Property.BOSS) || mob.properties().contains(Char.Property.MINIBOSS)
-					|| mob.isImmune(Subjugated.class)) {
-				GLog.w(Messages.get(ConquestCrown.class, "refuses"));
-				return;
-			}
-			if (mob.HP > mob.HT * threshold()) {
-				GLog.w(Messages.get(ConquestCrown.class, "too_strong"));
-				return;
-			}
-
-			AllyBuff.affectAndLoot(mob, hero, Subjugated.class);
-			Subjugated s = mob.buff(Subjugated.class);
-			if (s != null) {
-				s.left = serviceTurns();
-				mob.aggro(null);
-				mob.state = mob.WANDERING;
-			}
-			mob.sprite.emitter().burst(Speck.factory(Speck.CROWN), 6);
-			mob.sprite.showStatus(CharSprite.POSITIVE, Messages.get(ConquestCrown.class, "kneel"));
-			Sample.INSTANCE.play(Assets.Sounds.CHARMS);
-			spendCharge(1);
-			hero.sprite.zap(cell);
-			hero.spendAndNext(1f);
+			if (cell == hero.pos || charge <= 0) return;
+			shoot(hero, cell);
 		}
 
 		@Override
@@ -96,7 +251,45 @@ public class ConquestCrown extends HorsemanArtifact {
 		}
 	};
 
-	/** a surrendered enemy fighting for the hero, until it collapses */
+	// ------------------------------------------------------------------ info
+
+	@Override
+	public String status() {
+		if (cursed) return null;
+		return Messages.format("%d/%d", charge, maxAmmo());
+	}
+
+	@Override
+	protected String statsDesc() {
+		String s = Messages.get(this, "stats", charge, maxAmmo(), minDamage(), maxDamage());
+		if (enchant != null) {
+			try {
+				s += "\n" + Messages.get(this, "stats_enchant", enchant.newInstance().name());
+			} catch (Exception ignored) {}
+		}
+		return s;
+	}
+
+	@Override
+	public void storeInBundle(Bundle bundle) {
+		super.storeInBundle(bundle);
+		if (enchant != null) bundle.put("gun_enchant", enchant);
+		bundle.put("gun_v2", true);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public void restoreFromBundle(Bundle bundle) {
+		super.restoreFromBundle(bundle);
+		if (bundle.contains("gun_enchant")) enchant = bundle.getClass("gun_enchant");
+		if (!bundle.contains("gun_v2")) {
+			//old crown saves: its charge was a percentage, not bullets
+			charge = 0;
+		}
+		chargeCap = maxAmmo();
+	}
+
+	/** a surrendered enemy fighting for the hero (the crown's old power, kept for saves) */
 	public static class Subjugated extends AllyBuff {
 
 		public float left = 10f;

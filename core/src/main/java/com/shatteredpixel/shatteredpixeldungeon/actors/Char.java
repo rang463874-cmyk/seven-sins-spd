@@ -1003,6 +1003,7 @@ public abstract class Char extends Actor {
 		HP -= dmg;
 		WrathHooks.afterDamage(this, src, dmg + shielded);
 		PrideHooks.afterDamage(this, src, dmg + shielded);
+		dmg += com.shatteredpixel.shatteredpixeldungeon.horsemen.HorsemenHooks.afterDamage(this);
 
 		if (HP > 0 && src instanceof Char && ((Char) src).buff(Grim.GrimTracker.class) != null){
 

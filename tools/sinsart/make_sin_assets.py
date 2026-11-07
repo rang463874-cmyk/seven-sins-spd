@@ -272,6 +272,23 @@ SEAL = [
 ]
 SEAL_PAL = {"O": (40, 10, 50, 255), "R": (120, 50, 150, 255), "Y": (230, 200, 120, 255)}
 
+# 14x11 gun of conquest: a white flintlock with gold trim
+GUN = [
+    "..............",
+    "OOOOOOOOOOOOO.",
+    "OHHHHHHHHHHYYO",
+    "OSSSSSSSSSSYYO",
+    ".OOOOOYYOOOOO.",
+    "....OYOOYO....",
+    "...OYYO.OO....",
+    "..OYYSO.......",
+    ".OYYSSO.......",
+    ".OYSSO........",
+    "..OOO.........",
+]
+GUN_PAL = {"O": (70, 70, 90, 255), "H": (255, 255, 255, 255), "S": (190, 190, 210, 255),
+           "Y": (240, 210, 90, 255)}
+
 CONQUEST_PAL = {
     "O": (70, 70, 90, 255), "Y": (240, 240, 250, 255), "H": (255, 255, 255, 255), "S": (190, 190, 210, 255),
     "R": (240, 210, 90, 255), "B": (240, 210, 90, 255), "P": (200, 200, 220, 255),
@@ -308,8 +325,8 @@ MIRROR_CASE_PAL = {"O": (50, 30, 20, 255), "M": (150, 190, 220, 255), "W": (240,
 
 
 def horsemen_art(items):
-    """conquest crown, war blade, famine scales, death scythe, seal fragment"""
-    items.paste(draw(CROWN, CONQUEST_PAL), cell(HORSEMEN_ROW + 0, 16)[:2])
+    """conquest gun, war sword, famine scales, death scythe, seal fragment"""
+    items.paste(draw(GUN, GUN_PAL), cell(HORSEMEN_ROW + 0, 16)[:2])
     # war: the greatsword soaked in blood red
     items.paste(recolor(items.crop(cell(128, 16)), relic_px(355, 1.4, 0.85)), cell(HORSEMEN_ROW + 1, 16)[:2])
     items.paste(draw(SCALES, SCALES_PAL), cell(HORSEMEN_ROW + 2, 16)[:2])

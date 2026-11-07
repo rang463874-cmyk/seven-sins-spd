@@ -6,7 +6,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.ConquestCrown;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.DeathScythe;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.FamineScales;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.WarBlade;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarSword;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.SealFragment;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -43,7 +43,7 @@ public class WndProphet extends Window {
 		message.setPos(0, titlebar.bottom() + GAP);
 		add(message);
 
-		Item[] rewards = {new ConquestCrown(), new WarBlade(), new FamineScales(), new DeathScythe()};
+		Item[] rewards = {new ConquestCrown(), new WarSword(), new FamineScales(), new DeathScythe()};
 		float rowWidth = rewards.length * BTN_SIZE + (rewards.length - 1) * BTN_GAP;
 		float x = (WIDTH - rowWidth) / 2f;
 		float y = message.bottom() + BTN_GAP + 2;

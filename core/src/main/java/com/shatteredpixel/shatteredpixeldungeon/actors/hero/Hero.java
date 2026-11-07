@@ -773,7 +773,7 @@ public class Hero extends Char {
 			speed *= (2f + 0.25f*pointsInTalent(Talent.GROWING_POWER));
 		}
 
-		speed *= UniqueStats.moveSpeed(this);
+		speed *= UniqueStats.moveSpeed(this) * HorsemenHooks.moveSpeed(this);
 		speed = AscensionChallenge.modifyHeroSpeed(speed);
 		
 		return speed;
@@ -829,7 +829,7 @@ public class Hero extends Char {
 
 		if (!RingOfForce.fightingUnarmed(this)) {
 			
-			return delay * belongings.attackingWeapon().delayFactor( this ) / UniqueStats.attackSpeed( this );
+			return delay * belongings.attackingWeapon().delayFactor( this ) / (UniqueStats.attackSpeed( this ) * HorsemenHooks.attackSpeed( this ));
 			
 		} else {
 			//Normally putting furor speed on unarmed attacks would be unnecessary
@@ -847,7 +847,7 @@ public class Hero extends Char {
 				delay = ((Weapon)belongings.weapon).augment.delayFactor(delay);
 			}
 
-			return delay/speed / UniqueStats.attackSpeed( this );
+			return delay/speed / (UniqueStats.attackSpeed( this ) * HorsemenHooks.attackSpeed( this ));
 		}
 	}
 
