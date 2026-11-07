@@ -1757,6 +1757,11 @@ public abstract class Mob extends Char {
 	public static void holdAllies( Level level, int holdFromPos ){
 		heldAllies.clear();
 		for (Mob mob : level.mobs.toArray( new Mob[0] )) {
+			//the sloth's dream puppets don't follow it: the dream ends when the sloth leaves the floor
+			if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DreamPuppet) {
+				level.mobs.remove( mob );
+				continue;
+			}
 			//preserve directable allies or empowered intelligent allies no matter where they are
 			if (mob instanceof DirectableAlly
 				|| (mob.intelligentAlly && PowerOfMany.getPoweredAlly() == mob)) {

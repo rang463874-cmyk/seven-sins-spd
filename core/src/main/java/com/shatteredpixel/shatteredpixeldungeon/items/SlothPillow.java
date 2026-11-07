@@ -86,7 +86,8 @@ public class SlothPillow extends SinArtifact {
 
 	@Override
 	protected String levelEffects(Hero hero) {
-		return Messages.get(SinArtifact.class, "effects_turns", Math.round((1f - SinArtifact.rechargeScale(hero)) * 100));
+		return Messages.get(SinArtifact.class, "effects_turns", Math.round((1f - SinArtifact.rechargeScale(hero)) * 100),
+				SlothRepose.pillowPuppets(hero));
 	}
 
 	@Override

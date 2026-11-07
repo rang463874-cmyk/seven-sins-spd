@@ -101,9 +101,15 @@ public class SlothRepose extends Buff {
 
 	public int maxPuppets() {
 		Hero h = hero();
-		int max = 1 + (mirrored ? 1 : 0);
+		int max = 1 + (mirrored ? 1 : 0) + pillowPuppets(h);
 		if (h != null && h.subClass == HeroSubClass.DREAM_LORD) max++;
 		return max;
+	}
+
+	/** extra puppets from the pillow's level: +1 at +3, +5 and +10 */
+	public static int pillowPuppets(Hero h) {
+		int lvl = SinArtifact.level(h);
+		return (lvl >= 3 ? 1 : 0) + (lvl >= 5 ? 1 : 0) + (lvl >= 10 ? 1 : 0);
 	}
 
 	/** how many nightmares the Dream Lord's kills can keep around at once */
