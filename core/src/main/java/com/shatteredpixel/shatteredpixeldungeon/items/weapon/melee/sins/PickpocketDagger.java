@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.utils.Random;
 
-/** Envy's tier 1 weapon: every hit robs one extra stack. */
+/** Envy's tier 1 weapon: every hit adds a little to the jealousy gauge. */
 public class PickpocketDagger extends Dagger {
 
 	{
@@ -23,7 +23,7 @@ public class PickpocketDagger extends Dagger {
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
-			EnvyCovet.rob(hero, defender, 1);
+			Buff.affect(hero, EnvyCovet.class).addJealousy(0.5f);
 		}
 		return super.proc(attacker, defender, damage);
 	}

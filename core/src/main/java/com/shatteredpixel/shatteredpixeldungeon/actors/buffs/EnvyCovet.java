@@ -216,7 +216,6 @@ public class EnvyCovet extends Buff {
 
 	public static int maxRobbed(Hero hero) {
 		int base = hero.subClass == HeroSubClass.USURPER ? 10 : 5;
-		if (SinWeapons.wields(hero, UsurpersGauntlets.class, HeroClass.ENVY)) base += 5;
 		return base + 2 * hero.pointsInTalent(Talent.ENVY_GRASP);
 	}
 
@@ -352,6 +351,7 @@ public class EnvyCovet extends Buff {
 		float rate = (MAX_JEALOUSY / 300f) / SinArtifact.rechargeScale(h);
 		rate *= 1f + 0.2f * h.pointsInTalent(Talent.ENVY_POLISH);
 		if (mirrored) rate *= 1.25f;
+		if (SinWeapons.wields(h, UsurpersGauntlets.class, HeroClass.ENVY)) rate *= 1.5f;
 		boolean rivals = false;
 		for (Char ch : Actor.chars()) {
 			if (ch.alignment == Char.Alignment.ENEMY && ch.isAlive() && Dungeon.level.heroFOV[ch.pos] && rival(h, ch)) {

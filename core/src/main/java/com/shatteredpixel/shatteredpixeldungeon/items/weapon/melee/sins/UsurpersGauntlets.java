@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.utils.Random;
 
-/** Envy's tier 5 weapon: every hit grants a little envy, and enemies can be robbed of 5 more stacks (see EnvyCovet.maxRobbed). */
+/** Envy's tier 5 weapon: the jealousy gauge fills 50% faster while wielded (see EnvyCovet.jealousyRate), and every hit adds a little more. */
 public class UsurpersGauntlets extends Gauntlet {
 
 	{
@@ -23,7 +23,7 @@ public class UsurpersGauntlets extends Gauntlet {
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
 			Hero hero = (Hero) attacker;
-			Buff.affect(hero, EnvyCovet.class).addEnvy(0.1f);
+			Buff.affect(hero, EnvyCovet.class).addJealousy(0.5f);
 		}
 		return super.proc(attacker, defender, damage);
 	}
