@@ -94,6 +94,11 @@ public final class SlothHooks {
 
 	/** Called from Char.damage before damage is applied. Redirects hero damage during Proxy. */
 	public static int modifyDamage(Char target, Object src, int dmg) {
+		//any harm breaks the Dream Forge's sleep
+		if (target instanceof Hero && dmg > 0) {
+			SlothRepose.DreamForge forge = target.buff(SlothRepose.DreamForge.class);
+			if (forge != null) forge.interrupt();
+		}
 		if (!(target instanceof Hero) || dmg <= 0 || src instanceof Hunger) return dmg;
 		Hero hero = (Hero) target;
 		if (hero.buff(SlothRepose.ProxyGuard.class) == null) return dmg;

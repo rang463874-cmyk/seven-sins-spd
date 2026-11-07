@@ -38,7 +38,8 @@ Not yet done / known gaps:
 
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
 a points value that never decreases; accuracy/evasion are capped at 40%/30%).
-Max HP growth from sin points was halved (Nov 2026), and starvation damage scales with `Hero.starvationHT`
+Melee/max HP/armor growth from sin points was halved again for all seven sins (Nov 2026, in each buff's
+`meleeBonus/hpBonus/drMax`; accuracy/evasion and unique stats unchanged). Max HP growth from sin points was halved (Nov 2026), and starvation damage scales with `Hero.starvationHT`
 (max HP before the sins' bonus, set in `updateHT`), not the full HT.
 Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
 Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
@@ -48,6 +49,10 @@ gauge fee) and Gilding (+1 upgrade for 300 + 150 per previous use of gauge, `Gre
 Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies (DirectableAlly that roam the
 level on their own via a `Roaming` wandering state, `intelligentAlly = false`; they vanish when the hero changes floors (`Mob.holdAllies` drops them); max puppets +1 at pillow +3/+5/+10 (`SlothRepose.pillowPuppets`); `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
 `SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.
+Pillow skills also include Order (`SlothRepose.DreamMark` on one enemy: every puppet hunts it via
+`DreamPuppet.chooseEnemy`/`act`, +25% damage, 30 turns) and Dream Forge (`SlothRepose.DreamForge`: paralysed deep sleep
+of 200 + 25/upgrade turns (max 300), then +1 to the equipped weapon or armor; any damage wakes and cancels it via
+`SlothHooks.modifyDamage`; once per floor, `SlothRepose.forgedDepths`; can't start with enemies in view).
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
 Gluttony (reworked Nov 2026, "eats anything"): no more equipment devouring (that moved to the conquest gun).
 `PredatorStomach.consume` runs from `PredatorHooks.onConsumed` for potions (`Potion.drink`), scrolls

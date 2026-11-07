@@ -29,6 +29,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
+import com.watabou.noosa.Game;
 import com.watabou.noosa.audio.Sample;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class SlothPillow extends SinArtifact {
 	public static final int COST_NAP = 3;
 	public static final int COST_SWAP = 2;
 	public static final int COST_YAWN = 3;
+	public static final int COST_ORDER = 1;
 
 	public static final int YAWN_RADIUS = 2;
 
@@ -109,6 +111,18 @@ public class SlothPillow extends SinArtifact {
 				.cost(h -> SlothRepose.turnCost(h, COST_YAWN))
 				.descArgs(h -> new Object[]{YAWN_RADIUS})
 				.onUse(h -> yawn(h, repose(h))));
+		list.add(new BasicSkill(SlothPillow.class, "order", 52, SinSkill.CostType.TURNS).targetsEnemy()
+				.cost(h -> SlothRepose.turnCost(h, COST_ORDER))
+				.usableIf(h -> !DreamPuppet.active().isEmpty())
+				.descArgs(h -> new Object[]{Math.round(SlothRepose.DreamMark.DAMAGE_BONUS * 100),
+						Math.round(SlothRepose.DreamMark.DURATION)})
+				.onUse(h -> GameScene.selectCell(order)));
+		list.add(new BasicSkill(SlothPillow.class, "forge", 53, SinSkill.CostType.TURNS)
+				.cost(h -> forgePreviewTurns(h))
+				.usableIf(h -> !repose(h).forgedHere() && hasForgeTarget(h))
+				.descArgs(h -> new Object[]{repose(h).forgedHere()
+						? Messages.get(SlothPillow.class, "forge_used") : Messages.get(SlothPillow.class, "forge_ready")})
+				.onUse(h -> forge(h, repose(h))));
 		return list;
 	}
 
@@ -179,6 +193,103 @@ public class SlothPillow extends SinArtifact {
 		hero.sprite.operate(hero.pos);
 		Sample.INSTANCE.play(Assets.Sounds.LULLABY);
 		SlothRepose.doze(hero, SlothRepose.turnCost(hero, COST_YAWN));
+	}
+
+	// ------------------------------------------------------------------ order
+
+	private final CellSelector.Listener order = new CellSelector.Listener() {
+		@Override
+		public void onSelect(Integer cell) {
+			Hero hero = Dungeon.hero;
+			if (cell == null) return;
+			Char ch = Actor.findChar(cell);
+			if (ch == null || ch.alignment != Char.Alignment.ENEMY || !Dungeon.level.heroFOV[cell]) {
+				GLog.w(Messages.get(SlothPillow.class, "not_enemy"));
+				return;
+			}
+			ArrayList<DreamPuppet> puppets = DreamPuppet.active();
+			if (puppets.isEmpty()) return;
+
+			//one order at a time
+			for (Char other : Actor.chars()) {
+				SlothRepose.DreamMark old = other.buff(SlothRepose.DreamMark.class);
+				if (old != null && other != ch) old.detach();
+			}
+			Buff.prolong(ch, SlothRepose.DreamMark.class, SlothRepose.DreamMark.DURATION);
+			for (DreamPuppet p : puppets) {
+				p.targetChar(ch);
+				if (p.sprite != null) p.sprite.showStatus(CharSprite.WARNING, Messages.get(SlothPillow.class, "order_shout"));
+			}
+			ch.sprite.emitter().burst(Speck.factory(Speck.NOTE), 3);
+			hero.sprite.zap(cell);
+			Sample.INSTANCE.play(Assets.Sounds.LULLABY, 0.6f, 1.4f);
+			SlothRepose.doze(hero, SlothRepose.turnCost(hero, COST_ORDER));
+		}
+
+		@Override
+		public String prompt() {
+			return Messages.get(SlothPillow.class, "prompt_order");
+		}
+	};
+
+	// ------------------------------------------------------------------ dream forge
+
+	private static boolean hasForgeTarget(Hero h) {
+		return SlothRepose.DreamForge.item(h, SlothRepose.DreamForge.WEAPON) != null
+				|| SlothRepose.DreamForge.item(h, SlothRepose.DreamForge.ARMOR) != null;
+	}
+
+	/** turns shown on the skill: the longest sleep among the items that could be forged */
+	private static int forgePreviewTurns(Hero h) {
+		int t = 0;
+		for (String slot : new String[]{SlothRepose.DreamForge.WEAPON, SlothRepose.DreamForge.ARMOR}) {
+			Item it = SlothRepose.DreamForge.item(h, slot);
+			if (it != null) t = Math.max(t, SlothRepose.DreamForge.turnsFor(it));
+		}
+		return t == 0 ? SlothRepose.DreamForge.turnsFor(null) : t;
+	}
+
+	private static void forge(final Hero hero, final SlothRepose r) {
+		for (Mob mob : Dungeon.level.mobs) {
+			if (mob.alignment == Char.Alignment.ENEMY && Dungeon.level.heroFOV[mob.pos]) {
+				GLog.w(Messages.get(SlothPillow.class, "forge_enemies"));
+				return;
+			}
+		}
+		final ArrayList<String> slots = new ArrayList<>();
+		ArrayList<String> labels = new ArrayList<>();
+		for (String slot : new String[]{SlothRepose.DreamForge.WEAPON, SlothRepose.DreamForge.ARMOR}) {
+			Item it = SlothRepose.DreamForge.item(hero, slot);
+			if (it != null) {
+				slots.add(slot);
+				labels.add(Messages.get(SlothPillow.class, "forge_option", Messages.titleCase(it.name()),
+						SlothRepose.DreamForge.turnsFor(it)));
+			}
+		}
+		if (slots.isEmpty()) return;
+		Game.runOnRenderThread(() -> GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.SLOTH_PILLOW),
+				Messages.get(SlothPillow.class, "skill_forge"), Messages.get(SlothPillow.class, "forge_prompt"),
+				labels.toArray(new String[0])) {
+			@Override
+			protected void onSelect(int index) {
+				if (index < 0 || index >= slots.size()) return;
+				startForge(hero, r, slots.get(index));
+			}
+		}));
+	}
+
+	private static void startForge(Hero hero, SlothRepose r, String slot) {
+		Item it = SlothRepose.DreamForge.item(hero, slot);
+		if (it == null || r.forgedHere() || hero.buff(SlothRepose.DreamForge.class) != null) return;
+		int turns = SlothRepose.DreamForge.turnsFor(it);
+		r.markForged();
+		r.lastPos = hero.pos;
+		SinArtifact.onSpent(hero, 10);
+		Buff.affect(hero, SlothRepose.DreamForge.class).set(slot, turns);
+		GLog.i(Messages.get(SlothPillow.class, "forge_start", it.name(), turns));
+		hero.sprite.emitter().burst(Speck.factory(Speck.NOTE), 4);
+		Sample.INSTANCE.play(Assets.Sounds.LULLABY);
+		hero.spendAndNext(1f);
 	}
 
 	private final CellSelector.Listener swap = new CellSelector.Listener() {

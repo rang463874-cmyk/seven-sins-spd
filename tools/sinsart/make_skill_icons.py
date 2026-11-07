@@ -506,6 +506,34 @@ G = {
         "...XX...XX..",
         "...XX...XX..",
     ],
+    "TARGET": [
+        ".....XX.....",
+        ".....XX.....",
+        "...XXXXXX...",
+        "..X..XX..X..",
+        ".X...XX...X.",
+        "XXXXX..XXXXX",
+        "XXXXX..XXXXX",
+        ".X...XX...X.",
+        "..X..XX..X..",
+        "...XXXXXX...",
+        ".....XX.....",
+        ".....XX.....",
+    ],
+    "ANVIL": [
+        "........XX..",
+        ".......XXXX.",
+        "........XX..",
+        "............",
+        "XXXXXXXXXX..",
+        ".XXXXXXXXXXX",
+        "..XXXXXXXX..",
+        "....XXXX....",
+        "....XXXX....",
+        "...XXXXXX...",
+        "..XXXXXXXX..",
+        "..XXXXXXXX..",
+    ],
 }
 
 ICONS = {
@@ -515,7 +543,7 @@ ICONS = {
     24: "CROWN", 25: "SWORDS", 26: "STAR", 27: "SCROLL", 28: "EYE",
     32: "HEART", 33: "WAVE", 34: "DROP", 35: "DHEART",
     40: "MASK", 41: "SWAP", 42: "SWAP", 43: "MASK",
-    48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ",
+    48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ", 52: "TARGET", 53: "ANVIL",
     56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
 

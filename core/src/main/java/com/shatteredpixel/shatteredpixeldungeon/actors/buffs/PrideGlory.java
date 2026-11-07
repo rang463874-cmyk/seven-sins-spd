@@ -53,7 +53,7 @@ public class PrideGlory extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.15f * pts());
+		return (int) (0.075f * pts());
 	}
 
 	public float accuracyBonus() {
@@ -65,11 +65,11 @@ public class PrideGlory extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (0.4f * pts());
+		return (int) (0.2f * pts());
 	}
 
 	public int drMax() {
-		return (int) (0.10f * pts());
+		return (int) (0.05f * pts());
 	}
 
 	public int drRoll() {

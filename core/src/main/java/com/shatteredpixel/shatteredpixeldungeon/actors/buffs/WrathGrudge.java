@@ -48,7 +48,7 @@ public class WrathGrudge extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.10f * pts());
+		return (int) (0.05f * pts());
 	}
 
 	public float accuracyBonus() {
@@ -60,11 +60,11 @@ public class WrathGrudge extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (0.25f * pts());
+		return (int) (0.125f * pts());
 	}
 
 	public int drMax() {
-		return (int) (0.06f * pts());
+		return (int) (0.03f * pts());
 	}
 
 	public int drRoll() {

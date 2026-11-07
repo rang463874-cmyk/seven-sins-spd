@@ -13,6 +13,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.noosa.Image;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
@@ -42,6 +43,17 @@ public class SlothRepose extends Buff {
 	public int stillTurns = 0;
 
 
+	/** floors where the Dream Forge has already been used (once per floor) */
+	public java.util.HashSet<Integer> forgedDepths = new java.util.HashSet<>();
+
+	public boolean forgedHere() {
+		return forgedDepths.contains(Dungeon.depth * 10 + Dungeon.branch);
+	}
+
+	public void markForged() {
+		forgedDepths.add(Dungeon.depth * 10 + Dungeon.branch);
+	}
+
 	/** true while an automatic attack is being made, so its kills count in full */
 	public static boolean autoAttacking = false;
 
@@ -63,7 +75,7 @@ public class SlothRepose extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.15f * pts());
+		return (int) (0.075f * pts());
 	}
 
 	public float accuracyBonus() {
@@ -75,11 +87,11 @@ public class SlothRepose extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (0.4f * pts());
+		return (int) (0.2f * pts());
 	}
 
 	public int drMax() {
-		return (int) (0.10f * pts());
+		return (int) (0.05f * pts());
 	}
 
 	public int drRoll() {
@@ -353,6 +365,10 @@ public class SlothRepose extends Buff {
 		bundle.put("last_pos", lastPos);
 		bundle.put("still", stillTurns);
 		bundle.put("mirrored", mirrored);
+		int[] forged = new int[forgedDepths.size()];
+		int i = 0;
+		for (int d : forgedDepths) forged[i++] = d;
+		bundle.put("forged", forged);
 	}
 
 	@Override
@@ -362,6 +378,8 @@ public class SlothRepose extends Buff {
 		lastPos = bundle.getInt("last_pos");
 		stillTurns = bundle.getInt("still");
 		mirrored = bundle.getBoolean("mirrored");
+		forgedDepths.clear();
+		if (bundle.contains("forged")) for (int d : bundle.getIntArray("forged")) forgedDepths.add(d);
 	}
 
 	public static SlothRepose of() {
@@ -429,6 +447,178 @@ public class SlothRepose extends Buff {
 		public void restoreFromBundle(Bundle bundle) {
 			super.restoreFromBundle(bundle);
 			object = bundle.getInt("object");
+		}
+	}
+
+	// ------------------------------------------------------------------ dream order
+
+	/** Order (pillow skill): every dream puppet drops what it's doing to hunt this enemy, and hits it harder. */
+	public static class DreamMark extends FlavourBuff {
+
+		public static final float DURATION = 30f;
+		public static final float DAMAGE_BONUS = 0.25f;
+
+		{
+			type = buffType.NEGATIVE;
+			announced = true;
+		}
+
+		/** the enemy currently marked on this level, if any */
+		public static Char marked() {
+			for (Char ch : Actor.chars()) {
+				if (ch.isAlive() && ch.buff(DreamMark.class) != null) return ch;
+			}
+			return null;
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.TARGETED;
+		}
+
+		@Override
+		public void tintIcon(Image icon) {
+			icon.hardlight(0.3f, 0.5f, 1f);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", Math.round(DAMAGE_BONUS * 100), dispTurns());
+		}
+	}
+
+	// ------------------------------------------------------------------ dream forge
+
+	/**
+	 * Dream Forge (pillow skill): a long, deep sleep (200-300 turns) that ends with +1 on the chosen
+	 * weapon or armor. Any damage wakes the sloth and the dream is lost. Once per floor.
+	 */
+	public static class DreamForge extends Buff {
+
+		public static final String WEAPON = "weapon", ARMOR = "armor";
+
+		public int left = 0;
+		public int total = 0;
+		public String slot = WEAPON;
+
+		{
+			type = buffType.POSITIVE;
+			announced = true;
+		}
+
+		/** sleep length for an item: 200 turns, +25 per upgrade level, at most 300 */
+		public static int turnsFor(com.shatteredpixel.shatteredpixeldungeon.items.Item item) {
+			int lvl = item == null ? 0 : Math.max(0, item.level());
+			return Math.min(300, 200 + 25 * lvl);
+		}
+
+		public static com.shatteredpixel.shatteredpixeldungeon.items.Item item(Hero h, String slot) {
+			if (h == null) return null;
+			com.shatteredpixel.shatteredpixeldungeon.items.Item it =
+					ARMOR.equals(slot) ? h.belongings.armor : h.belongings.weapon;
+			return it != null && it.isUpgradable() ? it : null;
+		}
+
+		public void set(String slot, int turns) {
+			this.slot = slot;
+			this.left = this.total = turns;
+		}
+
+		@Override
+		public boolean attachTo(Char target) {
+			if (super.attachTo(target)) {
+				target.paralysed++;
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public boolean act() {
+			Hero h = target instanceof Hero ? (Hero) target : null;
+			if (h != null) h.resting = true;
+			left--;
+			if (left <= 0) {
+				finish(h);
+				return true;
+			}
+			spend(TICK);
+			return true;
+		}
+
+		private void finish(Hero h) {
+			com.shatteredpixel.shatteredpixeldungeon.items.Item it = item(h, slot);
+			if (it != null) {
+				it.upgrade();
+				com.shatteredpixel.shatteredpixeldungeon.items.Item.updateQuickslot();
+				if (h.sprite != null) {
+					h.sprite.emitter().start(Speck.factory(Speck.UP), 0.2f, 3);
+					h.sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "forged_status"));
+				}
+				com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.EVOKE);
+				GLog.p(Messages.get(this, "forged", it.name()));
+			} else {
+				GLog.w(Messages.get(this, "nothing"));
+			}
+			detach();
+		}
+
+		/** damage wakes the sloth up and the dream is lost */
+		public void interrupt() {
+			GLog.w(Messages.get(this, "broken"));
+			if (target.sprite != null) target.sprite.showStatus(CharSprite.NEGATIVE, Messages.get(this, "broken_status"));
+			detach();
+		}
+
+		@Override
+		public void detach() {
+			if (target.paralysed > 0) target.paralysed--;
+			if (target instanceof Hero) ((Hero) target).resting = false;
+			super.detach();
+		}
+
+		@Override
+		public void fx(boolean on) {
+			if (target.sprite == null) return;
+			if (on) target.sprite.showSleep();
+			else target.sprite.hideSleep();
+		}
+
+		@Override
+		public int icon() {
+			return BuffIndicator.MAGIC_SLEEP;
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return total <= 0 ? 0 : Math.max(0, 1f - left / (float) total);
+		}
+
+		@Override
+		public String iconTextDisplay() {
+			return Integer.toString(left);
+		}
+
+		@Override
+		public String desc() {
+			com.shatteredpixel.shatteredpixeldungeon.items.Item it = item(target instanceof Hero ? (Hero) target : null, slot);
+			return Messages.get(this, "desc", it == null ? "-" : it.name(), left);
+		}
+
+		@Override
+		public void storeInBundle(Bundle bundle) {
+			super.storeInBundle(bundle);
+			bundle.put("left", left);
+			bundle.put("total", total);
+			bundle.put("slot", slot);
+		}
+
+		@Override
+		public void restoreFromBundle(Bundle bundle) {
+			super.restoreFromBundle(bundle);
+			left = bundle.getInt("left");
+			total = bundle.getInt("total");
+			slot = bundle.getString("slot");
 		}
 	}
 

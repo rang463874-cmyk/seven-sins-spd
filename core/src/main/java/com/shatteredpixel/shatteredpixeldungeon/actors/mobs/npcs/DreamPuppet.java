@@ -128,12 +128,33 @@ public class DreamPuppet extends DirectableAlly {
 			}
 		}
 		rescale();
+		//an Order from the pillow: the dream link tells every puppet where the marked enemy is
+		Char mark = orderedTarget();
+		if (mark != null && paralysed <= 0) {
+			enemy = mark;
+			target = mark.pos;
+			defendingPos = -1;
+			movingToDefendPos = false;
+			if (state != HUNTING) state = HUNTING;
+		}
 		int oldPos = pos;
 		boolean result = super.act();
 		if ((pos == target || oldPos == pos) && sprite != null && sprite.looping()) {
 			sprite.idle();
 		}
 		return result;
+	}
+
+	private static Char orderedTarget() {
+		Char m = SlothRepose.DreamMark.marked();
+		return m != null && m.alignment == Alignment.ENEMY ? m : null;
+	}
+
+	@Override
+	protected Char chooseEnemy() {
+		Char mark = orderedTarget();
+		if (mark != null) return mark;
+		return super.chooseEnemy();
 	}
 
 	@Override
@@ -171,6 +192,9 @@ public class DreamPuppet extends DirectableAlly {
 	@Override
 	public int attackProc(Char enemy, int damage) {
 		damage = super.attackProc(enemy, damage);
+		if (enemy.buff(SlothRepose.DreamMark.class) != null) {
+			damage = Math.round(damage * (1f + SlothRepose.DreamMark.DAMAGE_BONUS));
+		}
 		int yawn = talent(Talent.SLOTH_YAWN);
 		if (yawn > 0 && enemy.isAlive() && Random.Float() < 0.15f * yawn) {
 			Buff.affect(enemy, Slow.class, 2f);

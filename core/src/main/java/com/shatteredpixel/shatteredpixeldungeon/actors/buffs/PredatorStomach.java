@@ -86,7 +86,7 @@ public class PredatorStomach extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) ((0.15f * weaponPts + 0.05f * trinketPts) * apex());
+		return (int) ((0.075f * weaponPts + 0.025f * trinketPts) * apex());
 	}
 
 	public float accuracyBonus() {
@@ -98,11 +98,11 @@ public class PredatorStomach extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) ((0.5f * armorPts + 0.15f * trinketPts) * apex()) + leftoverHP;
+		return (int) ((0.25f * armorPts + 0.075f * trinketPts) * apex()) + leftoverHP;
 	}
 
 	public int drMax() {
-		return (int) ((0.15f * armorPts + 0.05f * trinketPts) * apex());
+		return (int) ((0.075f * armorPts + 0.025f * trinketPts) * apex());
 	}
 
 	public int drRoll() {
