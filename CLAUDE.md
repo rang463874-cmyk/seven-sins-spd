@@ -137,7 +137,7 @@ each pick (that was the Discord bug).
 
 Reworked for combat (Nov 2026). `items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use,
 levels 0-10 by uses, never cursed; `timeCharges()` off for the gun) with `ConquestCrown` (class name kept for
-saves, now the **gun of conquest**: loads bullets by devouring unequipped weapons/armor, tier+2*lvl each,
+saves, now the **gun of conquest**: loads bullets by devouring unequipped weapons/armor (tier+2*lvl each), whole thrown-weapon stacks (half that per weapon) and rings (4+3*lvl),
 keeps the last good enchantment for its bullets; fire = one bullet, ranged hit, drawn as `effects/Bullet` (2px black, 2400px/s); levels by shots (damage only),
 no magazine limit (`maxAmmo` = Integer.MAX_VALUE); `Subjugated` kept for old saves), `FamineScales` (hunger factor 0..1 at HUNGRY, 1.25 starving,
 1.5 in `Frenzy`: attack speed/move speed/damage bonuses; power burns satiety down to HUNGRY, heals, Frenzy)

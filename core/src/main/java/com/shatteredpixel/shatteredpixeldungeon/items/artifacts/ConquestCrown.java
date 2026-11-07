@@ -14,6 +14,8 @@ import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.ClassArmor;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -33,7 +35,7 @@ import java.util.ArrayList;
 
 /**
  * Gun of Conquest, the white horseman (the class keeps its old name for saves).
- * It devours weapons and armor to load bullets, then fires them at anything in sight.
+ * It devours weapons, thrown weapons, armor and rings to load bullets, then fires them at anything in sight.
  * Loading an enchanted weapon makes the bullets carry that enchantment.
  * It levels up (0..10) as it fires: more damage. There is no magazine limit.
  */
@@ -114,6 +116,13 @@ public class ConquestCrown extends HorsemanArtifact {
 			Armor a = (Armor) item;
 			b = a.tier + 2 * lvl;
 			if (a.glyph != null && !a.glyph.curse()) b += 1;
+		} else if (item instanceof MissileWeapon) {
+			//the whole stack is loaded: half of tier + 2*level per thrown weapon
+			MissileWeapon m = (MissileWeapon) item;
+			b = (m.tier + 2 * lvl) * 0.5f * m.quantity();
+			if (m.hasGoodEnchant()) b += 1;
+		} else if (item instanceof Ring) {
+			b = 4 + 3 * lvl;
 		} else {
 			return 0;
 		}
