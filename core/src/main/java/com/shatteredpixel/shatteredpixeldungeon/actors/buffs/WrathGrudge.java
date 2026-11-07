@@ -60,7 +60,7 @@ public class WrathGrudge extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (0.5f * pts());
+		return (int) (0.25f * pts());
 	}
 
 	public int drMax() {

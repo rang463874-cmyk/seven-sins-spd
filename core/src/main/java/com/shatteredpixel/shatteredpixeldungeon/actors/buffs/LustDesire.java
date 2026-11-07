@@ -64,7 +64,7 @@ public class LustDesire extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (0.7f * pts());
+		return (int) (0.35f * pts());
 	}
 
 	public int drMax() {

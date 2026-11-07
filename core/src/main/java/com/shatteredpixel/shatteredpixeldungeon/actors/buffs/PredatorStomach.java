@@ -98,7 +98,7 @@ public class PredatorStomach extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) ((1.0f * armorPts + 0.3f * trinketPts) * apex()) + leftoverHP;
+		return (int) ((0.5f * armorPts + 0.15f * trinketPts) * apex()) + leftoverHP;
 	}
 
 	public int drMax() {

@@ -43,6 +43,17 @@ public class Hunger extends Buff implements Hero.Doom {
 	private float level;
 	private float partialDamage;
 
+	/** the sins' bonus max HP doesn't make starving hurt more */
+	private int starvationHT() {
+		if (target instanceof Hero) {
+			Hero hero = (Hero) target;
+			//not worked out yet since the game was loaded
+			if (hero.starvationHT <= 0) hero.updateHT(false);
+			if (hero.starvationHT > 0) return Math.min(target.HT, hero.starvationHT);
+		}
+		return target.HT;
+	}
+
 	private static final String LEVEL			= "level";
 	private static final String PARTIALDAMAGE 	= "partialDamage";
 
@@ -79,7 +90,7 @@ public class Hunger extends Buff implements Hero.Doom {
 
 			if (isStarving()) {
 
-				partialDamage += target.HT/1000f;
+				partialDamage += starvationHT()/1000f;
 
 				if (partialDamage > 1){
 					target.damage( (int)partialDamage, this);
@@ -152,7 +163,7 @@ public class Hunger extends Buff implements Hero.Doom {
 		} else if (level > STARVING) {
 			float excess = level - STARVING;
 			level = STARVING;
-			partialDamage += excess * (target.HT/1000f);
+			partialDamage += excess * (starvationHT()/1000f);
 			if (partialDamage > 1f){
 				target.damage( (int)partialDamage, this );
 				partialDamage -= (int)partialDamage;

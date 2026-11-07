@@ -267,12 +267,16 @@ public class Hero extends Char {
 		visibleEnemies = new ArrayList<>();
 	}
 	
+	/** max HP without the sins' growth bonus; starvation damage scales with this instead of HT */
+	public int starvationHT = -1;
+
 	public void updateHT( boolean boostHP ){
 		int curHT = HT;
 		
 		HT = 20 + 5*(lvl-1) + HTBoost;
 		float multiplier = RingOfMight.HTMultiplier(this);
 		HT = Math.round(multiplier * HT);
+		starvationHT = HT;
 		HT = PredatorHooks.bonusHT(this, HT);
 		HT = GreedHooks.bonusHT(this, HT);
 		HT = WrathHooks.bonusHT(this, HT);

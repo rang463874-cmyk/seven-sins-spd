@@ -65,7 +65,7 @@ public class PrideGlory extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (0.8f * pts());
+		return (int) (0.4f * pts());
 	}
 
 	public int drMax() {

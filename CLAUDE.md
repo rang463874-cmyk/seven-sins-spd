@@ -38,6 +38,8 @@ Not yet done / known gaps:
 
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
 a points value that never decreases; accuracy/evasion are capped at 40%/30%).
+Max HP growth from sin points was halved (Nov 2026), and starvation damage scales with `Hero.starvationHT`
+(max HP before the sins' bonus, set in `updateHT`), not the full HT.
 Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
 Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
 spend a gauge filled 1:1 by gold pickups (`GreedHooks.selling` keeps sale proceeds from filling it).

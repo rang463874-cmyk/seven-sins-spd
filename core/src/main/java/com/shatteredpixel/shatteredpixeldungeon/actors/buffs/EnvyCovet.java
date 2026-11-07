@@ -161,7 +161,7 @@ public class EnvyCovet extends Buff {
 	public int hpBonus() {
 		Hero h = hero();
 		int trophy = h == null ? 0 : h.pointsInTalent(Talent.ENVY_TROPHY);
-		return (int) (0.8f * pts())
+		return (int) (0.4f * pts())
 				+ Math.round(trait(Trait.TORMENTED_SPIRIT, 10f) + trait(Trait.GNOLL_GEOMANCER, 15f))
 				+ codex.size() * 2 * trophy;
 	}

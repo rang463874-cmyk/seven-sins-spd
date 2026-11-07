@@ -74,7 +74,7 @@ public class GreedVault extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (1.0f * pts());
+		return (int) (0.5f * pts());
 	}
 
 	public int drMax() {
