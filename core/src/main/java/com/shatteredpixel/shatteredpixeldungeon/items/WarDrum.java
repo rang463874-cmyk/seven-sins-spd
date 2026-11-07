@@ -97,22 +97,22 @@ public class WarDrum extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(WarDrum.class, "provoke", 16, SinSkill.CostType.RAGE)
+		list.add(new BasicSkill(WarDrum.class, "provoke", 16, SinSkill.CostType.RAGE).targetsEnemy()
 				.cost(h -> COST_PROVOKE)
 				.usableIf(h -> grudge(h).rage >= COST_PROVOKE)
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 8f))})
 				.onUse(h -> GameScene.selectCell(provoke)));
-		list.add(new BasicSkill(WarDrum.class, "discord", 17, SinSkill.CostType.RAGE)
+		list.add(new BasicSkill(WarDrum.class, "discord", 17, SinSkill.CostType.RAGE).targetsEnemy()
 				.cost(h -> COST_DISCORD)
 				.usableIf(h -> grudge(h).rage >= COST_DISCORD)
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 12f))})
 				.onUse(h -> GameScene.selectCell(discordFirst)));
-		list.add(new BasicSkill(WarDrum.class, "contagion", 18, SinSkill.CostType.RAGE)
+		list.add(new BasicSkill(WarDrum.class, "contagion", 18, SinSkill.CostType.RAGE).targetsEnemy()
 				.cost(h -> COST_CONTAGION)
 				.usableIf(h -> grudge(h).rage >= COST_CONTAGION)
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 10f))})
 				.onUse(h -> GameScene.selectCell(contagion)));
-		list.add(new BasicSkill(WarDrum.class, "dash", 19, SinSkill.CostType.RAGE)
+		list.add(new BasicSkill(WarDrum.class, "dash", 19, SinSkill.CostType.RAGE).targetsEnemy()
 				.cost(h -> COST_DASH)
 				.usableIf(h -> grudge(h).rage >= COST_DASH)
 				.descArgs(h -> new Object[]{dashRange(h)})

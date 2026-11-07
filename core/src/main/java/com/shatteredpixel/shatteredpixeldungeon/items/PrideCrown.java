@@ -110,12 +110,12 @@ public class PrideCrown extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(PrideCrown.class, "command", 24, SinSkill.CostType.DIGNITY)
+		list.add(new BasicSkill(PrideCrown.class, "command", 24, SinSkill.CostType.DIGNITY).targetsEnemy()
 				.cost(h -> COST_COMMAND)
 				.usableIf(h -> glory(h).dignity >= COST_COMMAND)
 				.descArgs(h -> new Object[]{Math.round(commandDuration(h))})
 				.onUse(h -> GameScene.selectCell(command)));
-		list.add(new BasicSkill(PrideCrown.class, "duel", 25, SinSkill.CostType.DIGNITY)
+		list.add(new BasicSkill(PrideCrown.class, "duel", 25, SinSkill.CostType.DIGNITY).targetsEnemy()
 				.cost(h -> COST_DUEL)
 				.usableIf(h -> glory(h).dignity >= COST_DUEL)
 				.onUse(h -> GameScene.selectCell(duel)));
@@ -124,7 +124,7 @@ public class PrideCrown extends SinArtifact {
 				.usableIf(h -> glory(h).dignity >= COST_PROCESSION)
 				.descArgs(h -> new Object[]{processionRange(h)})
 				.onUse(h -> GameScene.selectCell(procession)));
-		list.add(new BasicSkill(PrideCrown.class, "decree", 27, SinSkill.CostType.DIGNITY)
+		list.add(new BasicSkill(PrideCrown.class, "decree", 27, SinSkill.CostType.DIGNITY).targetsEnemy()
 				.cost(h -> COST_DECREE)
 				.usableIf(h -> glory(h).dignity >= COST_DECREE)
 				.descArgs(h -> new Object[]{1 + h.pointsInTalent(Talent.PRIDE_DECREE)})

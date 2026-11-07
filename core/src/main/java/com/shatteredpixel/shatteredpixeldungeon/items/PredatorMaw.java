@@ -138,7 +138,7 @@ public class PredatorMaw extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(PredatorMaw.class, "bite", 1, SinSkill.CostType.SATIETY)
+		list.add(new BasicSkill(PredatorMaw.class, "bite", 1, SinSkill.CostType.SATIETY).targetsEnemy()
 				.cost(h -> hungerCost(h, COST_BITE))
 				.usableIf(h -> canAfford(h, COST_BITE))
 				.descArgs(h -> new Object[]{Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100)})

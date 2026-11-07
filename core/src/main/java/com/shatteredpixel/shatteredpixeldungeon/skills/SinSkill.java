@@ -69,6 +69,15 @@ public abstract class SinSkill {
 	/** whether the skill can be paid for and used right now */
 	public abstract boolean usable(Hero hero);
 
+	/** how the skill bar auto-aims this skill (like thrown weapons): none, the enemy's tile, or a projectile path */
+	public static final int TARGET_NONE = 0;
+	public static final int TARGET_ENEMY = 1;
+	public static final int TARGET_PROJECTILE = 2;
+
+	public int targeting() {
+		return TARGET_NONE;
+	}
+
 	/** hidden skills (e.g. subclass-only ones) are left out of the window and the bar */
 	public boolean visible(Hero hero) {
 		return true;

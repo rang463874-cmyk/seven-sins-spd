@@ -168,7 +168,19 @@ public final class EnvyMimicry {
 		return 1f;
 	}
 
-	/** description arguments for the skill window */
+	/** how the skill bar auto-aims this copy */
+	public static int targeting(Mimic m) {
+		switch (m) {
+			case COIN: case ROCK: case GAZE:
+				return com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.TARGET_PROJECTILE;
+			case BITE: case PROVOKE: case COMMAND: case KISS: case CONTAGION: case GAS: case DRAIN: case FIRE:
+				return com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.TARGET_ENEMY;
+			default:
+				return com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.TARGET_NONE;
+		}
+	}
+
+		/** description arguments for the skill window */
 	public static Object[] descArgs(Hero hero, Mimic m) {
 		int lvl = hero.lvl;
 		float p = power(hero, m);

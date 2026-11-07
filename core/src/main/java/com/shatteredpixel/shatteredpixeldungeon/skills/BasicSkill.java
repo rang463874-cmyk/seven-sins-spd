@@ -31,6 +31,25 @@ public class BasicSkill extends SinSkill {
 		this.type = type;
 	}
 
+	private int targeting = TARGET_NONE;
+
+	/** auto-aims at the nearest (or last) enemy's tile */
+	public BasicSkill targetsEnemy() {
+		targeting = TARGET_ENEMY;
+		return this;
+	}
+
+	/** auto-aims like a thrown weapon, angling the shot around obstacles */
+	public BasicSkill projectile() {
+		targeting = TARGET_PROJECTILE;
+		return this;
+	}
+
+	@Override
+	public int targeting() {
+		return targeting;
+	}
+
 	public BasicSkill cost(ToIntFunction<Hero> cost) {
 		this.cost = cost;
 		return this;

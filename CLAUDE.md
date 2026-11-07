@@ -106,7 +106,10 @@ skill bar (`ui/SkillBar`, icon buttons right above the quickslot toolbar, right-
 Adding a skill: add a `BasicSkill` to the item's `skills()`, strings `skill_<id>` and `skill_<id>_desc`
 in the item's namespace, and an icon in `tools/sinsart/make_skill_icons.py`
 (`interfaces/skill_icons.png`, 16x16, row = sin index, 8 per row; re-run the script).
-Cost labels live under `skills.sinskill.cost_*`. Two-step cell selections must open the second
+Auto-aim: `BasicSkill.targetsEnemy()` / `.projectile()` mark targeted skills; after the first tap the bar picks
+`SkillBar.autoTarget()` (last quickslot target, else nearest visible enemy), shows a crosshair, and a second tap
+fires (`GameScene.handleCell`, projectiles via `QuickSlotButton.autoAim`). The conquest gun uses the quickslot's
+`usesTargeting`. Cost labels live under `skills.sinskill.cost_*`. Two-step cell selections must open the second
 selector on the next frame (`Game.runOnRenderThread`), because the scene resets the selector after
 each pick (that was the Discord bug).
 

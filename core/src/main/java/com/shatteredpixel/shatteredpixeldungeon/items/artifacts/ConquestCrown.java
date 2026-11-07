@@ -47,6 +47,8 @@ public class ConquestCrown extends HorsemanArtifact {
 
 	{
 		image = ItemSpriteSheet.ARTIFACT_CONQUEST;
+		//aims at the last or nearest enemy from the quickslot, like a thrown weapon
+		usesTargeting = true;
 		charge = 0;
 		chargeCap = maxAmmo();
 	}
@@ -197,6 +199,11 @@ public class ConquestCrown extends HorsemanArtifact {
 
 	@Override
 	protected boolean usePower(Hero hero) {
+		Char last = com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton.lastTarget;
+		if (last == null || !last.isAlive() || !Dungeon.level.heroFOV[last.pos] || last.alignment == Char.Alignment.ALLY) {
+			com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton.lastTarget =
+					com.shatteredpixel.shatteredpixeldungeon.ui.SkillBar.autoTarget();
+		}
 		GameScene.selectCell(shooter);
 		return true;
 	}
@@ -214,6 +221,7 @@ public class ConquestCrown extends HorsemanArtifact {
 		MagicMissile.boltFromChar(hero.sprite.parent, MagicMissile.LIGHT_MISSILE, hero.sprite, target, () -> {
 			Char ch = Actor.findChar(target);
 			if (ch != null && ch != hero) {
+				com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton.target(ch);
 				if (Char.hit(hero, ch, false)) {
 					int dmg = Random.NormalIntRange(minDamage(), maxDamage());
 					dmg = Math.max(0, dmg - ch.drRoll());

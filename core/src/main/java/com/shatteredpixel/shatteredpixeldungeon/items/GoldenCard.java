@@ -172,7 +172,7 @@ public class GoldenCard extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(GoldenCard.class, "coinshot", 8, SinSkill.CostType.GAUGE)
+		list.add(new BasicSkill(GoldenCard.class, "coinshot", 8, SinSkill.CostType.GAUGE).projectile()
 				.cost(h -> coinShotCost(h))
 				.usableIf(h -> vault(h).charge >= coinShotCost(h))
 				.descArgs(h -> new Object[]{2 + h.lvl / 2, 6 + h.lvl})
@@ -187,11 +187,11 @@ public class GoldenCard extends SinArtifact {
 				.usableIf(h -> vault(h).charge >= expressCost(h))
 				.descArgs(h -> new Object[]{expressRange(h)})
 				.onUse(h -> GameScene.selectCell(express)));
-		list.add(new BasicSkill(GoldenCard.class, "bribe", 11, SinSkill.CostType.VARIES)
+		list.add(new BasicSkill(GoldenCard.class, "bribe", 11, SinSkill.CostType.VARIES).targetsEnemy()
 				.usableIf(h -> vault(h).charge > 0)
 				.descArgs(h -> new Object[]{Math.round(10f * (1f + 0.5f * h.pointsInTalent(Talent.GREED_BRIBERY)))})
 				.onUse(h -> GameScene.selectCell(bribe)));
-		list.add(new BasicSkill(GoldenCard.class, "loan", 12, SinSkill.CostType.VARIES)
+		list.add(new BasicSkill(GoldenCard.class, "loan", 12, SinSkill.CostType.VARIES).targetsEnemy()
 				.visibleIf(h -> h.subClass == HeroSubClass.USURER)
 				.usableIf(h -> Dungeon.gold > 0)
 				.onUse(h -> GameScene.selectCell(loan)));

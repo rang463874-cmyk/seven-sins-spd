@@ -94,7 +94,7 @@ public class Perfume extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(Perfume.class, "kiss", 32, SinSkill.CostType.HP)
+		list.add(new BasicSkill(Perfume.class, "kiss", 32, SinSkill.CostType.HP).targetsEnemy()
 				.cost(h -> desire(h).hpCost(COST_KISS))
 				.usableIf(h -> desire(h).canPay(desire(h).hpCost(COST_KISS)))
 				.descArgs(h -> new Object[]{kissRange(h), Math.round(3f + 2f * h.pointsInTalent(Talent.LUST_EMBRACE))})

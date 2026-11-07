@@ -2,6 +2,8 @@ package com.shatteredpixel.shatteredpixeldungeon.ui;
 
 import com.shatteredpixel.shatteredpixeldungeon.Chrome;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -94,11 +96,83 @@ public class SkillBar extends Component {
 	@Override
 	public void update() {
 		super.update();
+		updateAiming();
 		refreshTimer -= com.watabou.noosa.Game.elapsed;
 		if (refreshTimer <= 0) {
 			refreshTimer = 0.25f;
 			refresh();
 		}
+	}
+
+	// ------------------------------------------------------------------ auto-aim
+
+	private static SkillButton aiming = null;
+	private static Char aimTarget = null;
+	private static Image aimMark = null;
+	private static Image aimButtonMark = null;
+
+	/** the last target if it's still fair game, otherwise the nearest visible enemy */
+	public static Char autoTarget() {
+		Hero hero = Dungeon.hero;
+		if (hero == null) return null;
+		Char last = QuickSlotButton.lastTarget;
+		if (validTarget(last)) return last;
+		Char best = null;
+		for (Char ch : Actor.chars()) {
+			if (!validTarget(ch)) continue;
+			if (best == null || Dungeon.level.distance(hero.pos, ch.pos) < Dungeon.level.distance(hero.pos, best.pos)) {
+				best = ch;
+			}
+		}
+		return best;
+	}
+
+	private static boolean validTarget(Char ch) {
+		return ch != null && ch != Dungeon.hero && Actor.chars().contains(ch) && ch.isAlive()
+				&& ch.alignment == Char.Alignment.ENEMY && Dungeon.level.heroFOV[ch.pos]
+				&& !Char.hasProp(ch, Char.Property.OBJECT) && ch.sprite != null;
+	}
+
+	private static void startAiming(SkillButton b) {
+		Char t = autoTarget();
+		if (t == null) return;
+		aiming = b;
+		aimTarget = t;
+		if (aimMark == null) aimMark = Icons.TARGET.get();
+		if (aimButtonMark == null) aimButtonMark = Icons.TARGET.get();
+		if (t.sprite.parent != null) {
+			t.sprite.parent.addToFront(aimMark);
+			aimMark.visible = true;
+			aimMark.point(t.sprite.center(aimMark));
+		}
+		if (b.parent != null) {
+			b.parent.addToFront(aimButtonMark);
+			aimButtonMark.visible = true;
+			aimButtonMark.x = b.left() + (b.width() - aimButtonMark.width()) / 2f;
+			aimButtonMark.y = b.top() + (b.height() - aimButtonMark.height()) / 2f;
+		}
+	}
+
+	public static void stopAiming() {
+		aiming = null;
+		aimTarget = null;
+		if (aimMark != null) {
+			aimMark.visible = false;
+			aimMark.killAndErase();
+		}
+		if (aimButtonMark != null) {
+			aimButtonMark.visible = false;
+			aimButtonMark.killAndErase();
+		}
+	}
+
+	private static void updateAiming() {
+		if (aiming == null) return;
+		if (!GameScene.isSelectingCell() || !validTarget(aimTarget)) {
+			stopAiming();
+			return;
+		}
+		if (aimMark != null && aimTarget.sprite != null) aimMark.point(aimTarget.sprite.center(aimMark));
 	}
 
 	public static class SkillButton extends Button {
@@ -161,12 +235,23 @@ public class SkillBar extends Component {
 		protected void onClick() {
 			Hero hero = Dungeon.hero;
 			if (hero == null || !hero.isAlive()) return;
+			//second tap while aiming: fire at the auto-picked target, like a thrown weapon's quickslot
+			if (aiming == this && aimTarget != null && GameScene.isSelectingCell()) {
+				Char t = aimTarget;
+				int cell = skill.targeting() == SinSkill.TARGET_PROJECTILE ? QuickSlotButton.autoAim(t) : t.pos;
+				if (cell == -1) cell = t.pos;
+				stopAiming();
+				GameScene.handleCell(cell);
+				return;
+			}
 			if (!hero.ready || GameScene.interfaceBlockingHero()) return;
 			if (!skill.usable(hero)) {
 				GLog.w(Messages.get(SkillBar.class, "unusable", skill.name(hero)));
 				return;
 			}
+			stopAiming();
 			skill.use(hero);
+			if (skill.targeting() != SinSkill.TARGET_NONE && GameScene.isSelectingCell()) startAiming(this);
 		}
 
 		@Override

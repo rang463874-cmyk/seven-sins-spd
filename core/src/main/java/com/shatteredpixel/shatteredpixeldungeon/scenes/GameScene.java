@@ -1679,6 +1679,11 @@ public class GameScene extends PixelScene {
 		}
 	}
 	
+	/** true while a skill or item is waiting for the player to pick a cell */
+	public static boolean isSelectingCell() {
+		return cellSelector != null && cellSelector.listener != null && cellSelector.listener != defaultCellListener;
+	}
+
 	public static boolean cancelCellSelector() {
 		if (cellSelector.listener != null && cellSelector.listener != defaultCellListener) {
 			cellSelector.resetKeyHold();

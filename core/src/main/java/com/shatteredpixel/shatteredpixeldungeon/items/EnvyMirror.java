@@ -103,7 +103,11 @@ public class EnvyMirror extends SinArtifact {
 		ArrayList<SinSkill> list = new ArrayList<>();
 		EnvyCovet c = covet(hero);
 		for (final Mimic m : new ArrayList<>(c.slots)) {
-			list.add(new BasicSkill(EnvyMirror.class, m.id(), m.icon, SinSkill.CostType.JEALOUSY)
+			BasicSkill sk = new BasicSkill(EnvyMirror.class, m.id(), m.icon, SinSkill.CostType.JEALOUSY);
+			int aim = EnvyMimicry.targeting(m);
+			if (aim == SinSkill.TARGET_PROJECTILE) sk.projectile();
+			else if (aim == SinSkill.TARGET_ENEMY) sk.targetsEnemy();
+			list.add(sk
 					.cost(h -> EnvyMimicry.cost(h, m))
 					.usableIf(h -> covet(h).jealousy >= EnvyMimicry.cost(h, m))
 					.descArgs(h -> EnvyMimicry.descArgs(h, m))
