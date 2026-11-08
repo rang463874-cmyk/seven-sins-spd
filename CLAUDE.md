@@ -93,7 +93,9 @@ The codex (107 entries in `PredatorStomach.sections()`) is read from the maw's C
 are mapped in `PredatorStomach.category`. Harmful potions and
 scroll of rage become `GluttonImbue` buffs (`PredatorHooks.drinkOverride/readRage`), psionic blast has no
 backlash. Maw skills: Bite, Hunger Dash (haste), Acid Spray, Swallow Whole (free, 3x points, identifies),
-Ruminate (repeat `lastUsed`, growth items excluded via `PredatorHooks.canRepeat`); satiety costs via
+Ruminate (repeat `lastUsed`; growth items that fail `PredatorHooks.canRepeat` can be ruminated too as "heavy
+rumination": flat 600 satiety, `PredatorMaw.payHeavy` empties the stomach and puts the rest into
+`actors/buffs/GluttonDebt`, which Hunger.affectHunger repays first and which keeps Weakness/Vulnerable/Hex up; brews never); satiety costs via
 `PredatorMaw.hungerCost`, except Bite, which costs 6% max HP (`biteHpCost`, never lethal) and fills 80 satiety
 on a kill (`BITE_FEED`). PREDATOR_FANG ("hungry fang") now gives satiety per consumable (`FANG_CONSUME` x pts, in
 `PredatorStomach.consume`) and per kill (`FANG_KILL` x pts, `PredatorHooks.onMobDeath` from `Mob.die`); the old

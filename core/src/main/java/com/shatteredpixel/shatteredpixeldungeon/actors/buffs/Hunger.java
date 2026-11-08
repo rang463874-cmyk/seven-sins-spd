@@ -155,6 +155,12 @@ public class Hunger extends Buff implements Hero.Doom {
 			return;
 		}
 
+		//gluttony's hunger debt is paid back before the stomach fills
+		if (energy > 0 && target.buff(GluttonDebt.class) != null){
+			energy = target.buff(GluttonDebt.class).repay(energy);
+			if (energy <= 0) return;
+		}
+
 		float oldLevel = level;
 
 		level -= energy;

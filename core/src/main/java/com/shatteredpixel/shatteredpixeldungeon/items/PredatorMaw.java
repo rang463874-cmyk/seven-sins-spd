@@ -175,11 +175,12 @@ public class PredatorMaw extends SinArtifact {
 				.descArgs(h -> new Object[]{Math.round(3 + 1.5f * h.pointsInTalent(Talent.PREDATOR_SCRAPS))})
 				.onUse(PredatorMaw::selectSwallow));
 		list.add(new BasicSkill(PredatorMaw.class, "ruminate", 2, SinSkill.CostType.SATIETY)
-				.cost(h -> hungerCost(h, COST_RUMINATE))
-				.usableIf(h -> canAfford(h, COST_RUMINATE) && ruminable(h) != null)
+				.cost(h -> heavyRumination(h) ? HEAVY_RUMINATE : hungerCost(h, COST_RUMINATE))
+				.usableIf(h -> ruminable(h) != null && (heavyRumination(h) || canAfford(h, COST_RUMINATE)))
 				.descArgs(h -> {
 					Class c = ruminable(h);
-					return new Object[]{c == null ? Messages.get(PredatorMaw.class, "nothing") : Messages.get(c, "name")};
+					return new Object[]{c == null ? Messages.get(PredatorMaw.class, "nothing") : Messages.get(c, "name"),
+							HEAVY_RUMINATE};
 				})
 				.onUse(PredatorMaw::ruminate));
 		return list;
@@ -224,11 +225,35 @@ public class PredatorMaw extends SinArtifact {
 		hero.spendAndNext(Actor.TICK);
 	}
 
-	/** the last potion or scroll, if it can be brought back up */
+	/** satiety eaten by bringing back a growth item; whatever the stomach can't pay becomes hunger debt */
+	public static final int HEAVY_RUMINATE = 600;
+
+	/** the last potion or scroll, if it can be brought back up (growth items too, at a terrible price) */
 	public static Class ruminable(Hero hero) {
 		PredatorStomach st = hero.buff(PredatorStomach.class);
-		if (st == null || st.lastUsed == null || !PredatorHooks.canRepeat(st.lastUsed)) return null;
+		if (st == null || st.lastUsed == null) return null;
+		if (com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.Brew.class.isAssignableFrom(st.lastUsed)) return null;
 		return st.lastUsed;
+	}
+
+	/** whether ruminating right now would bring back a growth item */
+	public static boolean heavyRumination(Hero hero) {
+		Class c = ruminable(hero);
+		return c != null && !PredatorHooks.canRepeat(c);
+	}
+
+	/** eats 600 satiety: the stomach empties, and the rest is owed as hunger debt */
+	private static void payHeavy(Hero hero) {
+		Hunger hunger = hero.buff(Hunger.class);
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WellFed fed = hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WellFed.class);
+		if (fed != null) fed.detach();
+		float available = hunger == null ? 0 : Math.max(0, Hunger.STARVING - hunger.hunger());
+		if (hunger != null && available > 0) hunger.affectHunger(-available);
+		float owed = HEAVY_RUMINATE - available;
+		if (owed > 0) {
+			Buff.affect(hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.GluttonDebt.class).add(owed);
+			GLog.n(Messages.get(PredatorMaw.class, "ruminate_debt", Math.round(owed)));
+		}
 	}
 
 	private static void ruminate(Hero hero) {
@@ -237,7 +262,11 @@ public class PredatorMaw extends SinArtifact {
 			GLog.w(Messages.get(PredatorMaw.class, "ruminate_none"));
 			return;
 		}
-		if (!pay(hero, COST_RUMINATE)) return;
+		if (heavyRumination(hero)) {
+			payHeavy(hero);
+		} else if (!pay(hero, COST_RUMINATE)) {
+			return;
+		}
 		Item it = (Item) Reflection.newInstance(c);
 		if (it == null) return;
 		if (it instanceof Potion) ((Potion) it).anonymize();
