@@ -57,6 +57,32 @@ public class SlothRepose extends Buff {
 	/** true while an automatic attack is being made, so its kills count in full */
 	public static boolean autoAttacking = false;
 
+	/** share of max HP each dream puppet borrows while it is out (nightmares are free) */
+	public static final float DRAIN_PER_PUPPET = 0.15f;
+	public static final float MAX_DRAIN = 0.75f;
+
+	/** how much of the sloth's max HP its puppets are holding right now (0..MAX_DRAIN) */
+	public static float puppetDrain(Hero h) {
+		int n = DreamPuppet.puppets(false).size();
+		if (n <= 0) return 0;
+		float each = DRAIN_PER_PUPPET * (1f - 0.25f * h.pointsInTalent(Talent.SLOTH_SHOVE));
+		return Math.min(MAX_DRAIN, each * n);
+	}
+
+	/** puppet count the hero's max HP was last computed with */
+	private int drainedFor = 0;
+
+	/** recomputes the hero's max HP when the number of puppets changes */
+	public static void refreshDrain(Hero h) {
+		SlothRepose r = h == null ? null : h.buff(SlothRepose.class);
+		if (r == null) return;
+		int n = DreamPuppet.puppets(false).size();
+		if (n != r.drainedFor) {
+			r.drainedFor = n;
+			h.updateHT(false);
+		}
+	}
+
 	{
 		type = buffType.POSITIVE;
 		revivePersists = true;
@@ -299,6 +325,8 @@ public class SlothRepose extends Buff {
 			if (!wasAsleep && asleep()) {
 				h.sprite.showStatus(CharSprite.NEUTRAL, Messages.get(SlothRepose.class, "doze"));
 			}
+
+			refreshDrain(h);
 
 			//lingering: puppets mend while the sloth stays put
 			int linger = h.pointsInTalent(Talent.SLOTH_LINGER);

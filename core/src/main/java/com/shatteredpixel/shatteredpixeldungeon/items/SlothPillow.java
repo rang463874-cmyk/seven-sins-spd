@@ -98,7 +98,8 @@ public class SlothPillow extends SinArtifact {
 		list.add(new BasicSkill(SlothPillow.class, "summon", 48, SinSkill.CostType.TURNS)
 				.nameFrom(h -> DreamPuppet.puppets(false).size() >= repose(h).maxPuppets() ? "mend" : "summon")
 				.cost(h -> SlothRepose.turnCost(h, COST_SUMMON))
-				.descArgs(h -> new Object[]{repose(h).maxPuppets()})
+				.descArgs(h -> new Object[]{repose(h).maxPuppets(),
+						Math.round(SlothRepose.DRAIN_PER_PUPPET * (1f - 0.25f * h.pointsInTalent(Talent.SLOTH_SHOVE)) * 100)})
 				.onUse(h -> summon(h, repose(h))));
 		list.add(new BasicSkill(SlothPillow.class, "nap", 49, SinSkill.CostType.TURNS)
 				.cost(h -> SlothRepose.turnCost(h, COST_NAP))
@@ -156,6 +157,8 @@ public class SlothPillow extends SinArtifact {
 			}
 			int snore = hero.pointsInTalent(Talent.SLOTH_SNORE);
 			if (snore > 0) SlothRepose.Taunted.applyAround(p, 3, 1f + 2f * snore);
+			//the new puppet borrows part of the sloth's max HP
+			SlothRepose.refreshDrain(hero);
 		}
 		hero.sprite.operate(hero.pos);
 		Sample.INSTANCE.play(Assets.Sounds.LULLABY, 0.6f);

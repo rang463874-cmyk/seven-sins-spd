@@ -50,8 +50,36 @@ public final class SlothHooks {
 		if (r == null) return dmg;
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
 		if (wep instanceof MissileWeapon) return dmg;
-		return dmg + r.meleeBonus();
+		dmg += r.meleeBonus();
+		//sloth lets the puppets do the fighting: its own swings are feeble
+		//(the sleepwalker's automatic attacks have their own multiplier instead)
+		if (!SlothRepose.autoAttacking) dmg = Math.round(dmg * MELEE_PENALTY);
+		return dmg;
 	}
+
+	/** dream sight (SLOTH_COMFY +2): the hero sees everything its puppets see */
+	public static boolean sharesSight(Mob m) {
+		return m instanceof DreamPuppet && Dungeon.hero != null
+				&& Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) >= 2;
+	}
+
+	/** dream sight +1: the hero sees the tiles within 2 of every puppet */
+	public static void revealAroundPuppets(boolean[] fov) {
+		if (Dungeon.hero == null || Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) != 1) return;
+		int w = Dungeon.level.width();
+		for (DreamPuppet p : DreamPuppet.active()) {
+			int px = p.pos % w, py = p.pos / w;
+			for (int y = py - 2; y <= py + 2; y++) {
+				for (int x = px - 2; x <= px + 2; x++) {
+					if (x < 0 || y < 0 || x >= w || y >= Dungeon.level.height()) continue;
+					fov[x + y * w] = true;
+				}
+			}
+		}
+	}
+
+	/** sloth's own melee attacks deal 30% less */
+	public static final float MELEE_PENALTY = 0.7f;
 
 	/** Called from Hero.defenseProc when an enemy hits the hero. */
 	public static int onDefense(Hero hero, Char attacker, int dmg) {
@@ -59,26 +87,10 @@ public final class SlothHooks {
 		if (r == null || dmg <= 0) return dmg;
 
 
-		//comfy: a puppet nearby softens every blow
-		int comfy = hero.pointsInTalent(Talent.SLOTH_COMFY);
-		if (comfy > 0) {
-			DreamPuppet near = DreamPuppet.nearestTo(hero.pos);
-			if (near != null && Dungeon.level.distance(hero.pos, near.pos) <= 2) {
-				dmg = Math.round(dmg * (1f - 0.10f * comfy));
-			}
-		}
-
 		//the sleepwalker barely notices hits while asleep
 		int deep = hero.pointsInTalent(Talent.WALK_DEEP);
 		if (deep > 0 && r.asleep()) {
 			dmg = Math.round(dmg * (1f - 0.08f * deep));
-		}
-
-		//"not my problem": whoever hits the sloth gets taunted by a puppet
-		int shove = hero.pointsInTalent(Talent.SLOTH_SHOVE);
-		if (shove > 0 && attacker != null && attacker.isAlive()) {
-			DreamPuppet p = DreamPuppet.nearestTo(attacker.pos);
-			if (p != null) SlothRepose.Taunted.apply(attacker, p, 2f * shove);
 		}
 
 		//dream lord: each puppet shares a little of the pain
@@ -187,6 +199,9 @@ public final class SlothHooks {
 
 	public static int bonusHT(Hero hero, int ht) {
 		SlothRepose r = repose(hero);
-		return r == null ? ht : ht + r.hpBonus();
+		if (r == null) return ht;
+		ht += r.hpBonus();
+		//every dream puppet out borrows part of the sloth's max HP
+		return Math.max(1, Math.round(ht * (1f - SlothRepose.puppetDrain(hero))));
 	}
 }

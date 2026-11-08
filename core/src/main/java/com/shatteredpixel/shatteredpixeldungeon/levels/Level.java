@@ -1495,7 +1495,8 @@ public abstract class Level implements Bundlable {
 				if (m instanceof WandOfWarding.Ward
 						|| m instanceof WandOfRegrowth.Lotus
 						|| m instanceof SpiritHawk.HawkAlly
-						|| m.buff(PowerOfMany.PowerBuff.class) != null){
+						|| m.buff(PowerOfMany.PowerBuff.class) != null
+						|| com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.sharesSight(m)){
 					if (m.fieldOfView == null || m.fieldOfView.length != length()){
 						m.fieldOfView = new boolean[length()];
 						Dungeon.level.updateFieldOfView( m, m.fieldOfView );
@@ -1503,6 +1504,8 @@ public abstract class Level implements Bundlable {
 					BArray.or(heroMindFov, m.fieldOfView, heroMindFov);
 				}
 			}
+
+			com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.revealAroundPuppets(heroMindFov);
 
 			for (RevealedArea a : c.buffs(RevealedArea.class)){
 				if (Dungeon.depth != a.depth || Dungeon.branch != a.branch) continue;

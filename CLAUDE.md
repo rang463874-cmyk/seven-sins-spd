@@ -75,6 +75,11 @@ Pillow skills also include Order (`SlothRepose.DreamMark` on one enemy: every pu
 `DreamPuppet.chooseEnemy`/`act`, +25% damage, 30 turns) and Dream Forge (`SlothRepose.DreamForge`: paralysed deep sleep
 of 200 + 25/upgrade turns (max 300), then +1 to the equipped weapon or armor; any damage wakes and cancels it via
 `SlothHooks.modifyDamage`; once per floor, `SlothRepose.forgedDepths`; can't start with enemies in view).
+Sloth's own melee deals x0.7 (`SlothHooks.MELEE_PENALTY`, not for Sleepwalker auto-attacks). Puppets have no armor
+(`DreamPuppet.drRoll` = 0) and each non-nightmare puppet borrows 15% of Sloth's max HP (`SlothRepose.puppetDrain`,
+max 75%, applied in `SlothHooks.bonusHT`; `refreshDrain` re-runs `updateHT(false)` on summon and each turn when the count
+changes). Talents SLOTH_COMFY is now "dream sight" (+1 tiles within 2 of puppets, +2 puppets' full FOV, via
+`SlothHooks.revealAroundPuppets/sharesSight` in `Level.updateFieldOfView`) and SLOTH_SHOVE is "light dreams" (-25%/pt drain).
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
 Gluttony (reworked Nov 2026, "eats anything"): no more equipment devouring (that moved to the conquest gun).
 `PredatorStomach.consume` runs from `PredatorHooks.onConsumed` for potions (`Potion.drink`), scrolls

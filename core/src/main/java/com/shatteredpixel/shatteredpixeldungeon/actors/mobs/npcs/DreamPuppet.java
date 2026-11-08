@@ -183,10 +183,10 @@ public class DreamPuppet extends DirectableAlly {
 		return Math.max(1, Math.round(dmg * statMult(this)));
 	}
 
+	/** dream puppets have no armor at all: they are only dreams */
 	@Override
 	public int drRoll() {
-		int max = Math.round((lvl() / 4f + 0.10f * pts()) * statMult(this));
-		return super.drRoll() + (max <= 0 ? 0 : Random.NormalIntRange(0, max));
+		return 0;
 	}
 
 	@Override
