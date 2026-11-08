@@ -210,10 +210,11 @@ def sheet(rows, size, out, blank=False):
 def main():
     sheet(ROWS, 48, "virtue_champions.png")
     sheet(ANGELS, ANGEL_SIZE, "virtue_angels.png")
-    # the heavens (floors 27-30), placeholders until the owner draws them: the lesser angel is a
-    # small Gabriel, the seraph (2x2 tiles) a 32px Sariel
-    sheet([("angel_gabriel", (255, 255, 255, 255))], 24, "heaven_lesser_angel.png")
-    sheet([("angel_sariel", (200, 220, 255, 255))], 32, "heaven_seraph.png", blank=True)
+    # the heavens (floors 27-30): the owner's believer, priest, lesser angel and seraph
+    sheet([("heaven_believer", (255, 255, 255, 255))], 24, "heaven_believer.png")
+    sheet([("heaven_priest", (255, 230, 150, 255))], 24, "heaven_priest.png")
+    sheet([("heaven_lesser_angel", (255, 80, 80, 255))], 24, "heaven_lesser_angel.png")
+    sheet([("heaven_seraph", (255, 200, 80, 255))], 32, "heaven_seraph.png", blank=True)
     print("virtue sprites written")
 
 

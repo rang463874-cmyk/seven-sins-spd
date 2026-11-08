@@ -10,51 +10,18 @@ import com.watabou.utils.Callback;
 import com.watabou.utils.PointF;
 
 /**
- * Sprites of the heavens' monsters (floors 27-30). Believer and priest are tinted vanilla sprites,
- * the lesser angel and seraph come from tools/sinsart/make_virtue_sprites.py (placeholders made from
- * the archangel art until the owner draws them).
+ * Sprites of the heavens' monsters (floors 27-30), all from the owner's art via
+ * tools/sinsart/make_virtue_sprites.py (virtue_art/src/heaven_*.png).
  */
 public class HeavenSprites {
 
-	/** a white-robed monk */
-	public static class Believer extends MonkSprite {
-		@Override
-		public void resetColor() {
-			super.resetColor();
-			tint(0xFFF4D8, 0.55f);
-		}
-		@Override
-		public void link(Char ch) {
-			super.link(ch);
-			resetColor();
-		}
-	}
-
-	/** a senior monk in white and gold */
-	public static class Priest extends SeniorSprite {
-		@Override
-		public void resetColor() {
-			super.resetColor();
-			tint(0xFFE8A0, 0.6f);
-		}
-		@Override
-		public void link(Char ch) {
-			super.link(ch);
-			resetColor();
-		}
-	}
-
-	/** 24px, throws white spears */
-	public static class LesserAngel extends MobSprite {
-
-		private int cellToAttack;
-
-		public LesserAngel() {
+	/** a 24px one-row sheet from make_virtue_sprites.py: idle 2, run 4, attack 3, die 3 */
+	public static abstract class Sheet24 extends MobSprite {
+		public Sheet24(String tex) {
 			super();
-			texture("sprites/heaven_lesser_angel.png");
+			texture(tex);
 			TextureFilm frames = new TextureFilm(texture, 24, 25);
 			perspectiveRaise = -4 / 16f;
-
 			idle = new Animation(3, true);
 			idle.frames(frames, 0, 1);
 			run = new Animation(8, true);
@@ -65,6 +32,26 @@ public class HeavenSprites {
 			die = new Animation(6, false);
 			die.frames(frames, 9, 10, 11);
 			play(idle);
+		}
+	}
+
+	/** the owner's believer: a grey-hooded girl with a staff and a book */
+	public static class Believer extends Sheet24 {
+		public Believer() { super("sprites/heaven_believer.png"); }
+	}
+
+	/** the owner's priest: an old bearded priest with a golden staff */
+	public static class Priest extends Sheet24 {
+		public Priest() { super("sprites/heaven_priest.png"); }
+	}
+
+	/** the owner's lesser angel: a white figure with a red bow (24px, shoots from where it stands) */
+	public static class LesserAngel extends Sheet24 {
+
+		private int cellToAttack;
+
+		public LesserAngel() {
+			super("sprites/heaven_lesser_angel.png");
 		}
 
 		@Override
@@ -88,7 +75,6 @@ public class HeavenSprites {
 						ch.onAttackComplete();
 					}
 				});
-				spear.lightness(0.9f);
 			} else {
 				super.onComplete(anim);
 			}
@@ -99,9 +85,10 @@ public class HeavenSprites {
 			return 0xFFFFF0C0;
 		}
 
+		//it holds a bow in the owner's art, so it shoots a glowing arrow
 		public static class Spear extends Item {
 			{
-				image = ItemSpriteSheet.JAVELIN;
+				image = ItemSpriteSheet.SPIRIT_ARROW;
 			}
 		}
 	}

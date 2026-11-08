@@ -132,9 +132,10 @@ Done and pushed (see `git log`):
   + 3 invisible `SeraphPart`s forwarding damage like LeviathanCoil; moves as a block inside its room bounds
   (`fits`/`getCloser`), burns non-enemies adjacent to the block each turn, reach 2 from the nearest body cell, one
   light-chain pull without cripple; `ensureBody` gives dev-summoned ones parts and the whole floor). All four are in the
-  bestiary's QUEST group. Rotation in `MobSpawner` case 27-30. Art: believer/priest = tinted MonkSprite/SeniorSprite;
-  lesser angel (24px, from angel_gabriel) and seraph (32px over 2x2 via `worldToCamera`, from angel_sariel, + blank
-  frame 12 for parts) are placeholders from `make_virtue_sprites.py`. Strings in `tools/strings/virtues_*`.
+  bestiary's QUEST group. Rotation in `MobSpawner` case 27-30. Art: the owner's pictures `virtue_art/src/heaven_*.png` -> 24px
+  sheets for believer/priest/lesser angel (`HeavenSprites.Sheet24`; the angel has a bow, so it shoots a spirit arrow)
+  and the 32px seraph (over 2x2 via `worldToCamera`, + blank frame 12 for parts), by `make_virtue_sprites.py`.
+  The owner's holy giant concept (planned floor-31 boss) is kept in `tools/sinsart/giant_art/`. Strings in `tools/strings/virtues_*`.
   Headless level test trick: build `HeavenLevel` subclasses without special/secret rooms and a texture-free
   `TextureFilm` stub on the classpath (Level.create needs textures for items).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
