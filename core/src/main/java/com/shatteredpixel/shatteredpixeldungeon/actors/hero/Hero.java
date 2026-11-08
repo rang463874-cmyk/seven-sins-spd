@@ -254,6 +254,9 @@ public class Hero extends Char {
 	//talent points not spent yet
 	public int awakening = 0;
 	public int awakeningPoints = 0;
+	public java.util.LinkedHashMap<String, Integer> awakeningTalents = new java.util.LinkedHashMap<>();
+	/** per-run counters some awakening talents keep (e.g. kills for permanent growth) */
+	public java.util.HashMap<String, Integer> awakeningCounters = new java.util.HashMap<>();
 	
 	private ArrayList<Mob> visibleEnemies;
 
@@ -290,6 +293,7 @@ public class Hero extends Char {
 		HT = EnvyHooks.bonusHT(this, HT);
 		HT = SlothHooks.bonusHT(this, HT);
 		HT = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.bonusHT(this, HT);
+		HT = Math.max(1, Math.round(HT * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.htMultiplier(this))); //Seven Sins: awakening
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -350,6 +354,18 @@ public class Hero extends Char {
 		bundle.put( HTBOOST, HTBoost );
 		bundle.put( "sins_awakening", awakening );
 		bundle.put( "sins_awakening_points", awakeningPoints );
+		{
+			String[] keys = awakeningTalents.keySet().toArray(new String[0]);
+			int[] vals = new int[keys.length];
+			for (int i = 0; i < keys.length; i++) vals[i] = awakeningTalents.get(keys[i]);
+			bundle.put( "sins_awakening_talents", keys );
+			bundle.put( "sins_awakening_talent_pts", vals );
+			String[] ckeys = awakeningCounters.keySet().toArray(new String[0]);
+			int[] cvals = new int[ckeys.length];
+			for (int i = 0; i < ckeys.length; i++) cvals[i] = awakeningCounters.get(ckeys[i]);
+			bundle.put( "sins_awakening_counters", ckeys );
+			bundle.put( "sins_awakening_counter_vals", cvals );
+		}
 
 		belongings.storeInBundle( bundle );
 	}
@@ -375,6 +391,18 @@ public class Hero extends Char {
 		STR = bundle.getInt( STRENGTH );
 		awakening = bundle.getInt( "sins_awakening" );
 		awakeningPoints = bundle.getInt( "sins_awakening_points" );
+		awakeningTalents.clear();
+		if (bundle.contains("sins_awakening_talents")) {
+			String[] keys = bundle.getStringArray("sins_awakening_talents");
+			int[] vals = bundle.getIntArray("sins_awakening_talent_pts");
+			for (int i = 0; i < keys.length && i < vals.length; i++) awakeningTalents.put(keys[i], vals[i]);
+		}
+		awakeningCounters.clear();
+		if (bundle.contains("sins_awakening_counters")) {
+			String[] keys = bundle.getStringArray("sins_awakening_counters");
+			int[] vals = bundle.getIntArray("sins_awakening_counter_vals");
+			for (int i = 0; i < keys.length && i < vals.length; i++) awakeningCounters.put(keys[i], vals[i]);
+		}
 
 		belongings.restoreFromBundle( bundle );
 	}
@@ -541,6 +569,8 @@ public class Hero extends Char {
 	@Override
 	public int attackSkill( Char target ) {
 		KindOfWeapon wep = belongings.attackingWeapon();
+		//Seven Sins: awakening (pride's monster never misses its first thrown attacks on a foe)
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.divineEye(this, target)) return INFINITE_ACCURACY;
 		
 		float accuracy = 1;
 		accuracy *= RingOfAccuracy.accuracyMultiplier( this );
@@ -695,7 +725,7 @@ public class Hero extends Char {
 			if (STR() < belongings.armor().STRReq()){
 				armDr -= 2*(belongings.armor().STRReq() - STR());
 			}
-			if (armDr > 0) dr += armDr;
+			if (armDr > 0) dr += Math.round(armDr * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.armorMultiplier(this)); //Seven Sins: awakening
 		}
 		if (belongings.weapon() != null && !RingOfForce.fightingUnarmed(this))  {
 			int wepDr = Random.NormalIntRange( 0 , belongings.weapon().defenseFactor( this ) );
@@ -790,6 +820,7 @@ public class Hero extends Char {
 		}
 
 		speed *= UniqueStats.moveSpeed(this) * HorsemenHooks.moveSpeed(this) * com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.moveSpeed();
+		speed *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.moveSpeed(this); //Seven Sins: awakening
 		speed = AscensionChallenge.modifyHeroSpeed(speed);
 		
 		return speed;
@@ -845,7 +876,7 @@ public class Hero extends Char {
 
 		if (!RingOfForce.fightingUnarmed(this)) {
 			
-			return delay * belongings.attackingWeapon().delayFactor( this ) / (UniqueStats.attackSpeed( this ) * HorsemenHooks.attackSpeed( this ));
+			return delay * belongings.attackingWeapon().delayFactor( this ) / (UniqueStats.attackSpeed( this ) * HorsemenHooks.attackSpeed( this ) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.attackSpeed( this ));
 			
 		} else {
 			//Normally putting furor speed on unarmed attacks would be unnecessary

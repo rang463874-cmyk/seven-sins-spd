@@ -400,7 +400,7 @@ public class EnvyCovet extends Buff {
 		Hero h = hero();
 		if (h == null) return 3;
 		return 3 + (h.subClass == HeroSubClass.COPYCAT ? 1 : 0)
-				+ (mirrored ? 1 : 0);
+				+ (mirrored ? 1 : 0) + com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.envySlots(h); //Seven Sins: awakening
 	}
 
 	/** a rival worth envying: a boss, a bestiary monster or anything sturdier than half the hero */

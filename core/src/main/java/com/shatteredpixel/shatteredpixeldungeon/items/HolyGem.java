@@ -30,6 +30,7 @@ public class HolyGem extends Item {
 
 	public static final String AC_AWAKEN = "AWAKEN";
 	public static final String AC_END = "END";
+	public static final String AC_TALENTS = "TALENTS";
 
 	{
 		image = ItemSpriteSheet.HOLY_GEM;
@@ -56,19 +57,28 @@ public class HolyGem extends Item {
 	public ArrayList<String> actions(Hero hero) {
 		ArrayList<String> actions = super.actions(hero);
 		if (SinAwakening.canAwaken(hero)) actions.add(AC_AWAKEN);
+		if (hero.awakening != SinAwakening.NONE) {
+			actions.add(AC_TALENTS);
+			//the gem holds the awakening: it can't be dropped or thrown away
+			actions.remove(AC_DROP);
+			actions.remove(AC_THROW);
+		}
 		actions.add(AC_END);
 		return actions;
 	}
 
 	@Override
 	public String defaultAction() {
-		return SinAwakening.canAwaken(Dungeon.hero) ? AC_AWAKEN : AC_END;
+		if (SinAwakening.canAwaken(Dungeon.hero)) return AC_AWAKEN;
+		if (Dungeon.hero != null && Dungeon.hero.awakening != SinAwakening.NONE) return AC_TALENTS;
+		return AC_END;
 	}
 
 	@Override
 	public String actionName(String action, Hero hero) {
 		if (action.equals(AC_AWAKEN)) return Messages.get(this, "ac_awaken");
 		if (action.equals(AC_END)) return Messages.get(this, "ac_end");
+		if (action.equals(AC_TALENTS)) return Messages.get(this, "ac_talents");
 		return super.actionName(action, hero);
 	}
 
@@ -95,6 +105,8 @@ public class HolyGem extends Item {
 					confirmAwaken(h, path);
 				}
 			});
+		} else if (action.equals(AC_TALENTS)) {
+			if (hero.awakening != SinAwakening.NONE) GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndAwakening(hero));
 		} else if (action.equals(AC_END)) {
 			GameScene.show(new WndOptions(new ItemSprite(this),
 					Messages.titleCase(name()),
@@ -123,7 +135,9 @@ public class HolyGem extends Item {
 				GameScene.flash(path == SinAwakening.MONSTER ? 0x802020 : 0x88BBFF);
 				Sample.INSTANCE.play(Assets.Sounds.LEVELUP);
 				GLog.p(Messages.get(HolyGem.class, "awakened", name, SinAwakening.POINTS));
+				hero.updateHT(false);
 				hero.spendAndNext(1f);
+				GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndAwakening(hero));
 			}
 		});
 	}

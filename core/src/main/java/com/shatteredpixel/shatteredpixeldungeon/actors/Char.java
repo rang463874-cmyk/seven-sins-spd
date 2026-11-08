@@ -853,6 +853,9 @@ public abstract class Char extends Actor {
 		dmg = SlothHooks.modifyDamage(this, src, dmg);
 		dmg = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.modifyDamage(this, src, dmg);
 		dmg = com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.modifyDamage(this, src, dmg);
+		if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
+			dmg = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onHeroDamaged((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this, dmg); //Seven Sins: awakening
+		}
 
 		if (!(src instanceof LifeLink || src instanceof Hunger) && buff(LifeLink.class) != null){
 			HashSet<LifeLink> links = buffs(LifeLink.class);
@@ -1006,6 +1009,10 @@ public abstract class Char extends Actor {
 		WrathHooks.afterDamage(this, src, dmg + shielded);
 		PrideHooks.afterDamage(this, src, dmg + shielded);
 		dmg += com.shatteredpixel.shatteredpixeldungeon.horsemen.HorsemenHooks.afterDamage(this);
+		//Seven Sins: awakening (wrath's monster's undying rage)
+		if (HP <= 0 && this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
+			com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.wrathUndying((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this);
+		}
 
 		if (HP > 0 && src instanceof Char && ((Char) src).buff(Grim.GrimTracker.class) != null){
 

@@ -158,6 +158,7 @@ public final class WrathHooks {
 		if (!(wep instanceof MissileWeapon)) {
 			WrathGrudge.Vengeance v = hero.buff(WrathGrudge.Vengeance.class);
 			if (v != null) dmg += v.stacks;
+			dmg = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.wrathMelee(hero, dmg); //Seven Sins: awakening
 			int exec = hero.pointsInTalent(Talent.AVENGER_EXECUTE);
 			if (exec > 0 && enemy != null && WrathGrudge.enraged(enemy)) {
 				dmg = Math.round(dmg * (1f + 0.10f * exec));

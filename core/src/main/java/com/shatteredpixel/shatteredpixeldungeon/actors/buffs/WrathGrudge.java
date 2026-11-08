@@ -142,7 +142,7 @@ public class WrathGrudge extends Buff {
 		Hero h = hero();
 		//rage cools down slowly once there's nothing left to be angry at
 		if (h != null && h.isAlive() && rage > 0 && h.visibleEnemies() == 0) {
-			rage = Math.max(0, rage - 1f);
+			rage = Math.max(0, rage - com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCooling(h)); //Seven Sins: awakening
 			Item.updateQuickslot();
 		}
 		spend(TICK);

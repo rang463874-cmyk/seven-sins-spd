@@ -51,7 +51,8 @@ public class Healing extends Buff {
 	public boolean act(){
 
 		if (target.HP < target.HT) {
-			target.HP = Math.min(target.HT, target.HP + healingThisTick());
+			//Seven Sins: awakening (wrath's and lust's monsters heal half as much)
+			target.HP = Math.min(target.HT, target.HP + Math.max(1, Math.round(healingThisTick() * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.healMultiplier(target))));
 
 			if (target.HP == target.HT && target instanceof Hero) {
 				((Hero) target).resting = false;

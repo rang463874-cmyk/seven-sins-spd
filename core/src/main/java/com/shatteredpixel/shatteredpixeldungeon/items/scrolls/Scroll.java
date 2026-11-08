@@ -197,6 +197,13 @@ public abstract class Scroll extends Item {
 	
 	public abstract void doRead();
 
+	//Seven Sins: awakening (gluttony's monster reads scrolls the moment it picks them up)
+	public void forceRead( Hero hero ) {
+		curUser = hero;
+		curItem = this;
+		doRead();
+	}
+
 	public void readAnimation() {
 		Invisibility.dispel();
 		curUser.spend( TIME_TO_READ );

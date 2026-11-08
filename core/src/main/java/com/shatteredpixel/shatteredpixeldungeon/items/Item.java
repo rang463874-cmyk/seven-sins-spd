@@ -128,6 +128,8 @@ public class Item implements Bundlable {
 			GameScene.pickUp( this, pos );
 			Sample.INSTANCE.play( Assets.Sounds.ITEM );
 			hero.spendAndNext( pickupDelay() );
+			//Seven Sins: awakening
+			com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onPickedUp( hero, this );
 			return true;
 			
 		} else {

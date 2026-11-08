@@ -89,7 +89,8 @@ public class PrideGlory extends Buff {
 
 	/** glory for a flawless kill of this char */
 	public static float gloryFor(Char ch) {
-		float g = 1f + ch.HT / 15f;
+		float g = (1f + ch.HT / 15f) * (1f + 0.25f * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningTalent.pts(
+				com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningTalent.P_GLORY)); //Seven Sins: awakening
 		if (ch.properties().contains(Char.Property.BOSS)) g *= 5f;
 		else if (ch.properties().contains(Char.Property.MINIBOSS)) g *= 3f;
 		return g;
@@ -103,6 +104,7 @@ public class PrideGlory extends Buff {
 				+ 2 * SinArtifact.bonusCharges(h);
 		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) max += 5;
 		if (mirrored) max += 5;
+		max += com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.prideReign(h); //Seven Sins: awakening
 		return max;
 	}
 
@@ -132,6 +134,7 @@ public class PrideGlory extends Buff {
 		Hero h = hero();
 		calmTurns = 0;
 		if (dignity <= 0) return;
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.prideKeepsPoise(h)) return; //Seven Sins: awakening
 		int grace = h == null ? 0 : h.pointsInTalent(Talent.PRIDE_GRACE);
 		int kept = Math.round(dignity * 0.25f * grace);
 		if (h != null && h.sprite != null && kept < dignity) {

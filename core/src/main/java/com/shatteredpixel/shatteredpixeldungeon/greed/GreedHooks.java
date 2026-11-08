@@ -36,7 +36,7 @@ public final class GreedHooks {
 
 	public static int drBonus(Hero hero, int dr) {
 		GreedVault v = vault(hero);
-		return v == null ? dr : dr + v.drRoll();
+		return v == null ? dr : dr + v.drRoll() + com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.greedDR(hero);
 	}
 
 	public static int bonusHT(Hero hero, int ht) {
@@ -54,6 +54,7 @@ public final class GreedHooks {
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
 		boolean melee = !(wep instanceof MissileWeapon);
 		dmg += v.meleeBonus();
+		if (melee) dmg += com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.greedMelee(hero); //Seven Sins: awakening
 
 		if (enemy != null) {
 			GreedVault.Debt debt = enemy.buff(GreedVault.Debt.class);
@@ -94,7 +95,10 @@ public final class GreedHooks {
 		GreedVault v = vault(hero);
 		if (v == null) return;
 		if (selling) v.goldChanged();
-		else v.onGoldPickup(hero, quantity);
+		else {
+			v.onGoldPickup(hero, quantity);
+			com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onGoldPickup(hero, quantity); //Seven Sins: awakening
+		}
 	}
 
 	/** Extra gold granted when picking up a gold pile (Penny Pincher talent). */
@@ -111,6 +115,7 @@ public final class GreedHooks {
 		if (v == null) return;
 
 		GreedVault.Debt.collect(hero, mob);
+		com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.greedPlunder(mob); //Seven Sins: awakening
 
 		int loot = hero.pointsInTalent(Talent.GREED_LOOT);
 		if (loot > 0 && mob.alignment == Char.Alignment.ENEMY) {

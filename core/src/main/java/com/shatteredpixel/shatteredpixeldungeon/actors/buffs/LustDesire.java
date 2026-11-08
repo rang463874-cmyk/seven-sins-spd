@@ -141,6 +141,7 @@ public class LustDesire extends Buff {
 		if (mirrored) mult *= 0.75f;
 		if (h.subClass == HeroSubClass.CRIMSON_NOBLE) mult *= 0.5f;
 		mult *= SinArtifact.costScale(h);
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.lustCost(h); //Seven Sins: awakening
 		return Math.max(1, Math.round(h.HT * share * mult));
 	}
 
@@ -173,6 +174,7 @@ public class LustDesire extends Buff {
 		float d = base * (1f + 0.25f * hero.pointsInTalent(Talent.LUST_LINGER));
 		LustDesire ld = hero.buff(LustDesire.class);
 		if (ld != null && ld.mirrored) d *= 1.25f;
+		d *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.lustCharm(hero); //Seven Sins: awakening
 		return d;
 	}
 

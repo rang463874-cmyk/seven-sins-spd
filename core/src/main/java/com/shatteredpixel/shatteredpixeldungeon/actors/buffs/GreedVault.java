@@ -200,7 +200,8 @@ public class GreedVault extends Buff {
 
 			if (Dungeon.depth > interestDepth) {
 				//interest is paid once per new floor, to bankers and to holders of the black card
-				float rate = (h.subClass == HeroSubClass.BANKER ? interestRate() : 0f) + (mirrored ? 0.02f : 0f);
+				float rate = (h.subClass == HeroSubClass.BANKER ? interestRate() : 0f) + (mirrored ? 0.02f : 0f)
+						+ com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.greedInterest(h); //Seven Sins: awakening
 				if (rate > 0 && interestDepth > 0) {
 					payInterest(h, rate);
 				}

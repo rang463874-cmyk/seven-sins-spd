@@ -98,23 +98,23 @@ public class WarDrum extends SinArtifact {
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
 		list.add(new BasicSkill(WarDrum.class, "provoke", 16, SinSkill.CostType.RAGE).targetsEnemy()
-				.cost(h -> COST_PROVOKE)
-				.usableIf(h -> grudge(h).rage >= COST_PROVOKE)
+				.cost(h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_PROVOKE))
+				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_PROVOKE))
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 8f))})
 				.onUse(h -> GameScene.selectCell(provoke)));
 		list.add(new BasicSkill(WarDrum.class, "discord", 17, SinSkill.CostType.RAGE).targetsEnemy()
-				.cost(h -> COST_DISCORD)
-				.usableIf(h -> grudge(h).rage >= COST_DISCORD)
+				.cost(h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_DISCORD))
+				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_DISCORD))
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 12f))})
 				.onUse(h -> GameScene.selectCell(discordFirst)));
 		list.add(new BasicSkill(WarDrum.class, "contagion", 18, SinSkill.CostType.RAGE).targetsEnemy()
-				.cost(h -> COST_CONTAGION)
-				.usableIf(h -> grudge(h).rage >= COST_CONTAGION)
+				.cost(h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_CONTAGION))
+				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_CONTAGION))
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, 10f))})
 				.onUse(h -> GameScene.selectCell(contagion)));
 		list.add(new BasicSkill(WarDrum.class, "dash", 19, SinSkill.CostType.RAGE).targetsEnemy()
-				.cost(h -> COST_DASH)
-				.usableIf(h -> grudge(h).rage >= COST_DASH)
+				.cost(h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_DASH))
+				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_DASH))
 				.descArgs(h -> new Object[]{dashRange(h)})
 				.onUse(h -> GameScene.selectCell(dash)));
 		return list;
@@ -172,7 +172,7 @@ public class WarDrum extends SinArtifact {
 			Hero hero = Dungeon.hero;
 			Mob mob = rageTarget(cell);
 			if (mob == null) return;
-			if (!grudge(hero).useRage(COST_PROVOKE)) return;
+			if (!grudge(hero).useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(hero, COST_PROVOKE))) return;
 
 			enrage(hero, mob, 8f);
 
@@ -234,7 +234,7 @@ public class WarDrum extends SinArtifact {
 				GLog.w(Messages.get(WarDrum.class, "same_target"));
 				return;
 			}
-			if (!grudge(hero).useRage(COST_DISCORD)) return;
+			if (!grudge(hero).useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(hero, COST_DISCORD))) return;
 
 			float dur = WrathGrudge.rageDuration(hero, 12f);
 			setRivals(hero, a, b, dur);
@@ -265,7 +265,7 @@ public class WarDrum extends SinArtifact {
 			Hero hero = Dungeon.hero;
 			Mob mob = rageTarget(cell);
 			if (mob == null) return;
-			if (!grudge(hero).useRage(COST_CONTAGION)) return;
+			if (!grudge(hero).useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(hero, COST_CONTAGION))) return;
 
 			float dur = WrathGrudge.rageDuration(hero, 10f);
 			enrage(hero, mob, 10f);
@@ -294,7 +294,7 @@ public class WarDrum extends SinArtifact {
 				GLog.w(Messages.get(WarDrum.class, "bad_cell"));
 				return;
 			}
-			if (!grudge(hero).useRage(COST_DASH)) return;
+			if (!grudge(hero).useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(hero, COST_DASH))) return;
 
 			ScrollOfTeleportation.appear(hero, cell);
 			Dungeon.level.occupyCell(hero);

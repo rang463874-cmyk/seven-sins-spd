@@ -41,10 +41,10 @@ public final class LustHooks {
 			dmg = Math.round(dmg * (1f + 0.10f * blush));
 		}
 
-		if (melee) {
-			float rate = d.lifestealFor(enemy);
-			if (rate > 0) d.drain(Math.min(dmg, enemy.HP + enemy.shielding()), rate);
-		}
+		//Seven Sins: awakening (the feast drinks from every blow, thrown ones too)
+		float rate = melee ? d.lifestealFor(enemy) : 0f;
+		rate = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.lustSteal(hero, enemy, rate);
+		if (rate > 0) d.drain(Math.min(dmg, enemy.HP + enemy.shielding()), rate);
 		return dmg;
 	}
 
@@ -103,6 +103,7 @@ public final class LustHooks {
 			mult *= 1f + 0.04f * hero.pointsInTalent(Talent.DANCER_GRACE);
 		}
 		if (hero.buff(LustDesire.Sway.class) != null) mult *= LustDesire.Sway.EVASION_MULT;
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.lustEvasion(hero); //Seven Sins: awakening
 		return mult;
 	}
 

@@ -151,9 +151,20 @@ Done and pushed (see `git log`):
   `sins/SinAwakening` CONTROL/MONSTER stored as `Hero.awakening` + `awakeningPoints` = 8; path names
   `sins.sinawakening.*`) and END (`Dungeon.win(Amulet.class)` + delete save + RankingsScene). Art: giant/fists are
   scaled, tinted GolemSprites (placeholders; the owner's concept art is in `tools/sinsart/giant_art/`); gem icon =
-  items.png row 38 +0 (`ELITE2`, TX_HEIGHT now 608). Dev tools: travel to 27 / 31. Awakening talents: not yet (draft
-  agreed with the owner: 3 per path, max 3 points, monster paths named "OO의 괴물"; gluttony's monster swallows its
-  bags for points, auto-triggers items of those kinds on pickup, +50% move/attack speed, bite reach +1).
+  items.png row 38 +0 (`ELITE2`, TX_HEIGHT now 608). Dev tools: travel to 27 / 31. Awakening talents (agreed with the owner):
+  `sins/AwakeningTalent` (42: 3 per path, max 3 points, levels in `Hero.awakeningTalents`, per-run counters in
+  `Hero.awakeningCounters`, both saved in the hero bundle), spent in `windows/WndAwakening` (the gem's TALENTS action;
+  the gem can't be dropped after awakening). Effects live in `sins/AwakeningHooks` (call sites marked "Seven Sins:
+  awakening"): path drawbacks (greed monster -25% HT + shops refuse; wrath monster armor x0.5 and regen/Healing x0.5;
+  pride monster +20% damage taken below full HP; lust monster regen/Healing x0.5; envy monster -20% HT and hurt each
+  turn with an empty gauge and enemies in view; sloth monster melee x0.5) and talents (hooked in PredatorStomach.score,
+  PredatorMaw.hungerCost/bite, GreedVault interest, Shopkeeper.sellPrice, GreedHooks, WarDrum costs, WrathGrudge cooling,
+  WrathHooks.onAttack, Char.damage (`onHeroDamaged`, `wrathUndying`), PrideGlory, PrideHooks.onAttack, Hero.attackSkill
+  (`divineEye`), LustDesire, LustHooks, EnvyCovet/EnvyMimicry/EnvyHooks, SlothRepose, DreamPuppet, SlothHooks, Mob.die
+  (`onMobDeath`)). `AwakeningHooks.AwakeningTicker` (buff added at the awakening) runs the lust aura and envy's drain.
+  Gluttony's monster (`swallowBags` at the awakening, `onPickedUp` from Item.doPickUp): side bags become growth
+  (150 each + contents); items of a swallowed bag's kind go off on pickup (`Potion.forceDrink`, `Scroll.forceRead`,
+  seeds eaten, runestones/thrown weapons/wands digested); +50% move/attack speed; bite reach 2.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

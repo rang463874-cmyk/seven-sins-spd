@@ -106,7 +106,7 @@ public class PredatorMaw extends SinArtifact {
 
 	/** satiety cost of a skill with this base cost */
 	public static int hungerCost(Hero hero, int base) {
-		float mult = SinArtifact.satietyScale(hero);
+		float mult = SinArtifact.satietyScale(hero) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.gluttonyCost(hero); //Seven Sins: awakening
 		if (PredatorStomach.hasCodex(hero, PredatorStomach.CODEX_FRUGAL)) mult *= 0.5f;
 		return Math.max(1, Math.round(base * mult));
 	}
@@ -318,8 +318,13 @@ public class PredatorMaw extends SinArtifact {
 			if (cell == null) return;
 			final Hero hero = Dungeon.hero;
 			Char enemy = Actor.findChar(cell);
-			if (enemy == null || enemy == hero || enemy.alignment == Char.Alignment.ALLY
-					|| !Dungeon.level.adjacent(hero.pos, cell)) {
+			//Seven Sins: awakening (gluttony's monster bites from 2 tiles away)
+			int reach = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.biteRange(hero);
+			boolean inReach = Dungeon.level.adjacent(hero.pos, cell)
+					|| (reach > 1 && Dungeon.level.distance(hero.pos, cell) <= reach
+						&& new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(hero.pos, cell,
+							com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.PROJECTILE).collisionPos == cell);
+			if (enemy == null || enemy == hero || enemy.alignment == Char.Alignment.ALLY || !inReach) {
 				GLog.w(Messages.get(PredatorMaw.class, "bite_target"));
 				return;
 			}

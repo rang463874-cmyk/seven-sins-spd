@@ -155,7 +155,7 @@ public class WndTradeItem extends WndInfoItem {
 		};
 		btnBuy.setRect( 0, pos + GAP, width, BTN_HEIGHT );
 		btnBuy.icon(new ItemSprite(ItemSpriteSheet.GOLD));
-		btnBuy.enable( price <= Dungeon.gold );
+		btnBuy.enable( price <= Dungeon.gold && !com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.shopBanned() ); //Seven Sins: awakening
 		add( btnBuy );
 
 		pos = btnBuy.bottom();

@@ -27,6 +27,8 @@ public class SinAwakening {
 		if (!canAwaken(hero) || (path != CONTROL && path != MONSTER)) return;
 		hero.awakening = path;
 		hero.awakeningPoints = POINTS;
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(hero, AwakeningHooks.AwakeningTicker.class);
+		AwakeningHooks.onAwakened(hero);
 	}
 
 	/** e.g. "식탐의 제어자" / "식탐의 괴물" */

@@ -70,6 +70,7 @@ public class DreamPuppet extends DirectableAlly {
 	public int targetHT() {
 		float ht = 8 + 4 * lvl() + 0.8f * pts();
 		ht *= 1f + 0.15f * talent(Talent.SLOTH_SNOOZE);
+		ht *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothPuppetStats(); //Seven Sins: awakening
 		return Math.max(1, Math.round(ht * statMult(this)));
 	}
 
@@ -180,7 +181,7 @@ public class DreamPuppet extends DirectableAlly {
 		if (Dungeon.hero != null && Dungeon.hero.subClass == HeroSubClass.DREAM_LORD) {
 			dmg *= 1f + 0.10f * talent(Talent.LORD_COMMAND);
 		}
-		return Math.max(1, Math.round(dmg * statMult(this)));
+		return Math.max(1, Math.round(dmg * statMult(this) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothPuppetStats()));
 	}
 
 	/** dream puppets have no armor at all: they are only dreams */

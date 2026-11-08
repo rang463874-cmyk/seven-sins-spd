@@ -135,6 +135,7 @@ public final class PredatorHooks {
 			if (hunger != null) hunger.satisfy(food.energy * 0.5f);
 		}
 		onConsumed(hero, food);
+		com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onFoodEaten(hero); //Seven Sins: awakening
 	}
 
 	/** how long a converted (harmful turned helpful) buff lasts */

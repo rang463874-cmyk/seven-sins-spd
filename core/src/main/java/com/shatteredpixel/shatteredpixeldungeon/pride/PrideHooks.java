@@ -187,6 +187,7 @@ public final class PrideHooks {
 		}
 		PrideGlory.Duel duel = hero.buff(PrideGlory.Duel.class);
 		if (duel != null && enemy != null && enemy.id() == duel.object) mult *= 1.2f;
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.prideDamage(hero, enemy, wep instanceof MissileWeapon); //Seven Sins: awakening
 		return Math.round(dmg * mult);
 	}
 

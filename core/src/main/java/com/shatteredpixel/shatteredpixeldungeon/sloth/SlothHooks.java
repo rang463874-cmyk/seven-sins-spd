@@ -53,7 +53,9 @@ public final class SlothHooks {
 		if (wep instanceof MissileWeapon) return dmg;
 		//sloth lets the puppets do the fighting: its own swings are feeble
 		//(the sleepwalker's automatic attacks have their own multiplier instead)
-		if (!SlothRepose.autoAttacking) dmg = Math.round(dmg * MELEE_PENALTY);
+		//Seven Sins: awakening (sloth's monster: x0.5; the sleepwalk talent boosts automatic attacks)
+		if (!SlothRepose.autoAttacking) dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothMelee(hero, MELEE_PENALTY));
+		else dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothAutoAttack(hero));
 		return dmg;
 	}
 

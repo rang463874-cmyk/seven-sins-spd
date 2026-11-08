@@ -73,6 +73,7 @@ public final class EnvyHooks {
 			spite.detach();
 		}
 		dmg = Math.round(dmg * mult);
+		dmg = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.envyDamage(hero, dmg); //Seven Sins: awakening
 
 		//imitating lust: drink from charmed enemies
 		if (melee && c.imitating(EnvyMimicry.Growth.LUST) && LustDesire.charmedByHero(enemy) && dmg > 0) {

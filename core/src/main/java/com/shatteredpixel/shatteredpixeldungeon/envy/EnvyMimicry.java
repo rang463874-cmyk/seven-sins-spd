@@ -149,11 +149,11 @@ public final class EnvyMimicry {
 
 	/** share of the original sin's growth that Envy gets */
 	public static float growthEfficiency(Hero hero) {
-		return 0.5f + 0.15f * hero.pointsInTalent(Talent.ENVY_SWITCH);
+		return 0.5f + 0.15f * hero.pointsInTalent(Talent.ENVY_SWITCH) + com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.envyGrowth(hero); //Seven Sins: awakening
 	}
 
 	public static int cost(Hero hero, Mimic m) {
-		float mult = 1f - 0.10f * hero.pointsInTalent(Talent.ENVY_LEVEL);
+		float mult = (1f - 0.10f * hero.pointsInTalent(Talent.ENVY_LEVEL)) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.envyCost(hero); //Seven Sins: awakening
 		if (m.kind == Kind.SIN && hero.subClass == HeroSubClass.USURPER) {
 			mult *= 0.75f - 0.05f * hero.pointsInTalent(Talent.USURP_DRAIN);
 		}

@@ -287,6 +287,12 @@ public class Potion extends Item {
 		}
 	}
 	
+	//Seven Sins: awakening (gluttony's monster drinks potions the moment it picks them up)
+	public void forceDrink( Hero hero ) {
+		hero.belongings.backpack.items.add(this);
+		drink( hero );
+	}
+
 	protected void drink( Hero hero ) {
 		
 		detach( hero.belongings.backpack );

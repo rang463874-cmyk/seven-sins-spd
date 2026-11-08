@@ -147,7 +147,7 @@ public class SlothRepose extends Buff {
 	/** extra puppets from the pillow's level: +1 at +3, +5 and +10 */
 	public static int pillowPuppets(Hero h) {
 		int lvl = SinArtifact.level(h);
-		return (lvl >= 3 ? 1 : 0) + (lvl >= 5 ? 1 : 0) + (lvl >= 10 ? 1 : 0);
+		return (lvl >= 3 ? 1 : 0) + (lvl >= 5 ? 1 : 0) + (lvl >= 10 ? 1 : 0) + com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothMorePuppets(h); //Seven Sins: awakening
 	}
 
 	/** how many nightmares the Dream Lord's kills can keep around at once */
@@ -166,6 +166,7 @@ public class SlothRepose extends Buff {
 	public static int turnCost(Hero h, int base) {
 		float t = base * SinArtifact.rechargeScale(h);
 		t *= 1f - 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_RESTFUL));
+		if (h != null) t *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothDoze(h); //Seven Sins: awakening
 		return Math.max(1, Math.round(t));
 	}
 

@@ -199,7 +199,8 @@ public class Shopkeeper extends NPC {
 
 	//shopkeepers are greedy!
 	public static int sellPrice(Item item){
-		return item.value() * 5 * (Dungeon.depth / 5 + 1);
+		//Seven Sins: awakening (lord of gold's discount)
+		return Math.max(1, Math.round(item.value() * 5 * (Dungeon.depth / 5 + 1) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.shopPrice()));
 	}
 	
 	public static WndBag sell() {
@@ -237,6 +238,11 @@ public class Shopkeeper extends NPC {
 	@Override
 	public boolean interact(Char c) {
 		if (c != Dungeon.hero) {
+			return true;
+		}
+		//Seven Sins: awakening (greed's monster is turned away)
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.shopBanned()) {
+			yell(Messages.get(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.class, "shop_refused"));
 			return true;
 		}
 		Game.runOnRenderThread(new Callback() {
