@@ -28,7 +28,7 @@ public class LeviathanCoil extends Mob {
 	/** Leviathan's actor id */
 	public int head = -1;
 	/** DemonSprites.Coil variant */
-	public int variant = DemonSprites.Coil.HUMP;
+	public int variant = DemonSprites.Coil.BODY;
 	public boolean flip = false;
 
 	public LeviathanBoss head() {

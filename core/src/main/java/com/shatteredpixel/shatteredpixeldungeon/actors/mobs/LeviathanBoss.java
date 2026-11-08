@@ -132,17 +132,25 @@ public class LeviathanBoss extends DemonLordBoss {
 			LeviathanCoil c = new LeviathanCoil();
 			c.head = boss.id();
 			c.pos = cells[i];
-			int fromHead = Math.abs(i - headIdx);
-			if (fromHead == 1) c.variant = DemonSprites.Coil.HIDDEN;
-			else if (i == 0 || i == cells.length - 1) c.variant = DemonSprites.Coil.TAIL;
-			else c.variant = fromHead % 2 == 0 ? DemonSprites.Coil.HUMP : DemonSprites.Coil.LOW;
-			//tail tips point away from the head
-			c.flip = i > headIdx;
+			c.variant = pieceAt(i, headIdx, cells.length);
+			//the tail curls outward: art curls to the right, so the left side is mirrored
+			c.flip = i < headIdx;
 			GameScene.add(c);
 			CellEmitter.get(c.pos).burst(Speck.factory(Speck.STEAM), 6);
 		}
 		Sample.INSTANCE.play(Assets.Sounds.WATER);
 		return boss;
+	}
+
+	/** which 48px piece a wall cell shows: one piece every 3 cells from the head, the outermost being the tail */
+	static int pieceAt(int i, int headIdx, int length) {
+		int d = Math.abs(i - headIdx);
+		int end = i < headIdx ? headIdx : length - 1 - headIdx;   //cells on this side
+		int last = (end / 3) * 3;                                    //farthest regular piece
+		if (end - last >= 2) last = end;                             //uncovered end: the tail goes there
+		if (d == last && d > 0) return DemonSprites.Coil.TAIL;
+		if (d % 3 == 0 && d > 0 && d < last) return DemonSprites.Coil.BODY;
+		return DemonSprites.Coil.HIDDEN;
 	}
 
 	private ArrayList<LeviathanCoil> coils() {

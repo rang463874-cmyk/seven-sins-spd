@@ -61,11 +61,13 @@ Done and pushed (see `git log`):
   lord's signature skill, enraged under 50%; death -> `onLordDefeated`: boon x1.5, 3 essences). Trial penalties/boons are
   hooked in Hero (updateHT, accuracy, evasion, speed, attackProc, rest), Char.damage, Gold, Hunger, Regeneration, Food.
   Every line has an `_own` variant used when the lord's sin is the hero's (`DemonHooks.line`). Strings in
-  `tools/strings/demons*` (generated once by a script; edit them directly now). Art: `sprites/demon_lords.png` (48x49 frames,
-  one row of 12 per lord in enum order; `DemonSprites.LordSprite` draws them over the 3x3 tiles around the cell,
-  `perspectiveRaise` -0.5; windows use `DemonSprites.icon` at half size), `sprites/demon_leviathan.png` (16x33 coil
-  pieces: hump, low, tail, blank) and `sprites/demon_altar.png`, all from `tools/sinsart/make_demon_sprites.py`
-  (pixel art as text in `tools/sinsart/demon_art/<lord>.py`, left halves mirrored + patches; frames derived).
+  `tools/strings/demons*` (generated once by a script; edit them directly now). Art: the owner's own 48x48 PNGs in `tools/sinsart/demon_art/png/`
+  (7 lords, `leviathan_coil`, `leviathan_tail`, `altar`; Leviathan's head faces left and is mirrored) are turned into
+  `sprites/demon_lords.png` (48x49 frames, one row of 12 per lord in enum order; `DemonSprites.LordSprite` draws them
+  over the 3x3 tiles around the cell, `perspectiveRaise` -0.5; windows use `DemonSprites.icon`/`altarIcon` at half
+  size), `sprites/demon_leviathan.png` (48x49: body x3, tail x3, blank) and `sprites/demon_altar.png` (48x49 x2) by
+  `tools/sinsart/make_demon_sprites.py` (art cropped and bottom-aligned, frames derived; the text art in
+  `demon_art/<lord>.py` is only a fallback).
   Leviathan's boss is `actors/mobs/LeviathanBoss` (wall form, `emerge` from the NPC's cell: picks the longest wall run
   of 3..11 cells, never covering a door, prefers horizontal walls; head in the middle, `LeviathanCoil`s on the rest,
   which forward damage to the head; immovable; Great Wave = every lane but 1-2 safe ones, Bite, Undertow pull, wraiths;

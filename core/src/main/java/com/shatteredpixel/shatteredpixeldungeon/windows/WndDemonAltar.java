@@ -28,7 +28,7 @@ public class WndDemonAltar extends WndOptions {
 	}
 
 	public WndDemonAltar(DemonAltar altar) {
-		super(new DemonSprites.Altar(),
+		super(DemonSprites.altarIcon(),
 				Messages.titleCase(Messages.get(DemonAltar.class, "name")),
 				Messages.get(WndDemonAltar.class, "message"),
 				options());

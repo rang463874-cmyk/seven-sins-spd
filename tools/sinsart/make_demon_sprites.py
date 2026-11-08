@@ -5,9 +5,12 @@
   beelzebub, satan, belphegor), 12 frames of 48x49 (the art is 48x48, one spare row on top for the bob):
   idle (2), run (4), attack (3: wind up, lunge with the lord's colour, back), die (3: sinking and fading).
   The bosses are drawn over 3x3 tiles (sprites/DemonSprites.LordSprite).
-- sprites/demon_leviathan.png: Leviathan's coil segments for its wall form, 16x33 frames, 3 variants
-  (hump with fin, low coil in the water, tail tip) x 2 idle frames + 1 fading frame, then a blank frame.
-- sprites/demon_altar.png: the altar, 16x16, 2 frames.
+- sprites/demon_leviathan.png: Leviathan's wall-form pieces, 48x49 frames: body (2 idle + fading),
+  tail (2 idle + fading), blank.
+- sprites/demon_altar.png: the altar, 48x49, 2 frames (braziers flaring).
+
+The owner's own 48x48 art in tools/sinsart/demon_art/png/<name>.png (lords, leviathan_coil, leviathan_tail,
+altar) is used when present; the text art below is the fallback.
 
 The lords' pixel art lives in tools/sinsart/demon_art/<lord>.py as text (left halves are mirrored, then
 patched). Re-run after editing: python3 tools/sinsart/make_demon_sprites.py
@@ -37,7 +40,35 @@ LORDS = [
 ]
 
 
+PNG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "demon_art", "png")
+#hand-made 48x48 art that faces left, mirrored so every sprite faces right like the game expects
+MIRRORED = {"leviathan"}
+
+
+def load_png(name):
+    """the owner's 48x48 art: faint alpha noise dropped, cropped and set on the bottom centre of a 48x48 cell"""
+    path = os.path.join(PNG, name + ".png")
+    if not os.path.exists(path):
+        return None
+    img = Image.open(path).convert("RGBA")
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            if px[x, y][3] < 24:
+                px[x, y] = (0, 0, 0, 0)
+    if name in MIRRORED:
+        img = img.transpose(Image.FLIP_LEFT_RIGHT)
+    box = img.getbbox()
+    img = img.crop(box)
+    out = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    out.paste(img, ((S - img.width) // 2, S - img.height), img)
+    return out
+
+
 def draw(mod):
+    own = load_png(mod.__name__.split(".")[-1])
+    if own is not None:
+        return own
     return artlib.build(half=getattr(mod, "HALF", None), full=getattr(mod, "FULL", None),
                         patches=getattr(mod, "PATCHES", []), pal=mod.PAL)
 
@@ -149,11 +180,17 @@ def coil(variant):
 
 
 def coil_frames():
+    """Leviathan's wall pieces, 48x49 frames: body (rest, up, fading), tail (rest, up, fading), blank.
+    Uses the owner's art (leviathan_coil.png, leviathan_tail.png); falls back to the drawn 16px pieces."""
     out = []
-    for v in range(3):
-        base = coil(v)
-        out += [shifted(base, 0, 0, CH), shifted(base, 0, -1, CH), faded(shifted(base, 0, 0, CH), 0.4)]
-    out.append(Image.new("RGBA", (CW, CH), (0, 0, 0, 0)))  # 9: blank (pieces hidden behind the head)
+    for name, v in (("leviathan_coil", 0), ("leviathan_tail", 2)):
+        base = load_png(name)
+        if base is None:
+            small = coil(v)
+            base = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+            base.paste(small, ((S - CW) // 2, S - small.height), small)
+        out += [shifted(base, 0, 0), shifted(base, 0, -1), faded(shifted(base, 0, 0), 0.4)]
+    out.append(Image.new("RGBA", (S, H), (0, 0, 0, 0)))
     return out
 
 
@@ -211,15 +248,30 @@ def main():
     sheet.save(os.path.join(OUT, "demon_lords.png"))
 
     cf = coil_frames()
-    csheet = Image.new("RGBA", (CW * len(cf), CH), (0, 0, 0, 0))
+    csheet = Image.new("RGBA", (S * len(cf), H), (0, 0, 0, 0))
     for i, f in enumerate(cf):
-        csheet.paste(f, (i * CW, 0), f)
+        csheet.paste(f, (i * S, 0), f)
     csheet.save(os.path.join(OUT, "demon_leviathan.png"))
 
-    alt = altar_frames()
-    asheet = Image.new("RGBA", (32, 16), (0, 0, 0, 0))
-    for i, f in enumerate(alt):
-        asheet.paste(f, (i * 16, 0), f)
+    own = load_png("altar")
+    if own is not None:
+        #48x49 frames: as drawn, then with the braziers flaring
+        flare = own.copy()
+        fp = flare.load()
+        for y in range(S):
+            for x in range(S):
+                r, g, b, a = fp[x, y]
+                if a and r > 180 and r > b + 60:
+                    fp[x, y] = (255, min(255, g + 50), min(255, b + 20), a)
+        alt = [shifted(own, 0, 0), shifted(flare, 0, 0)]
+        asheet = Image.new("RGBA", (S * 2, H), (0, 0, 0, 0))
+        for i, f in enumerate(alt):
+            asheet.paste(f, (i * S, 0), f)
+    else:
+        alt = altar_frames()
+        asheet = Image.new("RGBA", (32, 16), (0, 0, 0, 0))
+        for i, f in enumerate(alt):
+            asheet.paste(f, (i * 16, 0), f)
     asheet.save(os.path.join(OUT, "demon_altar.png"))
     print("demon sprites written")
 

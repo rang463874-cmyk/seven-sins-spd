@@ -78,27 +78,30 @@ public class DemonSprites {
 		return s;
 	}
 
-	/** one piece of Leviathan's body along the wall (sprites/demon_leviathan.png, 16x33 frames) */
+	/** one piece of Leviathan's body along the wall (sprites/demon_leviathan.png, 48x49 frames, the owner's art).
+	 *  Only every third cell shows a piece; the cells in between are hidden behind them. */
 	public static class Coil extends MobSprite {
 
-		public static final int HUMP = 0, LOW = 1, TAIL = 2, HIDDEN = 3;
+		public static final int BODY = 0, TAIL = 1, HIDDEN = 2;
 
 		private TextureFilm film;
 
 		public Coil() {
 			super();
 			texture("sprites/demon_leviathan.png");
-			film = new TextureFilm(texture, 16, 33);
-			setVariant(HUMP);
+			film = new TextureFilm(texture, 48, 49);
+			perspectiveRaise = -8 / 16f;
+			shadowWidth = 0f;
+			setVariant(BODY);
 		}
 
 		public void setVariant(int v) {
-			int o = v * 3;
 			if (v == HIDDEN) {
 				idle = new Animation(1, true);
-				idle.frames(film, 9);
+				idle.frames(film, 6);
 				die = idle.clone();
 			} else {
+				int o = Math.max(0, Math.min(1, v)) * 3;
 				idle = new Animation(2, true);
 				idle.frames(film, o, o + 1);
 				die = new Animation(4, false);
@@ -139,13 +142,15 @@ public class DemonSprites {
 	public static class Satan extends LordSprite { protected DemonLord lord() { return DemonLord.SATAN; } }
 	public static class Belphegor extends LordSprite { protected DemonLord lord() { return DemonLord.BELPHEGOR; } }
 
-	/** the altar: sprites/demon_altar.png, 16x16, flickering braziers */
+	/** the altar (sprites/demon_altar.png, 48x49 frames, the owner's art): drawn over 3x3 tiles like the lords */
 	public static class Altar extends MobSprite {
 		public Altar() {
 			super();
 			texture("sprites/demon_altar.png");
-			TextureFilm frames = new TextureFilm(texture, 16, 16);
-			idle = new Animation(4, true);
+			TextureFilm frames = new TextureFilm(texture, 48, 49);
+			perspectiveRaise = -8 / 16f;
+			shadowWidth = 0f;
+			idle = new Animation(3, true);
 			idle.frames(frames, 0, 1);
 			run = idle.clone();
 			attack = idle.clone();
@@ -158,6 +163,12 @@ public class DemonSprites {
 		public int blood() {
 			return 0xFF400010;
 		}
+	}
+
+	public static CharSprite altarIcon() {
+		CharSprite s = new Altar();
+		s.scale.set(0.5f);
+		return s;
 	}
 
 	/** the lords' flies (Beelzebub's seal and boss) */
