@@ -17,7 +17,7 @@ public interface SkillHolder {
 	/** the first worn artifact/ring slot item that holds skills, or null (skills need it equipped) */
 	static Item find(Hero hero) {
 		if (hero == null || hero.belongings == null) return null;
-		Item[] worn = {hero.belongings.artifact(), hero.belongings.misc(), hero.belongings.misc2()};
+		Item[] worn = {hero.belongings.artifact(), hero.belongings.misc(), hero.belongings.misc2(), hero.belongings.misc3()};
 		for (Item item : worn) {
 			if (item instanceof SkillHolder) return item;
 		}

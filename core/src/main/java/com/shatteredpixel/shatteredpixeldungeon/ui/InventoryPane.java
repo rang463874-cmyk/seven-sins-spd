@@ -81,7 +81,9 @@ public class InventoryPane extends Component {
 	private ArrayList<BagButton> bags;
 
 	public static final int WIDTH = 187;
-	public static final int HEIGHT = 82;
+	//Seven Sins: three rows of 10 bag slots (25-item backpack + extra shared slots), was 82 for two
+	public static final int HEIGHT = 107;
+	private static final int BAG_SLOTS = 30;
 
 	private static final int SLOT_WIDTH = 17;
 	private static final int SLOT_HEIGHT = 24;
@@ -176,7 +178,7 @@ public class InventoryPane extends Component {
 		add(promptTxt);
 
 		bagItems = new ArrayList<>();
-		for (int i = 0; i < 20; i++){
+		for (int i = 0; i < BAG_SLOTS; i++){
 			InventorySlot btn = new InventoryPaneSlot(null);
 			bagItems.add(btn);
 			add(btn);
@@ -308,13 +310,24 @@ public class InventoryPane extends Component {
 		if (lastBag == stuff.backpack && stuff.secondWep != null){
 			items.add(0, stuff.secondWep);
 		}
-		//Seven Sins: no room for a sixth equipment slot here, so the extra slot's item leads the bag
+		//Seven Sins: no room for more equipment slots here, so the extra slots' items lead the bag
+		if (lastBag == stuff.backpack && stuff.misc3 != null){
+			items.add(0, stuff.misc3);
+		}
 		if (lastBag == stuff.backpack && stuff.misc2 != null){
 			items.add(0, stuff.misc2);
 		}
 
+		//slots past the bag's room are hidden (the pane has 30, a full backpack shows 25 + extra slots)
+		int shown = lastBag == stuff.backpack
+				? Belongings.Backpack.SIZE + (stuff.misc2 != null ? 1 : 0) + (stuff.misc3 != null ? 1 : 0)
+				: lastBag.capacity() + 1;
+		for (int i = 0; i < BAG_SLOTS; i++){
+			bagItems.get(i).visible = bagItems.get(i).active = i < shown;
+		}
+
 		int j = 0;
-		for (int i = 0; i < 20; i++){
+		for (int i = 0; i < BAG_SLOTS; i++){
 			if (i == 0 && lastBag != stuff.backpack){
 				bagItems.get(i).item(lastBag);
 				continue;

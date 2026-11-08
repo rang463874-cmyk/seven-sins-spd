@@ -82,6 +82,7 @@ public class InventorySlot extends ItemSlot {
 					item == Dungeon.hero.belongings.artifact ||
 					item == Dungeon.hero.belongings.misc ||
 					item == Dungeon.hero.belongings.misc2 ||
+					item == Dungeon.hero.belongings.misc3 ||
 					item == Dungeon.hero.belongings.ring ||
 					item == Dungeon.hero.belongings.secondWep;
 

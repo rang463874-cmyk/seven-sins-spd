@@ -426,6 +426,7 @@ public class Toolbar extends Component {
 							if (idx == 0){
 								Belongings b = Dungeon.hero.belongings;
 								if (b.ring() != null) items.add(0, b.ring());
+								if (b.misc3() != null) items.add(0, b.misc3());
 								if (b.misc2() != null) items.add(0, b.misc2());
 								if (b.misc() != null) items.add(0, b.misc());
 								if (b.artifact() != null) items.add(0, b.artifact());

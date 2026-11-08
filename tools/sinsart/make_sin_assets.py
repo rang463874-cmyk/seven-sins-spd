@@ -441,6 +441,7 @@ def elite_art(items):
     items.paste(draw(DOLL, DOLL_PAL), cell(ELITE_ROW + 11, 16)[:2])
     items.paste(draw(DSEAL, DSEAL_PAL), cell(ELITE_ROW + 12, 16)[:2])
     items.paste(draw(CSPEAR, CSPEAR_PAL), cell(ELITE_ROW + 13, 16)[:2])
+    items.paste(draw(HALO, HALO_PAL), cell(ELITE_ROW + 14, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
     items.paste(recolor(items.crop(cell(SPIRIT_BOW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 6, 16)[:2])
     items.paste(recolor(items.crop(cell(SPIRIT_ARROW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 7, 16)[:2])
@@ -522,6 +523,24 @@ DSEAL = [
 ]
 DSEAL_PAL = {"O": (40, 8, 14, 255), "M": (120, 20, 34, 255), "S": (255, 220, 160, 255),
              "H": (70, 60, 60, 255)}
+
+# 12x12 heavenly halo (the archangel's reward): a spiked golden ring of light, like the angels' halos
+HALO = [
+    ".....S......",
+    ".....S......",
+    "..S.KGGK.S..",
+    "...KGWWGK...",
+    "..KGK..KGK..",
+    "SSGK....KGSS",
+    "..KGK..KGK..",
+    "...KGWWGK...",
+    "..S.KGGK.S..",
+    ".....S......",
+    ".....S......",
+    "............",
+]
+HALO_PAL = {"K": (120, 80, 20, 255), "G": (240, 196, 70, 255), "W": (255, 246, 210, 255),
+            "S": (255, 226, 130, 255)}
 
 CURSE_INFUSE_ICON = 420  # SPELLS + 4 (row 27)
 

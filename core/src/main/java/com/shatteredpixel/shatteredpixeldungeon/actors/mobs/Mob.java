@@ -1034,6 +1034,10 @@ public abstract class Mob extends Char {
 					if (misc2 instanceof Ring){
 						misc2.onHeroGainExp(0.2f, Dungeon.hero);
 					}
+					Item misc3 = Dungeon.hero.belongings.misc3();
+					if (misc3 instanceof Ring){
+						misc3.onHeroGainExp(0.2f, Dungeon.hero);
+					}
 				}
 
 				if (Dungeon.hero.subClass == HeroSubClass.MONK){

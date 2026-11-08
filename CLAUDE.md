@@ -22,7 +22,12 @@ Done and pushed (see `git log`):
 - Imp quest vault mirror gives `items/MirrorCase` (every class; originals get it alongside their usual
   reward): one use per run, sets `Belongings.extraSlot`, opening `Belongings.misc2`, a second shared
   artifact/ring slot (equip logic in `KindofMisc`, shown in `WndBag`; `InventoryPane` lists it first in
-  the bag). The old mirror relics (`MirrorRelics`, buffs' `mirrored` flag) are kept only for old saves.
+  the bag). The archangel drops `items/HeavenlyHalo` (one use per run, sets `Belongings.extraSlot2`, opening a third
+  shared slot `misc3`; works with or without the case). `KindofMisc` walks the shared slots misc/misc2/misc3 through
+  `sharedCount/shared/setShared`; every other misc2 call site has a misc3 twin (Ring/Artifact/Mob/Talent/Toolbar/
+  InventorySlot/SkillHolder). The backpack holds 25 items (`Belongings.Backpack.SIZE`, was 20): `WndBag` sizes its rows
+  from 5 + extra slots + 25 (and shrinks slot height on short portrait screens), `InventoryPane` has 3 rows of 10
+  (`HEIGHT` 107, slots past the bag's room hidden). Other bags keep their sizes. The old mirror relics (`MirrorRelics`, buffs' `mirrored` flag) are kept only for old saves.
 - GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
 - Four horsemen relics (all classes) from the sewer "prophet of seals" quest, see below.
@@ -296,7 +301,7 @@ Reserved layout (must match the Java constants):
 - `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 592):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
   row 36 horsemen relics (gun, war sword, scales, scythe) + seal fragment (+0..4), sin remains (+5..11), mirror case (+12),
-  row 37 sin essence, elixir of sin, sin bomb, sticky bomb, bandage, stimulant (`elite_art`)
+  row 37 sin essence, elixir of sin, sin bomb, sticky bomb, bandage, stimulant (`elite_art`), ... heavenly halo (+14)
 - `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
 k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
 

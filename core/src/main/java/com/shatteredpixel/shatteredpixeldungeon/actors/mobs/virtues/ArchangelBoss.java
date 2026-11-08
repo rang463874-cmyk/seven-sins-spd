@@ -316,6 +316,8 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		VirtueHooks.angelStage = 2;
 		if (nemesis() && Dungeon.hero != null && Dungeon.hero.isAlive()) SinRewards.grant(Dungeon.hero, 100);
 		GLog.p(Messages.get(this, "amulet_free"));
+		//its halo: one more shared artifact/ring slot
+		Dungeon.level.drop(new com.shatteredpixel.shatteredpixeldungeon.items.HeavenlyHalo(), pos).sprite.drop();
 	}
 
 	@Override

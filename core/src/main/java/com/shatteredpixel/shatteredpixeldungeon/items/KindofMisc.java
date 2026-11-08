@@ -39,6 +39,38 @@ import com.watabou.utils.Random;
 
 public abstract class KindofMisc extends EquipableItem {
 
+	// Seven Sins: the shared artifact/ring slots are misc, plus misc2 (mirror case) and misc3 (heavenly halo)
+	// once unlocked; index 0..sharedCount-1
+
+	private static int sharedCount(Belongings b) {
+		int n = 1;
+		if (b.extraSlot) n++;
+		if (b.extraSlot2) n++;
+		return n;
+	}
+
+	private static int sharedField(Belongings b, int i) {
+		if (i == 0) return 0;
+		if (i == 1 && b.extraSlot) return 1;
+		return 2;
+	}
+
+	private static KindofMisc shared(Belongings b, int i) {
+		switch (sharedField(b, i)) {
+			case 0: return b.misc;
+			case 1: return b.misc2;
+			default: return b.misc3;
+		}
+	}
+
+	private static void setShared(Belongings b, int i, KindofMisc item) {
+		switch (sharedField(b, i)) {
+			case 0: b.misc = item; break;
+			case 1: b.misc2 = item; break;
+			default: b.misc3 = item; break;
+		}
+	}
+
 	/** tries to put this item into a free slot it fits; returns false if every fitting slot is taken */
 	private boolean placeInFreeSlot(Hero hero) {
 		Belongings b = hero.belongings;
@@ -51,37 +83,38 @@ public abstract class KindofMisc extends EquipableItem {
 			b.ring = (Ring) this;
 			return true;
 		}
-		if (b.misc == null) {
-			b.misc = this;
-			return true;
-		}
-		if (b.extraSlot && b.misc2 == null) {
-			b.misc2 = this;
-			return true;
+		int n = sharedCount(b);
+		for (int i = 0; i < n; i++) {
+			if (shared(b, i) == null) {
+				setShared(b, i, this);
+				return true;
+			}
 		}
 		//see if we can re-arrange items first: move a shared-slot item to its own dedicated slot
-		if (isArtifact) {
-			if (b.misc instanceof Ring && b.ring == null) {
-				b.ring = (Ring) b.misc;
-				b.misc = this;
+		for (int i = 0; i < n; i++) {
+			KindofMisc other = shared(b, i);
+			if (isArtifact && other instanceof Ring && b.ring == null) {
+				b.ring = (Ring) other;
+				setShared(b, i, this);
 				return true;
 			}
-			if (b.extraSlot && b.misc2 instanceof Ring && b.ring == null) {
-				b.ring = (Ring) b.misc2;
-				b.misc2 = this;
+			if (!isArtifact && other instanceof Artifact && b.artifact == null) {
+				b.artifact = (Artifact) other;
+				setShared(b, i, this);
 				return true;
 			}
-		} else {
-			if (b.misc instanceof Artifact && b.artifact == null) {
-				b.artifact = (Artifact) b.misc;
-				b.misc = this;
-				return true;
-			}
-			if (b.extraSlot && b.misc2 instanceof Artifact && b.artifact == null) {
-				b.artifact = (Artifact) b.misc2;
-				b.misc2 = this;
-				return true;
-			}
+		}
+		return false;
+	}
+
+	private boolean fitsSomewhere(Belongings b) {
+		if (this instanceof Artifact && b.artifact == null) return true;
+		if (this instanceof Ring && b.ring == null) return true;
+		for (int i = 0; i < sharedCount(b); i++) {
+			KindofMisc other = shared(b, i);
+			if (other == null) return true;
+			if (this instanceof Artifact && other instanceof Ring && b.ring == null) return true;
+			if (this instanceof Ring && other instanceof Artifact && b.artifact == null) return true;
 		}
 		return false;
 	}
@@ -92,20 +125,14 @@ public abstract class KindofMisc extends EquipableItem {
 		final Belongings b = hero.belongings;
 
 		//every fitting slot is full: ask which item to take off
-		boolean fits = (this instanceof Artifact && b.artifact == null)
-				|| (this instanceof Ring && b.ring == null)
-				|| b.misc == null
-				|| (b.extraSlot && b.misc2 == null)
-				|| (this instanceof Artifact && (b.misc instanceof Ring || (b.extraSlot && b.misc2 instanceof Ring)) && b.ring == null)
-				|| (this instanceof Ring && (b.misc instanceof Artifact || (b.extraSlot && b.misc2 instanceof Artifact)) && b.artifact == null);
+		boolean fits = fitsSomewhere(b);
 
 		if (!fits) {
 
 			//the slots this item could go into: its own dedicated slot and the shared ones
 			final ArrayList<KindofMisc> choices = new ArrayList<>();
 			choices.add(this instanceof Artifact ? b.artifact : b.ring);
-			choices.add(b.misc);
-			if (b.extraSlot) choices.add(b.misc2);
+			for (int i = 0; i < sharedCount(b); i++) choices.add(shared(b, i));
 
 			String[] labels = new String[choices.size()];
 			for (int i = 0; i < labels.length; i++) {
@@ -192,6 +219,8 @@ public abstract class KindofMisc extends EquipableItem {
 				hero.belongings.misc = null;
 			} else if (hero.belongings.misc2 == this) {
 				hero.belongings.misc2 = null;
+			} else if (hero.belongings.misc3 == this) {
+				hero.belongings.misc3 = null;
 			} else if (hero.belongings.ring == this){
 				hero.belongings.ring = null;
 			}
@@ -210,6 +239,7 @@ public abstract class KindofMisc extends EquipableItem {
 		return hero != null && (hero.belongings.artifact() == this
 				|| hero.belongings.misc() == this
 				|| hero.belongings.misc2() == this
+				|| hero.belongings.misc3() == this
 				|| hero.belongings.ring() == this);
 	}
 

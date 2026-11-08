@@ -55,8 +55,11 @@ public class Belongings implements Iterable<Item> {
 		{
 			image = ItemSpriteSheet.BACKPACK;
 		}
+		//Seven Sins: the backpack holds 25 items (5x5) instead of 20
+		public static final int SIZE = 25;
+
 		public int capacity(){
-			int cap = super.capacity();
+			int cap = SIZE;
 			for (Item item : items){
 				if (item instanceof Bag){
 					cap++;
@@ -86,6 +89,9 @@ public class Belongings implements Iterable<Item> {
 	//Seven Sins: a second shared artifact/ring slot, unlocked once per run by the Mirror Ring
 	public KindofMisc misc2 = null;
 	public boolean extraSlot = false;
+	//Seven Sins: a third shared artifact/ring slot, from the archangel's reward (HeavenlyHalo)
+	public KindofMisc misc3 = null;
+	public boolean extraSlot2 = false;
 	public Ring ring = null;
 
 	//used when thrown weapons temporary become the current weapon
@@ -158,6 +164,14 @@ public class Belongings implements Iterable<Item> {
 		}
 	}
 
+	public KindofMisc misc3(){
+		if (!lostInventory() || (misc3 != null && misc3.keptThroughLostInventory())){
+			return misc3;
+		} else {
+			return null;
+		}
+	}
+
 	public Ring ring(){
 		if (!lostInventory() || (ring != null && ring.keptThroughLostInventory())){
 			return ring;
@@ -183,6 +197,8 @@ public class Belongings implements Iterable<Item> {
 	private static final String RING       = "ring";
 	private static final String MISC2      = "misc2";
 	private static final String EXTRA_SLOT = "extra_slot";
+	private static final String MISC3      = "misc3";
+	private static final String EXTRA_SLOT2 = "extra_slot2";
 
 	private static final String SECOND_WEP = "second_wep";
 
@@ -197,6 +213,8 @@ public class Belongings implements Iterable<Item> {
 		bundle.put( RING, ring );
 		bundle.put( MISC2, misc2 );
 		bundle.put( EXTRA_SLOT, extraSlot );
+		bundle.put( MISC3, misc3 );
+		bundle.put( EXTRA_SLOT2, extraSlot2 );
 		bundle.put( SECOND_WEP, secondWep );
 	}
 
@@ -226,6 +244,10 @@ public class Belongings implements Iterable<Item> {
 		misc2 = bundle.contains(MISC2) ? (KindofMisc) bundle.get(MISC2) : null;
 		if (misc2() != null)        misc2().activate( owner );
 
+		extraSlot2 = bundle.getBoolean(EXTRA_SLOT2);
+		misc3 = bundle.contains(MISC3) ? (KindofMisc) bundle.get(MISC3) : null;
+		if (misc3() != null)        misc3().activate( owner );
+
 		secondWep = (KindOfWeapon) bundle.get(SECOND_WEP);
 		if (secondWep() != null)    secondWep().activate(owner);
 
@@ -239,6 +261,7 @@ public class Belongings implements Iterable<Item> {
 		artifact = null;
 		misc = null;
 		misc2 = null;
+		misc3 = null;
 		ring = null;
 	}
 	
@@ -401,6 +424,14 @@ public class Belongings implements Iterable<Item> {
 				Badges.validateItemLevelAquired(misc2());
 			}
 		}
+		if (misc3() != null) {
+			if (ShardOfOblivion.passiveIDDisabled() && misc3() instanceof Ring){
+				((Ring) misc3()).setIDReady();
+			} else {
+				misc3().identify();
+				Badges.validateItemLevelAquired(misc3());
+			}
+		}
 		if (ring() != null) {
 			if (ShardOfOblivion.passiveIDDisabled()){
 				ring().setIDReady();
@@ -421,7 +452,7 @@ public class Belongings implements Iterable<Item> {
 	}
 	
 	public void uncurseEquipped() {
-		ScrollOfRemoveCurse.uncurse( owner, armor(), weapon(), artifact(), misc(), ring(), secondWep(), misc2());
+		ScrollOfRemoveCurse.uncurse( owner, armor(), weapon(), artifact(), misc(), ring(), secondWep(), misc2(), misc3());
 	}
 	
 	public Item randomUnequipped() {
@@ -453,7 +484,7 @@ public class Belongings implements Iterable<Item> {
 		
 		private Iterator<Item> backpackIterator = backpack.iterator();
 		
-		private Item[] equipped = {weapon, armor, artifact, misc, ring, secondWep, misc2};
+		private Item[] equipped = {weapon, armor, artifact, misc, ring, secondWep, misc2, misc3};
 		private int backpackIndex = equipped.length;
 		
 		@Override
@@ -504,6 +535,9 @@ public class Belongings implements Iterable<Item> {
 				break;
 			case 6:
 				equipped[6] = misc2 = null;
+				break;
+			case 7:
+				equipped[7] = misc3 = null;
 				break;
 			default:
 				backpackIterator.remove();

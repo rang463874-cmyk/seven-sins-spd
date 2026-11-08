@@ -415,6 +415,9 @@ public class Ring extends KindofMisc {
 		if (hero.belongings.misc2() != null && hero.belongings.misc2().getClass() == getClass()){
 			bonus += ((Ring)hero.belongings.misc2()).soloBonus();
 		}
+		if (hero.belongings.misc3() != null && hero.belongings.misc3().getClass() == getClass()){
+			bonus += ((Ring)hero.belongings.misc3()).soloBonus();
+		}
 		return bonus;
 	}
 
@@ -429,6 +432,9 @@ public class Ring extends KindofMisc {
 		}
 		if (hero.belongings.misc2() != null && hero.belongings.misc2().getClass() == getClass()){
 			bonus += ((Ring)hero.belongings.misc2()).soloBuffedBonus();
+		}
+		if (hero.belongings.misc3() != null && hero.belongings.misc3().getClass() == getClass()){
+			bonus += ((Ring)hero.belongings.misc3()).soloBuffedBonus();
 		}
 		return bonus;
 	}

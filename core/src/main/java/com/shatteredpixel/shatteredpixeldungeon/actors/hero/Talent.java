@@ -649,6 +649,9 @@ public enum Talent {
 			if (hero.belongings.misc2 instanceof Ring && !ShardOfOblivion.passiveIDDisabled()) {
 				hero.belongings.misc2.identify();
 			}
+			if (hero.belongings.misc3 instanceof Ring && !ShardOfOblivion.passiveIDDisabled()) {
+				hero.belongings.misc3.identify();
+			}
 			for (Item item : Dungeon.hero.belongings){
 				if (item instanceof Ring){
 					((Ring) item).setKnown();
@@ -659,6 +662,7 @@ public enum Talent {
 			if (hero.belongings.ring instanceof Ring) hero.belongings.ring.setKnown();
 			if (hero.belongings.misc instanceof Ring) ((Ring) hero.belongings.misc).setKnown();
 			if (hero.belongings.misc2 instanceof Ring) ((Ring) hero.belongings.misc2).setKnown();
+			if (hero.belongings.misc3 instanceof Ring) ((Ring) hero.belongings.misc3).setKnown();
 		}
 		if (talent == ADVENTURERS_INTUITION && hero.pointsInTalent(ADVENTURERS_INTUITION) == 2){
 			if (hero.belongings.weapon() != null && !ShardOfOblivion.passiveIDDisabled()){

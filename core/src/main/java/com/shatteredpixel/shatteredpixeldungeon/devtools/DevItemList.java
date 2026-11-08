@@ -376,6 +376,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.EnvyMirror",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Gold",
 			"com.shatteredpixel.shatteredpixeldungeon.items.GoldenCard",
+			"com.shatteredpixel.shatteredpixeldungeon.items.HeavenlyHalo",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Honeypot",
 			"com.shatteredpixel.shatteredpixeldungeon.items.KingsCrown",
 			"com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal",

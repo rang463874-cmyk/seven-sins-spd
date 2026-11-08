@@ -104,7 +104,10 @@ public class WndBag extends WndTabbed {
 		slotHeight = PixelScene.landscape() ? SLOT_HEIGHT_L : SLOT_HEIGHT_P;
 
 		nCols = PixelScene.landscape() ? COLS_L : COLS_P;
-		nRows = (int)Math.ceil(25/(float)nCols); //we expect to lay out 25 slots in all cases
+		//Seven Sins: 5 equipment slots (+ the extra shared slots) and a 25-item backpack
+		Belongings worn = Dungeon.hero.belongings;
+		int slots = 5 + (worn.extraSlot ? 1 : 0) + (worn.extraSlot2 ? 1 : 0) + Belongings.Backpack.SIZE;
+		nRows = (int)Math.ceil(slots/(float)nCols);
 
 		int windowWidth = slotWidth * nCols + SLOT_MARGIN * (nCols - 1);
 		int windowHeight = TITLE_HEIGHT + slotHeight * nRows + SLOT_MARGIN * (nRows - 1);
@@ -118,6 +121,11 @@ public class WndBag extends WndTabbed {
 			while (slotWidth >= 26 && (windowWidth + chrome.marginHor()) > PixelScene.uiCamera.width){
 				slotWidth--;
 				windowWidth -= nCols;
+			}
+			//Seven Sins: more rows now, so keep the window on short screens too
+			while (slotHeight >= 24 && (windowHeight + 20 + chrome.marginVer()) > PixelScene.uiCamera.height){
+				slotHeight--;
+				windowHeight -= nRows;
 			}
 		}
 
@@ -255,6 +263,11 @@ public class WndBag extends WndTabbed {
 		//Seven Sins: the extra shared slot from the Mirror Ring
 		if (stuff.extraSlot) {
 			placeItem( stuff.misc2 != null ? stuff.misc2 : new Placeholder( ItemSpriteSheet.SOMETHING ) );
+			equipped++;
+		}
+		//and the one from the heavenly halo
+		if (stuff.extraSlot2) {
+			placeItem( stuff.misc3 != null ? stuff.misc3 : new Placeholder( ItemSpriteSheet.SOMETHING ) );
 			equipped++;
 		}
 
