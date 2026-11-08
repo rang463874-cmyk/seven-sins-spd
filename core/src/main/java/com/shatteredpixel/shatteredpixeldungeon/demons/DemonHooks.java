@@ -29,6 +29,21 @@ public class DemonHooks {
 
 	public static final int NONE = 0, TRIAL = 1, GRANTED = 2, DEFEATED = 3;
 
+	/** the lord's domain: a side branch of Tengu's floor */
+	public static final int ARENA_BRANCH = 7;
+	public static final int ARENA_DEPTH = 10;
+
+	/** takes the hero to the lord's domain for the boss fight */
+	public static void travelToArena() {
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.mode =
+				com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.Mode.RETURN;
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.returnDepth = ARENA_DEPTH;
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.returnBranch = ARENA_BRANCH;
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.returnPos =
+				com.shatteredpixel.shatteredpixeldungeon.levels.DemonArenaLevel.arrivalCell();
+		com.watabou.noosa.Game.switchScene(com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.class);
+	}
+
 	public static DemonLord lord = null;
 	public static int stage = NONE;
 	/** set once the altar has been placed this run */
@@ -100,12 +115,8 @@ public class DemonHooks {
 	/** Goo.die: the altar rises where the goo fell */
 	public static void onGooDefeated(int pos) {
 		if (altarSpawned || stage != NONE || Dungeon.level == null) return;
-		int cell = -1;
-		for (int n : PathFinder.NEIGHBOURS8) {
-			int c = pos + n;
-			if (Dungeon.level.passable[c] && Actor.findChar(c) == null && Dungeon.level.heaps.get(c) == null) { cell = c; break; }
-		}
-		if (cell == -1) cell = freeCellNear(pos);
+		//on the goo's own starting tile if possible
+		int cell = freeCellNear(pos);
 		if (cell == -1) return;
 		DemonAltar altar = new DemonAltar();
 		altar.pos = cell;
@@ -162,6 +173,10 @@ public class DemonHooks {
 		ess.quantity(3);
 		Dungeon.level.drop(ess, pos).sprite.drop();
 		GLog.p(Messages.get(DemonLordNPC.class, "empowered"));
+		if (Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.DemonArenaLevel) {
+			((com.shatteredpixel.shatteredpixeldungeon.levels.DemonArenaLevel) Dungeon.level).unlockPortal();
+			GLog.i(Messages.get(DemonLordNPC.class, "portal_open"));
+		}
 	}
 
 	/** dev tools: NONE -> altar next to the hero, TRIAL -> the lord appears, GRANTED -> its boss form */

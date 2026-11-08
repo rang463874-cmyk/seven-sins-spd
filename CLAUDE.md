@@ -58,7 +58,11 @@ Done and pushed (see `git log`):
   `actors/mobs/npcs/DemonLordNPC`; first talk = `grantPerk` (`actors/buffs/DemonPerk`, also holds the skill charge 0..100,
   +1/turn, +2 after the boss) and the lord's skill `demons/DemonSkill` (a SinSkill shown in its own row above the skill
   bar via `SkillBar.extraSkills` -> `DemonHooks.skill`, for every class; icons skill_icons.png row 8 = 64 + lord ordinal;
-  effects in `DemonSeal.invokeSkill`, the old `items/DemonSeal` item is only kept for saves that got it), then "fight / later": `actors/mobs/DemonLordBoss` (RegionElite with BOSS, 300 HP, hellfire ring + wraiths + the
+  effects in `DemonSeal.invokeSkill`, the old `items/DemonSeal` item is only kept for saves that got it), then "fight / later": the fight takes the hero (InterlevelScene RETURN, `DemonHooks.travelToArena`) to
+  `levels/DemonArenaLevel`, a side floor of depth 10 on branch `DemonHooks.ARENA_BRANCH` = 7 (built in `Dungeon.newLevel`;
+  15x13 halls hall, long top wall; boss made in `createMobs` (no notice()/beckon during build: no sprite yet); the way back
+  is a LOCKED_EXIT stair (BRANCH_ENTRANCE to depth 10's REGULAR_EXIT) opened by `unlockPortal` on the lord's death; the
+  NPC avatar stays on Tengu's floor until DEFEATED). The altar rises on Goo's starting tile (`Goo.home`). Boss: `actors/mobs/DemonLordBoss` (RegionElite with BOSS, 300 HP, hellfire ring + wraiths + the
   lord's signature skill, enraged under 50%; death -> `onLordDefeated`: boon x1.5, 3 essences). Trial penalties/boons are
   hooked in Hero (updateHT, accuracy, evasion, speed, attackProc, rest), Char.damage, Gold, Hunger, Regeneration, Food.
   Every line has an `_own` variant used when the lord's sin is the hero's (`DemonHooks.line`). Strings in
@@ -69,7 +73,7 @@ Done and pushed (see `git log`):
   size), `sprites/demon_leviathan.png` (48x49: body x3, tail x3, blank) and `sprites/demon_altar.png` (48x49 x2) by
   `tools/sinsart/make_demon_sprites.py` (art cropped and bottom-aligned, frames derived; the text art in
   `demon_art/<lord>.py` is only a fallback).
-  Leviathan's boss is `actors/mobs/LeviathanBoss` (wall form, `emerge` from the NPC's cell: picks the longest wall run
+  Leviathan's boss is `actors/mobs/LeviathanBoss` (wall form, `emerge(level, cell, live)` (the arena calls it while building): picks the longest wall run
   of 3..11 cells, never covering a door, prefers horizontal walls; head in the middle, `LeviathanCoil`s on the rest,
   which forward damage to the head; immovable; Great Wave = every lane but 1-2 safe ones, Bite, Undertow pull, wraiths;
   falls back to the normal boss if no wall fits). Flies are a tinted swarm; seal at items.png row 37 +12. Dev tools: "마왕 단계 진행" advances the stage.

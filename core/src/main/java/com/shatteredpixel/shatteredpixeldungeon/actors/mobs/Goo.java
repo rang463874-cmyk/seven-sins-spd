@@ -100,6 +100,8 @@ public class Goo extends Mob {
 
 	@Override
 	public boolean act() {
+		//seven sins mod: remember where the goo started, the demon altar rises there
+		if (home == -1) home = pos;
 
 		if (state != HUNTING && pumpedUp > 0){
 			pumpedUp = 0;
@@ -285,7 +287,7 @@ public class Goo extends Mob {
 		super.die( cause );
 		
 		Dungeon.level.unseal();
-		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onGooDefeated(pos);
+		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onGooDefeated(home != -1 ? home : pos);
 		
 		GameScene.bossSlain();
 		Dungeon.level.drop( new WornKey( Dungeon.depth ), pos ).sprite.drop();
@@ -324,6 +326,9 @@ public class Goo extends Mob {
 		}
 	}
 
+	/** the goo's first position (seven sins mod: the demon altar appears there) */
+	public int home = -1;
+
 	private final String PUMPEDUP = "pumpedup";
 	private final String HEALINC = "healinc";
 
@@ -334,6 +339,7 @@ public class Goo extends Mob {
 
 		bundle.put( PUMPEDUP , pumpedUp );
 		bundle.put( HEALINC, healInc );
+		bundle.put( "sins_home", home );
 	}
 
 	@Override
@@ -346,6 +352,7 @@ public class Goo extends Mob {
 		if ((HP*2 <= HT)) BossHealthBar.bleed(true);
 
 		healInc = bundle.getInt(HEALINC);
+		home = bundle.contains("sins_home") ? bundle.getInt("sins_home") : -1;
 	}
 	
 }

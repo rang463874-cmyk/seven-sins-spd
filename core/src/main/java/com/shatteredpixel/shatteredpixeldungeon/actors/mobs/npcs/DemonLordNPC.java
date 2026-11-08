@@ -128,22 +128,10 @@ public class DemonLordNPC extends NPC {
 
 	private void startFight() {
 		if (!isAlive() || Dungeon.level == null) return;
-		int cell = pos;
-		DemonLord l = lord;
-		vanish();
-		DemonLordBoss boss = null;
-		//Leviathan rises along a whole wall of the arena
-		if (l == DemonLord.LEVIATHAN) boss = com.shatteredpixel.shatteredpixeldungeon.actors.mobs.LeviathanBoss.emerge(cell);
-		if (boss == null) {
-			boss = new DemonLordBoss();
-			boss.lord = l;
-			boss.pos = cell;
-			GameScene.add(boss);
-		}
-		cell = boss.pos;
-		CellEmitter.get(cell).burst(ShadowParticle.UP, 24);
-		boss.beckon(Dungeon.hero.pos);
-		boss.notice();
+		yell(DemonHooks.line(lord, "boss_notice"));
+		//the true form waits in the lord's own domain; this avatar stays here until it is defeated
+		//(so the hero can go back in if it ever leaves the domain some other way)
+		DemonHooks.travelToArena();
 	}
 
 	@Override

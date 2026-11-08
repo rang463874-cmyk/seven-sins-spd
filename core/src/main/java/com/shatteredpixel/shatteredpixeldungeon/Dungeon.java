@@ -375,6 +375,10 @@ public class Dungeon {
 				default:
 					level = new DeadEndLevel();
 			}
+		} else if (branch == com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.ARENA_BRANCH
+				&& depth == com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.ARENA_DEPTH) {
+			//seven sins mod: the demon lord's domain
+			level = new com.shatteredpixel.shatteredpixeldungeon.levels.DemonArenaLevel();
 		} else {
 			level = new DeadEndLevel();
 		}

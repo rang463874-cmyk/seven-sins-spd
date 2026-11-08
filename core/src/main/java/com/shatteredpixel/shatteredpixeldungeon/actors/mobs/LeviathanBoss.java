@@ -12,6 +12,7 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.Pushing;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave;
+import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Terrain;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -52,33 +53,33 @@ public class LeviathanBoss extends DemonLordBoss {
 
 	// ------------------------------------------------------------------ emerging
 
-	private static boolean stops(int cell) {
-		int t = Dungeon.level.map[cell];
-		return Dungeon.level.solid[cell] || !Dungeon.level.passable[cell] || t == Terrain.DOOR
+	private static boolean stops(Level lvl, int cell) {
+		int t = lvl.map[cell];
+		return lvl.solid[cell] || !lvl.passable[cell] || t == Terrain.DOOR
 				|| t == Terrain.OPEN_DOOR || t == Terrain.LOCKED_DOOR || t == Terrain.CRYSTAL_DOOR;
 	}
 
-	private static boolean isDoor(int cell) {
-		int t = Dungeon.level.map[cell];
+	private static boolean isDoor(Level lvl, int cell) {
+		int t = lvl.map[cell];
 		return t == Terrain.DOOR || t == Terrain.OPEN_DOOR || t == Terrain.LOCKED_DOOR || t == Terrain.CRYSTAL_DOOR;
 	}
 
 	/** a real wall behind the body (never a door, so the way out stays open) */
-	private static boolean isWall(int cell) {
-		return Dungeon.level.solid[cell] && !isDoor(cell);
+	private static boolean isWall(Level lvl, int cell) {
+		return lvl.solid[cell] && !isDoor(lvl, cell);
 	}
 
 	/** finds the wall to lie along, starting from a cell inside the arena; null if there is no room */
-	private static int[][] findWall(int start) {
-		int w = Dungeon.level.width();
+	private static int[][] findWall(Level lvl, int start) {
+		int w = lvl.width();
 		int[] dirs = {-w, w, -1, 1};
 		int[][] best = null;
 		int bestScore = 0;
 		for (int d : dirs) {
 			int c = start;
 			int guard = 0;
-			while (!stops(c + d) && guard++ < 20) c += d;
-			if (!isWall(c + d)) continue;
+			while (!stops(lvl, c + d) && guard++ < 20) c += d;
+			if (!isWall(lvl, c + d)) continue;
 			int lat = Math.abs(d) == 1 ? w : 1;
 			ArrayList<Integer> cells = new ArrayList<>();
 			cells.add(c);
@@ -86,7 +87,7 @@ public class LeviathanBoss extends DemonLordBoss {
 				int x = c;
 				for (int i = 0; i < 5; i++) {
 					x += sgn * lat;
-					if (stops(x) || !isWall(x + d)) break;
+					if (stops(lvl, x) || !isWall(lvl, x + d)) break;
 					if (sgn < 0) cells.add(0, x); else cells.add(x);
 				}
 			}
@@ -102,9 +103,17 @@ public class LeviathanBoss extends DemonLordBoss {
 		return best;
 	}
 
-	/** raises Leviathan's wall form near a cell; returns null if no wall fits (use the normal boss then) */
+	/** raises Leviathan's wall form near a cell of the current level; null if no wall fits */
 	public static LeviathanBoss emerge(int near) {
-		int[][] wall = findWall(near);
+		return emerge(Dungeon.level, near, true);
+	}
+
+	/**
+	 * Leviathan's wall form on a level. live = the level is being played (adds to the scene with effects);
+	 * otherwise it is being built (mobs go straight into its list).
+	 */
+	public static LeviathanBoss emerge(Level lvl, int near, boolean live) {
+		int[][] wall = findWall(lvl, near);
 		if (wall == null) return null;
 		int[] cells = wall[0];
 		int mid = cells.length / 2;
@@ -113,7 +122,8 @@ public class LeviathanBoss extends DemonLordBoss {
 		for (int off = 0; off <= cells.length; off++) {
 			for (int sgn = -1; sgn <= 1; sgn += 2) {
 				int i = mid + sgn * off;
-				if (i >= 0 && i < cells.length && Actor.findChar(cells[i]) == null) { headIdx = i; break; }
+				if (i >= 0 && i < cells.length && lvl.findMob(cells[i]) == null
+						&& (!live || Actor.findChar(cells[i]) == null)) { headIdx = i; break; }
 			}
 			if (headIdx != -1) break;
 		}
@@ -124,21 +134,29 @@ public class LeviathanBoss extends DemonLordBoss {
 		boss.dir = wall[1][0];
 		boss.lateral = wall[1][1];
 		boss.pos = cells[headIdx];
-		GameScene.add(boss);
-		CellEmitter.get(boss.pos).burst(Speck.factory(Speck.STEAM), 20);
+		if (live) {
+			GameScene.add(boss);
+			CellEmitter.get(boss.pos).burst(Speck.factory(Speck.STEAM), 20);
+		} else {
+			lvl.mobs.add(boss);
+		}
 
 		for (int i = 0; i < cells.length; i++) {
-			if (i == headIdx || Actor.findChar(cells[i]) != null) continue;
+			if (i == headIdx || lvl.findMob(cells[i]) != null || (live && Actor.findChar(cells[i]) != null)) continue;
 			LeviathanCoil c = new LeviathanCoil();
 			c.head = boss.id();
 			c.pos = cells[i];
 			c.variant = pieceAt(i, headIdx, cells.length);
 			//the tail curls outward: art curls to the right, so the left side is mirrored
 			c.flip = i < headIdx;
-			GameScene.add(c);
-			CellEmitter.get(c.pos).burst(Speck.factory(Speck.STEAM), 6);
+			if (live) {
+				GameScene.add(c);
+				CellEmitter.get(c.pos).burst(Speck.factory(Speck.STEAM), 6);
+			} else {
+				lvl.mobs.add(c);
+			}
 		}
-		Sample.INSTANCE.play(Assets.Sounds.WATER);
+		if (live) Sample.INSTANCE.play(Assets.Sounds.WATER);
 		return boss;
 	}
 
