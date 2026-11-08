@@ -5,6 +5,8 @@ Source art (big pixel-art pictures on a black background) lives in tools/sinsart
 - paladin.png: the virtues' paladins (patience, temperance, diligence)
 - saint.png:   the virtues' saints (humility, charity, chastity, kindness)
 
+- angel_<name>.png: the seven archangels (sprites/virtue_angels.png, 64x65 frames, one row each in Virtue order)
+
 Output: core/src/main/assets/sprites/virtue_champions.png, two rows (paladin, saint) of 12 frames,
 S x (S+1) each (one spare row on top for the bob): idle (2), run (4), attack (3), die (3) — the same
 layout as the demon lords. sprites/VirtueSprites draws them centred on the champion's cell.
@@ -31,6 +33,19 @@ OUTLINE = (20, 16, 24, 255)
 ROWS = [
     ("paladin", (255, 230, 150, 255)),
     ("saint", (255, 245, 200, 255)),
+]
+
+#the archangels, one row each in Virtue order (humility, charity, chastity, patience, temperance,
+#kindness, diligence); drawn bigger (64px, over ~4x4 tiles) as the final boss
+ANGEL_SIZE = 64
+ANGELS = [
+    ("angel_michael", (255, 230, 120, 255)),
+    ("angel_raguel", (140, 200, 255, 255)),
+    ("angel_gabriel", (255, 255, 255, 255)),
+    ("angel_uriel", (255, 120, 80, 255)),
+    ("angel_raphael", (140, 255, 170, 255)),
+    ("angel_jeremiel", (210, 150, 255, 255)),
+    ("angel_sariel", (200, 220, 255, 255)),
 ]
 
 
@@ -180,13 +195,20 @@ def frames(base, fx):
     ]
 
 
-def main():
-    sheet = Image.new("RGBA", (S * FRAMES, H * len(ROWS)), (0, 0, 0, 0))
-    for r, (name, fx) in enumerate(ROWS):
+def sheet(rows, size, out):
+    global S, H
+    S, H = size, size + 1
+    img = Image.new("RGBA", (S * FRAMES, H * len(rows)), (0, 0, 0, 0))
+    for r, (name, fx) in enumerate(rows):
         base = shrink(cutout(Image.open(os.path.join(SRC, name + ".png"))))
         for i, f in enumerate(frames(base, fx)):
-            sheet.paste(f, (i * S, r * H), f)
-    sheet.save(os.path.join(OUT, "virtue_champions.png"))
+            img.paste(f, (i * S, r * H), f)
+    img.save(os.path.join(OUT, out))
+
+
+def main():
+    sheet(ROWS, 48, "virtue_champions.png")
+    sheet(ANGELS, ANGEL_SIZE, "virtue_angels.png")
     print("virtue sprites written")
 
 

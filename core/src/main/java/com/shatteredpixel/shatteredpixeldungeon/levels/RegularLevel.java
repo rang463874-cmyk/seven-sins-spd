@@ -107,6 +107,7 @@ public abstract class RegularLevel extends Level {
 		builder = builder();
 		
 		ArrayList<Room> initRooms = initRooms();
+		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.addSanctum(initRooms);
 		Random.shuffle(initRooms);
 		
 		do {

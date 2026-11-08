@@ -44,7 +44,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 	private int ascensions = 0;
 
 	{
-		spriteClass = VirtueSprites.AngelCaster.class;
+		spriteClass = VirtueSprites.Michael.class;
 		HP = HT = 650;
 		defenseSkill = 30;
 		EXP = 100;

@@ -44,7 +44,7 @@ public class DiligenceChampion extends VirtueChampion {
 		boolean through = false;
 		for (int i = 1; i < line.path.size() && cells.size() < 7; i++) {
 			int c = line.path.get(i);
-			if (!Dungeon.level.passable[c] || Dungeon.level.solid[c]) break;
+			if (!Dungeon.level.passable[c] || Dungeon.level.solid[c] || !canReach(c)) break;
 			cells.add(c);
 			if (c == target.pos) through = true;
 		}

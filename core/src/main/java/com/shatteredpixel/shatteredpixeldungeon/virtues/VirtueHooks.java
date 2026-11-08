@@ -7,7 +7,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.VirtueChampion;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room;
-import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.standard.StandardRoom;
+import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.quest.VirtueSanctumRoom;
 import com.shatteredpixel.shatteredpixeldungeon.sins.SinRewards;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
@@ -16,11 +16,12 @@ import com.watabou.utils.Reflection;
 import java.util.ArrayList;
 
 /**
- * The virtues' crusade: one champion of a virtue hunts the hero in each region from the prison on
- * (regions 1-4, chance 1/floors left, forced on the region's last regular floor). Every virtue appears
+ * The virtues' crusade: one champion of a virtue waits for the hero in its own sanctum
+ * ({@link VirtueSanctumRoom}) in each region from the prison on (regions 1-4, chance 1/floors left,
+ * forced on the region's last regular floor). Every virtue appears
  * at most once per run; for a sin hero, the virtue opposing its sin (its nemesis) is guaranteed in one
  * random region. A nemesis fight deals and takes +25% damage, and pays a bigger reward.
- * Called from EliteHooks.onLevelMobs; state saved with the quests in Dungeon.
+ * Called from RegularLevel.build (addSanctum) and EliteHooks.onLevelMobs; state saved with the quests in Dungeon.
  */
 public class VirtueHooks {
 
@@ -92,8 +93,16 @@ public class VirtueHooks {
 		return pool.isEmpty() ? null : Random.element(pool);
 	}
 
-	/** EliteHooks.onLevelMobs: maybe a champion of a virtue comes for the hero on this floor */
-	public static void onLevelMobs(Level level, ArrayList<Room> rooms, Room entrance) {
+	/** the virtue rolled for the floor being built (its sanctum was added to the rooms), or null */
+	private static Virtue pendingVirtue = null;
+
+	/**
+	 * RegularLevel.build, right after initRooms: maybe a champion of a virtue waits on this floor.
+	 * Rolls the odds (1/floors left in the region, forced on its last regular floor) and adds the
+	 * champion's sanctum to the rooms; {@link #onLevelMobs} puts the champion in it.
+	 */
+	public static void addSanctum(ArrayList<Room> rooms) {
+		pendingVirtue = null;
 		if (Dungeon.branch != 0 || Dungeon.bossLevel() || Dungeon.depth < 6 || Dungeon.depth > 24) return;
 		int region = (Dungeon.depth - 1) / 5;
 		if (region < 1 || (regionsDone & (1 << region)) != 0) return;
@@ -103,32 +112,28 @@ public class VirtueHooks {
 
 		Virtue v = pick(region);
 		if (v == null) return;
-		int cell = farCell(level, rooms, entrance);
-		if (cell == -1) return;
-		VirtueChampion c = Reflection.newInstance(v.champion);
-		if (c == null) return;
-		c.pos = cell;
-		level.mobs.add(c);
-		regionsDone |= 1 << region;
-		virtuesUsed |= 1 << v.ordinal();
+		rooms.add(new VirtueSanctumRoom());
+		pendingVirtue = v;
 	}
 
-	private static int farCell(Level level, ArrayList<Room> rooms, Room entrance) {
-		ArrayList<Room> cands = new ArrayList<>();
+	/** EliteHooks.onLevelMobs: the rolled champion takes its place on the pedestal of its sanctum */
+	public static void onLevelMobs(Level level, ArrayList<Room> rooms, Room entrance) {
+		Virtue v = pendingVirtue;
+		pendingVirtue = null;
+		if (v == null) return;
+		VirtueSanctumRoom sanctum = null;
 		for (Room r : rooms) {
-			if (r instanceof StandardRoom && r != entrance && ((StandardRoom) r).mobSpawnWeight() > 0
-					&& r.width() > 3 && r.height() > 3) cands.add(r);
+			if (r instanceof VirtueSanctumRoom) sanctum = (VirtueSanctumRoom) r;
 		}
-		for (int tries = 0; tries < 60 && !cands.isEmpty(); tries++) {
-			Room r = Random.element(cands);
-			int c = level.pointToCell(r.random(1));
-			if (level.passable[c] && !level.solid[c] && level.findMob(c) == null && c != level.exit()
-					&& c != level.entrance() && level.trueDistance(c, level.entrance()) >= 12
-					&& r.canPlaceCharacter(level.cellToPoint(c), level)) {
-				return c;
-			}
-		}
-		return -1;
+		if (sanctum == null) return;
+		VirtueChampion c = Reflection.newInstance(v.champion);
+		if (c == null) return;
+		c.pos = level.pointToCell(sanctum.altar());
+		c.home = c.pos;
+		level.mobs.add(c);
+		int region = (Dungeon.depth - 1) / 5;
+		regionsDone |= 1 << region;
+		virtuesUsed |= 1 << v.ordinal();
 	}
 
 	// ------------------------------------------------------------------ the archangel (final boss)

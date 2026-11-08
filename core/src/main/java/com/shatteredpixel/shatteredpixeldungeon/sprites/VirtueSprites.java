@@ -1,6 +1,5 @@
 package com.shatteredpixel.shatteredpixeldungeon.sprites;
 
-import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.virtues.Virtue;
 import com.watabou.noosa.TextureFilm;
 
@@ -9,14 +8,10 @@ import com.watabou.noosa.TextureFilm;
  * tools/sinsart/make_virtue_sprites.py): row 0 = paladin (patience, temperance, diligence),
  * row 1 = saint (humility, charity, chastity, kindness). 48x49 frames drawn over the 3x3 tiles
  * around the cell, like the demon lords.
- * The archangel still uses the old placeholders (tinted statue/warlock) via {@link #forAngel}.
+ * The archangels (final boss) have their own art too: sprites/virtue_angels.png, 64x65 frames, one row
+ * each in Virtue order, via {@link #forAngel}.
  */
 public class VirtueSprites {
-
-	static void lordTint(CharSprite s, Virtue v) {
-		int c = v.color;
-		s.hardlight(((c >> 16) & 0xFF) / 255f, ((c >> 8) & 0xFF) / 255f, (c & 0xFF) / 255f);
-	}
 
 	public static boolean isPaladin(Virtue v) {
 		return v == Virtue.PATIENCE || v == Virtue.TEMPERANCE || v == Virtue.DILIGENCE;
@@ -84,25 +79,66 @@ public class VirtueSprites {
 	public static class Temperance extends ChampionSprite { protected Virtue virtue() { return Virtue.TEMPERANCE; } }
 	public static class Diligence extends ChampionSprite { protected Virtue virtue() { return Virtue.DILIGENCE; } }
 
-	// ------------------------------------------------ the archangel (placeholder art until it gets its own)
+	// ------------------------------------------------ the archangels (final boss)
 
 	public static CharSprite forAngel(Virtue v) {
-		return isPaladin(v) ? new AngelStatue(v) : new AngelCaster(v);
+		switch (v) {
+			case HUMILITY:   return new Michael();
+			case CHARITY:    return new Raguel();
+			case CHASTITY:   return new Gabriel();
+			case PATIENCE:   return new Uriel();
+			case TEMPERANCE: return new Raphael();
+			case KINDNESS:   return new Jeremiel();
+			default:         return new Sariel();
+		}
 	}
 
-	public static class AngelCaster extends WarlockSprite {
-		private Virtue v;
-		public AngelCaster() { this(Virtue.HUMILITY); }
-		public AngelCaster(Virtue v) { super(); this.v = v; }
-		@Override public void resetColor() { super.resetColor(); if (v != null) lordTint(this, v); }
-		@Override public void link(Char ch) { super.link(ch); resetColor(); }
+	/** one archangel's row of sprites/virtue_angels.png (the owner's art): 64x65 frames, rows in Virtue order */
+	public static abstract class AngelSprite extends MobSprite {
+
+		public static final String TEXTURE = "sprites/virtue_angels.png";
+
+		protected abstract Virtue virtue();
+
+		public AngelSprite() {
+			super();
+			texture(TEXTURE);
+			TextureFilm frames = new TextureFilm(texture, 64, 65);
+			int o = virtue().ordinal() * 12;
+
+			perspectiveRaise = -8 / 16f;
+			shadowWidth = 0.9f;
+			shadowHeight = 0.14f;
+			shadowOffset = 0.2f;
+
+			idle = new Animation(3, true);
+			idle.frames(frames, o, o + 1);
+
+			run = new Animation(8, true);
+			run.frames(frames, o + 2, o + 3, o + 4, o + 5);
+
+			attack = new Animation(12, false);
+			attack.frames(frames, o + 6, o + 7, o + 8);
+
+			zap = attack.clone();
+
+			die = new Animation(6, false);
+			die.frames(frames, o + 9, o + 10, o + 11);
+
+			play(idle);
+		}
+
+		@Override
+		public int blood() {
+			return 0xFFFFF0C0;
+		}
 	}
 
-	public static class AngelStatue extends StatueSprite {
-		private Virtue v;
-		public AngelStatue() { this(Virtue.PATIENCE); }
-		public AngelStatue(Virtue v) { super(); this.v = v; }
-		@Override public void resetColor() { super.resetColor(); if (v != null) lordTint(this, v); }
-		@Override public void link(Char ch) { super.link(ch); resetColor(); }
-	}
+	public static class Michael extends AngelSprite { protected Virtue virtue() { return Virtue.HUMILITY; } }
+	public static class Raguel extends AngelSprite { protected Virtue virtue() { return Virtue.CHARITY; } }
+	public static class Gabriel extends AngelSprite { protected Virtue virtue() { return Virtue.CHASTITY; } }
+	public static class Uriel extends AngelSprite { protected Virtue virtue() { return Virtue.PATIENCE; } }
+	public static class Raphael extends AngelSprite { protected Virtue virtue() { return Virtue.TEMPERANCE; } }
+	public static class Jeremiel extends AngelSprite { protected Virtue virtue() { return Virtue.KINDNESS; } }
+	public static class Sariel extends AngelSprite { protected Virtue virtue() { return Virtue.DILIGENCE; } }
 }

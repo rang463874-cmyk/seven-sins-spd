@@ -80,16 +80,22 @@ Done and pushed (see `git log`):
 - Seven virtues, phase 1 (Nov 2026): the opposing faction. `virtues/Virtue` enum (humility/pride, charity/greed,
   chastity/lust, patience/wrath, temperance/gluttony, kindness/envy, diligence/sloth; `sin`, `color`, champion class)
   and `virtues/VirtueHooks` (state in the Dungeon quests bundle: regions done, virtues used, nemesis region).
-  One champion per region 1-4 (prison..halls; called from `EliteHooks.onLevelMobs`, chance 1/floors left, forced on
-  the region's last regular floor), each virtue once per run; a sin hero's nemesis (opposing virtue) is guaranteed in
+  One champion per region 1-4 (prison..halls; rolled in `RegularLevel.build` -> `VirtueHooks.addSanctum`, chance 1/floors
+  left, forced on the region's last regular floor, which adds `levels/rooms/quest/VirtueSanctumRoom` (13x13 dead end,
+  4 pillars, pedestal, never merged); `EliteHooks.onLevelMobs` -> `VirtueHooks.onLevelMobs` puts the champion on the
+  pedestal with `home` set), each virtue once per run; a sin hero's nemesis (opposing virtue) is guaranteed in
   one random region. Champions: `actors/mobs/virtues/*Champion` on `VirtueChampion` (RegionElite; stats from the
-  floor: HT 30+12d etc.; spawn HUNTING, announce + beckon on their first act; 2 telegraphed skills each; drop the
+  floor: HT 30+12d etc.; with a `home` they announce ("awaits") and wait on the pedestal, aggro when the hero steps
+  inside, wall up the door like the Seal Warden (`sealedDoors`, reopened on death or when the hero is out), never leave
+  the room, and their skill cells are clipped to it (`canReach`, also in Diligence's charge); champions from old saves
+  or dev summons (`home` -1) still spawn HUNTING, announce + beckon on their first act; 2 telegraphed skills each; drop the
   region reward; nemesis: +25% damage both ways via `VirtueHooks.modifyDamage` in `Char.damage`, own lines (`_own`),
   +50 sin points + scroll of upgrade). Listed in the bestiary's QUEST group (so dev-summonable). Art: the owner's paladin/saint
   pictures in `tools/sinsart/virtue_art/src/` -> `sprites/virtue_champions.png` (48x49, row 0 paladin = patience/temperance/
   diligence, row 1 saint = the rest; background cut out, shrunk, outlined) by `tools/sinsart/make_virtue_sprites.py`;
-  `VirtueSprites.ChampionSprite` draws them over 3x3 tiles like the demon lords. The archangel keeps the tinted
-  statue/warlock placeholder (`VirtueSprites.forAngel`). Strings `tools/strings/virtues_*`. Phase 2: the final boss
+  `VirtueSprites.ChampionSprite` draws them over 3x3 tiles like the demon lords. The archangels have the owner's
+  art too (`virtue_art/src/angel_<name>.png` -> `sprites/virtue_angels.png`, 64x65 frames, one row per angel in Virtue
+  order, `VirtueSprites.forAngel` / `AngelSprite`). Strings `tools/strings/virtues_*`. Phase 2: the final boss
   `actors/mobs/virtues/ArchangelBoss` (BOSS, 650 HP; `virtue` field, `Virtue.angel()` names: Michael/humility,
   Raguel/charity, Gabriel/chastity, Uriel/patience, Raphael/temperance, Jeremiel/kindness, Sariel/diligence) is put
   before the amulet by `LastLevel.createMobs` -> `VirtueHooks.onAmuletLevel` (`angelFor`: the hero's nemesis, else the
