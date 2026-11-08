@@ -96,6 +96,22 @@ public final class PredatorHooks {
 	}
 
 	/** Called whenever the hero drinks, reads, eats or uses a consumable. */
+	/** Mob.die: hungry fang feeds the glutton on every kill it makes */
+	public static void onMobDeath(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob mob, Object cause) {
+		Hero hero = Dungeon.hero;
+		if (hero == null || !hero.isAlive() || hero.buff(PredatorStomach.class) == null) return;
+		int fang = hero.pointsInTalent(Talent.PREDATOR_FANG);
+		if (fang <= 0 || mob.alignment != Char.Alignment.ENEMY) return;
+		boolean byHero = cause == hero
+				|| cause instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon
+				|| cause instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon.Enchantment
+				|| cause instanceof com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand
+				|| cause == com.shatteredpixel.shatteredpixeldungeon.items.PredatorMaw.class;
+		if (!byHero) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hunger hunger = hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hunger.class);
+		if (hunger != null) hunger.satisfy(PredatorStomach.FANG_KILL * fang);
+	}
+
 	public static void onConsumed(Hero hero, Item item) {
 		if (hero != null && item != null && hero.heroClass == HeroClass.ENVY) {
 			com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks.onConsumed(hero, item);

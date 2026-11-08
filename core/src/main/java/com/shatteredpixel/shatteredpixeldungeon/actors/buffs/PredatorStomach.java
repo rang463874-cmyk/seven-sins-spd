@@ -263,8 +263,11 @@ public class PredatorStomach extends Buff {
 				}
 			}
 		}
-		if (hero.pointsInTalent(Talent.PREDATOR_FANG) > 0) {
-			Buff.affect(hero, Fang.class).hits = 3;
+		//hungry fang: every consumable also fills the belly a little
+		int fang = hero.pointsInTalent(Talent.PREDATOR_FANG);
+		if (fang > 0) {
+			Hunger hunger = hero.buff(Hunger.class);
+			if (hunger != null) hunger.satisfy(FANG_CONSUME * fang);
 		}
 		int hide = hero.pointsInTalent(Talent.PREDATOR_HIDE);
 		if (hide > 0) {
@@ -446,6 +449,11 @@ public class PredatorStomach extends Buff {
 	// ------------------------------------------------------------------ helper buffs
 
 	/** Hungry Fang talent: next few melee hits deal bonus damage. */
+	/** hungry fang: satiety per point for every consumable, and for every kill (PredatorHooks.onMobDeath) */
+	public static final int FANG_CONSUME = 15;
+	public static final int FANG_KILL = 10;
+
+	/** old hungry fang buff, kept for saves (no longer applied) */
 	public static class Fang extends Buff {
 		public int hits = 3;
 

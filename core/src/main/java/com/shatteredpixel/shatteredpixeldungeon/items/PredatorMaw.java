@@ -45,7 +45,14 @@ public class PredatorMaw extends SinArtifact {
 	public static final String AC_FEED = "FEED";
 
 	/** base satiety costs, before talents, codex and the maw's level */
-	public static final int COST_BITE = 60;
+	public static final int COST_BITE = 60; //old satiety cost, kept for reference
+	/** bite costs this share of max HP (min 1) and fills satiety when it kills */
+	public static final float BITE_HP_COST = 0.06f;
+	public static final int BITE_FEED = 80;
+
+	public static int biteHpCost(Hero hero) {
+		return Math.max(1, Math.round(hero.HT * BITE_HP_COST));
+	}
 	public static final int COST_DASH = 50;
 	public static final int COST_ACID = 80;
 	public static final int COST_RUMINATE = 150;
@@ -138,10 +145,10 @@ public class PredatorMaw extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
-		list.add(new BasicSkill(PredatorMaw.class, "bite", 1, SinSkill.CostType.SATIETY).targetsEnemy()
-				.cost(h -> hungerCost(h, COST_BITE))
-				.usableIf(h -> canAfford(h, COST_BITE))
-				.descArgs(h -> new Object[]{Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100)})
+		list.add(new BasicSkill(PredatorMaw.class, "bite", 1, SinSkill.CostType.HP).targetsEnemy()
+				.cost(h -> biteHpCost(h))
+				.usableIf(h -> h.HP > biteHpCost(h))
+				.descArgs(h -> new Object[]{Math.round(BITE_DAMAGE * 100), Math.round(BITE_LIFESTEAL * 100), BITE_FEED})
 				.onUse(h -> GameScene.selectCell(biteSelector)));
 		list.add(new BasicSkill(PredatorMaw.class, "dash", 3, SinSkill.CostType.SATIETY)
 				.cost(h -> hungerCost(h, COST_DASH))
@@ -276,7 +283,14 @@ public class PredatorMaw extends SinArtifact {
 				GLog.w(Messages.get(PredatorMaw.class, "bite_target"));
 				return;
 			}
-			if (!pay(hero, COST_BITE)) return;
+			//bite is paid in blood, never enough to kill you
+			int cost = biteHpCost(hero);
+			if (hero.HP <= cost) {
+				GLog.w(Messages.get(PredatorMaw.class, "bite_weak"));
+				return;
+			}
+			hero.HP -= cost;
+			hero.sprite.showStatus(CharSprite.NEGATIVE, Integer.toString(cost));
 
 			int before = enemy.HP + enemy.shielding();
 			hero.sprite.turnTo(hero.pos, cell);
@@ -287,6 +301,13 @@ public class PredatorMaw extends SinArtifact {
 			if (heal > 0) {
 				hero.HP += heal;
 				hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(heal), FloatingText.HEALING);
+			}
+			//a kill is a meal
+			if (!enemy.isAlive()) {
+				Hunger hunger = hero.buff(Hunger.class);
+				if (hunger != null) hunger.satisfy(BITE_FEED);
+				hero.sprite.emitter().burst(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.factory(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.HEALING), 2);
+				GLog.p(Messages.get(PredatorMaw.class, "bite_fed"));
 			}
 			Sample.INSTANCE.play(Assets.Sounds.EAT);
 			Invisibility.dispel();

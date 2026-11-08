@@ -90,7 +90,10 @@ the `codex` (class names) with milestones 5/10/20/30/40/50/60 (`PredatorStomach.
 scroll of rage become `GluttonImbue` buffs (`PredatorHooks.drinkOverride/readRage`), psionic blast has no
 backlash. Maw skills: Bite, Hunger Dash (haste), Acid Spray, Swallow Whole (free, 3x points, identifies),
 Ruminate (repeat `lastUsed`, growth items excluded via `PredatorHooks.canRepeat`); satiety costs via
-`PredatorMaw.hungerCost`. Talent enum names are unchanged (meanings and strings changed); INHERITOR is now
+`PredatorMaw.hungerCost`, except Bite, which costs 6% max HP (`biteHpCost`, never lethal) and fills 80 satiety
+on a kill (`BITE_FEED`). PREDATOR_FANG ("hungry fang") now gives satiety per consumable (`FANG_CONSUME` x pts, in
+`PredatorStomach.consume`) and per kill (`FANG_KILL` x pts, `PredatorHooks.onMobDeath` from `Mob.die`); the old
+`PredatorStomach.Fang` damage buff is no longer applied. Talent enum names are unchanged (meanings and strings changed); INHERITOR is now
 shown as the "alchemic glutton". Old Inheritor enchant/glyph lists are kept in saves but unused.
 Pride is a ranged class (Nov 2026): starts with a set of throwing knives in quickslot 0, crown in slot 1; older
 Pride saves get a knife set once via `PrideGlory.bowGiven` (unless they already got the bow). `items/weapon/RoyalBow`
