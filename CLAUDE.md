@@ -61,8 +61,10 @@ Done and pushed (see `git log`):
   lord's signature skill, enraged under 50%; death -> `onLordDefeated`: boon x1.5, 3 essences). Trial penalties/boons are
   hooked in Hero (updateHT, accuracy, evasion, speed, attackProc, rest), Char.damage, Gold, Hunger, Regeneration, Food.
   Every line has an `_own` variant used when the lord's sin is the hero's (`DemonHooks.line`). Strings in
-  `tools/strings/demons*` (generated once by a script; edit them directly now). Placeholder art: `sprites/DemonSprites`
-  (tinted monster sprites), seal at items.png row 37 +12. Dev tools: "마왕 단계 진행" advances the stage.
+  `tools/strings/demons*` (generated once by a script; edit them directly now). Art: `sprites/demon_lords.png` (24x25 frames,
+  one row of 12 per lord in enum order) and `sprites/demon_altar.png`, drawn by `tools/sinsart/make_demon_sprites.py`
+  (text pixel art + derived idle/run/attack/die frames), loaded by `sprites/DemonSprites`; flies are a tinted swarm;
+  seal at items.png row 37 +12. Dev tools: "마왕 단계 진행" advances the stage.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

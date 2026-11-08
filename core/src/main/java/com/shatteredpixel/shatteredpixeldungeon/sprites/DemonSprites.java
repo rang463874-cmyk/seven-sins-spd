@@ -1,10 +1,11 @@
 package com.shatteredpixel.shatteredpixeldungeon.sprites;
 
 import com.shatteredpixel.shatteredpixeldungeon.demons.DemonLord;
+import com.watabou.noosa.TextureFilm;
 
 /**
- * Placeholder art for the demon lords: an existing monster's sprite, hardlit in the lord's colour
- * (re-applied after every flash). One subclass per base sprite.
+ * Sprites for the demon lords (own sheet, one row per lord), their altar, and Beelzebub's flies
+ * (a tinted swarm).
  */
 public class DemonSprites {
 
@@ -27,46 +28,69 @@ public class DemonSprites {
 		}
 	}
 
-	public static class Lucifer extends StatueSprite {
-		public Lucifer() { super(); setArmor(5); }
-		@Override public void resetColor() { super.resetColor(); DemonSprites.lordTint(this, DemonLord.LUCIFER); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
+	/** one lord's row of sprites/demon_lords.png (tools/sinsart/make_demon_sprites.py), 24x25 frames, 12 per row */
+	public static abstract class LordSprite extends MobSprite {
+
+		public static final String TEXTURE = "sprites/demon_lords.png";
+
+		protected abstract DemonLord lord();
+
+		public LordSprite() {
+			super();
+			texture(TEXTURE);
+			TextureFilm frames = new TextureFilm(texture, 24, 25);
+			int o = lord().ordinal() * 12;
+
+			idle = new Animation(3, true);
+			idle.frames(frames, o, o + 1);
+
+			run = new Animation(10, true);
+			run.frames(frames, o + 2, o + 3, o + 4, o + 5);
+
+			attack = new Animation(12, false);
+			attack.frames(frames, o + 6, o + 7, o + 8);
+
+			zap = attack.clone();
+
+			die = new Animation(8, false);
+			die.frames(frames, o + 9, o + 10, o + 11);
+
+			play(idle);
+		}
+
+		@Override
+		public int blood() {
+			return 0xFF000000 | lord().color;
+		}
 	}
 
-	public static class Mammon extends GolemSprite {
-		@Override public void resetColor() { super.resetColor(); DemonSprites.lordTint(this, DemonLord.MAMMON); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
-	}
+	public static class Lucifer extends LordSprite { protected DemonLord lord() { return DemonLord.LUCIFER; } }
+	public static class Mammon extends LordSprite { protected DemonLord lord() { return DemonLord.MAMMON; } }
+	public static class Asmodeus extends LordSprite { protected DemonLord lord() { return DemonLord.ASMODEUS; } }
+	public static class Leviathan extends LordSprite { protected DemonLord lord() { return DemonLord.LEVIATHAN; } }
+	public static class Beelzebub extends LordSprite { protected DemonLord lord() { return DemonLord.BEELZEBUB; } }
+	public static class Satan extends LordSprite { protected DemonLord lord() { return DemonLord.SATAN; } }
+	public static class Belphegor extends LordSprite { protected DemonLord lord() { return DemonLord.BELPHEGOR; } }
 
-	public static class Asmodeus extends SuccubusSprite {
-		@Override public void resetColor() { super.resetColor(); DemonSprites.lordTint(this, DemonLord.ASMODEUS); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
-	}
+	/** the altar: sprites/demon_altar.png, 16x16, flickering braziers */
+	public static class Altar extends MobSprite {
+		public Altar() {
+			super();
+			texture("sprites/demon_altar.png");
+			TextureFilm frames = new TextureFilm(texture, 16, 16);
+			idle = new Animation(4, true);
+			idle.frames(frames, 0, 1);
+			run = idle.clone();
+			attack = idle.clone();
+			die = new Animation(1, false);
+			die.frames(frames, 0);
+			play(idle);
+		}
 
-	public static class Leviathan extends ElementalSprite.Frost {
-		@Override public void resetColor() { super.resetColor(); DemonSprites.lordTint(this, DemonLord.LEVIATHAN); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
-	}
-
-	public static class Beelzebub extends ScorpioSprite {
-		@Override public void resetColor() { super.resetColor(); DemonSprites.lordTint(this, DemonLord.BEELZEBUB); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
-	}
-
-	public static class Satan extends WarlockSprite {
-		@Override public void resetColor() { super.resetColor(); DemonSprites.lordTint(this, DemonLord.SATAN); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
-	}
-
-	public static class Belphegor extends BruteSprite {
-		@Override public void resetColor() { super.resetColor(); DemonSprites.lordTint(this, DemonLord.BELPHEGOR); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
-	}
-
-	/** the altar: a demon spawner, dark red */
-	public static class Altar extends SpawnerSprite {
-		@Override public void resetColor() { super.resetColor(); hardlight(0.75f, 0.2f, 0.35f); }
-		@Override public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) { super.link(ch); resetColor(); }
+		@Override
+		public int blood() {
+			return 0xFF400010;
+		}
 	}
 
 	/** the lords' flies (Beelzebub's seal and boss) */
