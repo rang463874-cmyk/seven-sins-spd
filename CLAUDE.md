@@ -209,7 +209,7 @@ Gluttony (reworked Nov 2026, "eats anything"): no more equipment devouring (that
 their old field names: weaponPts = potions, armorPts = food/seeds, trinketPts = scrolls/stones. New kinds go in
 the `codex` (class names) with milestones 5/10/20/30/40/50/60/70/80 (`PredatorStomach.CODEX_*`; 70 = Bite lifesteal x2,
 80 = 5% sin essence per consumable) plus the "sin gourmet" perk for tasting all 9 `MOD_ALCHEMY` items (+20% points).
-The codex (107 entries in `PredatorStomach.sections()`) is read from the maw's CODEX action in `windows/WndScrollMessage`
+The codex (105 entries in `PredatorStomach.sections()`; seeds skip rotberry, food is the 11 kinds every run can find: no berry/supply ration; `Item.info` appends `PredatorStomach.codexNote` = tasted / not yet / identify first) is read from the maw's CODEX action in `windows/WndScrollMessage`
 (scrolling; Envy's codex uses it too). Mod alchemy items report to `PredatorHooks.onConsumed` when used/thrown and
 are mapped in `PredatorStomach.category`. Harmful potions and
 scroll of rage become `GluttonImbue` buffs (`PredatorHooks.drinkOverride/readRage`), psionic blast has no

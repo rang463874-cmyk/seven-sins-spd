@@ -517,6 +517,11 @@ public class Item implements Bundlable {
 	public Emitter emitter() { return null; }
 	
 	public String info() {
+		//Seven Sins: the glutton sees whether this is in its gourmet codex yet
+		return infoText() + com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PredatorStomach.codexNote(this);
+	}
+
+	private String infoText() {
 
 		if (Dungeon.hero != null) {
 			Notes.CustomRecord note = Notes.findCustomRecord(customNoteID);

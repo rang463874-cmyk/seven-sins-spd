@@ -205,8 +205,13 @@ public class PredatorStomach extends Buff {
 		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.STONE.classes) stones.add((Class<? extends Item>) c);
 		s.put("sec_stones", stones);
 		java.util.ArrayList<Class<? extends Item>> seeds = new java.util.ArrayList<>();
-		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.SEED.classes) seeds.add((Class<? extends Item>) c);
+		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.SEED.classes) {
+			//rotberry seeds only come from the wandmaker's quest, so they can't be counted on
+			if (c == com.shatteredpixel.shatteredpixeldungeon.plants.Rotberry.Seed.class) continue;
+			seeds.add((Class<? extends Item>) c);
+		}
 		s.put("sec_seeds", seeds);
+		//only food every run can find (berries and supply rations depend on trinkets/the seed)
 		s.put("sec_food", new java.util.ArrayList<>(java.util.Arrays.asList(
 				Food.class,
 				com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation.class,
@@ -217,8 +222,7 @@ public class PredatorStomach extends Buff {
 				com.shatteredpixel.shatteredpixeldungeon.items.food.StewedMeat.class,
 				com.shatteredpixel.shatteredpixeldungeon.items.food.MeatPie.class,
 				com.shatteredpixel.shatteredpixeldungeon.items.food.Blandfruit.class,
-				com.shatteredpixel.shatteredpixeldungeon.items.food.Berry.class,
-				com.shatteredpixel.shatteredpixeldungeon.items.food.SupplyRation.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.Blandfruit.Chunks.class,
 				com.shatteredpixel.shatteredpixeldungeon.items.food.PhantomMeat.class)));
 		s.put("sec_sins", new java.util.ArrayList<>(java.util.Arrays.asList(MOD_ALCHEMY)));
 		SECTIONS = s;
@@ -229,6 +233,32 @@ public class PredatorStomach extends Buff {
 		int n = 0;
 		for (java.util.ArrayList<Class<? extends Item>> l : sections().values()) n += l.size();
 		return n;
+	}
+
+	/** whether this kind of item has a codex entry */
+	public static boolean inCodex(Item item) {
+		if (item == null) return false;
+		for (java.util.ArrayList<Class<? extends Item>> l : sections().values()) {
+			if (l.contains(item.getClass())) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Item.info: for the glutton, a line saying whether this consumable is in the codex yet (only once
+	 * its kind is known, so the line never gives away an unidentified potion or scroll)
+	 */
+	public static String codexNote(Item item) {
+		Hero h = Dungeon.hero;
+		if (h == null || item == null) return "";
+		PredatorStomach st = h.buff(PredatorStomach.class);
+		if (st == null || !inCodex(item)) return "";
+		if (!item.isIdentified() && (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion
+				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll)) {
+			return "\n\n" + Messages.get(PredatorStomach.class, "codex_note_unknown");
+		}
+		boolean got = st.codex.contains(item.getClass().getName());
+		return "\n\n" + Messages.get(PredatorStomach.class, got ? "codex_note_known" : "codex_note_new");
 	}
 
 	/** the full text of the gourmet codex window */
