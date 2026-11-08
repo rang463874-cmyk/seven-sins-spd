@@ -33,10 +33,14 @@ public class VirtueHooks {
 	/** region (1-4) where the nemesis comes, 0 = not rolled yet */
 	private static int nemesisRegion = 0;
 
+	/** the archangel after Yog: 0 not yet, 1 waiting by the amulet, 2 defeated */
+	public static int angelStage = 0;
+
 	public static void reset() {
 		regionsDone = 0;
 		virtuesUsed = 0;
 		nemesisRegion = 0;
+		angelStage = 0;
 	}
 
 	private static final String NODE = "sevenSinsVirtues";
@@ -46,6 +50,7 @@ public class VirtueHooks {
 		node.put("regions", regionsDone);
 		node.put("used", virtuesUsed);
 		node.put("nemesis", nemesisRegion);
+		node.put("angel", angelStage);
 		bundle.put(NODE, node);
 	}
 
@@ -56,6 +61,7 @@ public class VirtueHooks {
 		regionsDone = node.getInt("regions");
 		virtuesUsed = node.getInt("used");
 		nemesisRegion = node.getInt("nemesis");
+		angelStage = node.getInt("angel");
 	}
 
 	/** the virtue opposing the hero's sin, or null for the original classes */
@@ -125,15 +131,46 @@ public class VirtueHooks {
 		return -1;
 	}
 
+	// ------------------------------------------------------------------ the archangel (final boss)
+
+	/** which archangel comes: the one opposing the hero's sin, else the one opposing its demon pact, else Michael */
+	public static Virtue angelFor(Hero hero) {
+		Virtue v = hero == null ? null : nemesisOf(hero);
+		if (v == null && com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.lord != null) {
+			v = Virtue.against(com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.lord.sin);
+		}
+		return v == null ? Virtue.HUMILITY : v;
+	}
+
+	/** LastLevel.createMobs: the archangel stands guard before the amulet */
+	public static void onAmuletLevel(Level level, int amuletPos) {
+		if (angelStage != 0) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ArchangelBoss a =
+				new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ArchangelBoss();
+		a.virtue = angelFor(Dungeon.hero);
+		a.pos = amuletPos + 2 * level.width();
+		level.mobs.add(a);
+		angelStage = 1;
+	}
+
+	/** Amulet.doPickUp: no one takes the amulet while the archangel stands */
+	public static boolean amuletGuarded() {
+		if (Dungeon.level == null) return false;
+		for (Mob m : Dungeon.level.mobs) {
+			if (m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ArchangelBoss && m.isAlive()) return true;
+		}
+		return false;
+	}
+
 	// ------------------------------------------------------------------ nemesis damage
 
 	/** Char.damage: the hero and its nemesis hurt each other 25% more */
 	public static int modifyDamage(Char target, Object src, int dmg) {
 		if (dmg <= 0) return dmg;
-		if (target instanceof VirtueChampion && ((VirtueChampion) target).nemesis()) {
+		if (target instanceof VirtueFoe && ((VirtueFoe) target).nemesis()) {
 			if (src == Dungeon.hero || !(src instanceof Mob)) return Math.round(dmg * NEMESIS_DAMAGE);
 		}
-		if (target instanceof Hero && src instanceof VirtueChampion && ((VirtueChampion) src).nemesis()) {
+		if (target instanceof Hero && src instanceof VirtueFoe && ((VirtueFoe) src).nemesis()) {
 			return Math.round(dmg * NEMESIS_DAMAGE);
 		}
 		return dmg;

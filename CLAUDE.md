@@ -81,8 +81,14 @@ Done and pushed (see `git log`):
   floor: HT 30+12d etc.; spawn HUNTING, announce + beckon on their first act; 2 telegraphed skills each; drop the
   region reward; nemesis: +25% damage both ways via `VirtueHooks.modifyDamage` in `Char.damage`, own lines (`_own`),
   +50 sin points + scroll of upgrade). Listed in the bestiary's QUEST group (so dev-summonable). Placeholder art:
-  `sprites/VirtueSprites` (tinted statues/warlocks). Strings `tools/strings/virtues_*`. Planned phase 2: after Yog,
-  the archangel opposing the hero's sin as the final boss.
+  `sprites/VirtueSprites` (tinted statues/warlocks). Strings `tools/strings/virtues_*`. Phase 2: the final boss
+  `actors/mobs/virtues/ArchangelBoss` (BOSS, 650 HP; `virtue` field, `Virtue.angel()` names: Michael/humility,
+  Raguel/charity, Gabriel/chastity, Uriel/patience, Raphael/temperance, Jeremiel/kindness, Sariel/diligence) is put
+  before the amulet by `LastLevel.createMobs` -> `VirtueHooks.onAmuletLevel` (`angelFor`: the hero's nemesis, else the
+  virtue opposing its demon pact, else Michael; `angelStage` 0/1/2 saved); `Amulet.doPickUp` refuses while it lives
+  (`amuletGuarded`). Wakes when the hero comes within 6; Judgment (3x3, blind), Holy Lance (line 9), a virtue
+  signature; ascends at 2/3 and 1/3 HP (barrier, then faster skills); nemesis kill +100 sin points. Both champions and
+  the archangel implement `virtues/VirtueFoe` (nemesis damage). Dev tools: "대천사 소환".
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

@@ -178,6 +178,8 @@ public class LastLevel extends Level {
 
 	@Override
 	protected void createMobs() {
+		//seven sins mod: the archangel opposing the hero's sin guards the amulet
+		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.onAmuletLevel(this, AMULET_POS);
 	}
 
 	public Actor addRespawner() {

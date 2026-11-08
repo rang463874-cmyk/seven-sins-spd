@@ -70,6 +70,11 @@ public class Amulet extends Item {
 	
 	@Override
 	public boolean doPickUp(Hero hero, int pos) {
+		if (com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.amuletGuarded()) {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+					com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ArchangelBoss.class, "amulet_guarded"));
+			return false;
+		}
 		if (super.doPickUp( hero, pos )) {
 			
 			if (!Statistics.amuletObtained) {

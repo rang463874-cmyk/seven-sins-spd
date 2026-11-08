@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * lines, and the two hurt each other 25% more. Drops the region reward; a nemesis also gives sin points
  * and a scroll of upgrade.
  */
-public abstract class VirtueChampion extends RegionElite {
+public abstract class VirtueChampion extends RegionElite implements com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueFoe {
 
 	public abstract Virtue virtue();
 

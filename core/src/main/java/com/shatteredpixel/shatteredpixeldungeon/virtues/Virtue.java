@@ -34,6 +34,11 @@ public enum Virtue {
 		this.champion = champion;
 	}
 
+	/** the archangel who stands for this virtue (the final boss after Yog) */
+	public String angel() {
+		return Messages.get(Virtue.class, name().toLowerCase() + "_angel");
+	}
+
 	public String title() {
 		return Messages.get(Virtue.class, name().toLowerCase());
 	}

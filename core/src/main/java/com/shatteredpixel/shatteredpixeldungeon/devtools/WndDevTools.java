@@ -110,6 +110,27 @@ public class WndDevTools extends Window {
 				GLog.p("모든 소지품을 감정했습니다.");
 			}
 		});
+		addBtn(new RedButton("대천사 소환") {
+			@Override
+			protected void onClick() {
+				hide();
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ArchangelBoss a =
+						new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ArchangelBoss();
+				a.virtue = com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.angelFor(Dungeon.hero);
+				for (int n : com.watabou.utils.PathFinder.NEIGHBOURS8) {
+					int c = Dungeon.hero.pos + n * 2;
+					if (c >= 0 && c < Dungeon.level.length() && Dungeon.level.passable[c]
+							&& com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(c) == null) {
+						a.pos = c;
+						a.state = a.HUNTING;
+						com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(a);
+						a.notice();
+						return;
+					}
+				}
+				GLog.w("소환할 자리가 없습니다.");
+			}
+		});
 		addBtn(new RedButton("마왕 단계 진행") {
 			@Override
 			protected void onClick() {
