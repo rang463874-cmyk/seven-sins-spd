@@ -72,6 +72,17 @@ Done and pushed (see `git log`):
   of 3..11 cells, never covering a door, prefers horizontal walls; head in the middle, `LeviathanCoil`s on the rest,
   which forward damage to the head; immovable; Great Wave = every lane but 1-2 safe ones, Bite, Undertow pull, wraiths;
   falls back to the normal boss if no wall fits). Flies are a tinted swarm; seal at items.png row 37 +12. Dev tools: "마왕 단계 진행" advances the stage.
+- Seven virtues, phase 1 (Nov 2026): the opposing faction. `virtues/Virtue` enum (humility/pride, charity/greed,
+  chastity/lust, patience/wrath, temperance/gluttony, kindness/envy, diligence/sloth; `sin`, `color`, champion class)
+  and `virtues/VirtueHooks` (state in the Dungeon quests bundle: regions done, virtues used, nemesis region).
+  One champion per region 1-4 (prison..halls; called from `EliteHooks.onLevelMobs`, chance 1/floors left, forced on
+  the region's last regular floor), each virtue once per run; a sin hero's nemesis (opposing virtue) is guaranteed in
+  one random region. Champions: `actors/mobs/virtues/*Champion` on `VirtueChampion` (RegionElite; stats from the
+  floor: HT 30+12d etc.; spawn HUNTING, announce + beckon on their first act; 2 telegraphed skills each; drop the
+  region reward; nemesis: +25% damage both ways via `VirtueHooks.modifyDamage` in `Char.damage`, own lines (`_own`),
+  +50 sin points + scroll of upgrade). Listed in the bestiary's QUEST group (so dev-summonable). Placeholder art:
+  `sprites/VirtueSprites` (tinted statues/warlocks). Strings `tools/strings/virtues_*`. Planned phase 2: after Yog,
+  the archangel opposing the hero's sin as the final boss.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

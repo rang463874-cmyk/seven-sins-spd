@@ -76,6 +76,9 @@ public class EliteHooks {
 	public static void onLevelMobs(Level level, ArrayList<Room> rooms, Room entrance) {
 		if (Dungeon.branch != 0 || Dungeon.bossLevel() || Dungeon.depth < 2 || Dungeon.depth > 24) return;
 
+		//the virtues' champions hunt the hero from the prison on
+		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.onLevelMobs(level, rooms, entrance);
+
 		//sin elite
 		if (Random.Float() < SIN_ELITE_CHANCE) {
 			ArrayList<Mob> pool = new ArrayList<>();

@@ -1,0 +1,141 @@
+package com.shatteredpixel.shatteredpixeldungeon.virtues;
+
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.VirtueChampion;
+import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
+import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room;
+import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.standard.StandardRoom;
+import com.shatteredpixel.shatteredpixeldungeon.sins.SinRewards;
+import com.watabou.utils.Bundle;
+import com.watabou.utils.Random;
+import com.watabou.utils.Reflection;
+
+import java.util.ArrayList;
+
+/**
+ * The virtues' crusade: one champion of a virtue hunts the hero in each region from the prison on
+ * (regions 1-4, chance 1/floors left, forced on the region's last regular floor). Every virtue appears
+ * at most once per run; for a sin hero, the virtue opposing its sin (its nemesis) is guaranteed in one
+ * random region. A nemesis fight deals and takes +25% damage, and pays a bigger reward.
+ * Called from EliteHooks.onLevelMobs; state saved with the quests in Dungeon.
+ */
+public class VirtueHooks {
+
+	public static final float NEMESIS_DAMAGE = 1.25f;
+
+	/** bit r = region r already had its champion */
+	private static int regionsDone = 0;
+	/** bit = Virtue.ordinal() already used */
+	private static int virtuesUsed = 0;
+	/** region (1-4) where the nemesis comes, 0 = not rolled yet */
+	private static int nemesisRegion = 0;
+
+	public static void reset() {
+		regionsDone = 0;
+		virtuesUsed = 0;
+		nemesisRegion = 0;
+	}
+
+	private static final String NODE = "sevenSinsVirtues";
+
+	public static void storeInBundle(Bundle bundle) {
+		Bundle node = new Bundle();
+		node.put("regions", regionsDone);
+		node.put("used", virtuesUsed);
+		node.put("nemesis", nemesisRegion);
+		bundle.put(NODE, node);
+	}
+
+	public static void restoreFromBundle(Bundle bundle) {
+		reset();
+		Bundle node = bundle.getBundle(NODE);
+		if (node.isNull()) return;
+		regionsDone = node.getInt("regions");
+		virtuesUsed = node.getInt("used");
+		nemesisRegion = node.getInt("nemesis");
+	}
+
+	/** the virtue opposing the hero's sin, or null for the original classes */
+	public static Virtue nemesisOf(Hero hero) {
+		int sin = SinRewards.sinOf(hero);
+		return sin == SinRewards.NONE ? null : Virtue.against(sin);
+	}
+
+	public static boolean isNemesis(Virtue v) {
+		return v != null && Dungeon.hero != null && nemesisOf(Dungeon.hero) == v;
+	}
+
+	// ------------------------------------------------------------------ spawning
+
+	private static Virtue pick(int region) {
+		Virtue nem = Dungeon.hero == null ? null : nemesisOf(Dungeon.hero);
+		if (nem != null && (virtuesUsed & (1 << nem.ordinal())) == 0) {
+			if (nemesisRegion == 0) nemesisRegion = 1 + Random.Int(4);
+			if (region >= nemesisRegion) return nem;
+		}
+		ArrayList<Virtue> pool = new ArrayList<>();
+		for (Virtue v : Virtue.values()) {
+			if ((virtuesUsed & (1 << v.ordinal())) != 0) continue;
+			//keep the nemesis for its own region
+			if (v == nem) continue;
+			pool.add(v);
+		}
+		return pool.isEmpty() ? null : Random.element(pool);
+	}
+
+	/** EliteHooks.onLevelMobs: maybe a champion of a virtue comes for the hero on this floor */
+	public static void onLevelMobs(Level level, ArrayList<Room> rooms, Room entrance) {
+		if (Dungeon.branch != 0 || Dungeon.bossLevel() || Dungeon.depth < 6 || Dungeon.depth > 24) return;
+		int region = (Dungeon.depth - 1) / 5;
+		if (region < 1 || (regionsDone & (1 << region)) != 0) return;
+		int lastFloor = region * 5 + 4;
+		int floorsLeft = lastFloor - Dungeon.depth + 1;
+		if (floorsLeft < 1 || Random.Int(floorsLeft) != 0) return;
+
+		Virtue v = pick(region);
+		if (v == null) return;
+		int cell = farCell(level, rooms, entrance);
+		if (cell == -1) return;
+		VirtueChampion c = Reflection.newInstance(v.champion);
+		if (c == null) return;
+		c.pos = cell;
+		level.mobs.add(c);
+		regionsDone |= 1 << region;
+		virtuesUsed |= 1 << v.ordinal();
+	}
+
+	private static int farCell(Level level, ArrayList<Room> rooms, Room entrance) {
+		ArrayList<Room> cands = new ArrayList<>();
+		for (Room r : rooms) {
+			if (r instanceof StandardRoom && r != entrance && ((StandardRoom) r).mobSpawnWeight() > 0
+					&& r.width() > 3 && r.height() > 3) cands.add(r);
+		}
+		for (int tries = 0; tries < 60 && !cands.isEmpty(); tries++) {
+			Room r = Random.element(cands);
+			int c = level.pointToCell(r.random(1));
+			if (level.passable[c] && !level.solid[c] && level.findMob(c) == null && c != level.exit()
+					&& c != level.entrance() && level.trueDistance(c, level.entrance()) >= 12
+					&& r.canPlaceCharacter(level.cellToPoint(c), level)) {
+				return c;
+			}
+		}
+		return -1;
+	}
+
+	// ------------------------------------------------------------------ nemesis damage
+
+	/** Char.damage: the hero and its nemesis hurt each other 25% more */
+	public static int modifyDamage(Char target, Object src, int dmg) {
+		if (dmg <= 0) return dmg;
+		if (target instanceof VirtueChampion && ((VirtueChampion) target).nemesis()) {
+			if (src == Dungeon.hero || !(src instanceof Mob)) return Math.round(dmg * NEMESIS_DAMAGE);
+		}
+		if (target instanceof Hero && src instanceof VirtueChampion && ((VirtueChampion) src).nemesis()) {
+			return Math.round(dmg * NEMESIS_DAMAGE);
+		}
+		return dmg;
+	}
+}
