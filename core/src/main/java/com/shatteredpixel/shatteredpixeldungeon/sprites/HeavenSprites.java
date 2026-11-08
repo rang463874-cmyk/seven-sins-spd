@@ -152,4 +152,51 @@ public class HeavenSprites {
 			renderShadow = false;
 		}
 	}
+
+	/** placeholder until the owner's art is cut out: a golem, blue-white, four times as big, rising
+	 * from the void (its cell is the ledge; the body towers over the void behind it) */
+	public static class HolyGiant extends GolemSprite {
+		public HolyGiant() {
+			super();
+			scale.set(4f);
+		}
+		@Override
+		public void resetColor() {
+			super.resetColor();
+			tint(0x80C8FF, 0.5f);
+		}
+		@Override
+		public void link(Char ch) {
+			super.link(ch);
+			resetColor();
+			renderShadow = false;
+		}
+		@Override
+		public PointF worldToCamera(int cell) {
+			final int csize = DungeonTilemap.SIZE;
+			int w = Dungeon.level.width();
+			return new PointF(
+					com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.align(Camera.main, ((cell % w) + 0.5f) * csize - width() * 0.5f),
+					com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.align(Camera.main, ((cell / w) + 1f) * csize - height())
+			);
+		}
+	}
+
+	/** placeholder: a giant fist (golem, blue-white, 1.5x) */
+	public static class GiantFist extends GolemSprite {
+		public GiantFist() {
+			super();
+			scale.set(1.5f);
+		}
+		@Override
+		public void resetColor() {
+			super.resetColor();
+			tint(0x80C8FF, 0.5f);
+		}
+		@Override
+		public void link(Char ch) {
+			super.link(ch);
+			resetColor();
+		}
+	}
 }

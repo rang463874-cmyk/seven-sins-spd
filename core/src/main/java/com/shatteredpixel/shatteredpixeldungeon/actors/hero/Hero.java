@@ -249,6 +249,11 @@ public class Hero extends Char {
 	public int exp = 0;
 	
 	public int HTBoost = 0;
+
+	//Seven Sins: the second awakening (from the holy gem): sins.SinAwakening.NONE/CONTROL/MONSTER, and its
+	//talent points not spent yet
+	public int awakening = 0;
+	public int awakeningPoints = 0;
 	
 	private ArrayList<Mob> visibleEnemies;
 
@@ -343,6 +348,8 @@ public class Hero extends Char {
 		bundle.put( EXPERIENCE, exp );
 		
 		bundle.put( HTBOOST, HTBoost );
+		bundle.put( "sins_awakening", awakening );
+		bundle.put( "sins_awakening_points", awakeningPoints );
 
 		belongings.storeInBundle( bundle );
 	}
@@ -366,6 +373,8 @@ public class Hero extends Char {
 		defenseSkill = bundle.getInt( DEFENSE );
 		
 		STR = bundle.getInt( STRENGTH );
+		awakening = bundle.getInt( "sins_awakening" );
+		awakeningPoints = bundle.getInt( "sins_awakening_points" );
 
 		belongings.restoreFromBundle( bundle );
 	}

@@ -362,6 +362,10 @@ public class Dungeon {
 				case 30:
 					level = new com.shatteredpixel.shatteredpixeldungeon.levels.HeavenLevel();
 					break;
+				//seven sins mod: the holy giant
+				case 31:
+					level = new com.shatteredpixel.shatteredpixeldungeon.levels.HolyGiantLevel();
+					break;
 				default:
 					level = new DeadEndLevel();
 			}
@@ -455,7 +459,7 @@ public class Dungeon {
 	}
 	
 	public static boolean bossLevel( int depth ) {
-		return depth == 5 || depth == 10 || depth == 15 || depth == 20 || depth == 25;
+		return depth == 5 || depth == 10 || depth == 15 || depth == 20 || depth == 25 || depth == 31;
 	}
 
 	//value used for scaling of damage values and other effects.

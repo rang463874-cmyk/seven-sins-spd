@@ -138,6 +138,22 @@ Done and pushed (see `git log`):
   The owner's holy giant concept (planned floor-31 boss) is kept in `tools/sinsart/giant_art/`. Strings in `tools/strings/virtues_*`.
   Headless level test trick: build `HeavenLevel` subclasses without special/secret rooms and a texture-free
   `TextureFilm` stub on the classpath (Level.create needs textures for items).
+- Floor 31, the holy giant (Nov 2026): floor 30's stairs (kept; its chasms are filled) lead to `levels/HolyGiantLevel`
+  (29x25, city tiles, `bossLevel(31)` = true; rows 1-5 are a void of CHASM that is neither passable nor a pit; 2x2 wall
+  blocks as cover; giant at `giantCell()` on the ledge row 6, gem at `centerCell()`). `actors/mobs/heaven/HolyGiant`
+  (RegionElite, BOSS, IMMOVABLE, body immune: `damage` is a no-op; HP = sum of `armHP` (2 x `ARM_HT` 300); starts when the
+  hero is within 10 and sees it; `GiantHunting` waits while the hero hides). Skills: SLAM (3x3 on the hero's side, then a
+  `GiantFist` stays FIST_TURNS 3 on the middle tile: passive mob whose damage updates the giant via `onFistDamaged`,
+  retract keeps the HP, 0 HP = arm destroyed), BOLT (hero tile + 2-3 nearby, paralysis 2). Judgment at 1/2 and 1/4 HP:
+  3-turn charge, then hits every non-enemy char in its line of sight (`Ballistica` STOP_SOLID). Both arms gone ->
+  `collapse`: `items/HolyGem` dropped at the centre, `SWARM` 14 believers/priests from the edges hunt the hero; picking
+  the gem up calls `vanquish` (all enemies vanish, bossSlain, giant dies). The gem: AWAKEN (sin classes, once:
+  `sins/SinAwakening` CONTROL/MONSTER stored as `Hero.awakening` + `awakeningPoints` = 8; path names
+  `sins.sinawakening.*`) and END (`Dungeon.win(Amulet.class)` + delete save + RankingsScene). Art: giant/fists are
+  scaled, tinted GolemSprites (placeholders; the owner's concept art is in `tools/sinsart/giant_art/`); gem icon =
+  items.png row 38 +0 (`ELITE2`, TX_HEIGHT now 608). Dev tools: travel to 27 / 31. Awakening talents: not yet (draft
+  agreed with the owner: 3 per path, max 3 points, monster paths named "OO의 괴물"; gluttony's monster swallows its
+  bags for points, auto-triggers items of those kinds on pickup, +50% move/attack speed, bite reach +1).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -328,7 +344,7 @@ mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.
 Reserved layout (must match the Java constants):
 - `talent_icons.png`: row 8 + k (icon 256 + 32k + i), heroic energy at +26
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
-- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 592):
+- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 608):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
   row 36 horsemen relics (gun, war sword, scales, scythe) + seal fragment (+0..4), sin remains (+5..11), mirror case (+12),
   row 37 sin essence, elixir of sin, sin bomb, sticky bomb, bandage, stimulant (`elite_art`), ... heavenly halo (+14), artifact shard (+15)

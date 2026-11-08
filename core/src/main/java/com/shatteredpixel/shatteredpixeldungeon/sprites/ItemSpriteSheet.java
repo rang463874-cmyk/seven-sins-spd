@@ -29,7 +29,7 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
-	private static final int TX_HEIGHT = 592; //extended by five rows for the seven sins mod
+	private static final int TX_HEIGHT = 608; //extended by five rows for the seven sins mod
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
 
@@ -961,6 +961,12 @@ public class ItemSpriteSheet {
 	public static final int CONQUEST_SPEAR    = ELITE+13;
 	public static final int HEAVENLY_HALO     = ELITE+14;
 	public static final int ARTIFACT_SHARD    = ELITE+15;
+
+	private static final int ELITE2     =                                   xy(1, 38);  //16 slots
+	public static final int HOLY_GEM          = ELITE2+0;
+	static{
+		assignItemRect(HOLY_GEM, 12, 12);
+	}
 	static{
 		assignItemRect(CONQUEST_SPEAR, 15, 15);
 		assignItemRect(DEMON_SEAL,    12, 12);

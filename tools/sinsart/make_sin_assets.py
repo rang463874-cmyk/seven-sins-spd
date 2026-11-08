@@ -443,6 +443,7 @@ def elite_art(items):
     items.paste(draw(CSPEAR, CSPEAR_PAL), cell(ELITE_ROW + 13, 16)[:2])
     items.paste(draw(HALO, HALO_PAL), cell(ELITE_ROW + 14, 16)[:2])
     items.paste(draw(SHARD, SHARD_PAL), cell(ELITE_ROW + 15, 16)[:2])
+    items.paste(draw(GEM, GEM_PAL), cell(ELITE2_ROW + 0, 16)[:2])
     # essence bag: the velvet pouch (bags row 31, +2) dyed crimson, at +7
     items.paste(recolor(items.crop(cell(30 * 16 + 2, 16)), tint_px(350, 0.75, 1.0)), cell(30 * 16 + 7, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
@@ -562,6 +563,25 @@ SHARD = [
 ]
 SHARD_PAL = {"K": (40, 34, 50, 255), "W": (255, 255, 255, 255), "S": (210, 214, 230, 255),
              "D": (150, 150, 176, 255)}
+
+# 12x12 holy gem: a faceted blue crystal (the holy giant's heart)
+GEM = [
+    ".....KK.....",
+    "....KWLK....",
+    "...KWLLBK...",
+    "..KWLLBBDK..",
+    ".KWLLLBBDDK.",
+    "KWLLLBBBDDDK",
+    "KLLLBBBBDDDK",
+    ".KLBBBBDDDK.",
+    "..KBBBDDDK..",
+    "...KBDDDK...",
+    "....KDDK....",
+    ".....KK.....",
+]
+GEM_PAL = {"K": (16, 30, 70, 255), "W": (230, 250, 255, 255), "L": (130, 210, 255, 255),
+           "B": (60, 150, 240, 255), "D": (30, 90, 190, 255)}
+ELITE2_ROW = 592  # row 38 of items.png: the holy gem, ...
 
 CURSE_INFUSE_ICON = 420  # SPELLS + 4 (row 27)
 
@@ -704,7 +724,7 @@ def main():
     hero_icons = Image.open(p("interfaces/hero_icons.png")).convert("RGBA")
     hero_icons = grow(hero_icons, 128, 16 * (16 + 7))
     items = Image.open(p("sprites/items.png")).convert("RGBA")
-    items = grow(items, 256, 16 * 37)
+    items = grow(items, 256, 16 * 38)
 
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]

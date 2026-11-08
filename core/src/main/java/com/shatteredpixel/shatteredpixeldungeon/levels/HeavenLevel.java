@@ -6,7 +6,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Believer;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Priest;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph;
-import com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition;
 import com.shatteredpixel.shatteredpixeldungeon.levels.painters.CityPainter;
 import com.shatteredpixel.shatteredpixeldungeon.levels.painters.Painter;
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room;
@@ -35,8 +34,8 @@ import java.util.ArrayList;
  * Big floors (10-13 standard rooms) that mix the rooms of the sewers, prison, caves and city (the
  * room chance tables have rows 27-30 for this), drawn with the city's tiles. Monsters: believers
  * (in groups of 2-3), priests (always with company), lesser angels (only from a priest's
- * sacrifice) and now and then a seraph (2x2) guarding one big room. Floor 30 is the last: its exit
- * room has no stairs and chasms are filled in.
+ * sacrifice) and now and then a seraph (2x2) guarding one big room. Floor 30's stairs lead to the holy
+ * giant (HolyGiantLevel, floor 31); its chasms are filled in.
  */
 public class HeavenLevel extends RegularLevel {
 
@@ -114,15 +113,9 @@ public class HeavenLevel extends RegularLevel {
 	protected boolean build() {
 		if (!super.build()) return false;
 		if (Dungeon.depth >= LAST) {
-			//the last floor: no way further down
+			//the stairs lead down to the holy giant; no falling into its arena
 			for (int i = 0; i < length(); i++) {
 				if (map[i] == Terrain.CHASM) map[i] = Terrain.EMPTY_SP;
-			}
-			for (LevelTransition t : new ArrayList<>(transitions)) {
-				if (t.type == LevelTransition.Type.REGULAR_EXIT) {
-					map[t.cell()] = Terrain.EMPTY_SP;
-					transitions.remove(t);
-				}
 			}
 		}
 		return true;

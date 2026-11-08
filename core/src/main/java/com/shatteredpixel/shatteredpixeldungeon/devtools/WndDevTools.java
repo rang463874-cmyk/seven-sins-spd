@@ -131,6 +131,20 @@ public class WndDevTools extends Window {
 				GLog.w("소환할 자리가 없습니다.");
 			}
 		});
+		addBtn(new RedButton("천상 27층으로 이동") {
+			@Override
+			protected void onClick() {
+				hide();
+				devTravel(27);
+			}
+		});
+		addBtn(new RedButton("신성 거인(31층)으로 이동") {
+			@Override
+			protected void onClick() {
+				hide();
+				devTravel(31);
+			}
+		});
 		addBtn(new RedButton("마왕 단계 진행") {
 			@Override
 			protected void onClick() {
@@ -139,6 +153,15 @@ public class WndDevTools extends Window {
 			}
 		});
 		resize(WIDTH, pos - GAP);
+	}
+
+	private static void devTravel(int depth) {
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.mode =
+				com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.Mode.RETURN;
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.returnDepth = depth;
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.returnBranch = 0;
+		com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.returnPos = -1;
+		com.watabou.noosa.Game.switchScene(com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.class);
 	}
 
 	private void addBtn(RedButton b) {
