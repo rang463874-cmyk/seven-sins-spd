@@ -44,7 +44,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 	private int ascensions = 0;
 
 	{
-		spriteClass = VirtueSprites.Humility.class;
+		spriteClass = VirtueSprites.AngelCaster.class;
 		HP = HT = 650;
 		defenseSkill = 30;
 		EXP = 100;
@@ -62,7 +62,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	@Override
 	public CharSprite sprite() {
-		return VirtueSprites.forVirtue(virtue);
+		return VirtueSprites.forAngel(virtue);
 	}
 
 	@Override

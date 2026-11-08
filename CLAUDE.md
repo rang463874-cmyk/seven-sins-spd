@@ -85,8 +85,11 @@ Done and pushed (see `git log`):
   one random region. Champions: `actors/mobs/virtues/*Champion` on `VirtueChampion` (RegionElite; stats from the
   floor: HT 30+12d etc.; spawn HUNTING, announce + beckon on their first act; 2 telegraphed skills each; drop the
   region reward; nemesis: +25% damage both ways via `VirtueHooks.modifyDamage` in `Char.damage`, own lines (`_own`),
-  +50 sin points + scroll of upgrade). Listed in the bestiary's QUEST group (so dev-summonable). Placeholder art:
-  `sprites/VirtueSprites` (tinted statues/warlocks). Strings `tools/strings/virtues_*`. Phase 2: the final boss
+  +50 sin points + scroll of upgrade). Listed in the bestiary's QUEST group (so dev-summonable). Art: the owner's paladin/saint
+  pictures in `tools/sinsart/virtue_art/src/` -> `sprites/virtue_champions.png` (48x49, row 0 paladin = patience/temperance/
+  diligence, row 1 saint = the rest; background cut out, shrunk, outlined) by `tools/sinsart/make_virtue_sprites.py`;
+  `VirtueSprites.ChampionSprite` draws them over 3x3 tiles like the demon lords. The archangel keeps the tinted
+  statue/warlock placeholder (`VirtueSprites.forAngel`). Strings `tools/strings/virtues_*`. Phase 2: the final boss
   `actors/mobs/virtues/ArchangelBoss` (BOSS, 650 HP; `virtue` field, `Virtue.angel()` names: Michael/humility,
   Raguel/charity, Gabriel/chastity, Uriel/patience, Raphael/temperance, Jeremiel/kindness, Sariel/diligence) is put
   before the amulet by `LastLevel.createMobs` -> `VirtueHooks.onAmuletLevel` (`angelFor`: the hero's nemesis, else the
