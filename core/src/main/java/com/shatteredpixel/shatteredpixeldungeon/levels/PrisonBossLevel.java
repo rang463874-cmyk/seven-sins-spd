@@ -556,6 +556,7 @@ public class PrisonBossLevel extends Level {
 				Sample.INSTANCE.play(Assets.Sounds.BLAST);
 				
 				state = State.WON;
+				com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onTenguDefeated(Dungeon.hero.pos);
 				Game.runOnRenderThread(new Callback() {
 					@Override
 					public void call() {

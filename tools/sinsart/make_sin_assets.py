@@ -439,6 +439,7 @@ def elite_art(items):
     items.paste(draw(MOLD, MOLD_PAL), cell(ELITE_ROW + 9, 16)[:2])
     items.paste(recolor(bomb, tint_px(205, 0.35, 1.5)), cell(ELITE_ROW + 10, 16)[:2])
     items.paste(draw(DOLL, DOLL_PAL), cell(ELITE_ROW + 11, 16)[:2])
+    items.paste(draw(DSEAL, DSEAL_PAL), cell(ELITE_ROW + 12, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
     items.paste(recolor(items.crop(cell(SPIRIT_BOW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 6, 16)[:2])
     items.paste(recolor(items.crop(cell(SPIRIT_ARROW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 7, 16)[:2])
@@ -481,6 +482,24 @@ DOLL = [
 ]
 DOLL_PAL = {"O": (70, 50, 20, 255), "Y": (220, 190, 100, 255), "K": (40, 30, 20, 255),
             "R": (180, 40, 40, 255), "B": (110, 80, 40, 255)}
+
+# 12x12 demon seal: a dark wax seal with horns and a glowing sigil (the game adds the lord's glow)
+DSEAL = [
+    ".H........H.",
+    ".HH.OOOO.HH.",
+    "..HOMMMMOH..",
+    ".OMMMSSMMMO.",
+    "OMMMSMMSMMMO",
+    "OMMSSSSSSMMO",
+    "OMMMSMMSMMMO",
+    "OMMSMMMMSMMO",
+    ".OMMMSSMMMO.",
+    "..OMMMMMMO..",
+    "...OOOOOO...",
+    "............",
+]
+DSEAL_PAL = {"O": (40, 8, 14, 255), "M": (120, 20, 34, 255), "S": (255, 220, 160, 255),
+             "H": (70, 60, 60, 255)}
 
 CURSE_INFUSE_ICON = 420  # SPELLS + 4 (row 27)
 

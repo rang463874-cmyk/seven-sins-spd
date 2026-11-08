@@ -285,6 +285,7 @@ public class Goo extends Mob {
 		super.die( cause );
 		
 		Dungeon.level.unseal();
+		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onGooDefeated(pos);
 		
 		GameScene.bossSlain();
 		Dungeon.level.drop( new WornKey( Dungeon.depth ), pos ).sprite.drop();

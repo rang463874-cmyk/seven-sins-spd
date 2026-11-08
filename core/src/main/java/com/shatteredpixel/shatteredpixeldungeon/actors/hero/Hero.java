@@ -284,6 +284,7 @@ public class Hero extends Char {
 		HT = LustHooks.bonusHT(this, HT);
 		HT = EnvyHooks.bonusHT(this, HT);
 		HT = SlothHooks.bonusHT(this, HT);
+		HT = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.bonusHT(this, HT);
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -541,6 +542,7 @@ public class Hero extends Char {
 		accuracy = LustHooks.accuracy( this, accuracy );
 		accuracy = EnvyHooks.accuracy( this, accuracy );
 		accuracy = SlothHooks.accuracy( this, accuracy );
+		accuracy = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.accuracy( this, accuracy );
 		
 		//precise assault and liquid agility
 		if (!(wep instanceof MissileWeapon)) {
@@ -616,6 +618,7 @@ public class Hero extends Char {
 		evasion = LustHooks.evasion( this, evasion );
 		evasion = EnvyHooks.evasion( this, evasion );
 		evasion = SlothHooks.evasion( this, evasion );
+		evasion = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.evasion( this, evasion );
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
 			if (pointsInTalent(Talent.LIQUID_AGILITY) == 1){
@@ -777,7 +780,7 @@ public class Hero extends Char {
 			speed *= (2f + 0.25f*pointsInTalent(Talent.GROWING_POWER));
 		}
 
-		speed *= UniqueStats.moveSpeed(this) * HorsemenHooks.moveSpeed(this);
+		speed *= UniqueStats.moveSpeed(this) * HorsemenHooks.moveSpeed(this) * com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.moveSpeed();
 		speed = AscensionChallenge.modifyHeroSpeed(speed);
 		
 		return speed;
@@ -1548,6 +1551,7 @@ public class Hero extends Char {
 	
 	public void rest( boolean fullRest ) {
 		spendAndNextConstant( TIME_TO_REST );
+		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onRest(this);
 		if (hasTalent(Talent.HOLD_FAST)){
 			if (heroClass != HeroClass.WARRIOR || buff(BrokenSeal.WarriorShield.class) != null) {
 				Buff.affect(this, HoldFast.class).pos = pos;
@@ -1587,6 +1591,7 @@ public class Hero extends Char {
 		damage = EnvyHooks.onAttack( this, enemy, damage );
 		damage = SlothHooks.onAttack( this, enemy, damage );
 		damage = HorsemenHooks.onAttack( this, enemy, damage );
+		damage = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onAttack( this, enemy, damage );
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );

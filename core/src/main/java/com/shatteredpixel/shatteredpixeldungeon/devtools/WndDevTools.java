@@ -110,6 +110,13 @@ public class WndDevTools extends Window {
 				GLog.p("모든 소지품을 감정했습니다.");
 			}
 		});
+		addBtn(new RedButton("마왕 단계 진행") {
+			@Override
+			protected void onClick() {
+				hide();
+				com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.devAdvance(Dungeon.hero);
+			}
+		});
 		resize(WIDTH, pos - GAP);
 	}
 

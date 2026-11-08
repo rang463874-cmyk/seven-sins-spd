@@ -51,6 +51,18 @@ Done and pushed (see `git log`):
   Bandage) live in `Recipe.variableRecipes` (strict: `Recipe.StrictRecipe` rejects unlisted ingredients).
   All mod recipes are on the alchemy guide's 10th page "Seven_Sins" (`QuickRecipe.sevenSinsRecipes`, always READ;
   strings in messages/journal, not synced). Art: items.png row 37 (+8 sin infusion .. +11 decoy doll).
+- Demon lords (Nov 2026, `demons/DemonHooks` + `demons/DemonLord` enum, state saved with the quests in `Dungeon`:
+  stage NONE -> TRIAL -> GRANTED -> DEFEATED). `Goo.die` -> `onGooDefeated` raises `actors/mobs/npcs/DemonAltar`
+  (`windows/WndDemonAltar`: 7 lords, then trial/boon/skill + accept; once per run). The trial (`actors/buffs/DemonTrial`,
+  marker only) lasts until Tengu: `PrisonBossLevel.progress` (after `state = State.WON`) -> `onTenguDefeated` spawns
+  `actors/mobs/npcs/DemonLordNPC`; first talk = `grantPerk` (`actors/buffs/DemonPerk`, also holds the seal charge 0..100,
+  +1/turn, +2 after the boss) and `items/DemonSeal` (unique, kept through lost inventory, auto-quickslotted; one skill per
+  lord), then "fight / later": `actors/mobs/DemonLordBoss` (RegionElite with BOSS, 300 HP, hellfire ring + wraiths + the
+  lord's signature skill, enraged under 50%; death -> `onLordDefeated`: boon x1.5, 3 essences). Trial penalties/boons are
+  hooked in Hero (updateHT, accuracy, evasion, speed, attackProc, rest), Char.damage, Gold, Hunger, Regeneration, Food.
+  Every line has an `_own` variant used when the lord's sin is the hero's (`DemonHooks.line`). Strings in
+  `tools/strings/demons*` (generated once by a script; edit them directly now). Placeholder art: `sprites/DemonSprites`
+  (tinted monster sprites), seal at items.png row 37 +12. Dev tools: "마왕 단계 진행" advances the stage.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

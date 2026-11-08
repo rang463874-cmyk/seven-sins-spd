@@ -66,6 +66,7 @@ public class Gold extends Item {
 		Statistics.itemTypesDiscovered.add(getClass());
 
 		quantity += GreedHooks.bonusGold( hero, quantity ) + EnvyHooks.bonusGold( hero, quantity );
+		quantity += com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.goldDelta( hero, quantity );
 		Dungeon.gold += quantity;
 		GreedHooks.onGoldPickup( hero, quantity );
 		Statistics.goldCollected += quantity;

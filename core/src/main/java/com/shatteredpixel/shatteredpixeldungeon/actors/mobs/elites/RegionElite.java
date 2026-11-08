@@ -129,8 +129,13 @@ public abstract class RegionElite extends Mob {
 		super.notice();
 		if (!greeted) {
 			greeted = true;
-			yell(Messages.get(this, "notice"));
+			yell(noticeLine());
 		}
+	}
+
+	/** what it shouts the first time it notices the hero */
+	protected String noticeLine() {
+		return Messages.get(this, "notice");
 	}
 
 	@Override

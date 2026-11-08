@@ -105,6 +105,7 @@ public class Hunger extends Buff implements Hero.Doom {
 				}
 				hungerDelay /= SaltCube.hungerGainMultiplier();
 				hungerDelay /= com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.hungerRate(target);
+				hungerDelay /= com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.hungerRate();
 
 				float newLevel = level + (1f/hungerDelay);
 				if (newLevel >= STARVING) {

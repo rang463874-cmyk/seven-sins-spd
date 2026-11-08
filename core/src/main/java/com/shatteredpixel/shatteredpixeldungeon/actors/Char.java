@@ -851,6 +851,7 @@ public abstract class Char extends Actor {
 		dmg = PrideHooks.modifyDamage(this, src, dmg);
 		dmg = EnvyHooks.modifyDamage(this, src, dmg);
 		dmg = SlothHooks.modifyDamage(this, src, dmg);
+		dmg = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.modifyDamage(this, src, dmg);
 
 		if (!(src instanceof LifeLink || src instanceof Hunger) && buff(LifeLink.class) != null){
 			HashSet<LifeLink> links = buffs(LifeLink.class);
