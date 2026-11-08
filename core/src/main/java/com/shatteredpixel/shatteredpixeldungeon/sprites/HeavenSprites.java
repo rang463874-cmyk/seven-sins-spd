@@ -153,22 +153,25 @@ public class HeavenSprites {
 		}
 	}
 
-	/** placeholder until the owner's art is cut out: a golem, blue-white, four times as big, rising
-	 * from the void (its cell is the ledge; the body towers over the void behind it) */
-	public static class HolyGiant extends GolemSprite {
+	/** the owner's holy giant (112x62), its cell is the ledge; the body towers over the void behind it */
+	public static class HolyGiant extends MobSprite {
 		public HolyGiant() {
 			super();
-			scale.set(4f);
-		}
-		@Override
-		public void resetColor() {
-			super.resetColor();
-			tint(0x80C8FF, 0.5f);
+			texture("sprites/heaven_giant.png");
+			TextureFilm frames = new TextureFilm(texture, 112, 63);
+			idle = new Animation(2, true);
+			idle.frames(frames, 0, 1);
+			run = idle.clone();
+			attack = new Animation(10, false);
+			attack.frames(frames, 2, 3, 4);
+			zap = attack.clone();
+			die = new Animation(5, false);
+			die.frames(frames, 5, 6, 7);
+			play(idle);
 		}
 		@Override
 		public void link(Char ch) {
 			super.link(ch);
-			resetColor();
 			renderShadow = false;
 		}
 		@Override
@@ -180,23 +183,46 @@ public class HeavenSprites {
 					com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.align(Camera.main, ((cell / w) + 1f) * csize - height())
 			);
 		}
+		@Override
+		public int blood() {
+			return 0xFF80C8FF;
+		}
 	}
 
-	/** placeholder: a giant fist (golem, blue-white, 1.5x) */
-	public static class GiantFist extends GolemSprite {
+	/** the owner's giant fists (32px over the tile they lie on): row 0 left, row 1 right */
+	public static class GiantFist extends MobSprite {
+		private int row = -1;
+		private TextureFilm film;
 		public GiantFist() {
 			super();
-			scale.set(1.5f);
+			texture("sprites/heaven_fists.png");
+			film = new TextureFilm(texture, 32, 33);
+			perspectiveRaise = -8 / 16f;
+			setRow(0);
 		}
-		@Override
-		public void resetColor() {
-			super.resetColor();
-			tint(0x80C8FF, 0.5f);
+		private void setRow(int r) {
+			if (r == row) return;
+			row = r;
+			int o = r * 5;
+			idle = new Animation(2, true);
+			idle.frames(film, o, o + 1);
+			run = idle.clone();
+			attack = idle.clone();
+			zap = idle.clone();
+			die = new Animation(6, false);
+			die.frames(film, o + 2, o + 3, o + 4);
+			play(idle);
 		}
 		@Override
 		public void link(Char ch) {
 			super.link(ch);
-			resetColor();
+			if (ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.GiantFist) {
+				setRow(((com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.GiantFist) ch).side == 0 ? 0 : 1);
+			}
+		}
+		@Override
+		public int blood() {
+			return 0xFF80C8FF;
 		}
 	}
 }

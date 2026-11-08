@@ -135,7 +135,7 @@ Done and pushed (see `git log`):
   bestiary's QUEST group. Rotation in `MobSpawner` case 27-30. Art: the owner's pictures `virtue_art/src/heaven_*.png` -> 24px
   sheets for believer/priest/lesser angel (`HeavenSprites.Sheet24`; the angel has a bow, so it shoots a spirit arrow)
   and the 32px seraph (over 2x2 via `worldToCamera`, + blank frame 12 for parts), by `make_virtue_sprites.py`.
-  The owner's holy giant concept (planned floor-31 boss) is kept in `tools/sinsart/giant_art/`. Strings in `tools/strings/virtues_*`.
+  Strings in `tools/strings/virtues_*`.
   Headless level test trick: build `HeavenLevel` subclasses without special/secret rooms and a texture-free
   `TextureFilm` stub on the classpath (Level.create needs textures for items).
 - Floor 31, the holy giant (Nov 2026): floor 30's stairs (kept; its chasms are filled) lead to `levels/HolyGiantLevel`
@@ -149,8 +149,10 @@ Done and pushed (see `git log`):
   `collapse`: `items/HolyGem` dropped at the centre, `SWARM` 14 believers/priests from the edges hunt the hero; picking
   the gem up calls `vanquish` (all enemies vanish, bossSlain, giant dies). The gem: AWAKEN (sin classes, once:
   `sins/SinAwakening` CONTROL/MONSTER stored as `Hero.awakening` + `awakeningPoints` = 8; path names
-  `sins.sinawakening.*`) and END (`Dungeon.win(Amulet.class)` + delete save + RankingsScene). Art: giant/fists are
-  scaled, tinted GolemSprites (placeholders; the owner's concept art is in `tools/sinsart/giant_art/`); gem icon =
+  `sins.sinawakening.*`) and END (`Dungeon.win(Amulet.class)` + delete save + RankingsScene). Art: the owner's giant and fist
+  pictures (`tools/sinsart/giant_art/holy_giant.png`, cropped at the waterline; `fists.png`, two panels) ->
+  `sprites/heaven_giant.png` (112x63 frames, drawn up from its ledge cell) and `sprites/heaven_fists.png` (32x33, row 0
+  left / row 1 right by `GiantFist.side`) by `tools/sinsart/make_giant_sprites.py` (reuses make_virtue_sprites' cutout); gem icon =
   items.png row 38 +0 (`ELITE2`, TX_HEIGHT now 608). Dev tools: travel to 27 / 31. Awakening talents (agreed with the owner):
   `sins/AwakeningTalent` (42: 3 per path, max 3 points, levels in `Hero.awakeningTalents`, per-run counters in
   `Hero.awakeningCounters`, both saved in the hero bundle), spent in `windows/WndAwakening` (the gem's TALENTS action;
