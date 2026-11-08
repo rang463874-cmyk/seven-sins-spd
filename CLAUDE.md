@@ -46,6 +46,9 @@ Done and pushed (see `git log`):
   `MissileWeapon.bonusSetSize`/`setSize()`, which upgrade/merge/liquid metal/WndUpgrade use instead of
   defaultQuantity), `items/bombs/CaltropBomb` (bomb + blindweed: damage, bleed, cripple; the original SmokeBomb is
   untouched), `items/elite/DecoyDoll` (stormvine + fadeleaf -> 2, thrown: `DecoyDoll.Decoy` = PrideEffigy subclass).
+  The alchemy pot puts one item per slot (only liquid metal/thrown weapons go in as a stack) and `Recipe.findRecipes`
+  only checks the list matching the slot count, so recipes needing several of one item (ElixirOfSin, SinInfusion,
+  Bandage) live in `Recipe.variableRecipes` (strict: `Recipe.StrictRecipe` rejects unlisted ingredients).
   All mod recipes are on the alchemy guide's 10th page "Seven_Sins" (`QuickRecipe.sevenSinsRecipes`, always READ;
   strings in messages/journal, not synced). Art: items.png row 37 (+8 sin infusion .. +11 decoy doll).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,

@@ -74,6 +74,19 @@ public abstract class Recipe {
 	public abstract Item sampleOutput(ArrayList<Item> ingredients);
 	
 	//subclass for the common situation of a recipe with static inputs and outputs
+	/** a simple recipe that also refuses any ingredient it doesn't list (for the variable-slot list) */
+	public static abstract class StrictRecipe extends SimpleRecipe {
+		@Override
+		public boolean testIngredients(ArrayList<Item> ingredients) {
+			for (Item ingredient : ingredients){
+				boolean listed = false;
+				for (Class<? extends Item> c : inputs) if (ingredient.getClass() == c) { listed = true; break; }
+				if (!listed) return false;
+			}
+			return super.testIngredients(ingredients);
+		}
+	}
+
 	public static abstract class SimpleRecipe extends Recipe {
 		
 		//*** These elements must be filled in by subclasses
@@ -168,7 +181,11 @@ public abstract class Recipe {
 	//*******
 
 	private static Recipe[] variableRecipes = new Recipe[]{
-			//none for now
+			//seven sins mod: recipes that need several of one item. The alchemy pot puts one item per slot
+			//(except liquid metal and thrown weapons), so these can take any number of slots
+			new com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.Recipe(),
+			new com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.Recipe(),
+			new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe()
 	};
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{
@@ -195,7 +212,6 @@ public abstract class Recipe {
 		new StewedMeat.oneMeat(),
 		new TrinketCatalyst.Recipe(),
 		new Trinket.UpgradeTrinket(),
-		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe(),
 		new com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.Recipe()
 	};
 	
@@ -213,9 +229,7 @@ public abstract class Recipe {
 		new ReclaimTrap.Recipe(),
 		new WildEnergy.Recipe(),
 		new StewedMeat.twoMeat(),
-		new com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.Recipe(),
 		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.Recipe(),
-		new com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.Recipe(),
 		new com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.Recipe()
 	};
 	

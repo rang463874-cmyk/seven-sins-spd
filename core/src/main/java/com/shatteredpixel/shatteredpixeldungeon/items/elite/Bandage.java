@@ -64,7 +64,7 @@ public class Bandage extends Item {
 	@Override public int value() { return 15 * quantity; }
 	@Override public int energyVal() { return quantity; }
 
-	public static class Recipe extends com.shatteredpixel.shatteredpixeldungeon.items.Recipe.SimpleRecipe {
+	public static class Recipe extends com.shatteredpixel.shatteredpixeldungeon.items.Recipe.StrictRecipe {
 		{
 			inputs = new Class[]{Sungrass.Seed.class};
 			inQuantity = new int[]{2};

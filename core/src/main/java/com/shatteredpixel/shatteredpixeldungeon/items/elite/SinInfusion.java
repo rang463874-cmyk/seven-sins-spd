@@ -81,7 +81,7 @@ public class SinInfusion extends InventorySpell {
 		return 8 * quantity;
 	}
 
-	public static class Recipe extends com.shatteredpixel.shatteredpixeldungeon.items.Recipe.SimpleRecipe {
+	public static class Recipe extends com.shatteredpixel.shatteredpixeldungeon.items.Recipe.StrictRecipe {
 		{
 			inputs = new Class[]{CurseInfusion.class, SinEssence.class};
 			inQuantity = new int[]{1, 2};

@@ -78,14 +78,16 @@ public class ElixirOfSin extends Item {
 			return ExoticPotion.regToExo.containsKey(i.getClass()) || ExoticPotion.regToExo.containsValue(i.getClass());
 		}
 
+		//the alchemy pot puts one essence in each slot, so essences are counted across slots
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
-			boolean essence = false, potion = false;
+			int essences = 0, potions = 0;
 			for (Item i : ingredients) {
-				if (i instanceof SinEssence && i.quantity() >= 2) essence = true;
-				else if (isPotion(i)) potion = true;
+				if (i instanceof SinEssence) essences += i.quantity();
+				else if (isPotion(i)) potions += i.quantity();
+				else return false;
 			}
-			return essence && potion && ingredients.size() == 2;
+			return essences >= 2 && potions >= 1;
 		}
 
 		@Override
@@ -95,8 +97,17 @@ public class ElixirOfSin extends Item {
 
 		@Override
 		public Item brew(ArrayList<Item> ingredients) {
+			if (!testIngredients(ingredients)) return null;
+			int essences = 2, potions = 1;
 			for (Item i : ingredients) {
-				i.quantity(i.quantity() - (i instanceof SinEssence ? 2 : 1));
+				if (i instanceof SinEssence && essences > 0) {
+					int take = Math.min(essences, i.quantity());
+					i.quantity(i.quantity() - take);
+					essences -= take;
+				} else if (isPotion(i) && potions > 0) {
+					i.quantity(i.quantity() - 1);
+					potions--;
+				}
 			}
 			return sampleOutput(null);
 		}
