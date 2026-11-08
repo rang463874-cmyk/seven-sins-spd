@@ -27,6 +27,7 @@ public class DecoyDoll extends Item {
 
 	@Override
 	protected void onThrow(int cell) {
+		if (curUser != null) com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(curUser, this);
 		if (Dungeon.level.passable[cell] && Actor.findChar(cell) == null && !Dungeon.level.pit[cell]) {
 			Decoy d = new Decoy();
 			d.HT = d.HP = 20 + 5 * Dungeon.depth;

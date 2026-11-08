@@ -40,6 +40,7 @@ public class SinInfusion extends InventorySpell {
 
 	@Override
 	protected void onItemSelected(Item item) {
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(curUser, this);
 		CellEmitter.get(curUser.pos).burst(ShadowParticle.CURSE, 8);
 		Sample.INSTANCE.play(Assets.Sounds.CURSED);
 

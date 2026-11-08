@@ -33,6 +33,7 @@ public class CastingMold extends InventorySpell {
 
 	@Override
 	protected void onItemSelected(Item item) {
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(curUser, this);
 		MissileWeapon m = (MissileWeapon) item;
 		m.bonusSetSize++;
 		m.quantity(m.quantity() + 1);

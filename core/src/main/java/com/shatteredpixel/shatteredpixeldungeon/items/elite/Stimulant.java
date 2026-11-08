@@ -52,6 +52,7 @@ public class Stimulant extends Item {
 		super.execute(hero, action);
 		if (!action.equals(AC_INJECT)) return;
 		detach(hero.belongings.backpack);
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(hero, this);
 		Buff.detach(hero, Slow.class);
 		Buff.detach(hero, Cripple.class);
 		Buff.detach(hero, Weakness.class);

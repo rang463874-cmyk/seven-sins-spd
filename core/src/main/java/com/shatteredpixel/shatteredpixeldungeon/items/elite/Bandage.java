@@ -48,6 +48,7 @@ public class Bandage extends Item {
 		super.execute(hero, action);
 		if (!action.equals(AC_APPLY)) return;
 		detach(hero.belongings.backpack);
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(hero, this);
 		Buff.detach(hero, Bleeding.class);
 		Buff.detach(hero, Cripple.class);
 		Buff.affect(hero, Healing.class).setHeal(Math.round(hero.HT * 0.35f), 0.1f, 1);

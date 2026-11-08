@@ -127,8 +127,138 @@ public class PredatorStomach extends Buff {
 	public static final int CODEX_FRUGAL   = 40;
 	public static final int CODEX_FEAST    = 50;
 	public static final int CODEX_ECHO     = 60;
+	public static final int CODEX_FANGS    = 70;
+	public static final int CODEX_ESSENCE  = 80;
 	public static final int[] MILESTONES = {CODEX_HEAL, CODEX_SEEDS, CODEX_LINGER, CODEX_PRESERVE,
-			CODEX_FRUGAL, CODEX_FEAST, CODEX_ECHO};
+			CODEX_FRUGAL, CODEX_FEAST, CODEX_ECHO, CODEX_FANGS, CODEX_ESSENCE};
+
+	/** CODEX_ESSENCE: chance for each consumable to leave a sin essence behind */
+	public static final float ESSENCE_CHANCE = 0.05f;
+	/** tasting every one of the mod's alchemy items: +20% to all points */
+	public static final float ALCHEMY_BONUS = 0.20f;
+
+	/** the seven sins' alchemy creations; tasting them all unlocks the sin gourmet perk */
+	@SuppressWarnings("unchecked")
+	public static final Class<? extends Item>[] MOD_ALCHEMY = new Class[]{
+			com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.class,
+			com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.class,
+			com.shatteredpixel.shatteredpixeldungeon.items.bombs.SinBomb.class, com.shatteredpixel.shatteredpixeldungeon.items.bombs.StickyBomb.class, com.shatteredpixel.shatteredpixeldungeon.items.bombs.CaltropBomb.class
+	};
+
+	public boolean alchemyComplete() {
+		for (Class<? extends Item> c : MOD_ALCHEMY) if (!codex.contains(c.getName())) return false;
+		return true;
+	}
+
+	public int alchemyTasted() {
+		int n = 0;
+		for (Class<? extends Item> c : MOD_ALCHEMY) if (codex.contains(c.getName())) n++;
+		return n;
+	}
+
+	public static boolean modAlchemy(Item item) {
+		for (Class<? extends Item> c : MOD_ALCHEMY) if (c == item.getClass()) return true;
+		return false;
+	}
+
+	/** every entry the gourmet codex can hold, in sections (section title key, classes) */
+	private static java.util.LinkedHashMap<String, java.util.ArrayList<Class<? extends Item>>> SECTIONS;
+
+	public static java.util.LinkedHashMap<String, java.util.ArrayList<Class<? extends Item>>> sections() {
+		if (SECTIONS != null) return SECTIONS;
+		java.util.LinkedHashMap<String, java.util.ArrayList<Class<? extends Item>>> s = new java.util.LinkedHashMap<>();
+		java.util.ArrayList<Class<? extends Item>> potions = new java.util.ArrayList<>();
+		java.util.ArrayList<Class<? extends Item>> exoPotions = new java.util.ArrayList<>();
+		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.POTION.classes) {
+			potions.add((Class<? extends Item>) c);
+			Class<?> exo = ExoticPotion.regToExo.get(c);
+			if (exo != null) exoPotions.add((Class<? extends Item>) exo);
+		}
+		s.put("sec_potions", potions);
+		s.put("sec_exotic_potions", exoPotions);
+		java.util.ArrayList<Class<? extends Item>> brews = new java.util.ArrayList<>(java.util.Arrays.asList(
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.UnstableBrew.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.CausticBrew.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.BlizzardBrew.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.InfernalBrew.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.AquaBrew.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfHoneyedHealing.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfAquaticRejuvenation.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfArcaneArmor.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfDragonsBlood.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfFeatherFall.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfIcyTouch.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfMight.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfToxicEssence.class));
+		s.put("sec_brews", brews);
+		java.util.ArrayList<Class<? extends Item>> scrolls = new java.util.ArrayList<>();
+		java.util.ArrayList<Class<? extends Item>> exoScrolls = new java.util.ArrayList<>();
+		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.SCROLL.classes) {
+			scrolls.add((Class<? extends Item>) c);
+			Class<?> exo = ExoticScroll.regToExo.get(c);
+			if (exo != null) exoScrolls.add((Class<? extends Item>) exo);
+		}
+		s.put("sec_scrolls", scrolls);
+		s.put("sec_exotic_scrolls", exoScrolls);
+		java.util.ArrayList<Class<? extends Item>> stones = new java.util.ArrayList<>();
+		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.STONE.classes) stones.add((Class<? extends Item>) c);
+		s.put("sec_stones", stones);
+		java.util.ArrayList<Class<? extends Item>> seeds = new java.util.ArrayList<>();
+		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.SEED.classes) seeds.add((Class<? extends Item>) c);
+		s.put("sec_seeds", seeds);
+		s.put("sec_food", new java.util.ArrayList<>(java.util.Arrays.asList(
+				Food.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.SmallRation.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.Pasty.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.MysteryMeat.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.ChargrilledMeat.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.FrozenCarpaccio.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.StewedMeat.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.MeatPie.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.Blandfruit.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.Berry.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.SupplyRation.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.food.PhantomMeat.class)));
+		s.put("sec_sins", new java.util.ArrayList<>(java.util.Arrays.asList(MOD_ALCHEMY)));
+		SECTIONS = s;
+		return s;
+	}
+
+	public static int codexTotal() {
+		int n = 0;
+		for (java.util.ArrayList<Class<? extends Item>> l : sections().values()) n += l.size();
+		return n;
+	}
+
+	/** the full text of the gourmet codex window */
+	public String codexText() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(Messages.get(PredatorStomach.class, "codex_perks"));
+		for (int m : MILESTONES) {
+			sb.append("\n").append(codex(m) ? "_" : "").append(m).append(": ")
+					.append(Messages.get(PredatorStomach.class, "codex_" + m)).append(codex(m) ? "_" : "");
+		}
+		boolean all = alchemyComplete();
+		sb.append("\n").append(all ? "_" : "")
+				.append(Messages.get(PredatorStomach.class, "codex_alchemy", alchemyTasted(), MOD_ALCHEMY.length))
+				.append(all ? "_" : "");
+		for (java.util.Map.Entry<String, java.util.ArrayList<Class<? extends Item>>> e : sections().entrySet()) {
+			int known = 0;
+			StringBuilder names = new StringBuilder();
+			for (Class<? extends Item> c : e.getValue()) {
+				boolean got = codex.contains(c.getName());
+				if (got) known++;
+				if (names.length() > 0) names.append(", ");
+				names.append(got ? com.watabou.utils.Reflection.newInstance(c).trueName()
+						: Messages.get(PredatorStomach.class, "codex_unknown"));
+			}
+			sb.append("\n\n_").append(Messages.get(PredatorStomach.class, e.getKey()))
+					.append(" (").append(known).append("/").append(e.getValue().size()).append(")_\n")
+					.append(names);
+		}
+		return sb.toString();
+	}
 
 	/** points for the first taste of a new kind of consumable */
 	public static final float CODEX_BONUS = 5f;
@@ -144,6 +274,12 @@ public class PredatorStomach extends Buff {
 
 	/** Category of a consumable, or -1 if it doesn't feed the stomach. */
 	public static int category(Item item) {
+		//the seven sins' alchemy creations: drinks feed the potion pool, the bandage the food pool,
+		//and the tricks (spells, bombs, the doll) the scroll pool
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin
+				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant) return CAT_POTION;
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage) return CAT_FOOD;
+		if (modAlchemy(item)) return CAT_SCROLL;
 		if (item instanceof Potion) return CAT_POTION;
 		if (item instanceof Food || item instanceof Plant.Seed) return CAT_FOOD;
 		if (item instanceof Scroll || item instanceof Runestone) return CAT_SCROLL;
@@ -152,6 +288,9 @@ public class PredatorStomach extends Buff {
 
 	/** Raw points an item is worth before multipliers. */
 	public static float baseScore(Item item) {
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin
+				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion) return 4f;
+		if (modAlchemy(item)) return 2f;
 		if (item instanceof Food) return Math.max(1f, ((Food) item).energy / 100f);
 		if (item instanceof Plant.Seed) return 1f;
 		if (item instanceof Runestone) return 1f;
@@ -174,6 +313,8 @@ public class PredatorStomach extends Buff {
 		if (SinWeapons.wields(hero, GluttonScythe.class, com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.GLUTTONY)) mult *= 1.5f;
 		PredatorStomach st = hero.buff(PredatorStomach.class);
 		if (st != null && st.mirrored) mult *= 1.25f;
+		//sin gourmet: tasted every one of the seven sins' alchemy creations
+		if (st != null && st.alchemyComplete()) mult *= 1f + ALCHEMY_BONUS;
 		mult *= SinArtifact.devourScale(hero);
 		if (swallowed) mult *= 3f + 1.5f * hero.pointsInTalent(Talent.PREDATOR_SCRAPS);
 		return s * mult;
@@ -228,6 +369,18 @@ public class PredatorStomach extends Buff {
 					hero.sprite.emitter().burst(Speck.factory(Speck.STAR), 8);
 				}
 			}
+			if (modAlchemy(item) && alchemyComplete()) {
+				GLog.h(Messages.get(PredatorStomach.class, "codex_unlock",
+						Messages.get(PredatorStomach.class, "codex_alchemy", MOD_ALCHEMY.length, MOD_ALCHEMY.length)));
+				hero.sprite.emitter().burst(Speck.factory(Speck.STAR), 8);
+			}
+		}
+
+		// codex: a taste of sin, now and then
+		if (codex(CODEX_ESSENCE) && com.watabou.utils.Random.Float() < ESSENCE_CHANCE) {
+			com.shatteredpixel.shatteredpixeldungeon.items.SinEssence ess = new com.shatteredpixel.shatteredpixeldungeon.items.SinEssence();
+			if (!ess.collect(hero.belongings.backpack)) Dungeon.level.drop(ess, hero.pos).sprite.drop();
+			GLog.p(Messages.get(PredatorStomach.class, "essence_found"));
 		}
 
 		afterConsume(hero, item, cat);
@@ -391,11 +544,7 @@ public class PredatorStomach extends Buff {
 				hpBonus(),
 				drMax(),
 				Math.round(evasionBonus() * 100)));
-		sb.append("\n\n").append(Messages.get(PredatorStomach.class, "desc_codex", codex.size()));
-		for (int m : MILESTONES) {
-			sb.append("\n").append(codex(m) ? "_" : "").append(m).append(": ")
-					.append(Messages.get(PredatorStomach.class, "codex_" + m)).append(codex(m) ? "_" : "");
-		}
+		sb.append("\n\n").append(Messages.get(PredatorStomach.class, "desc_codex", codex.size(), codexTotal()));
 		return sb.toString();
 	}
 

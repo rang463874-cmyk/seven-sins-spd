@@ -61,6 +61,13 @@ public class SinBomb extends Bomb {
 	}
 
 	@Override
+	protected void onThrow(int cell) {
+		//the glutton tastes the seven sins' bombs as they leave its hand
+		if (curUser != null) com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(curUser, this);
+		super.onThrow(cell);
+	}
+
+	@Override
 	public int value() {
 		return quantity * (20 + 50);
 	}

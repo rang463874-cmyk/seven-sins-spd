@@ -43,6 +43,7 @@ import java.util.ArrayList;
 public class PredatorMaw extends SinArtifact {
 
 	public static final String AC_FEED = "FEED";
+	public static final String AC_CODEX = "CODEX";
 
 	/** base satiety costs, before talents, codex and the maw's level */
 	public static final int COST_BITE = 60; //old satiety cost, kept for reference
@@ -75,18 +76,28 @@ public class PredatorMaw extends SinArtifact {
 		actions.remove(AC_DROP);
 		actions.remove(AC_THROW);
 		if (isEquipped(hero)) actions.add(AC_FEED);
+		actions.add(AC_CODEX);
 		return actions;
 	}
 
 	@Override
 	public String actionName(String action, Hero hero) {
 		if (action.equals(AC_FEED)) return Messages.get(this, "ac_feed");
+		if (action.equals(AC_CODEX)) return Messages.get(this, "ac_codex");
 		return super.actionName(action, hero);
 	}
 
 	@Override
 	public void execute(final Hero hero, String action) {
 		super.execute(hero, action);
+		//the codex can be read whether or not the maw is worn
+		if (action.equals(AC_CODEX)) {
+			PredatorStomach st = Buff.affect(hero, PredatorStomach.class);
+			GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndScrollMessage(
+					new com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite(this),
+					Messages.get(this, "codex_title", st.codex.size(), PredatorStomach.codexTotal()), st.codexText()));
+			return;
+		}
 		if (!canUseSkills(hero, action)) return;
 		if (action.equals(AC_FEED)) GameScene.show(new WndSkills(this, hero));
 	}
@@ -297,7 +308,8 @@ public class PredatorMaw extends SinArtifact {
 			hero.sprite.operate(hero.pos);
 			hero.attack(enemy, BITE_DAMAGE, 0f, 1000f);
 			int dealt = Math.max(0, before - (enemy.isAlive() ? enemy.HP + enemy.shielding() : 0));
-			int heal = Math.min(hero.HT - hero.HP, Math.round(dealt * BITE_LIFESTEAL));
+			float steal = BITE_LIFESTEAL * (PredatorStomach.hasCodex(hero, PredatorStomach.CODEX_FANGS) ? 2f : 1f);
+			int heal = Math.min(hero.HT - hero.HP, Math.round(dealt * steal));
 			if (heal > 0) {
 				hero.HP += heal;
 				hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(heal), FloatingText.HEALING);

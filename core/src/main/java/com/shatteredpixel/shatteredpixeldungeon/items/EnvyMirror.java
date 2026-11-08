@@ -129,7 +129,7 @@ public class EnvyMirror extends SinArtifact {
 
 		//the bestiary can be read whether or not the mirror is worn
 		if (action.equals(AC_CODEX)) {
-			GameScene.show(new WndTitledMessage(new ItemSprite(this),
+			GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndScrollMessage(new ItemSprite(this),
 					Messages.get(this, "codex_title", c.codex.size(), EnvyCovet.CODEX.size()), c.codexText()));
 			return;
 		}

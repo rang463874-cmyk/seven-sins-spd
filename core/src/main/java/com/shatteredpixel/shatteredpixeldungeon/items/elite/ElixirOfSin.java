@@ -51,6 +51,7 @@ public class ElixirOfSin extends Item {
 		super.execute(hero, action);
 		if (!action.equals(AC_DRINK)) return;
 		detach(hero.belongings.backpack);
+		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(hero, this);
 		if (SinRewards.grant(hero, POINTS)) {
 			SinRewards.refill(hero);
 			GLog.p(Messages.get(this, "drink_sin"));
