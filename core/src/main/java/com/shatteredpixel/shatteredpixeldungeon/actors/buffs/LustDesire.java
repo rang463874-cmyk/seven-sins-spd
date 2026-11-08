@@ -52,7 +52,7 @@ public class LustDesire extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.06f * pts());
+		return (int) (0.045f * pts());
 	}
 
 	public float accuracyBonus() {

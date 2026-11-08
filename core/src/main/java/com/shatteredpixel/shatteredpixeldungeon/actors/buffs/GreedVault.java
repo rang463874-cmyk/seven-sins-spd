@@ -62,7 +62,7 @@ public class GreedVault extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.10f * pts());
+		return (int) (0.075f * pts());
 	}
 
 	public float accuracyBonus() {

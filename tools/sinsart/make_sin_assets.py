@@ -440,6 +440,7 @@ def elite_art(items):
     items.paste(recolor(bomb, tint_px(205, 0.35, 1.5)), cell(ELITE_ROW + 10, 16)[:2])
     items.paste(draw(DOLL, DOLL_PAL), cell(ELITE_ROW + 11, 16)[:2])
     items.paste(draw(DSEAL, DSEAL_PAL), cell(ELITE_ROW + 12, 16)[:2])
+    items.paste(draw(CSPEAR, CSPEAR_PAL), cell(ELITE_ROW + 13, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
     items.paste(recolor(items.crop(cell(SPIRIT_BOW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 6, 16)[:2])
     items.paste(recolor(items.crop(cell(SPIRIT_ARROW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 7, 16)[:2])
@@ -482,6 +483,27 @@ DOLL = [
 ]
 DOLL_PAL = {"O": (70, 50, 20, 255), "Y": (220, 190, 100, 255), "K": (40, 30, 20, 255),
             "R": (180, 40, 40, 255), "B": (110, 80, 40, 255)}
+
+# 15x15 spear of conquest (tip to the top right, like the javelin), white shaft with gold bands
+CSPEAR = [
+    "...........KKKK",
+    "..........KSSSK",
+    ".........KSWSSK",
+    "........KSWSSK.",
+    ".......KGKSSK..",
+    "......KWGGKK...",
+    ".....KWWGK.....",
+    "....KWWK.......",
+    "...KGWK........",
+    "..KGGK.........",
+    ".KWWK..........",
+    "KWWK...........",
+    "KWK............",
+    "KK.............",
+    "...............",
+]
+CSPEAR_PAL = {"K": (30, 26, 34, 255), "W": (244, 240, 228, 255), "G": (232, 186, 60, 255),
+              "S": (200, 214, 236, 255)}
 
 # 12x12 demon seal: a dark wax seal with horns and a glowing sigil (the game adds the lord's glow)
 DSEAL = [

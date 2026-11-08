@@ -152,7 +152,7 @@ public class EnvyCovet extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.075f * pts());
+		return (int) (0.05625f * pts());
 	}
 
 	public float accuracyBonus() {

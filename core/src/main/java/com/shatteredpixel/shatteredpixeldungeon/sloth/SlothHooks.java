@@ -49,8 +49,8 @@ public final class SlothHooks {
 		SlothRepose r = repose(hero);
 		if (r == null) return dmg;
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
-		if (wep instanceof MissileWeapon) return dmg;
 		dmg += r.meleeBonus();
+		if (wep instanceof MissileWeapon) return dmg;
 		//sloth lets the puppets do the fighting: its own swings are feeble
 		//(the sleepwalker's automatic attacks have their own multiplier instead)
 		if (!SlothRepose.autoAttacking) dmg = Math.round(dmg * MELEE_PENALTY);

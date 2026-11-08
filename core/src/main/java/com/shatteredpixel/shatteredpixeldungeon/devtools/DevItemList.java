@@ -61,6 +61,7 @@ public final class DevItemList {
 		},
 		{"투척 무기",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Bolas",
+			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ConquestSpear",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.FishingSpear",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ForceCube",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.HeavyBoomerang",

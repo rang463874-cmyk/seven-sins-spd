@@ -53,7 +53,7 @@ public final class GreedHooks {
 
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
 		boolean melee = !(wep instanceof MissileWeapon);
-		if (melee) dmg += v.meleeBonus();
+		dmg += v.meleeBonus();
 
 		if (enemy != null) {
 			GreedVault.Debt debt = enemy.buff(GreedVault.Debt.class);

@@ -117,6 +117,11 @@ public class PrideCrown extends SinArtifact {
 				.usableIf(h -> glory(h).dignity >= COST_DISDAIN)
 				.descArgs(h -> new Object[]{disdainMin(h), disdainMax(h)})
 				.onUse(h -> GameScene.selectCell(disdain)));
+		list.add(new BasicSkill(PrideCrown.class, "repel", 30, SinSkill.CostType.DIGNITY)
+				.cost(h -> COST_REPEL)
+				.usableIf(h -> glory(h).dignity >= COST_REPEL)
+				.descArgs(h -> new Object[]{REPEL_RADIUS, repelPower(h)})
+				.onUse(PrideCrown::repel));
 		list.add(new BasicSkill(PrideCrown.class, "command", 24, SinSkill.CostType.DIGNITY).targetsEnemy()
 				.cost(h -> COST_COMMAND)
 				.usableIf(h -> glory(h).dignity >= COST_COMMAND)
@@ -180,6 +185,42 @@ public class PrideCrown extends SinArtifact {
 
 	// ------------------------------------------------------------------ skills
 
+	// ------------------------------------------------------------------ repel (keeps enemies at bay)
+
+	public static final int COST_REPEL = 2;
+	public static final int REPEL_RADIUS = 2;
+
+	public static int repelPower(Hero hero) {
+		return 3;
+	}
+
+	/** "kneel back": every enemy within 2 tiles is thrown away from the hero and staggered */
+	private static void repel(Hero hero) {
+		PrideGlory g = glory(hero);
+		if (!g.useDignity(COST_REPEL)) return;
+		int pushed = 0;
+		for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])) {
+			if (m.alignment == Char.Alignment.ALLY || !m.isAlive()) continue;
+			if (Dungeon.level.distance(hero.pos, m.pos) > REPEL_RADIUS || !Dungeon.level.heroFOV[m.pos]) continue;
+			if (Char.hasProp(m, Char.Property.IMMOVABLE)) continue;
+			int dx = Integer.signum(Dungeon.level.cellToPoint(m.pos).x - Dungeon.level.cellToPoint(hero.pos).x);
+			int dy = Integer.signum(Dungeon.level.cellToPoint(m.pos).y - Dungeon.level.cellToPoint(hero.pos).y);
+			int far = m.pos + (dx + dy * Dungeon.level.width()) * (repelPower(hero) + 1);
+			if (far < 0 || far >= Dungeon.level.length() || far == m.pos) continue;
+			com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave.throwChar(m,
+					new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(m.pos, far,
+							com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.MAGIC_BOLT),
+					repelPower(hero), true, true, PrideCrown.class);
+			if (m.isAlive()) Buff.prolong(m, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo.class, 2f);
+			pushed++;
+		}
+		com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave.BlastWave.blast(hero.pos);
+		hero.sprite.operate(hero.pos);
+		Sample.INSTANCE.play(Assets.Sounds.BLAST, 0.8f, 1.2f);
+		if (pushed == 0) GLog.i(Messages.get(PrideCrown.class, "repel_none"));
+		hero.spendAndNext(1f);
+	}
+
 	// ------------------------------------------------------------------ disdain (ranged)
 
 	public static final int COST_DISDAIN = 1;
@@ -191,6 +232,11 @@ public class PrideCrown extends SinArtifact {
 	public static int disdainMax(Hero hero) {
 		PrideGlory g = hero.buff(PrideGlory.class);
 		return 5 + hero.lvl * 2 / 3 + (g == null ? 0 : g.meleeBonus());
+	}
+
+	/** disdain only gets half of dignity's damage bonus */
+	public static float disdainMult(PrideGlory g) {
+		return 1f + (g.dignityMult() - 1f) * 0.5f;
 	}
 
 	/** a contemptuous glance from afar: lets Pride fight without ever being touched */
@@ -214,7 +260,7 @@ public class PrideCrown extends SinArtifact {
 			com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile.boltFromChar(hero.sprite.parent,
 					com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile.SHAMAN_PURPLE, hero.sprite, target, () -> {
 				com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton.target(ch);
-				int dmg = Math.round(Random.NormalIntRange(disdainMin(hero), disdainMax(hero)) * g.dignityMult());
+				int dmg = Math.round(Random.NormalIntRange(disdainMin(hero), disdainMax(hero)) * disdainMult(g));
 				ch.damage(dmg, PrideCrown.class);
 				if (ch.sprite != null) ch.sprite.emitter().burst(Speck.factory(Speck.STAR), 3);
 				Sample.INSTANCE.play(Assets.Sounds.HIT_MAGIC);

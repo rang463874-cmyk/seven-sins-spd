@@ -956,7 +956,9 @@ public class ItemSpriteSheet {
 	public static final int CALTROP_BOMB      = ELITE+10;
 	public static final int DECOY_DOLL        = ELITE+11;
 	public static final int DEMON_SEAL        = ELITE+12;
+	public static final int CONQUEST_SPEAR    = ELITE+13;
 	static{
+		assignItemRect(CONQUEST_SPEAR, 15, 15);
 		assignItemRect(DEMON_SEAL,    12, 12);
 		assignItemRect(SIN_INFUSION,  12, 12);
 		assignItemRect(CASTING_MOLD,  14, 12);

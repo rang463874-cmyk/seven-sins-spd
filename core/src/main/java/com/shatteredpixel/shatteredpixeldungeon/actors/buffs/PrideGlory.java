@@ -110,7 +110,7 @@ public class PrideGlory extends Buff {
 		Hero h = hero();
 		float t = 3f - 0.5f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_POISE));
 		if (SinWeapons.wields(h, DuelingSword.class, HeroClass.PRIDE)) t -= 1f;
-		t *= SinArtifact.rechargeScale(h) / (1f + 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_SWIFT_CROWN)));
+		t *= SinArtifact.rechargeScale(h);
 		return Math.max(0.5f, t);
 	}
 

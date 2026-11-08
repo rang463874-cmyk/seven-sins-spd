@@ -86,7 +86,7 @@ public class PredatorStomach extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) ((0.075f * weaponPts + 0.025f * trinketPts) * apex());
+		return (int) ((0.05625f * weaponPts + 0.01875f * trinketPts) * apex());
 	}
 
 	public float accuracyBonus() {

@@ -33,7 +33,7 @@ public final class LustHooks {
 		if (d == null || enemy == null) return dmg;
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
 		boolean melee = !(wep instanceof MissileWeapon);
-		if (melee) dmg += d.meleeBonus();
+		dmg += d.meleeBonus();
 
 		boolean charmed = LustDesire.charmedByHero(enemy);
 		int blush = hero.pointsInTalent(Talent.LUST_BLUSH);

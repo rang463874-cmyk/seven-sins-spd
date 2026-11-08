@@ -1583,6 +1583,8 @@ public class Hero extends Char {
 
 		if (!(belongings.attackingWeapon() instanceof MissileWeapon)) {
 			damage = PredatorHooks.onMeleeAttack( this, enemy, damage );
+		} else {
+			damage = PredatorHooks.onThrownAttack( this, enemy, damage );
 		}
 		damage = GreedHooks.onAttack( this, enemy, damage );
 		damage = WrathHooks.onAttack( this, enemy, damage );

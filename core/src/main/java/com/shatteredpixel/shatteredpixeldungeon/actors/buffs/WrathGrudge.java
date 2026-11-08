@@ -48,7 +48,7 @@ public class WrathGrudge extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.05f * pts());
+		return (int) (0.0375f * pts());
 	}
 
 	public float accuracyBonus() {

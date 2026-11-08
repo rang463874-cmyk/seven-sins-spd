@@ -138,32 +138,40 @@ public class SkillBar extends Component {
 		if (t == null) return;
 		aiming = b;
 		aimTarget = t;
-		if (aimMark == null) aimMark = Icons.TARGET.get();
-		if (aimButtonMark == null) aimButtonMark = Icons.TARGET.get();
+		//like a thrown weapon's quickslot: remember the target and show its health bar
+		QuickSlotButton.target(t);
+		//fresh images each time: a killed Gizmo never draws again once re-added
+		removeMarks();
+		aimMark = Icons.TARGET.get();
+		aimButtonMark = Icons.TARGET.get();
 		if (t.sprite.parent != null) {
 			t.sprite.parent.addToFront(aimMark);
-			aimMark.visible = true;
 			aimMark.point(t.sprite.center(aimMark));
 		}
 		if (b.parent != null) {
 			b.parent.addToFront(aimButtonMark);
-			aimButtonMark.visible = true;
 			aimButtonMark.x = b.left() + (b.width() - aimButtonMark.width()) / 2f;
 			aimButtonMark.y = b.top() + (b.height() - aimButtonMark.height()) / 2f;
+		}
+	}
+
+	private static void removeMarks() {
+		if (aimMark != null) {
+			aimMark.remove();
+			aimMark.destroy();
+			aimMark = null;
+		}
+		if (aimButtonMark != null) {
+			aimButtonMark.remove();
+			aimButtonMark.destroy();
+			aimButtonMark = null;
 		}
 	}
 
 	public static void stopAiming() {
 		aiming = null;
 		aimTarget = null;
-		if (aimMark != null) {
-			aimMark.visible = false;
-			aimMark.killAndErase();
-		}
-		if (aimButtonMark != null) {
-			aimButtonMark.visible = false;
-			aimButtonMark.killAndErase();
-		}
+		removeMarks();
 	}
 
 	private static void updateAiming() {
@@ -172,7 +180,14 @@ public class SkillBar extends Component {
 			stopAiming();
 			return;
 		}
-		if (aimMark != null && aimTarget.sprite != null) aimMark.point(aimTarget.sprite.center(aimMark));
+		if (aimMark != null && aimTarget.sprite != null) {
+			//the target sprite can move between layers (e.g. after a level redraw): follow it
+			if (aimMark.parent != aimTarget.sprite.parent && aimTarget.sprite.parent != null) {
+				aimMark.remove();
+				aimTarget.sprite.parent.addToFront(aimMark);
+			}
+			aimMark.point(aimTarget.sprite.center(aimMark));
+		}
 	}
 
 	public static class SkillButton extends Button {

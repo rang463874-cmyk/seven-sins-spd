@@ -35,10 +35,20 @@ public class CastingMold extends InventorySpell {
 	protected void onItemSelected(Item item) {
 		com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onConsumed(curUser, this);
 		MissileWeapon m = (MissileWeapon) item;
-		m.bonusSetSize++;
-		m.quantity(m.quantity() + 1);
 		curUser.sprite.emitter().burst(Speck.factory(Speck.STAR), 6);
 		Sample.INSTANCE.play(Assets.Sounds.EVOKE);
+		if (m instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ConquestSpear) {
+			//the relic takes three molds per spear
+			com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ConquestSpear s =
+					(com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ConquestSpear) m;
+			if (s.pourMold()) GLog.p(Messages.get(this, "cast", m.name(), m.setSize()));
+			else GLog.i(Messages.get(this, "cast_partial", s.moldProgress,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ConquestSpear.MOLDS_PER_SPEAR));
+			updateQuickslot();
+			return;
+		}
+		m.bonusSetSize++;
+		m.quantity(m.quantity() + 1);
 		GLog.p(Messages.get(this, "cast", m.name(), m.setSize()));
 		updateQuickslot();
 	}

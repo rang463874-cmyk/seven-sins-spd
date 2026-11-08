@@ -46,6 +46,12 @@ public final class PredatorHooks {
 		return hero.buff(PredatorStomach.class);
 	}
 
+	/** Thrown weapons get the stomach's weapon damage bonus too (Hero.attackProc). */
+	public static int onThrownAttack(Hero hero, Char enemy, int dmg) {
+		PredatorStomach st = stomach(hero);
+		return st == null ? dmg : dmg + st.meleeBonus();
+	}
+
 	/** Melee damage bonus, called from Hero.attackProc for non-thrown attacks. */
 	public static int onMeleeAttack(Hero hero, Char enemy, int dmg) {
 		PredatorStomach st = stomach(hero);

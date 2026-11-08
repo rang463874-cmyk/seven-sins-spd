@@ -189,4 +189,23 @@ public final class PrideHooks {
 		if (duel != null && enemy != null && enemy.id() == duel.object) mult *= 1.2f;
 		return Math.round(dmg * mult);
 	}
+
+	/** PRIDE_SWIFT_CROWN ("royal retrieval"): a thrown weapon may fly straight back into the hand.
+	 *  Called from MissileWeapon.rangedHit/rangedMiss instead of dropping it; true if it came back. */
+	public static boolean swiftReturn(com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon w) {
+		Hero hero = Dungeon.hero;
+		if (hero == null || !hero.isAlive()) return false;
+		int pts = hero.pointsInTalent(Talent.PRIDE_SWIFT_CROWN);
+		if (pts <= 0 || w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow.SpiritArrow) return false;
+		if (com.watabou.utils.Random.Float() >= SWIFT_RETURN_CHANCE * pts) return false;
+		if (!w.collect(hero.belongings.backpack)) return false;
+		if (hero.sprite != null) {
+			hero.sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.POSITIVE,
+					com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(PrideHooks.class, "swift_return"));
+		}
+		com.shatteredpixel.shatteredpixeldungeon.items.Item.updateQuickslot();
+		return true;
+	}
+
+	public static final float SWIFT_RETURN_CHANCE = 0.25f;
 }

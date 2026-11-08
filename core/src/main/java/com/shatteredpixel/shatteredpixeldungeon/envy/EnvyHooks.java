@@ -59,8 +59,8 @@ public final class EnvyHooks {
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
 		boolean melee = !(wep instanceof MissileWeapon);
 		float mult = 1f;
+		dmg += c.meleeBonus();
 		if (melee) {
-			dmg += c.meleeBonus();
 			mult *= c.meleeMult();
 		} else {
 			mult *= 1f + c.trait(Trait.GNOLL_TRICKSTER, 0.20f);

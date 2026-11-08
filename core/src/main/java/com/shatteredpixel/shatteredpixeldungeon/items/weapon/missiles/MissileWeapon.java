@@ -429,13 +429,15 @@ abstract public class MissileWeapon extends Weapon {
 					return;
 				}
 			}
-			Dungeon.level.drop( this, cell ).sprite.drop();
+			if (!com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks.swiftReturn(this)) {
+				Dungeon.level.drop( this, cell ).sprite.drop();
+			}
 		}
 	}
 	
 	protected void rangedMiss( int cell ) {
 		parent = null;
-		if (!spawnedForEffect) super.onThrow(cell);
+		if (!spawnedForEffect && !com.shatteredpixel.shatteredpixeldungeon.pride.PrideHooks.swiftReturn(this)) super.onThrow(cell);
 	}
 
 	public float durabilityLeft(){

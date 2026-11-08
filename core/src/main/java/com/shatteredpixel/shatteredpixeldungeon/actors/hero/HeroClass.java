@@ -163,8 +163,14 @@ public enum HeroClass {
 		i = new Food();
 		if (!Challenges.isItemBlocked(i)) i.collect();
 
-		new VelvetPouch().collect();
-		Dungeon.LimitedDrops.VELVET_POUCH.drop();
+		if (this == PRIDE) {
+			//pride lives on thrown weapons: a holster instead of the seed pouch
+			new com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster().collect();
+			Dungeon.LimitedDrops.MAGICAL_HOLSTER.drop();
+		} else {
+			new VelvetPouch().collect();
+			Dungeon.LimitedDrops.VELVET_POUCH.drop();
+		}
 
 		Waterskin waterskin = new Waterskin();
 		waterskin.collect();

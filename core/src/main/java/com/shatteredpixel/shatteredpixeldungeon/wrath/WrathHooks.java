@@ -154,8 +154,8 @@ public final class WrathHooks {
 		if (g == null) return dmg;
 		g.onHit();
 		KindOfWeapon wep = hero.belongings.attackingWeapon();
+		dmg += g.meleeBonus();
 		if (!(wep instanceof MissileWeapon)) {
-			dmg += g.meleeBonus();
 			WrathGrudge.Vengeance v = hero.buff(WrathGrudge.Vengeance.class);
 			if (v != null) dmg += v.stacks;
 			int exec = hero.pointsInTalent(Talent.AVENGER_EXECUTE);

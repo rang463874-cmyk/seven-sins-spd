@@ -85,7 +85,9 @@ Not yet done / known gaps:
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
 a points value that never decreases; accuracy/evasion are capped at 40%/30%).
 Melee/max HP/armor growth from sin points was halved again for all seven sins (Nov 2026, in each buff's
-`meleeBonus/hpBonus/drMax`; accuracy/evasion and unique stats unchanged). Max HP growth from sin points was halved (Nov 2026), and starvation damage scales with `Hero.starvationHT`
+`meleeBonus/hpBonus/drMax`; accuracy/evasion and unique stats unchanged). Later in Nov 2026 the six non-Pride
+`meleeBonus()` values were cut to 75% and now apply to thrown weapons too ("weapon damage"; Gluttony's thrown path is
+`PredatorHooks.onThrownAttack`; Sloth's x0.7 penalty stays melee-only). Max HP growth from sin points was halved (Nov 2026), and starvation damage scales with `Hero.starvationHT`
 (max HP before the sins' bonus, set in `updateHT`), not the full HT.
 Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
 Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
@@ -136,7 +138,10 @@ Skill resources (Nov 2026): Wrath spends **rage** (`WrathGrudge.rage`, 0..maxRag
 (+4) and damage taken (100 per max HP), cools 1/turn with no enemies in view; old charge sources convert at
 1 charge = 25 rage). Pride spends **dignity** stacks (`PrideGlory.useDignity`; dignity also gives +4% melee per
 stack and shatters when hit); Disdain = 1-dignity ranged bolt, x dignityMult, kills count as flawless via
-`PrideHooks.heroCaused` accepting `PrideCrown.class`). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
+`PrideHooks.heroCaused` accepting `PrideCrown.class`; Disdain gets only half the dignity bonus via
+`PrideCrown.disdainMult`). Pride's crown also has Kneel Back (`repel`, 2 dignity: enemies within 2 thrown 3 tiles + Vertigo).
+PRIDE_SWIFT_CROWN is now "royal retrieval": 25%/pt that a thrown weapon returns to the pack (`PrideHooks.swiftReturn`,
+called from `MissileWeapon.rangedHit/rangedMiss`). Pride starts with a magical holster instead of the velvet pouch. Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
 (Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; a meal with SLOTH_PILLOW skips
 dozing). Cost types RAGE/DIGNITY/TURNS/JEALOUSY in `SinSkill.CostType`.
 Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: 12 copies of other
@@ -181,14 +186,18 @@ in the item's namespace, and an icon in `tools/sinsart/make_skill_icons.py`
 (`interfaces/skill_icons.png`, 16x16, row = sin index, 8 per row; re-run the script).
 Auto-aim: `BasicSkill.targetsEnemy()` / `.projectile()` mark targeted skills; after the first tap the bar picks
 `SkillBar.autoTarget()` (last quickslot target, else nearest visible enemy), shows a crosshair, and a second tap
-fires (`GameScene.handleCell`, projectiles via `QuickSlotButton.autoAim`). The conquest gun uses the quickslot's
+fires (`GameScene.handleCell`, projectiles via `QuickSlotButton.autoAim`); `startAiming` also calls `QuickSlotButton.target`
+(health bar) and makes fresh crosshair images each time (a killed Gizmo never draws again). The conquest gun uses the quickslot's
 `usesTargeting`. Cost labels live under `skills.sinskill.cost_*`. Two-step cell selections must open the second
 selector on the next frame (`Game.runOnRenderThread`), because the scene resets the selector after
 each pick (that was the Discord bug).
 
 ## Four horsemen artifacts and the sewer prophet
 
-Reworked for combat (Nov 2026). `items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use,
+Reworked for combat (Nov 2026). The prophet now gives `items/weapon/missiles/ConquestSpear` instead of the gun
+(tier 4 thrown set of 2, `conquest` points from CONQUERed gear = +1 min/10 and +1 max/5, refills durability and
+reforges a lost spear, takes good enchantments; casting molds count 1/3 via `pourMold`; reuses `ConquestCrown.bulletsFor`;
+art items.png row 37 +13). `items/artifacts/HorsemanArtifact` (shared: 0-100% charge, full charge per use,
 levels 0-10 by uses, never cursed; `timeCharges()` off for the gun) with `ConquestCrown` (class name kept for
 saves, now the **gun of conquest**: loads bullets by devouring unequipped weapons/armor (tier+2*lvl each), whole thrown-weapon stacks (half that per weapon) and rings (4+3*lvl),
 keeps the last good enchantment for its bullets; fire = one bullet, ranged hit, drawn as `effects/Bullet` (2px black, 2400px/s); levels by shots (damage only),

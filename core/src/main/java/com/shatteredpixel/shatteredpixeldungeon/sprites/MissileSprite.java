@@ -98,6 +98,7 @@ public class MissileSprite extends ItemSprite implements Tweener.Listener {
 		ANGULAR_SPEEDS.put(ThrowingSpear.class, 0);
 		ANGULAR_SPEEDS.put(Kunai.class,         0);
 		ANGULAR_SPEEDS.put(Javelin.class,       0);
+		ANGULAR_SPEEDS.put(com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ConquestSpear.class, 0);
 		ANGULAR_SPEEDS.put(Trident.class,       0);
 		
 		ANGULAR_SPEEDS.put(SpiritBow.SpiritArrow.class,       0);
