@@ -98,7 +98,7 @@ public class ExitRoom extends StandardRoom {
 		rooms.add(RitualExitRoom.class);
 	}
 
-	private static float[][] chances = new float[27][];
+	private static float[][] chances = new float[31][];
 	static {
 		//floor 1 only uses simpler exit rooms
 		chances[1] =  new float[]{4,3,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
@@ -116,6 +116,15 @@ public class ExitRoom extends StandardRoom {
 
 		chances[21] = new float[]{0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 4,3,2,1};
 		chances[26] = chances[25] = chances[24] = chances[23] = chances[22] = chances[21];
+
+		//Seven Sins: the heavens (27-30) mix the rooms of the sewers, prison, caves and city
+		for (int d = 27; d <= 30; d++) {
+			float[] m = new float[chances[2].length];
+			for (int src : new int[]{3, 7, 12, 17}) {
+				for (int i = 0; i < m.length; i++) m[i] += chances[src][i];
+			}
+			chances[d] = m;
+		}
 	}
 
 	public static StandardRoom createExit(){

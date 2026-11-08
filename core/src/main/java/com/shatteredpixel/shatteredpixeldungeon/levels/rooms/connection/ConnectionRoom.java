@@ -57,7 +57,7 @@ public abstract class ConnectionRoom extends Room {
 		rooms.add(RingBridgeRoom.class);
 	}
 	
-	private static float[][] chances = new float[27][];
+	private static float[][] chances = new float[31][];
 	static {
 		chances[1] =  new float[]{20, 1,    0, 2,       2, 1};
 		chances[4] =  chances[3] = chances[2] = chances[1];
@@ -76,6 +76,15 @@ public abstract class ConnectionRoom extends Room {
 		
 		chances[22] = new float[]{15, 4,    0, 2,       3, 2};
 		chances[26] = chances[25] = chances[24] = chances[23] = chances[22];
+
+		//Seven Sins: the heavens (27-30) mix the rooms of the sewers, prison, caves and city
+		for (int d = 27; d <= 30; d++) {
+			float[] m = new float[chances[2].length];
+			for (int src : new int[]{3, 7, 12, 17}) {
+				for (int i = 0; i < m.length; i++) m[i] += chances[src][i];
+			}
+			chances[d] = m;
+		}
 	}
 	
 	public static ConnectionRoom createRoom(){

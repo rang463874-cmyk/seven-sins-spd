@@ -117,6 +117,26 @@ Done and pushed (see `git log`):
   (`amuletGuarded`). Wakes when the hero comes within 6; Judgment (3x3, blind), Holy Lance (line 9), a virtue
   signature; ascends at 2/3 and 1/3 HP (barrier, then faster skills); nemesis kill +100 sin points. Both champions and
   the archangel implement `virtues/VirtueFoe` (nemesis damage). Dev tools: "대천사 소환".
+- The heavens, floors 27-30 (Nov 2026): the archangel's death calls `LastLevel.openHeaven` (EXIT at `HEAVEN_STAIRS`, row 8
+  above the amulet, + REGULAR_EXIT transition; re-applied in `LastLevel.restoreFromBundle` when `angelStage` >= 2).
+  `Dungeon.newLevel` builds `levels/HeavenLevel` for 27-30 (RegularLevel, city tiles/music, `HeavenPainter` = CityPainter
+  with a fixed wall-deco rate, 10-13 standard + 3-4 special rooms, mob limit 5-7 before groups; floor 30 fills chasms
+  and removes its exit). The four room chance tables (Standard/Connection/Entrance/ExitRoom) are 31 long with rows 27-30
+  = the sum of the sewer/prison/caves/city rows; `SecretRoom.secretsForFloor` returns 2-3 past 25, TrapsRoom/WeakFloorRoom
+  clamp their region index. Mobs (`actors/mobs/heaven/`, stats from `HeavenMobs.depth()` = max(26, scalingDepth), saved
+  as `depth`): `Believer` (groups of 2-3: HeavenLevel adds 1-2 companions to each believer/priest at build and on
+  respawn; death cry aggroes enemies within 3), `Priest` (heals 1/6 HT + Barrier to allies within 4 every 5 turns; when
+  hunting with the hero in view and no ally within 6 it dies and a `LesserAngel` takes its place), `LesserAngel`
+  (IMMOVABLE, ranged spear via `HeavenSprites.LesserAngel` zap, `Radiance` shield losing 1/8 per turn, dies after 20
+  turns), `Seraph` (MINIBOSS, 35% per floor in a 7x7+ standard room via `HeavenLevel.placeSeraph`; 2x2: own cell = top-left
+  + 3 invisible `SeraphPart`s forwarding damage like LeviathanCoil; moves as a block inside its room bounds
+  (`fits`/`getCloser`), burns non-enemies adjacent to the block each turn, reach 2 from the nearest body cell, one
+  light-chain pull without cripple; `ensureBody` gives dev-summoned ones parts and the whole floor). All four are in the
+  bestiary's QUEST group. Rotation in `MobSpawner` case 27-30. Art: believer/priest = tinted MonkSprite/SeniorSprite;
+  lesser angel (24px, from angel_gabriel) and seraph (32px over 2x2 via `worldToCamera`, from angel_sariel, + blank
+  frame 12 for parts) are placeholders from `make_virtue_sprites.py`. Strings in `tools/strings/virtues_*`.
+  Headless level test trick: build `HeavenLevel` subclasses without special/secret rooms and a texture-free
+  `TextureFilm` stub on the classpath (Level.create needs textures for items).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

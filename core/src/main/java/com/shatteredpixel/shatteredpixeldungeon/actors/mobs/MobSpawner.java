@@ -201,6 +201,14 @@ public class MobSpawner extends Actor {
 						Succubus.class,
 						Eye.class, Eye.class,
 						Scorpio.class));
+			//seven sins mod: the heavens. 3x believer (each with 1-2 more), 2x priest (with 1-2 believers)
+			case 27: case 28: case 29: case 30:
+				return new ArrayList<>(Arrays.asList(
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Believer.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Believer.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Believer.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Priest.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Priest.class));
 			case 24: case 25: case 26:
 				//1x succubus, 2x evil eye, 3x scorpio
 				return new ArrayList<>(Arrays.asList(

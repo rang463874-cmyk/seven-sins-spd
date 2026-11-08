@@ -160,7 +160,7 @@ public class EntranceRoom extends StandardRoom {
 		rooms.add(RitualEntranceRoom.class);
 	}
 
-	private static float[][] chances = new float[27][];
+	private static float[][] chances = new float[31][];
 	static {
 		//first 2 floors only use simpler entrance rooms
 		chances[1] =  new float[]{4,3,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
@@ -179,6 +179,15 @@ public class EntranceRoom extends StandardRoom {
 
 		chances[21] = new float[]{0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 4,3,2,1};
 		chances[26] = chances[25] = chances[24] = chances[23] = chances[22] = chances[21];
+
+		//Seven Sins: the heavens (27-30) mix the rooms of the sewers, prison, caves and city
+		for (int d = 27; d <= 30; d++) {
+			float[] m = new float[chances[2].length];
+			for (int src : new int[]{3, 7, 12, 17}) {
+				for (int i = 0; i < m.length; i++) m[i] += chances[src][i];
+			}
+			chances[d] = m;
+		}
 	}
 
 	public static StandardRoom createEntrance(){

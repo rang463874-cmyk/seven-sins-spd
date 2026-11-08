@@ -250,7 +250,12 @@ public enum Bestiary {
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.FallenPriest.class,
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.Hellhound.class,
 				//seven sins mod: the virtues' champions
-				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.HumilityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.CharityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ChastityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.PatienceChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.TemperanceChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.KindnessChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.DiligenceChampion.class);
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.HumilityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.CharityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ChastityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.PatienceChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.TemperanceChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.KindnessChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.DiligenceChampion.class,
+				//seven sins mod: the heavens (floors 27-30)
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Believer.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Priest.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.LesserAngel.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph.class);
 
 		NEUTRAL.addEntities(Ghost.class, RatKing.class, Shopkeeper.class, Wandmaker.class, Blacksmith.class, Imp.class, Sheep.class, Bee.class);
 

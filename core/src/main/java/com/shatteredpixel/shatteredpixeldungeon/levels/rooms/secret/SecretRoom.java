@@ -66,6 +66,8 @@ public abstract class SecretRoom extends SpecialRoom {
 	public static int secretsForFloor(int depth){
 		if (depth == 1) return 0;
 		
+		//Seven Sins: past the halls (the heavens, 27-30) there are always 2-3 secrets
+		if (depth > 25) return Random.IntRange(2, 3);
 		int region = depth/5;
 		int floor = depth%5;
 		

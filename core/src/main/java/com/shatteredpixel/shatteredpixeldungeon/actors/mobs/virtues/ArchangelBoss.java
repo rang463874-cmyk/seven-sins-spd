@@ -316,6 +316,11 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		VirtueHooks.angelStage = 2;
 		if (nemesis() && Dungeon.hero != null && Dungeon.hero.isAlive()) SinRewards.grant(Dungeon.hero, 100);
 		GLog.p(Messages.get(this, "amulet_free"));
+		//the way down to the heavens opens above the amulet
+		if (Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel) {
+			((com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel) Dungeon.level).openHeaven();
+			GLog.p(Messages.get(ArchangelBoss.class, "heaven_opens"));
+		}
 		//its halo: one more shared artifact/ring slot
 		Dungeon.level.drop(new com.shatteredpixel.shatteredpixeldungeon.items.HeavenlyHalo(), pos).sprite.drop();
 	}

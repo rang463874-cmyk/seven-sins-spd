@@ -355,6 +355,13 @@ public class Dungeon {
 				case 26:
 					level = new LastLevel();
 					break;
+				//seven sins mod: the heavens below the amulet
+				case 27:
+				case 28:
+				case 29:
+				case 30:
+					level = new com.shatteredpixel.shatteredpixeldungeon.levels.HeavenLevel();
+					break;
 				default:
 					level = new DeadEndLevel();
 			}

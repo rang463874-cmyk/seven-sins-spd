@@ -118,6 +118,28 @@ public class LastLevel extends Level {
 	private static final int WIDTH = 16;
 	private static final int MID = WIDTH/2;
 	public static int AMULET_POS = 12*WIDTH + MID;
+	//seven sins mod: stairs down to the heavens (floors 27-30), above the amulet, once the archangel falls
+	public static final int HEAVEN_STAIRS = 8*WIDTH + MID;
+
+	/** opens the stairs to the heavens (no-op if already open) */
+	public void openHeaven() {
+		for (LevelTransition t : transitions) {
+			if (t.type == LevelTransition.Type.REGULAR_EXIT) return;
+		}
+		set(HEAVEN_STAIRS, Terrain.EXIT, this);
+		transitions.add(new LevelTransition(this, HEAVEN_STAIRS, LevelTransition.Type.REGULAR_EXIT));
+		if (Dungeon.level == this && com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon.scene()
+				instanceof com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene) {
+			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.updateMap(HEAVEN_STAIRS);
+		}
+	}
+
+	@Override
+	public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
+		super.restoreFromBundle(bundle);
+		//saves from before the heavens existed
+		if (com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.angelStage >= 2) openHeaven();
+	}
 
 	@Override
 	protected boolean build() {

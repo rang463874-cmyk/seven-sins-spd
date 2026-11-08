@@ -195,10 +195,11 @@ def frames(base, fx):
     ]
 
 
-def sheet(rows, size, out):
+def sheet(rows, size, out, blank=False):
+    """blank=True adds an empty 13th frame (used by the seraph's invisible body parts)"""
     global S, H
     S, H = size, size + 1
-    img = Image.new("RGBA", (S * FRAMES, H * len(rows)), (0, 0, 0, 0))
+    img = Image.new("RGBA", (S * (FRAMES + (1 if blank else 0)), H * len(rows)), (0, 0, 0, 0))
     for r, (name, fx) in enumerate(rows):
         base = shrink(cutout(Image.open(os.path.join(SRC, name + ".png"))))
         for i, f in enumerate(frames(base, fx)):
@@ -209,6 +210,10 @@ def sheet(rows, size, out):
 def main():
     sheet(ROWS, 48, "virtue_champions.png")
     sheet(ANGELS, ANGEL_SIZE, "virtue_angels.png")
+    # the heavens (floors 27-30), placeholders until the owner draws them: the lesser angel is a
+    # small Gabriel, the seraph (2x2 tiles) a 32px Sariel
+    sheet([("angel_gabriel", (255, 255, 255, 255))], 24, "heaven_lesser_angel.png")
+    sheet([("angel_sariel", (200, 220, 255, 255))], 32, "heaven_seraph.png", blank=True)
     print("virtue sprites written")
 
 
