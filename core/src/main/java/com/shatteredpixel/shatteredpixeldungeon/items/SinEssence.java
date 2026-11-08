@@ -6,7 +6,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
  * Dropped by elite monsters (one per sin elite, two per region elite). An alchemy ingredient for the
  * elixir of sin and the bomb of seven sins.
  */
-public class SinEssence extends Item {
+public class SinEssence extends Item implements EssenceItem {
 
 	{
 		image = ItemSpriteSheet.SIN_ESSENCE;

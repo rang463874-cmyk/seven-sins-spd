@@ -163,14 +163,29 @@ public enum HeroClass {
 		i = new Food();
 		if (!Challenges.isItemBlocked(i)) i.collect();
 
-		if (this == PRIDE) {
-			//pride lives on thrown weapons: a holster instead of the seed pouch
-			new com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster().collect();
-			Dungeon.LimitedDrops.MAGICAL_HOLSTER.drop();
-		} else {
-			new VelvetPouch().collect();
-			Dungeon.LimitedDrops.VELVET_POUCH.drop();
+		new VelvetPouch().collect();
+		Dungeon.LimitedDrops.VELVET_POUCH.drop();
+
+		//Seven Sins: each sin also starts with a second bag that suits it (the shop won't sell it again)
+		switch (this) {
+			case GLUTTONY: case LUST: case SLOTH:
+				new com.shatteredpixel.shatteredpixeldungeon.items.bags.PotionBandolier().collect();
+				Dungeon.LimitedDrops.POTION_BANDOLIER.drop();
+				break;
+			case GREED: case WRATH: case ENVY:
+				new com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder().collect();
+				Dungeon.LimitedDrops.SCROLL_HOLDER.drop();
+				break;
+			case PRIDE:
+				//pride lives on thrown weapons
+				new com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster().collect();
+				Dungeon.LimitedDrops.MAGICAL_HOLSTER.drop();
+				break;
+			default:
+				break;
 		}
+		//and every class gets the essence bag
+		new com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag().collect();
 
 		Waterskin waterskin = new Waterskin();
 		waterskin.collect();

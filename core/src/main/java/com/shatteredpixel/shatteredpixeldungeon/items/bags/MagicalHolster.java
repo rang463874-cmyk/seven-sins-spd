@@ -46,7 +46,7 @@ public class MagicalHolster extends Bag {
 	}
 
 	public int capacity(){
-		return 19;
+		return 24; //Seven Sins: was 19, grown with the 25-slot backpack
 	}
 	
 	@Override

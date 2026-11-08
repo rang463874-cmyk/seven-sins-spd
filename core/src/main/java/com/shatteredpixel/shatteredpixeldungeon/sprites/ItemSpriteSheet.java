@@ -790,6 +790,7 @@ public class ItemSpriteSheet {
 	public static final int BANDOLIER   = BAGS+4;
 	public static final int HOLSTER     = BAGS+5;
 	public static final int VIAL        = BAGS+6;
+	public static final int ESSENCE_BAG = BAGS+7; //Seven Sins
 	static{
 		assignItemRect(WATERSKIN,   16, 14);
 		assignItemRect(BACKPACK,    16, 16);
@@ -798,6 +799,7 @@ public class ItemSpriteSheet {
 		assignItemRect(BANDOLIER,   15, 16);
 		assignItemRect(HOLSTER,     15, 16);
 		assignItemRect(VIAL,        12, 12);
+		assignItemRect(ESSENCE_BAG, 14, 15);
 	}
 
 	private static final int DOCUMENTS  =                                   xy(1, 32);  //16 slots
@@ -958,10 +960,12 @@ public class ItemSpriteSheet {
 	public static final int DEMON_SEAL        = ELITE+12;
 	public static final int CONQUEST_SPEAR    = ELITE+13;
 	public static final int HEAVENLY_HALO     = ELITE+14;
+	public static final int ARTIFACT_SHARD    = ELITE+15;
 	static{
 		assignItemRect(CONQUEST_SPEAR, 15, 15);
 		assignItemRect(DEMON_SEAL,    12, 12);
 		assignItemRect(HEAVENLY_HALO, 12, 11);
+		assignItemRect(ARTIFACT_SHARD, 10, 12);
 		assignItemRect(SIN_INFUSION,  12, 12);
 		assignItemRect(CASTING_MOLD,  14, 12);
 		assignItemRect(CALTROP_BOMB,  10, 13);

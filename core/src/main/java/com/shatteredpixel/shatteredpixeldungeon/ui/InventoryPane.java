@@ -185,7 +185,8 @@ public class InventoryPane extends Component {
 		}
 
 		bags = new ArrayList<>();
-		for (int i = 0; i < 5; i++){
+		//Seven Sins: six bags now (the essence bag joined the four vanilla ones)
+		for (int i = 0; i < 6; i++){
 			BagButton btn = new BagButton(null, i+1);
 			bags.add(btn);
 			add(btn);
@@ -241,8 +242,10 @@ public class InventoryPane extends Component {
 		energy.x = energyTxt.x + energyTxt.width() + 1;
 		energy.y = energyTxt.y;
 
+		//Seven Sins: narrower buttons so six fit
+		float bagW = (int)((x + width - 4 - left - (bags.size()-1)) / bags.size());
 		for (BagButton b : bags){
-			b.setRect(left, y + 14, SLOT_WIDTH, 14);
+			b.setRect(left, y + 14, Math.min(SLOT_WIDTH, bagW), 14);
 			left = b.right()+1;
 		}
 
@@ -500,6 +503,11 @@ public class InventoryPane extends Component {
 			return Icons.get( Icons.WAND_HOLSTER );
 		} else if (bag instanceof PotionBandolier) {
 			return Icons.get( Icons.POTION_BANDOLIER );
+		} else if (bag instanceof com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag) {
+			//Seven Sins: the seed pouch icon dyed crimson
+			Image img = Icons.get( Icons.SEED_POUCH );
+			img.hardlight(1f, 0.35f, 0.4f);
+			return img;
 		} else {
 			return Icons.get( Icons.BACKPACK );
 		}
@@ -706,6 +714,9 @@ public class InventoryPane extends Component {
 					return SPDAction.BAG_4;
 				case 5:
 					return SPDAction.BAG_5;
+				case 6:
+					//Seven Sins: a sixth bag has no hotkey of its own
+					return SPDAction.NONE;
 			}
 		}
 

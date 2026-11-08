@@ -433,6 +433,11 @@ public class WndBag extends WndTabbed {
 			return Icons.get( Icons.WAND_HOLSTER );
 		} else if (bag instanceof PotionBandolier) {
 			return Icons.get( Icons.POTION_BANDOLIER );
+		} else if (bag instanceof com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag) {
+			//Seven Sins: the seed pouch icon dyed crimson
+			Image img = Icons.get( Icons.SEED_POUCH );
+			img.hardlight(1f, 0.35f, 0.4f);
+			return img;
 		} else {
 			return Icons.get( Icons.BACKPACK );
 		}
@@ -463,6 +468,9 @@ public class WndBag extends WndTabbed {
 					return SPDAction.BAG_4;
 				case 5:
 					return SPDAction.BAG_5;
+				case 6:
+					//Seven Sins: a sixth bag has no hotkey of its own
+					return SPDAction.NONE;
 			}
 		}
 

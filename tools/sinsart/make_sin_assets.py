@@ -442,6 +442,9 @@ def elite_art(items):
     items.paste(draw(DSEAL, DSEAL_PAL), cell(ELITE_ROW + 12, 16)[:2])
     items.paste(draw(CSPEAR, CSPEAR_PAL), cell(ELITE_ROW + 13, 16)[:2])
     items.paste(draw(HALO, HALO_PAL), cell(ELITE_ROW + 14, 16)[:2])
+    items.paste(draw(SHARD, SHARD_PAL), cell(ELITE_ROW + 15, 16)[:2])
+    # essence bag: the velvet pouch (bags row 31, +2) dyed crimson, at +7
+    items.paste(recolor(items.crop(cell(30 * 16 + 2, 16)), tint_px(350, 0.75, 1.0)), cell(30 * 16 + 7, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
     items.paste(recolor(items.crop(cell(SPIRIT_BOW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 6, 16)[:2])
     items.paste(recolor(items.crop(cell(SPIRIT_ARROW_ICON, 16)), relic_px(45, 1.6, 1.15)), cell(ELITE_ROW + 7, 16)[:2])
@@ -541,6 +544,24 @@ HALO = [
 ]
 HALO_PAL = {"K": (120, 80, 20, 255), "G": (240, 196, 70, 255), "W": (255, 246, 210, 255),
             "S": (255, 226, 130, 255)}
+
+# 10x12 artifact shard: a pale crystal splinter (the game adds the source artifact's glow)
+SHARD = [
+    "......K...",
+    ".....KWK..",
+    "....KWSK..",
+    "...KWSSK..",
+    "...KWSSSK.",
+    "..KWSSSK..",
+    "..KWSSSK..",
+    ".KWSSSDK..",
+    ".KWSSDK...",
+    "KWSSDDK...",
+    "KSDDDK....",
+    "KKKKK.....",
+]
+SHARD_PAL = {"K": (40, 34, 50, 255), "W": (255, 255, 255, 255), "S": (210, 214, 230, 255),
+             "D": (150, 150, 176, 255)}
 
 CURSE_INFUSE_ICON = 420  # SPELLS + 4 (row 27)
 

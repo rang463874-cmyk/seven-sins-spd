@@ -212,7 +212,8 @@ public abstract class Recipe {
 		new StewedMeat.oneMeat(),
 		new TrinketCatalyst.Recipe(),
 		new Trinket.UpgradeTrinket(),
-		new com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.Recipe()
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.Recipe(),
+		new ArtifactShard.Recipe()
 	};
 	
 	private static Recipe[] twoIngredientRecipes = new Recipe[]{
@@ -277,6 +278,8 @@ public abstract class Recipe {
 	public static boolean usableInRecipe(Item item){
 		//only upgradeable thrown weapons and wands allowed among equipment items
 		if (item instanceof EquipableItem){
+			//Seven Sins: the game's own artifacts can be broken into artifact shards
+			if (ArtifactShard.canShatter(item)) return item.cursedKnown && !item.cursed;
 			return item.cursedKnown && !item.cursed &&
 					item instanceof MissileWeapon && item.isUpgradable();
 		} else if (item instanceof Wand) {

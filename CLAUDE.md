@@ -27,7 +27,16 @@ Done and pushed (see `git log`):
   `sharedCount/shared/setShared`; every other misc2 call site has a misc3 twin (Ring/Artifact/Mob/Talent/Toolbar/
   InventorySlot/SkillHolder). The backpack holds 25 items (`Belongings.Backpack.SIZE`, was 20): `WndBag` sizes its rows
   from 5 + extra slots + 25 (and shrinks slot height on short portrait screens), `InventoryPane` has 3 rows of 10
-  (`HEIGHT` 107, slots past the bag's room hidden). Other bags keep their sizes. The old mirror relics (`MirrorRelics`, buffs' `mirrored` flag) are kept only for old saves.
+  (`HEIGHT` 107, slots past the bag's room hidden, 6 narrower bag buttons; the 6th bag tab has no hotkey). The four
+  vanilla bags hold 24 (was 19). New `items/bags/EssenceBag` (24, holds `items/EssenceItem`: SinEssence now, Solomon's
+  72 demons' essences later; tab icon = tinted seed pouch; items.png bags row +7). Start kit (`HeroClass.initHero`):
+  every class gets the velvet pouch and the essence bag; gluttony/lust/sloth + potion bandolier, greed/wrath/envy +
+  scroll holder, pride + magical holster (each marks its LimitedDrops so shops skip it).
+- Artifact shards (`items/ArtifactShard`, stackable per source artifact, glow = source colour, art row 37 +15): alchemy
+  one-ingredient recipe (`ArtifactShard.Recipe`, 6 energy, 1 + level/3 shards) from the 14 vanilla artifacts in
+  `ArtifactShard.SOURCES` only (`Recipe.usableInRecipe` lets those in); each use = a one-time version of the artifact's
+  power (`use`; chains and skeleton key are targeted via `targeter`; the rose summons two 30-turn `ArtifactShard.Spirit`
+  wraith allies). On the alchemy guide's Seven_Sins page. The old mirror relics (`MirrorRelics`, buffs' `mirrored` flag) are kept only for old saves.
 - GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
 - Four horsemen relics (all classes) from the sewer "prophet of seals" quest, see below.
@@ -177,7 +186,7 @@ stack and shatters when hit); Disdain = 1-dignity ranged bolt, x dignityMult, ki
 `PrideHooks.heroCaused` accepting `PrideCrown.class`; Disdain gets only half the dignity bonus via
 `PrideCrown.disdainMult`). Pride's crown also has Kneel Back (`repel`, 2 dignity: enemies within 2 thrown 3 tiles + Vertigo).
 PRIDE_SWIFT_CROWN is now "royal retrieval": 25%/pt that a thrown weapon returns to the pack (`PrideHooks.swiftReturn`,
-called from `MissileWeapon.rangedHit/rangedMiss`). Pride starts with a magical holster instead of the velvet pouch. Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
+called from `MissileWeapon.rangedHit/rangedMiss`). Pride starts with a magical holster (and the velvet pouch). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
 (Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; a meal with SLOTH_PILLOW skips
 dozing). Cost types RAGE/DIGNITY/TURNS/JEALOUSY in `SinSkill.CostType`.
 Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: 12 copies of other
@@ -301,7 +310,7 @@ Reserved layout (must match the Java constants):
 - `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 592):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
   row 36 horsemen relics (gun, war sword, scales, scythe) + seal fragment (+0..4), sin remains (+5..11), mirror case (+12),
-  row 37 sin essence, elixir of sin, sin bomb, sticky bomb, bandage, stimulant (`elite_art`), ... heavenly halo (+14)
+  row 37 sin essence, elixir of sin, sin bomb, sticky bomb, bandage, stimulant (`elite_art`), ... heavenly halo (+14), artifact shard (+15)
 - `avatars.png`: frame = HeroClass ordinal (sins are 6..12)
 k = sin index in `SINS` (gluttony 0, greed 1, wrath 2, pride 3, lust 4, envy 5, sloth 6).
 
