@@ -39,8 +39,20 @@ public final class HorsemenHooks {
 		return hero.belongings.weapon() instanceof WarSword ? (WarSword) hero.belongings.weapon() : null;
 	}
 
+	/** the sword of war fused onto the hero's equipped melee weapon */
+	private static com.shatteredpixel.shatteredpixeldungeon.items.WarEdge warEdge(Hero hero) {
+		if (hero == null) return null;
+		com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon w = hero.belongings.weapon();
+		return w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon
+				? ((com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon) w).warEdge : null;
+	}
+
 	/** Called from Hero.attackProc. */
 	public static int onAttack(Hero hero, Char enemy, int dmg) {
+		//the sword of war adds its stacks to melee blows with the weapon it is fused onto
+		com.shatteredpixel.shatteredpixeldungeon.items.WarEdge edge = warEdge(hero);
+		if (edge != null && hero.belongings.attackingWeapon() == hero.belongings.weapon()) dmg += edge.roll();
+
 		//the old Blade of War artifact, kept for saves
 		WarBlade war = equipped(hero, WarBlade.class);
 		if (war != null) dmg = war.modifyAttack(hero, dmg);
@@ -97,5 +109,7 @@ public final class HorsemenHooks {
 
 		WarSword sword = warSword(hero);
 		if (sword != null && cause == hero) sword.onKill(hero, mob);
+		com.shatteredpixel.shatteredpixeldungeon.items.WarEdge edge = warEdge(hero);
+		if (edge != null && cause == hero) edge.onKill(hero, mob);
 	}
 }

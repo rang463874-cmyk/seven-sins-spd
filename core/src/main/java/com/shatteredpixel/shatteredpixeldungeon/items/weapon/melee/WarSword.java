@@ -28,6 +28,41 @@ public class WarSword extends Sword {
 		bones = false;
 	}
 
+	public static final String AC_REFORGE = "REFORGE";
+
+	@Override
+	public java.util.ArrayList<String> actions(Hero hero) {
+		java.util.ArrayList<String> actions = super.actions(hero);
+		actions.add(AC_REFORGE);
+		return actions;
+	}
+
+	@Override
+	public String actionName(String action, Hero hero) {
+		if (action.equals(AC_REFORGE)) return Messages.get(WarSword.class, "ac_reforge");
+		return super.actionName(action, hero);
+	}
+
+	/** saves from before the sword could be fused onto other weapons: turn it into the new sword of war */
+	@Override
+	public void execute(Hero hero, String action) {
+		super.execute(hero, action);
+		if (!action.equals(AC_REFORGE)) return;
+		if (isEquipped(hero)) {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(Messages.get(WarSword.class, "reforge_equipped"));
+			return;
+		}
+		com.shatteredpixel.shatteredpixeldungeon.items.WarEdge edge = new com.shatteredpixel.shatteredpixeldungeon.items.WarEdge();
+		edge.stacks = stacks;
+		edge.kills = kills;
+		edge.level(Math.max(0, level()));
+		detach(hero.belongings.backpack);
+		if (!edge.collect()) com.shatteredpixel.shatteredpixeldungeon.Dungeon.level.drop(edge, hero.pos);
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(Messages.get(WarSword.class, "reforged"));
+		hero.sprite.operate(hero.pos);
+		hero.spendAndNext(1f);
+	}
+
 	public float stacksPerKill() {
 		return 1f + 0.2f * level();
 	}

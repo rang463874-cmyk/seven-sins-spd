@@ -300,9 +300,13 @@ no magazine limit (`maxAmmo` = Integer.MAX_VALUE); `Subjugated` kept for old sav
 1.5 in `Frenzy`: attack speed/move speed/damage bonuses; power burns satiety down to HUNGRY, heals, Frenzy)
 and `DeathScythe` (hits leave `DeathScythe.Mark`s = dmg*rate; reaped when marks >= HP via
 `HorsemenHooks.afterDamage` in `Char.damage`; bosses burst at 15% HT; power bursts all marks in sight;
-survive a lethal hit once per floor). War is now a weapon, `items/weapon/melee/WarSword` (tier 3 sword,
-damage from kill stacks: +stacks/36 min, +stacks/12 max; upgrades don't add damage, each level +20%
-stacks per kill). The old `WarBlade` artifact is kept only for old saves.
+survive a lethal hit once per floor). War is now `items/WarEdge` ("sword of war", Nov 2026): fused onto any melee weapon like the
+broken seal (`Weapon.warEdge`, saved in the weapon bundle, cleared by `reset` for bones, copied by transmutation and
+the Sigil of Sin; `MeleeWeapon` AC_DETACH_WAR takes it back off with its stacks). Adds Random(stacks/36..stacks/12)
+to melee hits with the equipped weapon (`HorsemenHooks.onAttack`); kills with it add stacks (each sword level +20% per
+kill; bosses x10, minibosses x3). The prophet gives it instead of the old `items/weapon/melee/WarSword` weapon, which
+old saves keep and can REFORGE into a WarEdge (stacks/kills/level carried over; the sword's own enchant is lost).
+The old `WarBlade` artifact is kept only for old saves.
 Hooks: `horsemen/HorsemenHooks` (Hero.attackProc/defenseProc/die/speed/attackDelay, Char.damage, Mob.die).
 Quest: `actors/mobs/npcs/Prophet` (+ `Prophet.Quest`, saved with the other quests in `Dungeon`) spawns on
 sewer floor 2-4: the roll happens in `SewerLevel.initRooms` (`Prophet.Quest.spawnRoom` adds

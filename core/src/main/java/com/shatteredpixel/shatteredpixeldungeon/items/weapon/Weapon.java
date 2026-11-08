@@ -222,6 +222,9 @@ abstract public class Weapon extends KindOfWeapon {
 	private static final String ENCHANTMENT	    = "enchantment";
 	private static final String ENCHANT_HARDENED = "enchant_hardened";
 	private static final String CURSE_INFUSION_BONUS = "curse_infusion_bonus";
+	//Seven Sins: the sword of war fused onto this weapon (melee only), adds flat damage from its stacks
+	public com.shatteredpixel.shatteredpixeldungeon.items.WarEdge warEdge = null;
+
 	private static final String MASTERY_POTION_BONUS = "mastery_potion_bonus";
 	private static final String AUGMENT	        = "augment";
 
@@ -234,6 +237,7 @@ abstract public class Weapon extends KindOfWeapon {
 		bundle.put( ENCHANT_HARDENED, enchantHardened );
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
 		bundle.put( "sin_infusions", sinInfusions );
+		bundle.put( "war_edge", warEdge );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( AUGMENT, augment );
 	}
@@ -247,6 +251,7 @@ abstract public class Weapon extends KindOfWeapon {
 		enchantHardened = bundle.getBoolean( ENCHANT_HARDENED );
 		curseInfusionBonus = bundle.getBoolean( CURSE_INFUSION_BONUS );
 		sinInfusions = bundle.getInt( "sin_infusions" );
+		warEdge = (com.shatteredpixel.shatteredpixeldungeon.items.WarEdge) bundle.get( "war_edge" );
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
 
 		augment = bundle.getEnum(AUGMENT, Augment.class);
@@ -255,6 +260,8 @@ abstract public class Weapon extends KindOfWeapon {
 	@Override
 	public void reset() {
 		super.reset();
+		//the sword of war never stays in bones
+		warEdge = null;
 		usesLeftToID = usesToID();
 		availableUsesToID = usesToID()/2f;
 	}

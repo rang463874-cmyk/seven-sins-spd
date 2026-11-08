@@ -82,18 +82,24 @@ public class MeleeWeapon extends Weapon {
 		}
 	}
 
+	public static final String AC_DETACH_WAR = "DETACH_WAR";
+
 	@Override
 	public ArrayList<String> actions(Hero hero) {
 		ArrayList<String> actions = super.actions(hero);
 		if (isEquipped(hero) && hero.heroClass == HeroClass.DUELIST){
 			actions.add(AC_ABILITY);
 		}
+		//Seven Sins: take the sword of war back off
+		if (warEdge != null) actions.add(AC_DETACH_WAR);
 		return actions;
 	}
 
 	@Override
 	public String actionName(String action, Hero hero) {
-		if (action.equals(AC_ABILITY)){
+		if (action.equals(AC_DETACH_WAR)){
+			return Messages.get(com.shatteredpixel.shatteredpixeldungeon.items.WarEdge.class, "ac_detach");
+		} else if (action.equals(AC_ABILITY)){
 			return Messages.upperCase(Messages.get(this, "ability_name"));
 		} else {
 			return super.actionName(action, hero);
@@ -103,6 +109,19 @@ public class MeleeWeapon extends Weapon {
 	@Override
 	public void execute(Hero hero, String action) {
 		super.execute(hero, action);
+
+		if (action.equals(AC_DETACH_WAR) && warEdge != null){
+			com.shatteredpixel.shatteredpixeldungeon.items.WarEdge edge = warEdge;
+			warEdge = null;
+			GLog.i(Messages.get(com.shatteredpixel.shatteredpixeldungeon.items.WarEdge.class, "detach"));
+			hero.sprite.operate(hero.pos);
+			if (!edge.collect()){
+				Dungeon.level.drop(edge, hero.pos);
+			}
+			updateQuickslot();
+			hero.spendAndNext(1f);
+			return;
+		}
 
 		if (action.equals(AC_ABILITY)){
 			usesTargeting = false;
@@ -326,6 +345,7 @@ public class MeleeWeapon extends Weapon {
 
 		String statsInfo = statsInfo();
 		if (!statsInfo.equals("")) info += "\n\n" + statsInfo;
+		if (warEdge != null) info += "\n\n" + warEdge.weaponLine();
 
 		switch (augment) {
 			case SPEED:

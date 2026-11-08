@@ -401,6 +401,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.TengusMask",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Torch",
 			"com.shatteredpixel.shatteredpixeldungeon.items.WarDrum",
+			"com.shatteredpixel.shatteredpixeldungeon.items.WarEdge",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Waterskin",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold",
