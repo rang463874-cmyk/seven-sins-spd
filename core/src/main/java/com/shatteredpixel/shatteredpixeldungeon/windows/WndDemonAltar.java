@@ -52,7 +52,7 @@ public class WndDemonAltar extends WndOptions {
 		private final DemonLord lord;
 
 		public LordWindow(DemonAltar altar, DemonLord lord) {
-			super(DemonSprites.forLord(lord),
+			super(DemonSprites.icon(lord),
 					Messages.titleCase(lord.fullTitle()),
 					DemonHooks.line(lord, "altar") + "\n\n"
 							+ Messages.get(WndDemonAltar.class, "trial", lord.get("trial")) + "\n\n"

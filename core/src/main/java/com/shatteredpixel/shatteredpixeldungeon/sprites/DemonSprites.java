@@ -28,7 +28,8 @@ public class DemonSprites {
 		}
 	}
 
-	/** one lord's row of sprites/demon_lords.png (tools/sinsart/make_demon_sprites.py), 24x25 frames, 12 per row */
+	/** one lord's row of sprites/demon_lords.png (tools/sinsart/make_demon_sprites.py): 48x49 frames, 12 per row.
+	 *  Drawn over the 3x3 tiles around the lord's cell, like a big boss. */
 	public static abstract class LordSprite extends MobSprite {
 
 		public static final String TEXTURE = "sprites/demon_lords.png";
@@ -38,13 +39,19 @@ public class DemonSprites {
 		public LordSprite() {
 			super();
 			texture(TEXTURE);
-			TextureFilm frames = new TextureFilm(texture, 24, 25);
+			TextureFilm frames = new TextureFilm(texture, 48, 49);
 			int o = lord().ordinal() * 12;
+
+			//feet half a tile below the cell, so the 48px body covers the cells around it
+			perspectiveRaise = -8 / 16f;
+			shadowWidth = 0.7f;
+			shadowHeight = 0.12f;
+			shadowOffset = 0.2f;
 
 			idle = new Animation(3, true);
 			idle.frames(frames, o, o + 1);
 
-			run = new Animation(10, true);
+			run = new Animation(8, true);
 			run.frames(frames, o + 2, o + 3, o + 4, o + 5);
 
 			attack = new Animation(12, false);
@@ -52,7 +59,7 @@ public class DemonSprites {
 
 			zap = attack.clone();
 
-			die = new Animation(8, false);
+			die = new Animation(6, false);
 			die.frames(frames, o + 9, o + 10, o + 11);
 
 			play(idle);
@@ -61,6 +68,66 @@ public class DemonSprites {
 		@Override
 		public int blood() {
 			return 0xFF000000 | lord().color;
+		}
+	}
+
+	/** a lord's sprite at half size, for window icons */
+	public static CharSprite icon(DemonLord lord) {
+		CharSprite s = forLord(lord);
+		s.scale.set(0.5f);
+		return s;
+	}
+
+	/** one piece of Leviathan's body along the wall (sprites/demon_leviathan.png, 16x33 frames) */
+	public static class Coil extends MobSprite {
+
+		public static final int HUMP = 0, LOW = 1, TAIL = 2, HIDDEN = 3;
+
+		private TextureFilm film;
+
+		public Coil() {
+			super();
+			texture("sprites/demon_leviathan.png");
+			film = new TextureFilm(texture, 16, 33);
+			setVariant(HUMP);
+		}
+
+		public void setVariant(int v) {
+			int o = v * 3;
+			if (v == HIDDEN) {
+				idle = new Animation(1, true);
+				idle.frames(film, 9);
+				die = idle.clone();
+			} else {
+				idle = new Animation(2, true);
+				idle.frames(film, o, o + 1);
+				die = new Animation(4, false);
+				die.frames(film, o, o + 2);
+			}
+			run = idle.clone();
+			attack = idle.clone();
+			play(idle);
+		}
+
+		@Override
+		public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) {
+			super.link(ch);
+			if (ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.LeviathanCoil) {
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.LeviathanCoil c =
+						(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.LeviathanCoil) ch;
+				setVariant(c.variant);
+				flipHorizontal = c.flip;
+			}
+		}
+
+		@Override
+		public void turnTo(int from, int to) {
+			//the body never turns
+		}
+
+		@Override
+		public int blood() {
+			return 0xFF4080E0;
 		}
 	}
 

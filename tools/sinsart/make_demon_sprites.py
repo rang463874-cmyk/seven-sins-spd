@@ -1,280 +1,50 @@
 #!/usr/bin/env python3
-"""Draws the demon lords' sprite sheet (sprites/demon_lords.png) and the altar (sprites/demon_altar.png).
+"""Draws the demon lords' sprites.
 
-Each lord is one 24x24 pixel-art pose (frames are 24x25) (facing right) written as text below. The animation frames are
-derived from it: idle (2: bob), run (4: bob/sway), attack (3: wind up, lunge with the lord's effect, back)
-and die (3: sinking and fading). Sheet layout (must match sprites/DemonSprites.java): one row per lord in
-DemonLord order (lucifer, mammon, asmodeus, leviathan, beelzebub, satan, belphegor), 12 frames per row.
+- sprites/demon_lords.png: one row per lord in DemonLord order (lucifer, mammon, asmodeus, leviathan,
+  beelzebub, satan, belphegor), 12 frames of 48x49 (the art is 48x48, one spare row on top for the bob):
+  idle (2), run (4), attack (3: wind up, lunge with the lord's colour, back), die (3: sinking and fading).
+  The bosses are drawn over 3x3 tiles (sprites/DemonSprites.LordSprite).
+- sprites/demon_leviathan.png: Leviathan's coil segments for its wall form, 16x33 frames, 3 variants
+  (hump with fin, low coil in the water, tail tip) x 2 idle frames + 1 fading frame, then a blank frame.
+- sprites/demon_altar.png: the altar, 16x16, 2 frames.
 
-Re-run after editing: python3 tools/sinsart/make_demon_sprites.py
+The lords' pixel art lives in tools/sinsart/demon_art/<lord>.py as text (left halves are mirrored, then
+patched). Re-run after editing: python3 tools/sinsart/make_demon_sprites.py
 """
 import os
+import sys
 from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from demon_art import artlib, lucifer, mammon, asmodeus, leviathan, beelzebub, satan, belphegor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, "core", "src", "main", "assets", "sprites")
-S = 24          # art size
-H = S + 1       # frame height: one spare row on top so the bob never clips
+S = 48          # art size
+H = S + 1       # frame height
 FRAMES = 12
+K = artlib.K
 
-K = (28, 18, 22, 255)  # shared outline
-
-LORDS = []
-
-# ---------------------------------------------------------------- Lucifer: the fallen morning star
-LORDS.append(dict(
-    name="lucifer",
-    fx=(255, 240, 170, 255),
-    pal={"K": K, "W": (245, 244, 236, 255), "w": (176, 178, 196, 255), "G": (244, 200, 64, 255),
-         "g": (168, 116, 30, 255), "S": (252, 222, 196, 255), "s": (214, 170, 140, 255),
-         "H": (255, 230, 120, 255), "E": (220, 30, 40, 255), "B": (60, 52, 70, 255)},
-    art=[
-        "........................",
-        "..........G.G.G.........",
-        ".KK.......GgGgG......KK.",
-        "KwWK.....KHHHHHK....KWwK",
-        "KwWWK...KHHHHHHHK..KWWwK",
-        ".KwWWK..KHSSSSSHK.KWWwK.",
-        ".KwWWWK.KHESSESHKKWWWwK.",
-        "..KwWWWKKHSSSSSHKWWWwK..",
-        "..KwWWWWKKHSssHKKWWWwK..",
-        "...KwWWWKGKSSSKGKWWwK...",
-        "...KwWWKWWGGGGGWWKWwK...",
-        "....KwKSWWWWGWWWWSKwK...",
-        "....KwKsKWWWGWWWKsKK....",
-        ".....KK.KWWWGWWWK.......",
-        "........KWWWGWWWK.......",
-        "........KGGGgGGGK.......",
-        ".......KWWWWGWWWWK......",
-        ".......KwWWWGWWWwK......",
-        "......KwWWWWGWWWWwK.....",
-        "......KwWWWWGWWWWwK.....",
-        ".....KwWWWWWGWWWWWwK....",
-        ".....KGGGGGGGGGGGGGK....",
-        ".....KKKKKKKKKKKKKKK....",
-        "........KBK....KBK......",
-    ]))
-
-# ---------------------------------------------------------------- Mammon: a golem of molten gold
-LORDS.append(dict(
-    name="mammon",
-    fx=(255, 220, 60, 255),
-    pal={"K": K, "G": (232, 176, 40, 255), "g": (150, 96, 20, 255), "Y": (255, 236, 120, 255),
-         "E": (230, 40, 40, 255), "R": (200, 30, 60, 255), "D": (90, 56, 14, 255)},
-    art=[
-        "........................",
-        "..........Y.R.Y.........",
-        ".........KYYYYYK........",
-        "........KGGGGGGGK.......",
-        ".......KGGEGGGEGGK......",
-        ".......KGGGGGGGGGK......",
-        ".......KGgDDDDDgGK......",
-        "....KK.KGGGGGGGGGK.KK...",
-        "...KGGKKKgGGGGGgKKKGGK..",
-        "..KGGGGGGGGGGGGGGGGGGGK.",
-        "..KGgGGGGGYYYYYGGGGGgGK.",
-        "..KGgGKGGYYgggYYGGKGgGK.",
-        "..KGgGKGGYYgYYYYGGKGgGK.",
-        "..KGgGKGGYYgggYYGGKGgGK.",
-        ".KGGGGKGGGYYYYYGGGKGGGGK",
-        ".KYGYGKGGGGGGGGGGGKGYGYK",
-        ".KKKKKKGgGGGGGGGgGKKKKKK",
-        "......KGGgGGGGGgGGK.....",
-        "......KGGGKKKKKGGGK.....",
-        ".....KGGGGK...KGGGGK....",
-        ".....KGgGGK...KGGgGK....",
-        ".....KGGGGK...KGGGGK....",
-        "....KYGYGYK...KYGYGYK...",
-        "....KKKKKKK...KKKKKKK...",
-    ]))
-
-# ---------------------------------------------------------------- Asmodeus: the crimson dancer
-LORDS.append(dict(
-    name="asmodeus",
-    fx=(255, 110, 190, 255),
-    pal={"K": K, "P": (255, 120, 190, 255), "p": (190, 60, 130, 255), "S": (250, 214, 210, 255),
-         "s": (214, 160, 160, 255), "E": (120, 255, 200, 255), "h": (70, 30, 80, 255),
-         "R": (200, 20, 50, 255), "r": (120, 10, 30, 255), "b": (110, 30, 90, 255), "m": (230, 40, 80, 255)},
-    art=[
-        "........................",
-        "........K.....K.........",
-        ".......KhK...KhK........",
-        ".......KhKKKKKhK........",
-        "......KPPPPPPPPPK.......",
-        ".....KPPSSSSSSPPpK......",
-        ".....KPPSESSESSPpK......",
-        ".....KPPSSSSSSSPPpK.....",
-        "..KK.KPPPSSmSSPPPpK.KK..",
-        ".KbbKKPPPKSSSKPPPpKKbbK.",
-        ".KbbbKKPKRRRRRKPPpKbbbK.",
-        "KbbbbbKKSRRrRRSKpKbbbbbK",
-        "KbbKbbKSsKRRRKsSKKbbKbbK",
-        ".KK.KK.KKRRrRRKK.KK.KK..",
-        "........KRRRRRK.........",
-        "........KRRrRRRK........",
-        ".......KRRRRrRRK........",
-        ".......KRRRRrRRRK.......",
-        "......KRRRRRRrRRK.......",
-        "......KRRrRRRRrRRK......",
-        ".....KRRRRrRRRRrRK......",
-        ".....KrRrRrRrRrRrRK.....",
-        "......KKKKKKKKKKKK......",
-        "........KsK...KsK.......",
-    ]))
-
-# ---------------------------------------------------------------- Leviathan: the serpent of the deep
-LORDS.append(dict(
-    name="leviathan",
-    fx=(120, 210, 255, 255),
-    pal={"K": K, "B": (60, 140, 230, 255), "b": (30, 70, 150, 255), "C": (150, 220, 255, 255),
-         "E": (255, 230, 60, 255), "W": (240, 240, 240, 255), "F": (40, 200, 190, 255), "f": (20, 120, 130, 255)},
-    art=[
-        "........................",
-        "..............K.K.K.....",
-        ".............KFKFKFK....",
-        "............KFfFfFfFK...",
-        "...........KBBBBBBBBBK..",
-        "..........KBBBBBBBEBBBK.",
-        "..........KBbBBBBBBBBBBK",
-        "..........KBbBBBBKWKWKWK",
-        "...........KBbBBBK......",
-        "...K........KBbBBBK.....",
-        "..KFK........KBbCBBK....",
-        "..KFfK........KBbCBBK...",
-        "..KFBBK.......KBbCCBK...",
-        "...KBBBK.....KBBbCCBK...",
-        "...KBbBBKKKKKBBbCCBBK...",
-        "....KBbBBBBBBBBbCCBBK...",
-        "....KBBbbBBBBBbCCBBK....",
-        ".....KBBBbbbbbCCBBK.....",
-        "...KKKBBBBBBBBBBBKKK....",
-        "..KBBBBBbbbbbbbBBBBBK...",
-        ".KBbbBBBBBBBBBBBBBbbBK..",
-        ".KBBBbbbbbbbbbbbbbBBBK..",
-        "..KKBBBBBBBBBBBBBBBKK...",
-        "....KKKKKKKKKKKKKKK.....",
-    ]))
-
-# ---------------------------------------------------------------- Beelzebub: the lord of flies
-LORDS.append(dict(
-    name="beelzebub",
-    fx=(170, 220, 70, 255),
-    pal={"K": K, "D": (52, 66, 36, 255), "d": (30, 38, 22, 255), "G": (110, 140, 50, 255),
-         "E": (210, 30, 30, 255), "e": (255, 120, 90, 255), "w": (200, 230, 230, 150), "v": (150, 190, 200, 150),
-         "Y": (240, 200, 60, 255), "L": (20, 20, 20, 255)},
-    art=[
-        "..........Y.Y.Y.........",
-        "..KK......YYYYY......KK.",
-        ".KwwK....KDDDDDK....KwwK",
-        ".KwvwK..KEEDDDEEK..KwvwK",
-        "..KwvwK.KEeEDEeEK.KwvwK.",
-        "..KwwvwKKEEEDEEEKKwvwwK.",
-        "...KwwvwKKDDDDDKKwvwwK..",
-        "....KwwvwKDdLdDKwvwwK...",
-        ".....KKwKDGDDDGDKwKK....",
-        ".......KDGDDDDDGDK......",
-        "......KDDGGGGGGGDDK.....",
-        ".....LKDDDDDDDDDDDKL....",
-        "....L.KDGGGGGGGGGDK.L...",
-        "...L..KDDDDDDDDDDDK..L..",
-        "......KDGGGGGGGGGDK.....",
-        ".....LKDDDDDDDDDDDKL....",
-        "....L..KDGGGGGGGDK..L...",
-        "...L...KDDDDDDDDDK...L..",
-        ".......KDdGGGGGdDK......",
-        "........KDDDDDDDK.......",
-        "........KDdGGGdDK.......",
-        ".........KDDDDDK........",
-        "..........KdddK.........",
-        "...........KKK..........",
-    ]))
-
-# ---------------------------------------------------------------- Satan: horned lord of wrath
-LORDS.append(dict(
-    name="satan",
-    fx=(255, 120, 30, 255),
-    pal={"K": K, "R": (210, 40, 30, 255), "r": (130, 20, 20, 255), "H": (60, 50, 50, 255),
-         "h": (120, 110, 100, 255), "E": (255, 230, 60, 255), "B": (40, 30, 36, 255), "b": (80, 60, 70, 255),
-         "F": (255, 150, 30, 255), "f": (255, 230, 100, 255), "W": (240, 240, 240, 255)},
-    art=[
-        "...K..............K.....",
-        "..KhK............KhK....",
-        "..KhHK..........KHhK....",
-        "...KhHKK......KKHhK.....",
-        "....KKHHKKKKKKHHKK......",
-        "......KRRRRRRRRK........",
-        ".....KRRRRRRRRRRK.......",
-        ".....KRREErrREERK.......",
-        ".....KRRRRRRRRRRK.......",
-        ".....KRrKWKWKWrRK.......",
-        "......KRRRrrRRRK........",
-        "..f...KKKRRRRKKK...f....",
-        ".fFf.KBBBKRRKBBBK.fFf...",
-        ".FfFKBBbBBKKBBbBBKFfF...",
-        "..FKRBBbBBBBBBbBBRKF....",
-        "..KRRKBBbBBBBBbBBKRRK...",
-        "...KKKBBbBBBBBbBBKKK....",
-        "......KBBbBBBBbBBK......",
-        "......KBBbBBBBbBBK......",
-        ".....KBBBbBBBBbBBBK.....",
-        ".....KBBBbBBBBbBBBK.....",
-        "....KbBbBbBbBbBbBbBK....",
-        "....KKKKKKKKKKKKKKKK....",
-        ".......KrRK...KRrK......",
-    ]))
-
-# ---------------------------------------------------------------- Belphegor: the slouching brute
-LORDS.append(dict(
-    name="belphegor",
-    fx=(170, 140, 255, 255),
-    pal={"K": K, "P": (150, 110, 210, 255), "p": (96, 66, 150, 255), "H": (230, 220, 190, 255),
-         "h": (160, 150, 120, 255), "E": (255, 255, 255, 255), "e": (40, 20, 60, 255), "T": (250, 250, 240, 255),
-         "C": (190, 40, 60, 255), "c": (120, 20, 40, 255), "Y": (240, 200, 70, 255), "Z": (220, 230, 255, 255)},
-    art=[
-        "...................ZZZ..",
-        "...KK.........KK....Z...",
-        "..KHhK.......KhHK..ZZZ..",
-        "...KHhK.....KhHK........",
-        "....KKHKKKKKHKK.........",
-        "......KPPPPPPPK.........",
-        ".....KPPPPPPPPPK........",
-        ".....KPPeeePeeePK.......",
-        ".....KPPEEePEEePK.......",
-        ".....KPPPPPPPPPPK.......",
-        ".....KPpKTKKTKpPK.......",
-        "...KKKKPPPPPPPPKKKK.....",
-        "..KPPPPKKPPPPKKPPPPK....",
-        ".KPPpPPPPPPPPPPPPpPPK...",
-        ".KPPpPKPPPPPPPPPKPpPPK..",
-        ".KPPPKPPPPpppPPPPKPPPK..",
-        "..KKKKPPPPPPPPPPPKKKK...",
-        "....KCKPPPPPPPPPKCK.....",
-        "...KCCCKKPPPPPKKCCCK....",
-        "..KCCYCCCKKKKKCCCYCCK...",
-        "..KCCCCCCCCCCCCCCCCCK...",
-        "..KcCcCcCcCcCcCcCcCcK...",
-        "..KKKKKKKKKKKKKKKKKKK...",
-        "...KhK...........KhK....",
-    ]))
+LORDS = [
+    (lucifer, (255, 240, 170, 255)),
+    (mammon, (255, 220, 60, 255)),
+    (asmodeus, (255, 110, 210, 255)),
+    (leviathan, (130, 220, 255, 255)),
+    (beelzebub, (170, 255, 70, 255)),
+    (satan, (255, 130, 30, 255)),
+    (belphegor, (180, 140, 255, 255)),
+]
 
 
-def draw(lord):
-    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    for y, row in enumerate(lord["art"]):
-        if len(row) != S:
-            raise SystemExit("%s row %d has %d chars" % (lord["name"], y, len(row)))
-        for x, ch in enumerate(row):
-            if ch != ".":
-                img.putpixel((x, y), lord["pal"][ch])
-    if len(lord["art"]) != S:
-        raise SystemExit("%s has %d rows" % (lord["name"], len(lord["art"])))
-    return img
+def draw(mod):
+    return artlib.build(half=getattr(mod, "HALF", None), full=getattr(mod, "FULL", None),
+                        patches=getattr(mod, "PATCHES", []), pal=mod.PAL)
 
 
-def shifted(img, dx, dy):
-    """places the art in a frame (resting position = one row down), moved by dx/dy (dy <= 0)"""
-    out = Image.new("RGBA", (S, H), (0, 0, 0, 0))
-    out.paste(img, (dx, 1 + dy), img)
+def shifted(img, dx, dy, h=H):
+    out = Image.new("RGBA", (img.width, h), (0, 0, 0, 0))
+    out.paste(img, (dx, h - img.height + dy), img)
     return out
 
 
@@ -288,37 +58,103 @@ def faded(img, alpha):
     return out
 
 
-def squashed(img, hfrac, alpha):
-    h = max(1, int(S * hfrac))
-    small = img.resize((S, h), Image.NEAREST)
-    out = Image.new("RGBA", (S, H), (0, 0, 0, 0))
-    out.paste(small, (0, H - h), small)
+def squashed(img, hfrac, alpha, h=H):
+    nh = max(1, int(img.height * hfrac))
+    small = img.resize((img.width, nh), Image.NEAREST)
+    out = Image.new("RGBA", (img.width, h), (0, 0, 0, 0))
+    out.paste(small, (0, h - nh), small)
     return faded(out, alpha)
 
 
 def with_fx(img, color, strong):
-    """attack frame: a burst of the lord's colour in front of it"""
+    """attack frame: a burst of the lord's colour in front of it (right side, mid height)"""
     out = img.copy()
     px = out.load()
-    pts = [(21, 10), (22, 11), (21, 12), (23, 11), (20, 11)] if strong else [(21, 11)]
+    cx, cy = S - 4, 24
+    r = 3 if strong else 1
+    for y in range(cy - r, cy + r + 1):
+        for x in range(cx - r, cx + r + 1):
+            if abs(x - cx) + abs(y - cy) <= r and 0 <= x < S:
+                px[x, y] = color
     if strong:
-        pts += [(22, 9), (22, 13), (23, 10), (23, 12)]
-    for x, y in pts:
-        px[x, y] = color
+        for x, y in ((cx - 5, cy), (cx, cy - 5), (cx, cy + 5)):
+            if 0 <= x < S:
+                px[x, y] = color
     return out
 
 
-def frames(lord):
-    base = draw(lord)
-    fx = lord["fx"]
+def frames(mod, fx):
+    base = draw(mod)
     rest = shifted(base, 0, 0)
     up = shifted(base, 0, -1)
     return [
-        rest, up,                                                                 # idle
-        rest, up, rest, up,                                                       # run
-        shifted(base, -1, 0), with_fx(shifted(base, 1, 0), fx, True), with_fx(rest, fx, False),  # attack
-        squashed(base, 0.8, 0.8), squashed(base, 0.55, 0.55), squashed(base, 0.3, 0.3),          # die
+        rest, up,
+        rest, up, rest, up,
+        shifted(base, -2, 0), with_fx(shifted(base, 2, 0), fx, True), with_fx(rest, fx, False),
+        squashed(base, 0.8, 0.8), squashed(base, 0.55, 0.55), squashed(base, 0.3, 0.3),
     ]
+
+
+# ---------------------------------------------------------------- Leviathan's coils (wall form)
+CW, CH = 16, 33
+COIL_PAL = leviathan.PAL
+
+
+def coil(variant):
+    """a 16-wide piece of serpent body; ends sit at the same height so pieces join side by side"""
+    img = Image.new("RGBA", (CW, CH - 1), (0, 0, 0, 0))
+    px = img.load()
+    cells = {}
+    import math
+    for x in range(CW):
+        if variant == 0:    # hump arching up, a fin on top
+            top = 23 - round(9 * math.sin(math.pi * (x + 0.5) / CW))
+            th = 9
+        elif variant == 1:  # low coil half in the water
+            top = 23 - round(2 * math.sin(math.pi * (x + 0.5) / CW))
+            th = 9
+        else:               # tail tip, thinning to the left
+            th = max(2, round(9 * (x + 1) / CW))
+            top = 23 + (9 - th) // 2 - round(2 * math.sin(math.pi * (x + 0.5) / CW))
+        for y in range(top, min(CH - 1, top + th)):
+            cells[(x, y)] = "N"
+    for (x, y) in list(cells):
+        if (x, y - 1) not in cells:
+            cells[(x, y)] = "B" if variant != 2 or x > 4 else "N"
+        elif (x, y + 1) not in cells:
+            cells[(x, y)] = "n"
+        elif (x + y) % 5 == 0:
+            cells[(x, y)] = "a"
+    if variant == 0:
+        for i, h in enumerate((2, 4, 5, 4, 2)):
+            x = 5 + i
+            topy = min(y for (xx, y) in cells if xx == x)
+            for y in range(topy - h, topy):
+                cells[(x, y)] = "c" if y == topy - h else "A"
+    for (x, y), c in cells.items():
+        px[x, y] = COIL_PAL[c]
+    # outline (not at the joining edges)
+    for y in range(CH - 1):
+        for x in range(CW):
+            if (x, y) in cells:
+                continue
+            if any((x + dx, y + dy) in cells for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0))):
+                px[x, y] = K
+    # water around the base
+    for x in range(CW):
+        for y in (29, 30, 31):
+            if px[x, y][3] == 0 and (x + y) % 3:
+                px[x, y] = COIL_PAL["W" if (x // 2 + y) % 2 else "w"]
+    return img
+
+
+def coil_frames():
+    out = []
+    for v in range(3):
+        base = coil(v)
+        out += [shifted(base, 0, 0, CH), shifted(base, 0, -1, CH), faded(shifted(base, 0, 0, CH), 0.4)]
+    out.append(Image.new("RGBA", (CW, CH), (0, 0, 0, 0)))  # 9: blank (pieces hidden behind the head)
+    return out
 
 
 # ---------------------------------------------------------------- the altar (16x16, 2 idle frames)
@@ -369,10 +205,16 @@ def altar_frames():
 
 def main():
     sheet = Image.new("RGBA", (S * FRAMES, H * len(LORDS)), (0, 0, 0, 0))
-    for r, lord in enumerate(LORDS):
-        for i, f in enumerate(frames(lord)):
+    for r, (mod, fx) in enumerate(LORDS):
+        for i, f in enumerate(frames(mod, fx)):
             sheet.paste(f, (i * S, r * H), f)
     sheet.save(os.path.join(OUT, "demon_lords.png"))
+
+    cf = coil_frames()
+    csheet = Image.new("RGBA", (CW * len(cf), CH), (0, 0, 0, 0))
+    for i, f in enumerate(cf):
+        csheet.paste(f, (i * CW, 0), f)
+    csheet.save(os.path.join(OUT, "demon_leviathan.png"))
 
     alt = altar_frames()
     asheet = Image.new("RGBA", (32, 16), (0, 0, 0, 0))

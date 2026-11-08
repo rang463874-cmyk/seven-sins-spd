@@ -114,7 +114,7 @@ public class DemonLordNPC extends NPC {
 	}
 
 	private void offerFight() {
-		GameScene.show(new WndOptions(sprite(), Messages.titleCase(lord.fullTitle()),
+		GameScene.show(new WndOptions(DemonSprites.icon(lord), Messages.titleCase(lord.fullTitle()),
 				DemonHooks.line(lord, "challenge"),
 				Messages.get(DemonLordNPC.class, "fight"),
 				Messages.get(DemonLordNPC.class, "later")) {
@@ -131,10 +131,16 @@ public class DemonLordNPC extends NPC {
 		int cell = pos;
 		DemonLord l = lord;
 		vanish();
-		DemonLordBoss boss = new DemonLordBoss();
-		boss.lord = l;
-		boss.pos = cell;
-		GameScene.add(boss);
+		DemonLordBoss boss = null;
+		//Leviathan rises along a whole wall of the arena
+		if (l == DemonLord.LEVIATHAN) boss = com.shatteredpixel.shatteredpixeldungeon.actors.mobs.LeviathanBoss.emerge(cell);
+		if (boss == null) {
+			boss = new DemonLordBoss();
+			boss.lord = l;
+			boss.pos = cell;
+			GameScene.add(boss);
+		}
+		cell = boss.pos;
 		CellEmitter.get(cell).burst(ShadowParticle.UP, 24);
 		boss.beckon(Dungeon.hero.pos);
 		boss.notice();

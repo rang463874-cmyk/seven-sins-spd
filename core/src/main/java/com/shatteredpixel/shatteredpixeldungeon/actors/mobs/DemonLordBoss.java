@@ -55,7 +55,7 @@ public class DemonLordBoss extends RegionElite {
 
 	private static final int HELLFIRE = 0, SUMMON = 1, SIGNATURE = 2;
 
-	private boolean enraged = false;
+	protected boolean enraged = false;
 	private int stolenGold = 0;
 
 	@Override
