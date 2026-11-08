@@ -126,27 +126,29 @@ public class DemonSeal extends Item {
 		return Random.NormalIntRange(4 + hero.lvl, 10 + 2 * hero.lvl);
 	}
 
-	private static boolean targeted(DemonLord l) {
+	public static boolean targeted(DemonLord l) {
 		return l == DemonLord.LUCIFER || l == DemonLord.MAMMON || l == DemonLord.LEVIATHAN;
 	}
 
 	@Override
 	public void execute(Hero hero, String action) {
 		super.execute(hero, action);
-		if (!action.equals(AC_INVOKE)) return;
+		if (action.equals(AC_INVOKE)) invokeSkill(hero);
+	}
 
-		DemonLord l = lord();
+	/** the lord's skill: from the skill bar (DemonHooks.skill) or an old save's seal item */
+	public static void invokeSkill(final Hero hero) {
+		final DemonLord l = lord();
 		DemonPerk p = perk(hero);
 		if (l == null || p == null || DemonHooks.stage < DemonHooks.GRANTED) {
-			GLog.w(Messages.get(this, "dormant"));
+			GLog.w(Messages.get(DemonSeal.class, "dormant"));
 			return;
 		}
 		if (!p.ready()) {
-			GLog.w(Messages.get(this, "not_ready", (int) p.charge));
+			GLog.w(Messages.get(DemonSeal.class, "not_ready", (int) p.charge));
 			return;
 		}
 		if (targeted(l)) {
-			usesTargeting = true;
 			GameScene.selectCell(new CellSelector.Listener() {
 				@Override
 				public void onSelect(Integer cell) {
@@ -164,24 +166,24 @@ public class DemonSeal extends Item {
 		}
 	}
 
-	private void invoke(Hero hero, DemonLord l, int cell) {
+	private static void invoke(Hero hero, DemonLord l, int cell) {
 		DemonPerk p = perk(hero);
 		if (p == null || !p.ready()) return;
 
 		switch (l) {
 			case LUCIFER:
-				if (!Dungeon.level.heroFOV[cell]) { GLog.w(Messages.get(this, "no_sight")); return; }
+				if (!Dungeon.level.heroFOV[cell]) { GLog.w(Messages.get(DemonSeal.class, "no_sight")); return; }
 				morningStar(hero, cell);
 				break;
 			case MAMMON:
 				Char t = Actor.findChar(cell);
 				if (t == null || t == hero || t.alignment == Char.Alignment.ALLY || !Dungeon.level.heroFOV[cell]) {
-					GLog.w(Messages.get(this, "no_target")); return;
+					GLog.w(Messages.get(DemonSeal.class, "no_target")); return;
 				}
 				midas(hero, t);
 				break;
 			case LEVIATHAN:
-				if (cell == hero.pos) { GLog.w(Messages.get(this, "no_target")); return; }
+				if (cell == hero.pos) { GLog.w(Messages.get(DemonSeal.class, "no_target")); return; }
 				tidalWave(hero, cell);
 				break;
 			case ASMODEUS: allure(hero); break;
@@ -191,7 +193,7 @@ public class DemonSeal extends Item {
 		}
 
 		p.charge = 0;
-		updateQuickslot();
+		Item.updateQuickslot();
 		hero.sprite.operate(hero.pos);
 		hero.spendAndNext(Actor.TICK);
 	}
@@ -203,7 +205,7 @@ public class DemonSeal extends Item {
 	}
 
 	/** Lucifer: a falling star bursts on a 3x3 area, blinding what survives */
-	private void morningStar(Hero hero, int cell) {
+	private static void morningStar(Hero hero, int cell) {
 		Sample.INSTANCE.play(Assets.Sounds.BLAST);
 		for (int i : PathFinder.NEIGHBOURS9) {
 			int c = cell + i;
@@ -219,7 +221,7 @@ public class DemonSeal extends Item {
 	}
 
 	/** Mammon: an ordinary monster turns to gold; a boss loses 15% of its max HP */
-	private void midas(Hero hero, Char t) {
+	private static void midas(Hero hero, Char t) {
 		Sample.INSTANCE.play(Assets.Sounds.GOLD);
 		if (t.sprite != null) t.sprite.emitter().burst(Speck.factory(Speck.COIN), 12);
 		boolean boss = t.properties().contains(Char.Property.BOSS) || t.properties().contains(Char.Property.MINIBOSS);
@@ -234,7 +236,7 @@ public class DemonSeal extends Item {
 	}
 
 	/** Leviathan: a wave rolls 6 tiles, hurting and pushing everything in it */
-	private void tidalWave(Hero hero, int target) {
+	private static void tidalWave(Hero hero, int target) {
 		Ballistica line = new Ballistica(hero.pos, target, Ballistica.STOP_SOLID);
 		int dist = Math.min(6, line.dist);
 		ArrayList<Char> hitList = new ArrayList<>();
@@ -261,7 +263,7 @@ public class DemonSeal extends Item {
 	}
 
 	/** Asmodeus: every enemy in sight is charmed for 6 turns */
-	private void allure(Hero hero) {
+	private static void allure(Hero hero) {
 		for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])) {
 			if (m.alignment != Char.Alignment.ENEMY || !Dungeon.level.heroFOV[m.pos]) continue;
 			Charm c = Buff.affect(m, Charm.class, 6f);
@@ -272,13 +274,13 @@ public class DemonSeal extends Item {
 	}
 
 	/** Beelzebub: three flies serve for 30 turns */
-	private void swarm(Hero hero) {
+	private static void swarm(Hero hero) {
 		for (int i = 0; i < 3; i++) DemonFly.spawnNear(hero.pos, Char.Alignment.ALLY, 30);
 		Sample.INSTANCE.play(Assets.Sounds.BEE);
 	}
 
 	/** Satan: hellfire bursts out to 2 tiles, setting enemies alight */
-	private void hellfire(Hero hero) {
+	private static void hellfire(Hero hero) {
 		PathFinder.buildDistanceMap(hero.pos, com.watabou.utils.BArray.not(Dungeon.level.solid, null), 2);
 		for (int c = 0; c < PathFinder.distance.length; c++) {
 			if (PathFinder.distance[c] == Integer.MAX_VALUE || c == hero.pos) continue;
@@ -293,7 +295,7 @@ public class DemonSeal extends Item {
 	}
 
 	/** Belphegor: rest is power: wands and artifacts recharge and wounds close */
-	private void idleness(Hero hero) {
+	private static void idleness(Hero hero) {
 		ScrollOfRecharging.charge(hero);
 		Buff.affect(hero, Recharging.class, 15f);
 		Buff.affect(hero, ArtifactRecharge.class).set(15f).ignoreHornOfPlenty = false;

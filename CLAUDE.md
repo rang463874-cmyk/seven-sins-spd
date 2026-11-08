@@ -55,9 +55,10 @@ Done and pushed (see `git log`):
   stage NONE -> TRIAL -> GRANTED -> DEFEATED). `Goo.die` -> `onGooDefeated` raises `actors/mobs/npcs/DemonAltar`
   (`windows/WndDemonAltar`: 7 lords, then trial/boon/skill + accept; once per run). The trial (`actors/buffs/DemonTrial`,
   marker only) lasts until Tengu: `PrisonBossLevel.progress` (after `state = State.WON`) -> `onTenguDefeated` spawns
-  `actors/mobs/npcs/DemonLordNPC`; first talk = `grantPerk` (`actors/buffs/DemonPerk`, also holds the seal charge 0..100,
-  +1/turn, +2 after the boss) and `items/DemonSeal` (unique, kept through lost inventory, auto-quickslotted; one skill per
-  lord), then "fight / later": `actors/mobs/DemonLordBoss` (RegionElite with BOSS, 300 HP, hellfire ring + wraiths + the
+  `actors/mobs/npcs/DemonLordNPC`; first talk = `grantPerk` (`actors/buffs/DemonPerk`, also holds the skill charge 0..100,
+  +1/turn, +2 after the boss) and the lord's skill `demons/DemonSkill` (a SinSkill shown in its own row above the skill
+  bar via `SkillBar.extraSkills` -> `DemonHooks.skill`, for every class; icons skill_icons.png row 8 = 64 + lord ordinal;
+  effects in `DemonSeal.invokeSkill`, the old `items/DemonSeal` item is only kept for saves that got it), then "fight / later": `actors/mobs/DemonLordBoss` (RegionElite with BOSS, 300 HP, hellfire ring + wraiths + the
   lord's signature skill, enraged under 50%; death -> `onLordDefeated`: boon x1.5, 3 essences). Trial penalties/boons are
   hooked in Hero (updateHT, accuracy, evasion, speed, attackProc, rest), Char.damage, Gold, Hunger, Regeneration, Food.
   Every line has an `_own` variant used when the lord's sin is the hero's (`DemonHooks.line`). Strings in

@@ -136,25 +136,21 @@ public class DemonHooks {
 		GLog.n(Messages.get(DemonLordNPC.class, "appears", lord.title()));
 	}
 
-	/** the lord accepts the trial: trial ends, seal and passive are granted */
+	/** the lord's skill for the skill bar's extra row, or null before it is granted */
+	public static com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill skill(Hero hero) {
+		if (stage < GRANTED || lord == null || hero == null || hero.buff(DemonPerk.class) == null) return null;
+		return new DemonSkill(lord);
+	}
+
+	/** the lord accepts the trial: trial ends, its skill and passive are granted */
 	public static void grantPerk(Hero hero) {
 		if (stage != TRIAL || lord == null) return;
 		stage = GRANTED;
 		Buff.detach(hero, DemonTrial.class);
 		Buff.affect(hero, DemonPerk.class);
-		DemonSeal seal = new DemonSeal();
-		seal.identify();
-		if (seal.collect(hero.belongings.backpack)) {
-			for (int i = 0; i < com.shatteredpixel.shatteredpixeldungeon.QuickSlot.SIZE; i++) {
-				if (Dungeon.quickslot.getItem(i) == null) {
-					Dungeon.quickslot.setSlot(i, seal);
-					com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton.refresh();
-					break;
-				}
-			}
-		} else {
-			Dungeon.level.drop(seal, hero.pos).sprite.drop();
-		}
+		//the skill appears in its own row above the skill bar
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(Messages.get(DemonLordNPC.class, "skill_granted", lord.get("skill_name")));
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.syncSkillBarPos();
 		hero.updateHT(false);
 	}
 

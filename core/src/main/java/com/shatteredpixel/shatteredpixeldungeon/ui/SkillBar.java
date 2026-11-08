@@ -31,6 +31,8 @@ public class SkillBar extends Component {
 	public static final int GAP = 1;
 
 	private final ArrayList<SkillButton> buttons = new ArrayList<>();
+	/** a second row above the main one: skills that don't come from the signature item (the demon lord's) */
+	private final ArrayList<SkillButton> extras = new ArrayList<>();
 	/** identity of the skill list currently shown, to rebuild only when it changes */
 	private String shownKey = "";
 	private float refreshTimer = 0;
@@ -42,12 +44,27 @@ public class SkillBar extends Component {
 
 	/** height the bar takes up above the toolbar (0 when hidden) */
 	public float barHeight() {
-		return buttons.isEmpty() ? 0 : BTN_SIZE + GAP;
+		return rows() * (BTN_SIZE + GAP);
 	}
 
-	/** width of the row of buttons (0 when hidden) */
+	private int rows() {
+		return (buttons.isEmpty() ? 0 : 1) + (extras.isEmpty() ? 0 : 1);
+	}
+
+	private static float rowWidth(ArrayList<SkillButton> row) {
+		return row.isEmpty() ? 0 : row.size() * (BTN_SIZE + GAP) - GAP;
+	}
+
+	/** width of the widest row of buttons (0 when hidden) */
 	public float barWidth() {
-		return buttons.isEmpty() ? 0 : buttons.size() * (BTN_SIZE + GAP) - GAP;
+		return Math.max(rowWidth(buttons), rowWidth(extras));
+	}
+
+	private static ArrayList<SinSkill> extraSkills(Hero hero) {
+		ArrayList<SinSkill> out = new ArrayList<>();
+		SinSkill demon = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.skill(hero);
+		if (demon != null) out.add(demon);
+		return out;
 	}
 
 	private String keyFor(Item item, ArrayList<SinSkill> skills) {
@@ -61,9 +78,11 @@ public class SkillBar extends Component {
 		Item item = SkillHolder.find(hero);
 		ArrayList<SinSkill> skills = item == null ? new ArrayList<SinSkill>()
 				: SkillHolder.visibleSkills((SkillHolder) item, hero);
-		String key = keyFor(item, skills);
+		ArrayList<SinSkill> extra = extraSkills(hero);
+		String key = keyFor(item, skills) + "/" + keyFor(null, extra);
 		if (key.equals(shownKey)) {
 			for (SkillButton b : buttons) b.updateState();
+			for (SkillButton b : extras) b.updateState();
 			return;
 		}
 		shownKey = key;
@@ -72,10 +91,20 @@ public class SkillBar extends Component {
 			b.destroy();
 		}
 		buttons.clear();
+		for (SkillButton b : extras) {
+			remove(b);
+			b.destroy();
+		}
+		extras.clear();
 		for (SinSkill s : skills) {
 			SkillButton b = new SkillButton(s);
 			add(b);
 			buttons.add(b);
+		}
+		for (SinSkill s : extra) {
+			SkillButton b = new SkillButton(s);
+			add(b);
+			extras.add(b);
 		}
 		layout();
 		GameScene.layoutTags();
@@ -84,13 +113,23 @@ public class SkillBar extends Component {
 
 	@Override
 	protected void layout() {
-		float x = this.x;
+		width = barWidth();
+		height = barHeight();
+		//rows are right-aligned; the extra row sits on top
+		float rowY = y;
+		if (!extras.isEmpty()) {
+			float x = this.x + width - rowWidth(extras);
+			for (SkillButton b : extras) {
+				b.setRect(x, rowY, BTN_SIZE, BTN_SIZE);
+				x += BTN_SIZE + GAP;
+			}
+			rowY += BTN_SIZE + GAP;
+		}
+		float x = this.x + width - rowWidth(buttons);
 		for (SkillButton b : buttons) {
-			b.setRect(x, y, BTN_SIZE, BTN_SIZE);
+			b.setRect(x, rowY, BTN_SIZE, BTN_SIZE);
 			x += BTN_SIZE + GAP;
 		}
-		width = Math.max(0, x - this.x - GAP);
-		height = barHeight();
 	}
 
 	@Override

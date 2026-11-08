@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, "core", "src", "main", "assets", "interfaces", "skill_i
 
 SIZE = 16
 COLS = 8
-ROWS = 8
+ROWS = 9
 
 SIN_COLORS = [
     (150, 50, 180),   # gluttony
@@ -27,6 +27,7 @@ SIN_COLORS = [
     (50, 150, 80),    # envy
     (70, 110, 200),   # sloth
     (140, 95, 55),    # envy's mimicked monster abilities
+    (120, 20, 40),    # demon lords' skills (64 + DemonLord ordinal; tinted per lord below)
 ]
 
 G = {
@@ -562,6 +563,20 @@ G = {
         "....XXXX....",
         ".....XX.....",
     ],
+    "FLY": [
+        "............",
+        ".XX......XX.",
+        "XXXX....XXXX",
+        "XXXXX..XXXXX",
+        ".XXXXXXXXXX.",
+        "...XXXXXX...",
+        "...X.XX.X...",
+        "....XXXX....",
+        "....XXXX....",
+        "...X.XX.X...",
+        "..X..XX..X..",
+        ".....XX.....",
+    ],
 }
 
 ICONS = {
@@ -572,8 +587,14 @@ ICONS = {
     32: "HEART", 33: "WAVE", 34: "DROP", 35: "DHEART",
     40: "MASK", 41: "SWAP", 42: "SWAP", 43: "MASK",
     48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ", 52: "TARGET", 53: "ANVIL",
+    64: "STAR", 65: "COIN", 66: "HEART", 67: "WAVE", 68: "FLY", 69: "FLAME", 70: "ZZZ",
     56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
+
+
+# the demon lords' skills take their lord's colour (DemonLord order)
+LORD_COLORS = {64: (200, 170, 60), 65: (190, 130, 20), 66: (200, 60, 130), 67: (40, 110, 200),
+               68: (100, 140, 40), 69: (200, 40, 30), 70: (110, 80, 180)}
 
 
 def tile(color):
@@ -594,7 +615,7 @@ def main():
     sheet = Image.new("RGBA", (SIZE * COLS, SIZE * ROWS), (0, 0, 0, 0))
     for index, glyph in ICONS.items():
         row, col = divmod(index, COLS)
-        ic = tile(SIN_COLORS[row])
+        ic = tile(LORD_COLORS.get(index, SIN_COLORS[row]))
         pattern = G[glyph]
         assert len(pattern) == 12 and all(len(r) == 12 for r in pattern), glyph
         for y, line in enumerate(pattern):
