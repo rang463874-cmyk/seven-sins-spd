@@ -70,7 +70,15 @@ public class WallAcid extends TerrainCharm {
 		int t = level.map[cell];
 		if (!isWall(t) || protectedCell(level, cell)) return false;
 		Level.set(cell, t == Terrain.SECRET_DOOR ? Terrain.DOOR : Terrain.EMPTY);
-		GameScene.updateMap(cell);
+		//cells inside solid rock start out undiscoverable and would stay black (like vanilla mining)
+		for (int n : PathFinder.NEIGHBOURS9) {
+			int c = cell + n;
+			if (c >= 0 && c < level.length()) level.discoverable[c] = true;
+		}
+		for (int n : PathFinder.NEIGHBOURS9) {
+			int c = cell + n;
+			if (c >= 0 && c < level.length()) GameScene.updateMap(c);
+		}
 		CellEmitter.get(cell).burst(Speck.factory(Speck.ROCK), 4);
 		return true;
 	}
