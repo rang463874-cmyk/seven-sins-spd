@@ -65,7 +65,8 @@ Done and pushed (see `git log`):
   landing cell + up to 3 deep along the throw become floor, secret doors open; not on boss floors/non-RegularLevel, never
   the outer edge), `StoneDust` (earthroot + icecap -> 2: 3-wide wall across the throw for 20 turns on open empty tiles,
   `StoneDust.RisenWall` blob counts down and restores the saved terrain), `DryingPowder` (firebloom + swiftthistle, 1
-  energy -> 2: water within 2 becomes floor for good). All three are in `MOD_ALCHEMY` (gourmet perk now 12 items).
+  energy -> 2: water within 2 becomes floor for good). They feed the scroll pool (`PredatorStomach.category`) but are
+  not in `MOD_ALCHEMY` (the gourmet perk stays at 9 items, owner's call).
   Art items.png row 38 +1..+3.
   The alchemy pot puts one item per slot (only liquid metal/thrown weapons go in as a stack) and `Recipe.findRecipes`
   only checks the list matching the slot count, so recipes needing several of one item (ElixirOfSin, SinInfusion,
@@ -149,9 +150,14 @@ Done and pushed (see `git log`):
   (29x25, city tiles, `bossLevel(31)` = true; rows 1-5 are a void of CHASM that is neither passable nor a pit; 2x2 wall
   blocks as cover; giant at `giantCell()` on the ledge row 6, gem at `centerCell()`). `actors/mobs/heaven/HolyGiant`
   (RegionElite, BOSS, IMMOVABLE, body immune: `damage` is a no-op; HP = sum of `armHP` (2 x `ARM_HT` 300); starts when the
-  hero is within 10 and sees it; `GiantHunting` waits while the hero hides). Skills: SLAM (3x3 on the hero's side, then a
-  `GiantFist` stays FIST_TURNS 3 on the middle tile: passive mob whose damage updates the giant via `onFistDamaged`,
-  retract keeps the HP, 0 HP = arm destroyed), BOLT (hero tile + 2-3 nearby, paralysis 2). Judgment at 1/2 and 1/4 HP:
+  hero is within 10 and sees it; `GiantHunting` waits while the hero hides). Skills: SLAM (whole arm: a 3x`ARM_LEN` 8
+  strip from the ledge down through the hero's column (`pendingCol`), only if the hero is within those rows; then a
+  `GiantFist` stays FIST_TURNS 3 at the strip's far end, its column up to the ledge filled with invisible `GiantArmPart`s
+  that forward hits (`GiantFist.parts`, cleared on retract/death); the fist's sprite `HeavenSprites.GiantArm` draws the
+  whole 48x128 arm up from its tile; passive mob whose damage updates the giant via `onFistDamaged`, retract keeps the HP,
+  0 HP = arm destroyed), BOLT (the owner's branching lightning `giant_art/lightning.png` -> `GiantLightningPattern`
+  (21x17 tiles, generated) from the ledge down, shifted +-2 and randomly mirrored (`boltX/boltMirror`), paralysis 2;
+  `HeavenSprites.lightning` shows the picture faintly while marked and fully on release). Judgment at 1/2 and 1/4 HP:
   3-turn charge, then hits every non-enemy char in its line of sight (`Ballistica` STOP_SOLID). Both arms gone ->
   `collapse`: `items/HolyGem` dropped at the centre, `SWARM` 14 believers/priests from the edges hunt the hero; picking
   the gem up calls `vanquish` (all enemies vanish, bossSlain, giant dies). The gem: AWAKEN (sin classes, once:
@@ -159,7 +165,8 @@ Done and pushed (see `git log`):
   `sins.sinawakening.*`) and END (`Dungeon.win(Amulet.class)` + delete save + RankingsScene). Art: the owner's giant and fist
   pictures (`tools/sinsart/giant_art/holy_giant.png`, cropped at the waterline; `fists.png`, two panels) ->
   `sprites/heaven_giant.png` (112x63 frames, drawn up from its ledge cell) and `sprites/heaven_fists.png` (32x33, row 0
-  left / row 1 right by `GiantFist.side`) by `tools/sinsart/make_giant_sprites.py` (reuses make_virtue_sprites' cutout); gem icon =
+  left / row 1 right by `GiantFist.side`, now unused), `sprites/heaven_arms.png` (48x129, fist turned down + mirrored
+  forearm bands) and `sprites/heaven_lightning.png` by `tools/sinsart/make_giant_sprites.py` (reuses make_virtue_sprites' cutout); gem icon =
   items.png row 38 +0 (`ELITE2`, TX_HEIGHT now 608). Dev tools: travel to 27 / 31. Awakening talents (agreed with the owner):
   `sins/AwakeningTalent` (42: 3 per path, max 3 points, levels in `Hero.awakeningTalents`, per-run counters in
   `Hero.awakeningCounters`, both saved in the hero bundle), spent in `windows/WndAwakening` (the gem's TALENTS action;
@@ -171,9 +178,15 @@ Done and pushed (see `git log`):
   WrathHooks.onAttack, Char.damage (`onHeroDamaged`, `wrathUndying`), PrideGlory, PrideHooks.onAttack, Hero.attackSkill
   (`divineEye`), LustDesire, LustHooks, EnvyCovet/EnvyMimicry/EnvyHooks, SlothRepose, DreamPuppet, SlothHooks, Mob.die
   (`onMobDeath`)). `AwakeningHooks.AwakeningTicker` (buff added at the awakening) runs the lust aura and envy's drain.
-  Gluttony's monster (`swallowBags` at the awakening, `onPickedUp` from Item.doPickUp): side bags become growth
+  Gluttony's monster (`swallowBags` at the awakening, `onPickedUp` from Item.doPickUp): side bags except the magical
+  holster (owner's call) become growth
   (150 each + contents); items of a swallowed bag's kind go off on pickup (`Potion.forceDrink`, `Scroll.forceRead`,
   seeds eaten, runestones/thrown weapons/wands digested); +50% move/attack speed; bite reach 2.
+- Boss damage softcap (Nov 2026): `RegionElite.soften(dmg, softThreshold(HT))` (threshold HT/12, min 12; past it only
+  ~sqrt(2 x excess), like the vanilla Pylon cap) in `VirtueChampion.damage`, `ArchangelBoss.damage`, `DemonLordBoss.damage`
+  (Leviathan too) and `GiantFist.damage` (threshold from `ARM_HT`).
+- Stairs past depth 26: `Hero.handle` only allowed entrances at depth >= 26; REGULAR_EXIT is allowed too now (26's heaven
+  stairs and the exits of 27-30).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

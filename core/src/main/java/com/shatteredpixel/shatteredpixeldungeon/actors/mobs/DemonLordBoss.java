@@ -290,7 +290,7 @@ public class DemonLordBoss extends RegionElite {
 
 	@Override
 	public void damage(int dmg, Object src) {
-		super.damage(dmg, src);
+		super.damage(soften(dmg, softThreshold(HT)), src);
 		if (isAlive() && !enraged && HP < HT / 2) {
 			enraged = true;
 			yell(DemonHooks.line(lord, "boss_enrage"));

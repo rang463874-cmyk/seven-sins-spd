@@ -225,4 +225,71 @@ public class HeavenSprites {
 			return 0xFF80C8FF;
 		}
 	}
+
+	/** the whole arm slammed down (48x128 over the 3x8 strip), drawn up from the fist's tile: row 0 left, row 1 right */
+	public static class GiantArm extends MobSprite {
+		private int row = -1;
+		private TextureFilm film;
+		public GiantArm() {
+			super();
+			texture("sprites/heaven_arms.png");
+			film = new TextureFilm(texture, 48, 129);
+			setRow(0);
+		}
+		private void setRow(int r) {
+			if (r == row) return;
+			row = r;
+			int o = r * 5;
+			idle = new Animation(2, true);
+			idle.frames(film, o, o + 1);
+			run = idle.clone();
+			attack = idle.clone();
+			zap = idle.clone();
+			die = new Animation(6, false);
+			die.frames(film, o + 2, o + 3, o + 4);
+			play(idle);
+		}
+		@Override
+		public void link(Char ch) {
+			super.link(ch);
+			renderShadow = false;
+			if (ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.GiantFist) {
+				setRow(((com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.GiantFist) ch).side == 0 ? 0 : 1);
+			}
+		}
+		@Override
+		public PointF worldToCamera(int cell) {
+			final int csize = DungeonTilemap.SIZE;
+			int w = Dungeon.level.width();
+			return new PointF(
+					com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.align(Camera.main, ((cell % w) + 0.5f) * csize - width() * 0.5f),
+					com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.align(Camera.main, ((cell / w) + 1f) * csize - height())
+			);
+		}
+		@Override
+		public int blood() {
+			return 0xFF80C8FF;
+		}
+	}
+
+	/** the giant's branching lightning (21x17 tiles) over the arena; fades out by itself */
+	public static void lightning(int startX, int startY, boolean mirror, float alpha, float fade) {
+		if (com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon.scene()
+				instanceof com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene == false) return;
+		final com.watabou.noosa.Image img = new com.watabou.noosa.Image("sprites/heaven_lightning.png");
+		img.x = startX * DungeonTilemap.SIZE;
+		img.y = startY * DungeonTilemap.SIZE;
+		if (mirror) {
+			img.origin.set(img.width / 2f, 0);
+			img.scale.x = -1;
+		}
+		img.alpha(alpha);
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.effectOverFog(img);
+		img.parent.add(new com.watabou.noosa.tweeners.AlphaTweener(img, 0f, fade) {
+			@Override
+			protected void onComplete() {
+				img.killAndErase();
+			}
+		});
+	}
 }

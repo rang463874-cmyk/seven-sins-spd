@@ -142,7 +142,6 @@ public class PredatorStomach extends Buff {
 	public static final Class<? extends Item>[] MOD_ALCHEMY = new Class[]{
 			com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.class,
 			com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.class,
-			com.shatteredpixel.shatteredpixeldungeon.items.elite.WallAcid.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.StoneDust.class, com.shatteredpixel.shatteredpixeldungeon.items.elite.DryingPowder.class,
 			com.shatteredpixel.shatteredpixeldungeon.items.bombs.SinBomb.class, com.shatteredpixel.shatteredpixeldungeon.items.bombs.StickyBomb.class, com.shatteredpixel.shatteredpixeldungeon.items.bombs.CaltropBomb.class
 	};
 
@@ -311,6 +310,8 @@ public class PredatorStomach extends Buff {
 				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant) return CAT_POTION;
 		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage) return CAT_FOOD;
 		if (modAlchemy(item)) return CAT_SCROLL;
+		//the terrain tricks feed the scroll pool but aren't part of the gourmet codex
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.elite.TerrainCharm) return CAT_SCROLL;
 		if (item instanceof Potion) return CAT_POTION;
 		if (item instanceof Food || item instanceof Plant.Seed) return CAT_FOOD;
 		if (item instanceof Scroll || item instanceof Runestone) return CAT_SCROLL;

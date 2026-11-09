@@ -163,4 +163,18 @@ public abstract class RegionElite extends Mob {
 		greeted = bundle.getBoolean("greeted");
 	}
 
+
+	/**
+	 * Seven Sins: the big fights soften heavy blows like the vanilla bosses' damage caps (Pylon, demon
+	 * spawner): damage past the threshold only adds about sqrt(2 x excess).
+	 */
+	public static int soften(int dmg, int threshold) {
+		if (dmg <= threshold) return dmg;
+		return threshold + (int) (Math.sqrt(8 * (dmg - threshold) + 1) - 1) / 2;
+	}
+
+	/** the threshold for a boss of this many max HP (1/12 of it, at least 12) */
+	public static int softThreshold(int ht) {
+		return Math.max(12, ht / 12);
+	}
 }

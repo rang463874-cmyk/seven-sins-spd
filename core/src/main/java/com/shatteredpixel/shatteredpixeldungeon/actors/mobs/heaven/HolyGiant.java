@@ -9,7 +9,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.RegionElite;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
-import com.shatteredpixel.shatteredpixeldungeon.effects.Lightning;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.SparkParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.HolyGem;
@@ -31,10 +30,12 @@ import java.util.ArrayList;
 /**
  * The holy giant, final boss of the heavens (floor 31). It raises its upper body from the void at the
  * edge of the arena and never moves. Its body can't be hurt directly: its two arms can.
- * - Fist slam (left or right, on the hero's side): marks a 3x3 square, slams it next turn and leaves
- *   the fist there for 3 turns ({@link GiantFist}). Fists keep their own HP between slams; damage to a
+ * - Arm slam (left or right, on the hero's side): marks a 3x8 strip from its ledge down through the
+ *   hero's column, slams the whole arm across it next turn and leaves it there for 3 turns: the fist
+ *   ({@link GiantFist}) at the far end, the rest of the arm as {@link GiantArmPart}s that pass hits on. Fists keep their own HP between slams; damage to a
  *   fist is also the giant's damage (its HP = what both arms have left). A fist at 0 HP is destroyed.
- * - Blue lightning: marks the hero's tile and a few around it, strikes next turn and paralyses.
+ * - Lightning: a branching bolt (the owner's picture, {@link GiantLightningPattern}) spreading over the
+ *   arena from the giant, randomly shifted and mirrored; marked tiles are struck next turn and paralysed.
  * - Judgment: each time its HP falls past 1/2 and 1/4 it charges for 3 turns, then hits every tile it
  *   can see. Standing behind a wall block (out of its line of sight) is safe.
  * Both arms destroyed: it collapses, a blue gem ({@link HolyGem}) appears in the middle of the arena and
@@ -47,12 +48,18 @@ public class HolyGiant extends RegionElite {
 	public static final int FIST_TURNS = 3;
 	public static final int JUDGMENT_CHARGE = 3;
 	public static final int SWARM = 14;
+	/** the slammed arm: 3 wide, 8 long from the ledge down */
+	public static final int ARM_LEN = 8;
 
 	/** HP left on the left / right arm; 0 = destroyed */
 	public int[] armHP = {ARM_HT, ARM_HT};
 	/** actor ids of the fists lying on the floor, -1 = arm raised */
 	public int[] fists = {-1, -1};
 	private int pendingSide = 0;
+	/** the slam's middle column, the bolt's left column and mirroring */
+	private int pendingCol = 0;
+	private int boltX = 0;
+	private boolean boltMirror = false;
 	private int judgment = 0;
 	/** 0 = none yet, 1 = after 1/2, 2 = after 1/4 */
 	private int judgmentsDone = 0;
@@ -231,29 +238,43 @@ public class HolyGiant extends RegionElite {
 
 	@Override
 	protected int[] prepare(int s, Char target) {
+		int w = Dungeon.level.width();
+		int gx = pos % w;
 		if (s == SLAM) {
-			int side = Dungeon.level.cellToPoint(target.pos).x < Dungeon.level.cellToPoint(pos).x ? 0 : 1;
-			if (!armReady(side)) side = 1 - side;
+			int tx = target.pos % w, ty = target.pos / w;
+			//the arm reaches 8 rows down from the ledge
+			if (ty > HolyGiantLevel.LEDGE + ARM_LEN - 1) return null;
+			int side = tx < gx ? 0 : 1;
 			if (!armReady(side)) return null;
 			pendingSide = side;
+			pendingCol = Math.max(HolyGiantLevel.LEFT + 1, Math.min(HolyGiantLevel.RIGHT - 1, tx));
 			ArrayList<Integer> cells = new ArrayList<>();
-			for (int dx = -1; dx <= 1; dx++) {
-				for (int dy = -1; dy <= 1; dy++) {
-					int c = target.pos + dx + dy * Dungeon.level.width();
-					if (c >= 0 && c < Dungeon.level.length() && Dungeon.level.passable[c]) addIfOpen(cells, c);
+			for (int y = HolyGiantLevel.LEDGE; y < HolyGiantLevel.LEDGE + ARM_LEN; y++) {
+				for (int x = pendingCol - 1; x <= pendingCol + 1; x++) {
+					int c = x + y * w;
+					if (c != pos && Dungeon.level.passable[c]) addIfOpen(cells, c);
 				}
 			}
 			return cells.isEmpty() ? null : toArray(cells);
 		}
-		//lightning: the hero's tile and 2-3 more nearby
+		//lightning: the owner's branching bolt from the giant across the arena
+		boltMirror = Random.Int(2) == 0;
+		boltX = gx - GiantLightningPattern.W / 2 + Random.IntRange(-2, 2);
+		boltX = Math.max(HolyGiantLevel.LEFT, Math.min(HolyGiantLevel.RIGHT + 1 - GiantLightningPattern.W, boltX));
 		ArrayList<Integer> cells = new ArrayList<>();
-		addIfOpen(cells, target.pos);
-		int extra = Random.IntRange(2, 3);
-		for (int tries = 0; tries < 30 && cells.size() < 1 + extra; tries++) {
-			int c = target.pos + Random.IntRange(-2, 2) + Random.IntRange(-2, 2) * Dungeon.level.width();
-			if (c >= 0 && c < Dungeon.level.length() && Dungeon.level.passable[c]) addIfOpen(cells, c);
+		for (int j = 0; j < GiantLightningPattern.H; j++) {
+			String row = GiantLightningPattern.ROWS[j];
+			for (int i = 0; i < GiantLightningPattern.W; i++) {
+				if (row.charAt(boltMirror ? GiantLightningPattern.W - 1 - i : i) != '#') continue;
+				int x = boltX + i, y = HolyGiantLevel.LEDGE + j;
+				if (x < 0 || x >= w || y >= Dungeon.level.height()) continue;
+				int c = x + y * w;
+				if (c != pos && Dungeon.level.passable[c]) addIfOpen(cells, c);
+			}
 		}
-		return toArray(cells);
+		//a faint glimpse of where it will fall
+		HeavenSprites.lightning(boltX, HolyGiantLevel.LEDGE, boltMirror, 0.3f, 1.2f);
+		return cells.isEmpty() ? null : toArray(cells);
 	}
 
 	private boolean armReady(int side) {
@@ -263,6 +284,7 @@ public class HolyGiant extends RegionElite {
 	@Override
 	protected void release(int s, int[] cells) {
 		int d = d();
+		int w = Dungeon.level.width();
 		if (s == SLAM) {
 			if (!armReady(pendingSide)) return;
 			for (int c : cells) {
@@ -270,15 +292,22 @@ public class HolyGiant extends RegionElite {
 				Char ch = strike(c, d, 2 * d);
 				if (ch != null && ch.isAlive()) Buff.prolong(ch, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Cripple.class, 1f);
 			}
-			PixelScene.shake(3, 0.5f);
+			PixelScene.shake(4, 0.6f);
 			Sample.INSTANCE.play(Assets.Sounds.ROCKS);
-			//the fist stays where it landed (the middle tile, or the nearest free marked one)
+			Sample.INSTANCE.play(Assets.Sounds.BLAST, 0.7f);
+			//the fist lands at the far end of the strip (the nearest free tile of its last rows)
+			int bottom = HolyGiantLevel.LEDGE + ARM_LEN - 1;
+			int[] tries = {
+					pendingCol + bottom * w, pendingCol + (bottom - 1) * w,
+					pendingCol - 1 + bottom * w, pendingCol + 1 + bottom * w,
+					pendingCol - 1 + (bottom - 1) * w, pendingCol + 1 + (bottom - 1) * w};
 			int spot = -1;
-			int center = cells[cells.length / 2];
-			if (Actor.findChar(center) == null) spot = center;
-			else {
-				for (int c : cells) {
-					if (Actor.findChar(c) == null && Dungeon.level.passable[c]) { spot = c; break; }
+			for (int c : tries) {
+				if (Dungeon.level.passable[c] && Actor.findChar(c) == null) { spot = c; break; }
+			}
+			if (spot == -1) {
+				for (int i = cells.length - 1; i >= 0; i--) {
+					if (Actor.findChar(cells[i]) == null && Dungeon.level.passable[cells[i]]) { spot = cells[i]; break; }
 				}
 			}
 			if (spot != -1) {
@@ -291,15 +320,30 @@ public class HolyGiant extends RegionElite {
 				f.pos = spot;
 				GameScene.add(f);
 				fists[pendingSide] = f.id();
+				//the rest of the arm lies up the fist's column to the ledge
+				ArrayList<Integer> partIds = new ArrayList<>();
+				for (int c = spot - w; c / w >= HolyGiantLevel.LEDGE; c -= w) {
+					if (!Dungeon.level.passable[c] || Actor.findChar(c) != null) continue;
+					GiantArmPart p = new GiantArmPart();
+					p.owner = f.id();
+					p.pos = c;
+					GameScene.add(p);
+					partIds.add(p.id());
+				}
+				f.parts = toArray(partIds);
 			}
 			return;
 		}
-		//blue lightning
+		//the branching lightning
+		HeavenSprites.lightning(boltX, HolyGiantLevel.LEDGE, boltMirror, 1f, 0.8f);
+		GameScene.flash(0x5070B0);
 		for (int c : cells) {
-			if (sprite != null) sprite.parent.add(new Lightning(c - Dungeon.level.width() * 6, c, new com.watabou.utils.Callback() { public void call() {} }));
-			CellEmitter.center(c).burst(SparkParticle.FACTORY, 8);
+			if (Dungeon.level.heroFOV[c] && Random.Int(3) == 0) CellEmitter.center(c).burst(SparkParticle.FACTORY, 4);
 			Char ch = strike(c, d / 2, d);
-			if (ch != null && ch.isAlive()) Buff.prolong(ch, Paralysis.class, 2f);
+			if (ch != null && ch.isAlive()) {
+				Buff.prolong(ch, Paralysis.class, 2f);
+				if (ch.sprite != null) CellEmitter.center(c).burst(SparkParticle.FACTORY, 8);
+			}
 		}
 		Sample.INSTANCE.play(Assets.Sounds.LIGHTNING);
 	}
@@ -409,6 +453,9 @@ public class HolyGiant extends RegionElite {
 		bundle.put("fallen", fallen);
 		bundle.put("started", started);
 		bundle.put("pending_side", pendingSide);
+		bundle.put("pending_col", pendingCol);
+		bundle.put("bolt_x", boltX);
+		bundle.put("bolt_mirror", boltMirror);
 	}
 
 	@Override
@@ -423,6 +470,9 @@ public class HolyGiant extends RegionElite {
 		fallen = bundle.getBoolean("fallen");
 		started = bundle.getBoolean("started");
 		pendingSide = bundle.getInt("pending_side");
+		pendingCol = bundle.getInt("pending_col");
+		boltX = bundle.getInt("bolt_x");
+		boltMirror = bundle.getBoolean("bolt_mirror");
 		if (started && !fallen) BossHealthBar.assignBoss(this);
 	}
 }

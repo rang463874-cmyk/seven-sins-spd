@@ -301,4 +301,10 @@ public abstract class VirtueChampion extends RegionElite implements com.shattere
 		setLevel(level);
 		HP = Math.min(hp, HT);
 	}
+
+	/** heavy blows are softened like the other bosses' */
+	@Override
+	public void damage(int dmg, Object src) {
+		super.damage(soften(dmg, softThreshold(HT)), src);
+	}
 }

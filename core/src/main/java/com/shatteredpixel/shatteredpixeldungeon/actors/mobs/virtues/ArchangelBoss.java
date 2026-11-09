@@ -290,7 +290,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	@Override
 	public void damage(int dmg, Object src) {
-		super.damage(dmg, src);
+		super.damage(soften(dmg, softThreshold(HT)), src);
 		if (!isAlive()) return;
 		int want = HP < HT / 3 ? 2 : HP < HT * 2 / 3 ? 1 : 0;
 		while (ascensions < want) {

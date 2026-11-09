@@ -432,7 +432,8 @@ public class AwakeningHooks {
 		int count = 0;
 		for (Item i : new ArrayList<>(hero.belongings.backpack.items)) {
 			int idx = bagIndex(i);
-			if (idx < 0) continue;
+			//the magical holster is never swallowed (owner's call): wands and thrown weapons stay usable
+			if (idx < 0 || idx == 3) continue;
 			swallowBag(hero, st, (Bag) i, idx);
 			count++;
 		}
@@ -467,7 +468,7 @@ public class AwakeningHooks {
 	public static void onPickedUp(Hero hero, Item item) {
 		if (!monster(hero, HeroClass.GLUTTONY) || item == null) return;
 		int bag = bagIndex(item);
-		if (bag >= 0) {
+		if (bag >= 0 && bag != 3) {
 			swallowBag(hero, Buff.affect(hero, PredatorStomach.class), (Bag) item, bag);
 			return;
 		}
