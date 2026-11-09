@@ -231,7 +231,10 @@ public abstract class Recipe {
 		new WildEnergy.Recipe(),
 		new StewedMeat.twoMeat(),
 		new com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.Recipe(),
-		new com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.Recipe()
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.WallAcid.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.StoneDust.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.elite.DryingPowder.Recipe()
 	};
 	
 	private static Recipe[] threeIngredientRecipes = new Recipe[]{

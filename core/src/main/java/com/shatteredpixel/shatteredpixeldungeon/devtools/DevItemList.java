@@ -406,9 +406,12 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.CastingMold",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll",
+			"com.shatteredpixel.shatteredpixeldungeon.items.elite.DryingPowder",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion",
 			"com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant",
+			"com.shatteredpixel.shatteredpixeldungeon.items.elite.StoneDust",
+			"com.shatteredpixel.shatteredpixeldungeon.items.elite.WallAcid",
 			"com.shatteredpixel.shatteredpixeldungeon.items.weapon.RoyalBow",
 		},
 	};

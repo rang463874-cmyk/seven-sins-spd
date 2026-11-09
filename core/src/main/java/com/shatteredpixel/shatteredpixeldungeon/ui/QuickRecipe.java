@@ -286,6 +286,10 @@ public class QuickRecipe extends Component {
 		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.Recipe()));
 		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.Recipe()));
 		result.add(null);
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.WallAcid.Recipe()));
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.StoneDust.Recipe()));
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.DryingPowder.Recipe()));
+		result.add(null);
 		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard.Recipe(),
 				new ArrayList<>(Arrays.asList(new WndBag.Placeholder(ItemSpriteSheet.ARTIFACT_HOLDER))),
 				new com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard()));

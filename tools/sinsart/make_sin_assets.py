@@ -444,6 +444,9 @@ def elite_art(items):
     items.paste(draw(HALO, HALO_PAL), cell(ELITE_ROW + 14, 16)[:2])
     items.paste(draw(SHARD, SHARD_PAL), cell(ELITE_ROW + 15, 16)[:2])
     items.paste(draw(GEM, GEM_PAL), cell(ELITE2_ROW + 0, 16)[:2])
+    items.paste(draw(ACID, ACID_PAL), cell(ELITE2_ROW + 1, 16)[:2])
+    items.paste(draw(POUCH, STONE_PAL), cell(ELITE2_ROW + 2, 16)[:2])
+    items.paste(draw(POUCH, DRY_PAL), cell(ELITE2_ROW + 3, 16)[:2])
     # essence bag: the velvet pouch (bags row 31, +2) dyed crimson, at +7
     items.paste(recolor(items.crop(cell(30 * 16 + 2, 16)), tint_px(350, 0.75, 1.0)), cell(30 * 16 + 7, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
@@ -581,6 +584,44 @@ GEM = [
 ]
 GEM_PAL = {"K": (16, 30, 70, 255), "W": (230, 250, 255, 255), "L": (130, 210, 255, 255),
            "B": (60, 150, 240, 255), "D": (30, 90, 190, 255)}
+# 10x13 wall acid: a corked flask of bubbling green acid
+ACID = [
+    "...KKKK...",
+    "...KCCK...",
+    "....KK....",
+    "...KGGK...",
+    "..KGWGGK..",
+    ".KGGGGGGK.",
+    "KGWGGLGGGK",
+    "KGGLGGGGDK",
+    "KGGGGGLGDK",
+    "KGLGGGGDDK",
+    ".KGGGGDDK.",
+    "..KDDDDK..",
+    "...KKKK...",
+]
+ACID_PAL = {"K": (24, 40, 20, 255), "C": (150, 110, 60, 255), "W": (230, 255, 200, 255),
+            "L": (190, 250, 120, 255), "G": (110, 200, 60, 255), "D": (60, 130, 30, 255)}
+
+# 12x12 powder pouches (stone dust grey, drying powder orange): a tied cloth sack spilling powder
+POUCH = [
+    "....KKKK....",
+    "....KTTK....",
+    ".....KK.....",
+    "...KKBBKK...",
+    "..KBBLBBBK..",
+    ".KBLBBBBBDK.",
+    ".KBBBBBBBDK.",
+    "KBBBBLBBBDDK",
+    "KBLBBBBBDDDK",
+    ".KBBBBBDDDK.",
+    "..KKKKKKKKP.",
+    "........PPP.",
+]
+STONE_PAL = {"K": (40, 40, 44, 255), "T": (150, 120, 70, 255), "L": (215, 215, 220, 255),
+             "B": (150, 150, 158, 255), "D": (95, 95, 104, 255), "P": (180, 180, 186, 255)}
+DRY_PAL = {"K": (70, 34, 14, 255), "T": (150, 120, 70, 255), "L": (255, 230, 160, 255),
+           "B": (232, 160, 70, 255), "D": (180, 100, 40, 255), "P": (250, 200, 120, 255)}
 ELITE2_ROW = 592  # row 38 of items.png: the holy gem, ...
 
 CURSE_INFUSE_ICON = 420  # SPELLS + 4 (row 27)

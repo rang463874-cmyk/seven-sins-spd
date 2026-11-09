@@ -60,6 +60,13 @@ Done and pushed (see `git log`):
   `MissileWeapon.bonusSetSize`/`setSize()`, which upgrade/merge/liquid metal/WndUpgrade use instead of
   defaultQuantity), `items/bombs/CaltropBomb` (bomb + blindweed: damage, bleed, cripple; the original SmokeBomb is
   untouched), `items/elite/DecoyDoll` (stormvine + fadeleaf -> 2, thrown: `DecoyDoll.Decoy` = PrideEffigy subclass).
+  Terrain items (thrown, base `items/elite/TerrainCharm`: throw direction from `from`, `protectedCell` = locked/crystal
+  vault or quest sanctum rooms): `WallAcid` (sorrowmoss + firebloom, 3 energy -> 1: walls/bookshelves in 3x3 around the
+  landing cell + up to 3 deep along the throw become floor, secret doors open; not on boss floors/non-RegularLevel, never
+  the outer edge), `StoneDust` (earthroot + icecap -> 2: 3-wide wall across the throw for 20 turns on open empty tiles,
+  `StoneDust.RisenWall` blob counts down and restores the saved terrain), `DryingPowder` (firebloom + swiftthistle, 1
+  energy -> 2: water within 2 becomes floor for good). All three are in `MOD_ALCHEMY` (gourmet perk now 12 items).
+  Art items.png row 38 +1..+3.
   The alchemy pot puts one item per slot (only liquid metal/thrown weapons go in as a stack) and `Recipe.findRecipes`
   only checks the list matching the slot count, so recipes needing several of one item (ElixirOfSin, SinInfusion,
   Bandage) live in `Recipe.variableRecipes` (strict: `Recipe.StrictRecipe` rejects unlisted ingredients).

@@ -964,8 +964,14 @@ public class ItemSpriteSheet {
 
 	private static final int ELITE2     =                                   xy(1, 38);  //16 slots
 	public static final int HOLY_GEM          = ELITE2+0;
+	public static final int WALL_ACID         = ELITE2+1;
+	public static final int STONE_DUST        = ELITE2+2;
+	public static final int DRYING_POWDER     = ELITE2+3;
 	static{
 		assignItemRect(HOLY_GEM, 12, 12);
+		assignItemRect(WALL_ACID, 10, 13);
+		assignItemRect(STONE_DUST, 12, 12);
+		assignItemRect(DRYING_POWDER, 12, 12);
 	}
 	static{
 		assignItemRect(CONQUEST_SPEAR, 15, 15);
