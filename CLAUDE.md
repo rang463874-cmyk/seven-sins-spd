@@ -143,7 +143,10 @@ Done and pushed (see `git log`):
   bestiary's QUEST group. Rotation in `MobSpawner` case 27-30. Art: the owner's pictures `virtue_art/src/heaven_*.png` -> 24px
   sheets for believer/priest/lesser angel (`HeavenSprites.Sheet24`; the angel has a bow, so it shoots a spirit arrow)
   and the 32px seraph (over 2x2 via `worldToCamera`, + blank frame 12 for parts), by `make_virtue_sprites.py`.
-  Strings in `tools/strings/virtues_*`.
+  Strings in `tools/strings/virtues_*`. Tileset (27-31, also HolyGiantLevel): `environment/tiles_heaven.png` +
+  `water_heaven.png` (`Assets.Environment.TILES_HEAVEN/WATER_HEAVEN`) by `tools/sinsart/make_heaven_tiles.py`: the city
+  sheet's layout recoloured (stone -> cream marble, wood -> gold, floor -> pale marble, blacks kept) with floor/deco/special
+  floor/chasm tiles cut from the owner's mock-up `heaven_art/heaven_map.png` (~31px tiles; boxes in the script).
   Headless level test trick: build `HeavenLevel` subclasses without special/secret rooms and a texture-free
   `TextureFilm` stub on the classpath (Level.create needs textures for items).
 - Floor 31, the holy giant (Nov 2026): floor 30's stairs (kept; its chasms are filled) lead to `levels/HolyGiantLevel`

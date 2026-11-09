@@ -53,6 +53,9 @@ public class Assets {
 		public static final String WATER_CAVES  = "environment/water2.png";
 		public static final String WATER_CITY   = "environment/water3.png";
 		public static final String WATER_HALLS  = "environment/water4.png";
+		//Seven Sins: the heavens (floors 27-31), from tools/sinsart/make_heaven_tiles.py
+		public static final String TILES_HEAVEN = "environment/tiles_heaven.png";
+		public static final String WATER_HEAVEN = "environment/water_heaven.png";
 
 		public static final String CARPET           = "environment/custom_tiles/carpet.png";
 		public static final String RAT_KING_ROOM    = "environment/custom_tiles/rat_king_room.png";

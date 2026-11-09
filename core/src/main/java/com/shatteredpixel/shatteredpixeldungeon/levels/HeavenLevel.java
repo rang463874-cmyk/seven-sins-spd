@@ -75,12 +75,12 @@ public class HeavenLevel extends RegularLevel {
 
 	@Override
 	public String tilesTex() {
-		return Assets.Environment.TILES_CITY;
+		return Assets.Environment.TILES_HEAVEN;
 	}
 
 	@Override
 	public String waterTex() {
-		return Assets.Environment.WATER_CITY;
+		return Assets.Environment.WATER_HEAVEN;
 	}
 
 	@Override
