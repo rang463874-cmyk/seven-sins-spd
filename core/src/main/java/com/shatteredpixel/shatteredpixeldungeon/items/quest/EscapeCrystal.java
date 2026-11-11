@@ -329,7 +329,12 @@ public class EscapeCrystal extends Item {
 		Dungeon.quickslot.restorePlaceholders(storedItems.getBundle(QUICKSLOTS));
 		updateQuickslot();
 
+		//Seven Sins: slots opened inside the vault (mirror case, heavenly halo) must survive the restore,
+		//which would otherwise bring back the flags as they were when the hero entered
+		boolean slot1 = hero.belongings.extraSlot, slot2 = hero.belongings.extraSlot2;
 		Dungeon.hero.belongings.restoreFromBundle(storedItems.getBundle(BELONGINGS));
+		Dungeon.hero.belongings.extraSlot |= slot1;
+		Dungeon.hero.belongings.extraSlot2 |= slot2;
 
 		Dungeon.gold = storedItems.getInt(GOLD);
 		Dungeon.energy = storedItems.getInt(ENERGY);

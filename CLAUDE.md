@@ -22,7 +22,7 @@ Done and pushed (see `git log`):
 - Imp quest vault mirror gives `items/MirrorCase` (every class; originals get it alongside their usual
   reward): one use per run, sets `Belongings.extraSlot`, opening `Belongings.misc2`, a second shared
   artifact/ring slot (equip logic in `KindofMisc`, shown in `WndBag`; `InventoryPane` lists it first in
-  the bag). The archangel drops `items/HeavenlyHalo` (one use per run, sets `Belongings.extraSlot2`, opening a third
+  the bag; `EscapeCrystal.restoreHeroBelongings` keeps both extra-slot flags when the vault hands the old gear back). The archangel drops `items/HeavenlyHalo` (one use per run, sets `Belongings.extraSlot2`, opening a third
   shared slot `misc3`; works with or without the case). `KindofMisc` walks the shared slots misc/misc2/misc3 through
   `sharedCount/shared/setShared`; every other misc2 call site has a misc3 twin (Ring/Artifact/Mob/Talent/Toolbar/
   InventorySlot/SkillHolder). The backpack holds 25 items (`Belongings.Backpack.SIZE`, was 20): `WndBag` sizes its rows
