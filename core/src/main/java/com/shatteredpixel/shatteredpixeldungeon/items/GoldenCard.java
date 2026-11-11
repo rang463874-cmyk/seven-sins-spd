@@ -49,6 +49,21 @@ public class GoldenCard extends SinArtifact {
 
 	/** gilding costs 300, +150 per earlier use, but never more than this (owner's call) */
 	public static final int GILD_MAX = 600;
+	/** Treasure Map: gauge cost (before payment discounts) */
+	public static final int COST_MAP = 150;
+
+	/** reveals the whole floor (layout, items and secrets) */
+	private static void treasureMap(Hero hero) {
+		int cost = discounted(hero, COST_MAP);
+		if (vault(hero).charge < cost) return;
+		vault(hero).spend(cost);
+		com.shatteredpixel.shatteredpixeldungeon.skills.MapReveal.reveal(true);
+		com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite.show(hero, com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite.MAP);
+		com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.GOLD);
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(Messages.get(GoldenCard.class, "treasuremap_done"));
+		hero.sprite.operate(hero.pos);
+		hero.spendAndNext(1f);
+	}
 
 	public static final String AC_PAY = "PAY";
 	public static final String AC_SELL = "SELL";
@@ -206,11 +221,11 @@ public class GoldenCard extends SinArtifact {
 				.cost(h -> buyCost(h))
 				.usableIf(h -> vault(h).charge >= buyCost(h))
 				.onUse(GoldenCard::mailOrder));
-		list.add(new BasicSkill(GoldenCard.class, "gild", 15, SinSkill.CostType.GAUGE)
-				.cost(h -> gildCost(h))
-				.usableIf(h -> vault(h).charge >= gildCost(h))
-				.descArgs(h -> new Object[]{vault(h).gilded})
-				.onUse(h -> GameScene.selectItem(gildSelector)));
+		//Treasure Map replaced Gilding in Nov 2026 (growth copy covers upgrades now); gilding code kept for reference
+		list.add(new BasicSkill(GoldenCard.class, "treasuremap", 15, SinSkill.CostType.GAUGE)
+				.cost(h -> discounted(h, COST_MAP))
+				.usableIf(h -> vault(h).charge >= discounted(h, COST_MAP))
+				.onUse(GoldenCard::treasureMap));
 		//growth copy: forgery (the whole payment gauge)
 		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, GoldenCard.class, 1, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.GAUGE,
 				h -> (int) vault(h).maxCharge(), h -> vault(h).chargeInt() >= (int) vault(h).maxCharge(),

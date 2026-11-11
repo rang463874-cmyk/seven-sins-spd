@@ -209,6 +209,11 @@ Done and pushed (see `git log`):
     15/30 satiety and cures one/all harmful states (`restfulSleep`, `RESTFUL_CURES`); its old doze reduction is gone.
     Dream Forge has no once-per-floor limit (`forgedHere` always false, `forgedDepths` kept for saves).
   - Greed: gilding cost capped at `GoldenCard.GILD_MAX` 600.
+  - Utility instead of growth reuse (later Nov 11, owner's picks): Greed's Gilding skill -> Treasure Map (`treasuremap`,
+    `GoldenCard.COST_MAP` 150 gauge discounted: `skills/MapReveal.reveal(true)` = magic mapping incl. secrets); Sloth's Dream
+    Forge skill -> Dream Patrol (`patrol`, needs a puppet, doze `PATROL_TURNS` 40, `reveal(false)`: layout only); Gluttony's
+    heavy rumination is gone (`ruminable` refuses `!canRepeat`), new Regurgitate (`regurgitate`, icon 5, 100 satiety,
+    projectile: a fresh copy of `PredatorStomach.lastPotion` shatters at the target). Old gild/forge code and buffs stay for saves.
   - Wrath (later Nov 11): rage cools at `WrathGrudge.COOLING` 0.25/turn (x the awakening's simmer factor) and bosses/
     minibosses can be enraged (`WrathGrudge.immune` = only `isImmune(Amok)`).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,

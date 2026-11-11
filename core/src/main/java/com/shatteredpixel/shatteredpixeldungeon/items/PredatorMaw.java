@@ -178,14 +178,22 @@ public class PredatorMaw extends SinArtifact {
 				.descArgs(h -> new Object[]{Math.round(3 + 1.5f * h.pointsInTalent(Talent.PREDATOR_SCRAPS))})
 				.onUse(PredatorMaw::selectSwallow));
 		list.add(new BasicSkill(PredatorMaw.class, "ruminate", 2, SinSkill.CostType.SATIETY)
-				.cost(h -> heavyRumination(h) ? HEAVY_RUMINATE : hungerCost(h, COST_RUMINATE))
-				.usableIf(h -> ruminable(h) != null && (heavyRumination(h) || canAfford(h, COST_RUMINATE)))
+				.cost(h -> hungerCost(h, COST_RUMINATE))
+				.usableIf(h -> ruminable(h) != null && canAfford(h, COST_RUMINATE))
 				.descArgs(h -> {
 					Class c = ruminable(h);
-					return new Object[]{c == null ? Messages.get(PredatorMaw.class, "nothing") : Messages.get(c, "name"),
-							HEAVY_RUMINATE};
+					return new Object[]{c == null ? Messages.get(PredatorMaw.class, "nothing") : Messages.get(c, "name")};
 				})
 				.onUse(PredatorMaw::ruminate));
+		//Regurgitate (Nov 2026): spit the last potion back up as a thrown one
+		list.add(new BasicSkill(PredatorMaw.class, "regurgitate", 5, SinSkill.CostType.SATIETY).projectile()
+				.cost(h -> hungerCost(h, COST_REGURGITATE))
+				.usableIf(h -> regurgitable(h) != null && canAfford(h, COST_REGURGITATE))
+				.descArgs(h -> {
+					Class c = regurgitable(h);
+					return new Object[]{c == null ? Messages.get(PredatorMaw.class, "nothing") : Messages.get(c, "name")};
+				})
+				.onUse(h -> GameScene.selectCell(regurgitateSelector)));
 		//growth copy: regurgitate a growth item (a full stomach's worth of satiety)
 		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, PredatorMaw.class, 0, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.SATIETY,
 				h -> hungerCost(h, COPY_COST), h -> canAfford(h, COPY_COST), h -> pay(h, COPY_COST), true);
@@ -234,13 +242,59 @@ public class PredatorMaw extends SinArtifact {
 	/** satiety eaten by bringing back a growth item; whatever the stomach can't pay becomes hunger debt */
 	public static final int HEAVY_RUMINATE = 600;
 
-	/** the last potion or scroll, if it can be brought back up (growth items too, at a terrible price) */
+	/** the last potion or scroll, if it can be brought back up (growth items can't since Nov 2026: growth copy does that) */
 	public static Class ruminable(Hero hero) {
 		PredatorStomach st = hero.buff(PredatorStomach.class);
 		if (st == null || st.lastUsed == null) return null;
 		if (com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.Brew.class.isAssignableFrom(st.lastUsed)) return null;
+		if (!PredatorHooks.canRepeat(st.lastUsed)) return null;
 		return st.lastUsed;
 	}
+
+	/** Regurgitate: satiety cost */
+	public static final int COST_REGURGITATE = 100;
+
+	/** the last potion drunk, if it can be spat back up */
+	public static Class regurgitable(Hero hero) {
+		PredatorStomach st = hero.buff(PredatorStomach.class);
+		if (st == null || st.lastPotion == null) return null;
+		if (!Potion.class.isAssignableFrom(st.lastPotion) || !PredatorHooks.canRepeat(st.lastPotion)) return null;
+		if (com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.Brew.class.isAssignableFrom(st.lastPotion)) return null;
+		return st.lastPotion;
+	}
+
+	private static final CellSelector.Listener regurgitateSelector = new CellSelector.Listener() {
+		@Override
+		public void onSelect(Integer cell) {
+			if (cell == null) return;
+			final Hero hero = Dungeon.hero;
+			Class c = regurgitable(hero);
+			if (c == null || cell == hero.pos) return;
+			final Potion p = (Potion) Reflection.newInstance(c);
+			if (p == null || !pay(hero, COST_REGURGITATE)) return;
+			p.anonymize();
+			final int target = new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(hero.pos, cell,
+					com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.PROJECTILE).collisionPos;
+			Sample.INSTANCE.play(Assets.Sounds.EAT, 1f, 0.6f);
+			hero.sprite.zap(target);
+			((com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite) hero.sprite.parent.recycle(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite.class)).reset(hero.sprite, target, p,
+					new com.watabou.utils.Callback() {
+						@Override
+						public void call() {
+							Item.curUser = hero;
+							p.shatter(target);
+							GLog.p(Messages.get(PredatorMaw.class, "regurgitated", p.name()));
+							hero.spendAndNext(Actor.TICK);
+						}
+					});
+		}
+
+		@Override
+		public String prompt() {
+			return Messages.get(PredatorMaw.class, "prompt_regurgitate");
+		}
+	};
 
 	/** whether ruminating right now would bring back a growth item */
 	public static boolean heavyRumination(Hero hero) {
@@ -268,11 +322,7 @@ public class PredatorMaw extends SinArtifact {
 			GLog.w(Messages.get(PredatorMaw.class, "ruminate_none"));
 			return;
 		}
-		if (heavyRumination(hero)) {
-			payHeavy(hero);
-		} else if (!pay(hero, COST_RUMINATE)) {
-			return;
-		}
+		if (!pay(hero, COST_RUMINATE)) return;
 		Item it = (Item) Reflection.newInstance(c);
 		if (it == null) return;
 		if (it instanceof Potion) ((Potion) it).anonymize();

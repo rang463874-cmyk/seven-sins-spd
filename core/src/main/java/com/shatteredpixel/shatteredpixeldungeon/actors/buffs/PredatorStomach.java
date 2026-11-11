@@ -64,6 +64,8 @@ public class PredatorStomach extends Buff {
 	public final java.util.HashSet<String> codex = new java.util.HashSet<>();
 	/** last potion or scroll used, for Rumination */
 	public Class lastUsed = null;
+	/** last potion drunk, for Regurgitate */
+	public Class lastPotion = null;
 
 	/** old Inheritor saves: enchantments / glyphs kept from devoured gear (no longer used) */
 	public final ArrayList<Class> enchants = new ArrayList<Class>();
@@ -386,6 +388,7 @@ public class PredatorStomach extends Buff {
 
 		if (!swallowed && (item instanceof Potion || item instanceof Scroll)) {
 			lastUsed = item.getClass();
+			if (item instanceof Potion) lastPotion = item.getClass();
 		}
 
 		eaten++;
@@ -602,6 +605,7 @@ public class PredatorStomach extends Buff {
 		bundle.put("mirrored", mirrored);
 		bundle.put("codex", codex.toArray(new String[0]));
 		if (lastUsed != null) bundle.put("last_used", lastUsed);
+		if (lastPotion != null) bundle.put("last_potion", lastPotion);
 	}
 
 	@Override
@@ -618,6 +622,7 @@ public class PredatorStomach extends Buff {
 			for (String c : bundle.getStringArray("codex")) if (c != null) codex.add(c);
 		}
 		lastUsed = bundle.contains("last_used") ? bundle.getClass("last_used") : null;
+		lastPotion = bundle.contains("last_potion") ? bundle.getClass("last_potion") : null;
 		enchants.clear();
 		glyphs.clear();
 		if (bundle.contains(ENCHANTS)) {
