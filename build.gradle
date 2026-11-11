@@ -11,7 +11,7 @@ buildscript {
 allprojects {
 
     ext {
-        appName = 'Shattered Pixel Dungeon'
+        appName = 'Seven Sins'
         appPackageName = 'com.shatteredpixel.shatteredpixeldungeon'
 
         //Seven Sins: the mod's own version (based on Shattered Pixel Dungeon 4.0.2).

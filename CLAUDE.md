@@ -430,6 +430,8 @@ their base weapon's ability text. Gluttony's strings predate the source copies; 
   time, never lower), push, then push a tag `v<appVersionName>`: the workflow checks the tag matches and publishes a
   "Seven Sins <version>" release with `SevenSins-<version>.apk` (same debug build: dev tools on, installs over test builds,
   owner's call). Branch pushes still update `test-build` (`SevenSins-<version>-test-<sha>.apk`).
+  App label `appName` = 'Seven Sins'. Launcher icon from the owner's picture `tools/sinsart/icon/app_icon.png` by
+  `tools/sinsart/make_app_icon.py` (main and debug mipmaps: legacy, adaptive fg/bg, monochrome).
   Debug builds are signed with the committed `android/sevensins-debug.keystore` (password `android`),
   so new APKs install over old ones. Don't replace it, or the owner has to uninstall (and lose saves).
 - Sandboxes without Maven/Google access: `bash tools/compilecheck/check.sh` compiles against
