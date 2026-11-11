@@ -372,6 +372,7 @@ public final class DevItemList {
 			"com.shatteredpixel.shatteredpixeldungeon.items.ArcaneResin",
 			"com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard",
 			"com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal",
+			"com.shatteredpixel.shatteredpixeldungeon.items.DemonEssence",
 			"com.shatteredpixel.shatteredpixeldungeon.items.DemonSeal",
 			"com.shatteredpixel.shatteredpixeldungeon.items.Dewdrop",
 			"com.shatteredpixel.shatteredpixeldungeon.items.EnergyCrystal",

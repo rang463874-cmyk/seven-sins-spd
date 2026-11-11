@@ -967,11 +967,13 @@ public class ItemSpriteSheet {
 	public static final int WALL_ACID         = ELITE2+1;
 	public static final int STONE_DUST        = ELITE2+2;
 	public static final int DRYING_POWDER     = ELITE2+3;
+	public static final int DEMON_ESSENCE     = ELITE2+4;
 	static{
 		assignItemRect(HOLY_GEM, 12, 12);
 		assignItemRect(WALL_ACID, 10, 13);
 		assignItemRect(STONE_DUST, 12, 12);
 		assignItemRect(DRYING_POWDER, 12, 12);
+		assignItemRect(DEMON_ESSENCE, 12, 12);
 	}
 	static{
 		assignItemRect(CONQUEST_SPEAR, 15, 15);

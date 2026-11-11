@@ -282,6 +282,7 @@ public class Dungeon {
 		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.reset();
+		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.reset();
 
 		hero = new Hero();
 		hero.live();
@@ -390,6 +391,9 @@ public class Dungeon {
 				&& depth == com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.ARENA_DEPTH) {
 			//seven sins mod: the demon lord's domain
 			level = new com.shatteredpixel.shatteredpixeldungeon.levels.DemonArenaLevel();
+		} else if (branch == com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.ARENA_BRANCH && depth % 5 == 0 && depth <= 25) {
+			//seven sins mod: the hidden room of a boss floor (Solomon's demon kings)
+			level = new com.shatteredpixel.shatteredpixeldungeon.levels.GoetiaArenaLevel();
 		} else {
 			level = new DeadEndLevel();
 		}
@@ -687,6 +691,7 @@ public class Dungeon {
 			com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.storeInBundle( quests );
 			com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.storeInBundle( quests );
 			com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.storeInBundle( quests );
+			com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.storeInBundle( quests );
 			bundle.put( QUESTS, quests );
 			
 			SpecialRoom.storeRoomsInBundle( bundle );
@@ -797,6 +802,7 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.restoreFromBundle( quests );
 				com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.restoreFromBundle( quests );
 				com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.restoreFromBundle( quests );
+				com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.restoreFromBundle( quests );
 			} else {
 				Ghost.Quest.reset();
 				Wandmaker.Quest.reset();
@@ -806,6 +812,7 @@ public class Dungeon {
 		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.reset();
+		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.reset();
 			}
 			
 			SpecialRoom.restoreRoomsFromBundle(bundle);

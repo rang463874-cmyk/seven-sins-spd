@@ -293,6 +293,7 @@ public class Hero extends Char {
 		HT = EnvyHooks.bonusHT(this, HT);
 		HT = SlothHooks.bonusHT(this, HT);
 		HT = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.bonusHT(this, HT);
+		HT = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.bonusHT(this, HT);
 		HT = Math.max(1, Math.round(HT * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.htMultiplier(this))); //Seven Sins: awakening
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
@@ -582,6 +583,7 @@ public class Hero extends Char {
 		accuracy = EnvyHooks.accuracy( this, accuracy );
 		accuracy = SlothHooks.accuracy( this, accuracy );
 		accuracy = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.accuracy( this, accuracy );
+		accuracy = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.accuracy( this, accuracy );
 		
 		//precise assault and liquid agility
 		if (!(wep instanceof MissileWeapon)) {
@@ -743,6 +745,7 @@ public class Hero extends Char {
 		dr = GreedHooks.drBonus(this, dr);
 		dr = WrathHooks.drBonus(this, dr);
 		dr = PrideHooks.drBonus(this, dr);
+		dr = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.drBonus(this, dr);
 		dr = LustHooks.drBonus(this, dr);
 		dr = EnvyHooks.drBonus(this, dr);
 		dr = SlothHooks.drBonus(this, dr);
@@ -925,6 +928,7 @@ public class Hero extends Char {
 		
 		//calls to dungeon.observe will also update hero's local FOV.
 		fieldOfView = Dungeon.level.heroFOV;
+		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.tick(this); //Seven Sins: a boss floor's hidden sigil
 
 		if (buff(Endure.EndureTracker.class) != null){
 			buff(Endure.EndureTracker.class).endEnduring();
@@ -2123,6 +2127,7 @@ public class Hero extends Char {
 	public void earnExp( int exp, Class source ) {
 
 		exp = UniqueStats.bonusExp( this, exp );
+		exp = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.bonusExp( this, exp );
 
 		//xp granted by ascension challenge is only for on-exp gain effects
 		if (source != AscensionChallenge.class) {

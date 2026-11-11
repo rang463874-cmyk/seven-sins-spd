@@ -1506,6 +1506,7 @@ public abstract class Level implements Bundlable {
 			}
 
 			com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.revealAroundPuppets(heroMindFov);
+			com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.revealDemons(heroMindFov);
 
 			for (RevealedArea a : c.buffs(RevealedArea.class)){
 				if (Dungeon.depth != a.depth || Dungeon.branch != a.branch) continue;

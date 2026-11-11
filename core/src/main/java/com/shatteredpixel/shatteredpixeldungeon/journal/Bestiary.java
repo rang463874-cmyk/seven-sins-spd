@@ -255,7 +255,10 @@ public enum Bestiary {
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Believer.class,
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Priest.class,
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.LesserAngel.class,
-				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph.class);
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph.class,
+				//seven sins mod: Solomon's demons (dev summons get a random one)
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.goetia.GoetiaFiend.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.goetia.GoetiaLord.class);
 
 		NEUTRAL.addEntities(Ghost.class, RatKing.class, Shopkeeper.class, Wandmaker.class, Blacksmith.class, Imp.class, Sheep.class, Bee.class);
 

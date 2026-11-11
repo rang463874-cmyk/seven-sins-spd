@@ -216,6 +216,27 @@ Done and pushed (see `git log`):
     projectile: a fresh copy of `PredatorStomach.lastPotion` shatters at the target). Old gild/forge code and buffs stay for saves.
   - Wrath (later Nov 11): rage cools at `WrathGrudge.COOLING` 0.25/turn (x the awakening's simmer factor) and bosses/
     minibosses can be enraged (`WrathGrudge.immune` = only `isImmune(Amok)`).
+- Solomon's demons, the Ars Goetia (Nov 2026, owner's design): `goetia/GoetiaDemon` enum = the 72 minus Asmoday (he is
+  the demon lord Asmodeus) = 71, in Goetia order (`number()` skips 32), each with rank, region 0..4 (sewers..halls,
+  11/13/14/14/14) or a `bossFloor`, a fighting `Kind` and a colour. `goetia/GoetiaHooks` (state in the quests bundle, per
+  run): `onLevelMobs` (from `EliteHooks.onLevelMobs`) puts 2-3 regular demons (`actors/mobs/goetia/GoetiaFiend`, one class,
+  stats from depth, kind effects in `applyKind`, ranged kinds bolt without a sprite zap, SUMMON uses `level.createMob`,
+  dev/bestiary instances pick a random demon of the floor's region) on every regular floor 2-24, unmet ones first. Kills
+  -> `record` into the codex (`slain`), drop `items/DemonEssence` (1, 2 at milestone 15). Milestones `MILESTONES`
+  3/6/10/15/20/25/30/40 give run powers: +10 HP, demon sight (`revealDemons` in `Level.updateFieldOfView`), -20% damage
+  from demons, double essences, +10% damage dealt (`modifyDamage` in `Char.damage`), +3 armor (`drBonus`), +20% exp
+  (`bonusExp`), +30 HP and +10% accuracy. The codex is the essence bag's LESSER KEY action (`EssenceBag.AC_CODEX`,
+  `codexText`). Boss floors: `onMobDeath` (Goo/Tengu/DM300/DwarfKing/Yog) sets `pendingSigil`; `tick` (from `Hero.act`)
+  places a hidden `levels/traps/GoetiaSigil` (never disarms) once the floor is unlocked; stepping on it asks for
+  `OFFER` 3/4/5/6/7 essences and sends the hero (`travelToArena`, InterlevelScene RETURN) to `levels/GoetiaArenaLevel`
+  (branch `ARENA_BRANCH` 8, same depth, built in `Dungeon.newLevel`; round hall in the region's tiles, ember circle,
+  stairs back = BRANCH_ENTRANCE to the boss floor's REGULAR_EXIT, LOCKED_EXIT until the king dies). Kings
+  (`actors/mobs/goetia/GoetiaLord`, RegionElite + BOSS, HP 120+36*depth, softcapped): Purson 5, Vine 10, Beleth 15,
+  Paimon 20, Bael 25; skills Hellfire ring, Lance line, Legion (2 half-HP minion fiends), Doom (3x3, below half HP);
+  death -> codex, scroll of upgrade, region reward, 2 essences, `unlockPortal`. Art: `sprites/GoetiaSprite` = tinted
+  ripper (lords x1.6); essence icon items.png row 38 +4. Strings `tools/strings/goetia_*` (+ trap strings appended by hand
+  to messages/levels/levels*.properties). Demon lord bosses were made harder at the same time (450 HP, 13-26 damage,
+  36 accuracy, 2-10 armor, shorter cooldowns; Leviathan's cooldowns -1).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

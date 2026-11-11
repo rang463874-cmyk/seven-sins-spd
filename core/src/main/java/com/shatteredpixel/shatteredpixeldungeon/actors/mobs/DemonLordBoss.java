@@ -44,8 +44,9 @@ public class DemonLordBoss extends RegionElite {
 
 	{
 		spriteClass = DemonSprites.Lucifer.class;
-		HP = HT = 300;
-		defenseSkill = 20;
+		//harder since Nov 2026 (owner's call): was 300 HP, 10-20 damage, 30 accuracy, 0-8 armor, slower skills
+		HP = HT = 450;
+		defenseSkill = 24;
 		EXP = 40;
 		maxLvl = -2;
 		properties.remove(Property.MINIBOSS);
@@ -75,17 +76,17 @@ public class DemonLordBoss extends RegionElite {
 
 	@Override
 	public int damageRoll() {
-		return Random.NormalIntRange(10, 20);
+		return Random.NormalIntRange(13, 26);
 	}
 
 	@Override
 	public int attackSkill(Char target) {
-		return 30;
+		return 36;
 	}
 
 	@Override
 	public int drRoll() {
-		return super.drRoll() + Random.NormalIntRange(0, 8);
+		return super.drRoll() + Random.NormalIntRange(2, 10);
 	}
 
 	@Override
@@ -106,9 +107,9 @@ public class DemonLordBoss extends RegionElite {
 	protected int cooldown(int skill) {
 		int cd;
 		switch (skill) {
-			case HELLFIRE: cd = 4; break;
-			case SUMMON:   cd = 7; break;
-			default:       cd = 5; break;
+			case HELLFIRE: cd = 3; break;
+			case SUMMON:   cd = 6; break;
+			default:       cd = 4; break;
 		}
 		return enraged ? Math.max(2, cd / 2) : cd;
 	}

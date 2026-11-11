@@ -219,10 +219,10 @@ public class LeviathanBoss extends DemonLordBoss {
 	protected int cooldown(int skill) {
 		int cd;
 		switch (skill) {
-			case WAVE:     cd = 5; break;
-			case BITE:     cd = 3; break;
-			case UNDERTOW: cd = 6; break;
-			default:       cd = 9; break;
+			case WAVE:     cd = 4; break;
+			case BITE:     cd = 2; break;
+			case UNDERTOW: cd = 5; break;
+			default:       cd = 8; break;
 		}
 		return enraged ? Math.max(2, cd / 2) : cd;
 	}

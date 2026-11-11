@@ -447,6 +447,8 @@ def elite_art(items):
     items.paste(draw(ACID, ACID_PAL), cell(ELITE2_ROW + 1, 16)[:2])
     items.paste(draw(POUCH, STONE_PAL), cell(ELITE2_ROW + 2, 16)[:2])
     items.paste(draw(POUCH, DRY_PAL), cell(ELITE2_ROW + 3, 16)[:2])
+    # demon essence (Solomon's demons): the sin essence turned violet
+    items.paste(recolor(draw(ESSENCE, ESSENCE_PAL), tint_px(280, 0.7, 1.4)), cell(ELITE2_ROW + 4, 16)[:2])
     # essence bag: the velvet pouch (bags row 31, +2) dyed crimson, at +7
     items.paste(recolor(items.crop(cell(30 * 16 + 2, 16)), tint_px(350, 0.75, 1.0)), cell(30 * 16 + 7, 16)[:2])
     # pride's royal longbow and arrow: the spirit bow and arrow, gilded
