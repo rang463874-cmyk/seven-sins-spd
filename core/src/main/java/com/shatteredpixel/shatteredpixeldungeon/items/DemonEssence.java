@@ -14,6 +14,28 @@ public class DemonEssence extends Item implements EssenceItem {
 		stackable = true;
 	}
 
+	public static final String AC_CODEX = "CODEX";
+
+	@Override
+	public java.util.ArrayList<String> actions(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+		java.util.ArrayList<String> actions = super.actions(hero);
+		actions.add(AC_CODEX);
+		return actions;
+	}
+
+	@Override
+	public String actionName(String action, com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+		if (action.equals(AC_CODEX)) return com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+				com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag.class, "ac_codex");
+		return super.actionName(action, hero);
+	}
+
+	@Override
+	public void execute(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero, String action) {
+		super.execute(hero, action);
+		if (action.equals(AC_CODEX)) com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag.showCodex();
+	}
+
 	@Override
 	public boolean isUpgradable() {
 		return false;

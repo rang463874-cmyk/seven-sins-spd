@@ -33,12 +33,15 @@ public class EssenceBag extends Bag {
 	@Override
 	public void execute(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero, String action) {
 		super.execute(hero, action);
-		if (action.equals(AC_CODEX)) {
-			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndScrollMessage(
-					new com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite(this),
-					com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(this, "codex_title"),
-					com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.codexText()));
-		}
+		if (action.equals(AC_CODEX)) showCodex();
+	}
+
+	/** opens the codex; also reached from the bag window's title button and the demon essence's action */
+	public static void showCodex() {
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndScrollMessage(
+				new com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite(ItemSpriteSheet.DEMON_ESSENCE, null),
+				com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(EssenceBag.class, "codex_title"),
+				com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.codexText()));
 	}
 
 	@Override

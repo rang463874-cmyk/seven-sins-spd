@@ -235,6 +235,22 @@ public class WndBag extends WndTabbed {
 			titleWidth = Math.min(titleWidth, amt.x);
 		}
 
+		//Seven Sins: the essence bag's title has a button for the demon codex (bags themselves can't be tapped for actions)
+		if (selector == null && bag instanceof com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag) {
+			com.shatteredpixel.shatteredpixeldungeon.ui.RedButton codex = new com.shatteredpixel.shatteredpixeldungeon.ui.RedButton(
+					Messages.get(com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag.class, "ac_codex"), 6) {
+				@Override
+				protected void onClick() {
+					com.shatteredpixel.shatteredpixeldungeon.items.bags.EssenceBag.showCodex();
+				}
+			};
+			float bw = codex.reqWidth() + 4;
+			codex.setRect(titleWidth - bw - 2, 0, bw, TITLE_HEIGHT - 1);
+			PixelScene.align(codex);
+			add(codex);
+			titleWidth = codex.left() - 1;
+		}
+
 		String title = selector != null ? selector.textPrompt() : null;
 		RenderedTextBlock txtTitle = PixelScene.renderTextBlock(
 				title != null ? Messages.titleCase(title) : Messages.titleCase( bag.name() ), 8 );
