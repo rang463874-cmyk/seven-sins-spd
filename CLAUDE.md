@@ -428,9 +428,8 @@ their base weapon's ability text. Gluttony's strings predate the source copies; 
 - Versions (Nov 2026): the mod has its own version in `build.gradle` (`appVersionName` 1.0.0, `appVersionCode` 1000,
   `spdBaseVersion` 4.0.2; the title screen and menu show "Seven Sins v<version>"). To release: raise both (code +1 each
   time, never lower) and push to main: when no release `v<version>` exists yet the workflow creates the tag and publishes a
-  (tags can't be pushed from the cloud sandbox: its proxy cuts them off; a hand-pushed matching tag also works)
   "Seven Sins <version>" release with `SevenSins-<version>.apk` (same debug build: dev tools on, installs over test builds,
-  owner's call). Branch pushes still update `test-build` (`SevenSins-<version>-test-<sha>.apk`).
+  owner's call). Tags can't be pushed from the cloud sandbox (its proxy cuts them off); a hand-pushed matching tag works too. Branch pushes still update `test-build` (`SevenSins-<version>-test-<sha>.apk`).
   App label `appName` = 'Seven Sins'. Launcher icon from the owner's picture `tools/sinsart/icon/app_icon.png` by
   `tools/sinsart/make_app_icon.py` (main and debug mipmaps: legacy, adaptive fg/bg, monochrome).
   Debug builds are signed with the committed `android/sevensins-debug.keystore` (password `android`),
