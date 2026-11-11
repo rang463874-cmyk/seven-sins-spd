@@ -425,6 +425,11 @@ their base weapon's ability text. Gluttony's strings predate the source copies; 
 
 - Normal PC: open in Android Studio, or `./gradlew android:assembleDebug`.
 - Phone testing: push to GitHub; `.github/workflows/build-apk.yml` builds and publishes the APK.
+- Versions (Nov 2026): the mod has its own version in `build.gradle` (`appVersionName` 1.0.0, `appVersionCode` 1000,
+  `spdBaseVersion` 4.0.2; the title screen and menu show "Seven Sins v<version>"). To release: raise both (code +1 each
+  time, never lower), push, then push a tag `v<appVersionName>`: the workflow checks the tag matches and publishes a
+  "Seven Sins <version>" release with `SevenSins-<version>.apk` (same debug build: dev tools on, installs over test builds,
+  owner's call). Branch pushes still update `test-build` (`SevenSins-<version>-test-<sha>.apk`).
   Debug builds are signed with the committed `android/sevensins-debug.keystore` (password `android`),
   so new APKs install over old ones. Don't replace it, or the owner has to uninstall (and lose saves).
 - Sandboxes without Maven/Google access: `bash tools/compilecheck/check.sh` compiles against

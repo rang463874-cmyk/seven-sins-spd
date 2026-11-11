@@ -1,10 +1,14 @@
-name: Build test APK
+name: Build APK
 
-# Builds a debug APK (with the developer tools enabled) on every push,
-# and publishes it to a "test-build" pre-release so it can be downloaded from a phone.
+# Every push to a branch: builds a debug APK (developer tools on) and publishes it to the
+# "test-build" pre-release so it can be downloaded from a phone.
+# Every pushed tag "v<version>" (e.g. v1.0.0): builds the same kind of APK and publishes it as a
+# versioned release "Seven Sins <version>". The tag must match appVersionName in build.gradle.
+# Both are signed with the committed debug keystore, so each installs over the other and saves are kept.
 on:
   push:
     branches: [ "**" ]
+    tags: [ "v*" ]
   workflow_dispatch:
 
 permissions:
@@ -23,6 +27,17 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Read the version
+        id: ver
+        run: |
+          VERSION=$(grep -m1 "appVersionName = " build.gradle | sed "s/.*'\(.*\)'.*/\1/")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Seven Sins $VERSION"
+          if [[ "$GITHUB_REF" == refs/tags/v* && "${GITHUB_REF_NAME#v}" != "$VERSION" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match appVersionName $VERSION in build.gradle"
+            exit 1
+          fi
+
       - name: Build debug APK
         run: |
           chmod +x gradlew
@@ -31,15 +46,21 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p out
-          cp android/build/outputs/apk/debug/*.apk "out/SevenSins-debug-${GITHUB_SHA::7}.apk"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            NAME="SevenSins-${{ steps.ver.outputs.version }}.apk"
+          else
+            NAME="SevenSins-${{ steps.ver.outputs.version }}-test-${GITHUB_SHA::7}.apk"
+          fi
+          cp android/build/outputs/apk/debug/*.apk "out/$NAME"
           ls -la out
 
       - uses: actions/upload-artifact@v4
         with:
-          name: seven-sins-debug-apk
+          name: seven-sins-apk
           path: out/*.apk
 
       - name: Publish to the test-build pre-release
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: test-build
@@ -47,7 +68,21 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Latest debug build from ${{ github.ref_name }} (${{ github.sha }}).
+            Latest test build of Seven Sins ${{ steps.ver.outputs.version }} from ${{ github.ref_name }} (${{ github.sha }}).
             Installs alongside the official Shattered Pixel Dungeon (package suffix .indev).
             Developer tools are enabled in this build.
+          files: out/*.apk
+
+      - name: Publish the versioned release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Seven Sins ${{ steps.ver.outputs.version }}
+          prerelease: false
+          make_latest: true
+          generate_release_notes: true
+          body: |
+            Seven Sins ${{ steps.ver.outputs.version }} (based on Shattered Pixel Dungeon 4.0.2).
+            Installs over the test builds and keeps your saves. Developer tools are enabled.
           files: out/*.apk

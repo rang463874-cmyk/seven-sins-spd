@@ -14,9 +14,13 @@ allprojects {
         appName = 'Shattered Pixel Dungeon'
         appPackageName = 'com.shatteredpixel.shatteredpixeldungeon'
 
-        //Full releases gets +2 on version code, needed for an F-Droid quirk
-        appVersionCode = 922
-        appVersionName = '4.0.2'
+        //Seven Sins: the mod's own version (based on Shattered Pixel Dungeon 4.0.2).
+        //To release: raise both numbers (code +1 every release, never lower: Android refuses
+        //to install a lower code over a higher one), push, then push a tag "v<appVersionName>".
+        //Debug builds add "-INDEV", which keeps the developer tools on.
+        appVersionCode = 1000
+        appVersionName = '1.0.0'
+        spdBaseVersion = '4.0.2'
 
         appJavaCompatibility = JavaVersion.VERSION_11
 
