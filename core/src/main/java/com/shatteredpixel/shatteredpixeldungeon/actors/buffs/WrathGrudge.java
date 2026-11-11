@@ -138,12 +138,15 @@ public class WrathGrudge extends Buff {
 		return d;
 	}
 
+	/** rage lost per turn with no enemy in view (was 1, cut to a quarter in Nov 2026: wrath was too slow to start) */
+	public static final float COOLING = 0.25f;
+
 	@Override
 	public boolean act() {
 		Hero h = hero();
 		//rage cools down slowly once there's nothing left to be angry at
 		if (h != null && h.isAlive() && rage > 0 && h.visibleEnemies() == 0) {
-			rage = Math.max(0, rage - com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCooling(h)); //Seven Sins: awakening
+			rage = Math.max(0, rage - COOLING * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCooling(h)); //Seven Sins: awakening
 			Item.updateQuickslot();
 		}
 		spend(TICK);
@@ -350,8 +353,8 @@ public class WrathGrudge extends Buff {
 	}
 
 	public static boolean immune(Char ch) {
-		return ch.properties().contains(Char.Property.BOSS) || ch.properties().contains(Char.Property.MINIBOSS)
-				|| ch.isImmune(Amok.class);
+		//bosses and minibosses can be enraged too since Nov 2026 (owner's call); only real immunity stops it
+		return ch.isImmune(Amok.class);
 	}
 
 	/** current hero's grudge, or null */

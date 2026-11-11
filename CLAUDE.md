@@ -209,6 +209,8 @@ Done and pushed (see `git log`):
     15/30 satiety and cures one/all harmful states (`restfulSleep`, `RESTFUL_CURES`); its old doze reduction is gone.
     Dream Forge has no once-per-floor limit (`forgedHere` always false, `forgedDepths` kept for saves).
   - Greed: gilding cost capped at `GoldenCard.GILD_MAX` 600.
+  - Wrath (later Nov 11): rage cools at `WrathGrudge.COOLING` 0.25/turn (x the awakening's simmer factor) and bosses/
+    minibosses can be enraged (`WrathGrudge.immune` = only `isImmune(Amok)`).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
