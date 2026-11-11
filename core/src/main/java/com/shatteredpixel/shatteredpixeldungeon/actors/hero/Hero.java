@@ -1835,7 +1835,8 @@ public class Hero extends Char {
 
 			if (fieldOfView[ m.pos ] && m.alignment == Alignment.ENEMY) {
 				visible.add(m);
-				if (!visibleEnemies.contains( m )) {
+				//Seven Sins: enemies seen only through dream puppets don't interrupt rest
+				if (com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.spotted(this, m, visibleEnemies.contains( m ))) {
 					newMob = true;
 				}
 

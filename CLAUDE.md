@@ -190,6 +190,25 @@ Done and pushed (see `git log`):
   (Leviathan too) and `GiantFist.damage` (threshold from `ARM_HT`).
 - Stairs past depth 26: `Hero.handle` only allowed entrances at depth >= 26; REGULAR_EXIT is allowed too now (26's heaven
   stairs and the exits of 27-30).
+- Nov 11 2026 batch (owner's list):
+  - Growth copy (`skills/GrowthCopy`, every sin, skill id `replicate`, icons skill_icons.png row 9 = 72 + sin index):
+    pick an identified scroll of upgrade / potion of strength / scroll of enchantment, pay a full gauge, get another.
+    No use limit (owner: stronger monsters will balance it). Costs: gluttony `PredatorMaw.COPY_COST` 300 satiety, greed
+    the whole `maxCharge`, wrath 100 rage, pride 10 dignity, lust 50% max HP (`Perfume.COPY_SHARE`), envy 100 jealousy,
+    sloth `turnCost(150)` doze. Strings `skills.growthcopy.*` + `skill_replicate(_desc)` per item.
+  - Wrath: War Cry (`WarDrum.rally`, skill `rally`, icon 20): free, 30-turn `WarDrum.RallyCooldown`; enemies within 8 are
+    beckoned and `SlothRepose.Taunted` to the hero for 10 turns, +5 rage each (max 30). Wrath's stat growth is back to the
+    original rates (melee 0.10, HP 0.5, armor 0.06 per grudge point; the halvings no longer apply to Wrath).
+  - Signature items ascend at +10 (`SinArtifact.ascend`, from `gainExp` and `onSpent` for older +10 items): replaced by the
+    `MirrorRelics` reflection of the class (state copied through a bundle, same slot/quickslot, passive buff re-activated)
+    and `MirrorRelics.markMirrored` switches the buff's `mirrored` bonuses on. Relic bonus strings were rewritten to match
+    the current effects.
+  - Sloth: dream sight sightings don't interrupt rest (`SlothHooks.spotted` from `Hero.checkVisibleMobs`: an enemy only in
+    `mindVisionEnemies` and seen by a puppet isn't "new"; seeing it with the hero's own eyes later still interrupts).
+    SLOTH_RESTFUL ("restful sleep") is now: puppet kills drop no loot (`SlothHooks.dropsLoot` in `Mob.die`) but each feeds
+    15/30 satiety and cures one/all harmful states (`restfulSleep`, `RESTFUL_CURES`); its old doze reduction is gone.
+    Dream Forge has no once-per-floor limit (`forgedHere` always false, `forgedDepths` kept for saves).
+  - Greed: gilding cost capped at `GoldenCard.GILD_MAX` 600.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -202,7 +221,7 @@ Not yet done / known gaps:
 
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
 a points value that never decreases; accuracy/evasion are capped at 40%/30%).
-Melee/max HP/armor growth from sin points was halved again for all seven sins (Nov 2026, in each buff's
+Melee/max HP/armor growth from sin points was halved again for all seven sins (Wrath restored to its original rates in Nov 2026) (Nov 2026, in each buff's
 `meleeBonus/hpBonus/drMax`; accuracy/evasion and unique stats unchanged). Later in Nov 2026 the six non-Pride
 `meleeBonus()` values were cut to 75% and now apply to thrown weapons too ("weapon damage"; Gluttony's thrown path is
 `PredatorHooks.onThrownAttack`; Sloth's x0.7 penalty stays melee-only). Max HP growth from sin points was halved (Nov 2026), and starvation damage scales with `Hero.starvationHT`
@@ -218,7 +237,7 @@ level on their own via a `Roaming` wandering state, `intelligentAlly = false`; t
 Pillow skills also include Order (`SlothRepose.DreamMark` on one enemy: every puppet hunts it via
 `DreamPuppet.chooseEnemy`/`act`, +25% damage, 30 turns) and Dream Forge (`SlothRepose.DreamForge`: paralysed deep sleep
 of 200 + 25/upgrade turns (max 300), then +1 to the equipped weapon or armor; any damage wakes and cancels it via
-`SlothHooks.modifyDamage`; once per floor, `SlothRepose.forgedDepths`; can't start with enemies in view).
+`SlothHooks.modifyDamage`; no floor limit any more; can't start with enemies in view).
 Sloth's own melee deals x0.7 (`SlothHooks.MELEE_PENALTY`, not for Sleepwalker auto-attacks). Puppets have no armor
 (`DreamPuppet.drRoll` = 0) and each non-nightmare puppet borrows 15% of Sloth's max HP (`SlothRepose.puppetDrain`,
 max 75%, applied in `SlothHooks.bonusHT`; `refreshDrain` re-runs `updateHT(false)` on summon and each turn when the count

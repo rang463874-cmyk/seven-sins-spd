@@ -37,6 +37,9 @@ import java.util.ArrayList;
  */
 public class Perfume extends SinArtifact {
 
+	/** growth copy: share of max HP paid */
+	public static final float COPY_SHARE = 0.5f;
+
 	public static final String AC_SPRAY = "SPRAY";
 
 	/** HP costs as a share of max HP */
@@ -111,6 +114,10 @@ public class Perfume extends SinArtifact {
 				.usableIf(h -> desire(h).canPay(desire(h).hpCost(COST_RAPTURE)))
 				.descArgs(h -> new Object[]{Math.round(LustDesire.Rapture.DURATION)})
 				.onUse(h -> rapture(h, desire(h))));
+		//growth copy: a blood pact (half of max HP)
+		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, Perfume.class, 4, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.HP,
+				h -> desire(h).hpCost(COPY_SHARE), h -> desire(h).canPay(desire(h).hpCost(COPY_SHARE)),
+				h -> desire(h).pay(desire(h).hpCost(COPY_SHARE)), true);
 		return list;
 	}
 

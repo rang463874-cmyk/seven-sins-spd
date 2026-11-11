@@ -47,6 +47,9 @@ import java.util.ArrayList;
  */
 public class GoldenCard extends SinArtifact {
 
+	/** gilding costs 300, +150 per earlier use, but never more than this (owner's call) */
+	public static final int GILD_MAX = 600;
+
 	public static final String AC_PAY = "PAY";
 	public static final String AC_SELL = "SELL";
 
@@ -86,7 +89,7 @@ public class GoldenCard extends SinArtifact {
 	/** gauge cost of the next upgrade bought with the card */
 	public static int gildCost(Hero hero) {
 		GreedVault v = hero.buff(GreedVault.class);
-		return discounted(hero, 300 + 150 * (v == null ? 0 : v.gilded));
+		return discounted(hero, Math.min(GILD_MAX, 300 + 150 * (v == null ? 0 : v.gilded)));
 	}
 
 	public static int sellCost(Hero hero) {
@@ -208,6 +211,10 @@ public class GoldenCard extends SinArtifact {
 				.usableIf(h -> vault(h).charge >= gildCost(h))
 				.descArgs(h -> new Object[]{vault(h).gilded})
 				.onUse(h -> GameScene.selectItem(gildSelector)));
+		//growth copy: forgery (the whole payment gauge)
+		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, GoldenCard.class, 1, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.GAUGE,
+				h -> (int) vault(h).maxCharge(), h -> vault(h).chargeInt() >= (int) vault(h).maxCharge(),
+				h -> vault(h).spend((int) vault(h).maxCharge()), true);
 		return list;
 	}
 

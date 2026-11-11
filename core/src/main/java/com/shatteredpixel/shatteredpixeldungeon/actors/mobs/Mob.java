@@ -1073,7 +1073,8 @@ public abstract class Mob extends Char {
 				Badges.validateHazardAssists();
 			}
 
-			rollToDropLoot();
+			//Seven Sins: sloth's restful sleep, puppet kills leave nothing behind
+			if (com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.dropsLoot(this, cause)) rollToDropLoot();
 
 			if (cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment){
 				if (Dungeon.hero.hasTalent(Talent.LETHAL_MOMENTUM)

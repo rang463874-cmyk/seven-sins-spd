@@ -42,12 +42,20 @@ import java.util.ArrayList;
  */
 public class WarDrum extends SinArtifact {
 
+	/** growth copy: rage cost (the base gauge) */
+	public static final int COPY_COST = 100;
+
 	public static final String AC_BEAT = "BEAT";
 
 	public static final int COST_PROVOKE = 25;
 	public static final int COST_DISCORD = 25;
 	public static final int COST_CONTAGION = 50;
 	public static final int COST_DASH = 25;
+	/** War Cry: free, on a cooldown; calls the enemies within RALLY_RANGE and fills some rage */
+	public static final int RALLY_RANGE = 8;
+	public static final float RALLY_COOLDOWN = 30f;
+	public static final float RALLY_TAUNT = 10f;
+	public static final int RALLY_RAGE_EACH = 5, RALLY_RAGE_MAX = 30;
 
 	{
 		image = ItemSpriteSheet.WAR_DRUM;
@@ -97,6 +105,10 @@ public class WarDrum extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
+		list.add(new BasicSkill(WarDrum.class, "rally", 20, SinSkill.CostType.NONE)
+				.usableIf(h -> h.buff(RallyCooldown.class) == null)
+				.descArgs(h -> new Object[]{RALLY_RANGE, Math.round(RALLY_TAUNT), RALLY_RAGE_EACH, RALLY_RAGE_MAX, Math.round(RALLY_COOLDOWN)})
+				.onUse(WarDrum::rally));
 		list.add(new BasicSkill(WarDrum.class, "provoke", 16, SinSkill.CostType.RAGE).targetsEnemy()
 				.cost(h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_PROVOKE))
 				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_PROVOKE))
@@ -117,6 +129,11 @@ public class WarDrum extends SinArtifact {
 				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_DASH))
 				.descArgs(h -> new Object[]{dashRange(h)})
 				.onUse(h -> GameScene.selectCell(dash)));
+		//growth copy: temper it in rage (a full gauge)
+		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, WarDrum.class, 2, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.RAGE,
+				h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COPY_COST),
+				h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COPY_COST),
+				h -> grudge(h).useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COPY_COST)), true);
 		return list;
 	}
 
@@ -352,5 +369,43 @@ public class WarDrum extends SinArtifact {
 	@Override
 	public int value() {
 		return 0;
+	}
+
+	// ------------------------------------------------------------------ war cry
+
+	/** War Cry: every enemy within range comes for the hero (taunted to it), and each one fills some rage */
+	public static void rally(Hero hero) {
+		int n = 0;
+		for (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m : Dungeon.level.mobs.toArray(new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob[0])) {
+			if (m.alignment != com.shatteredpixel.shatteredpixeldungeon.actors.Char.Alignment.ENEMY || !m.isAlive()) continue;
+			if (Dungeon.level.distance(hero.pos, m.pos) > RALLY_RANGE) continue;
+			m.beckon(hero.pos);
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SlothRepose.Taunted.apply(m, hero, RALLY_TAUNT);
+			n++;
+		}
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(hero, RallyCooldown.class, RALLY_COOLDOWN);
+		if (n > 0) grudge(hero).addRage(Math.min(RALLY_RAGE_MAX, n * RALLY_RAGE_EACH));
+		hero.sprite.centerEmitter().start(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.factory(
+				com.shatteredpixel.shatteredpixeldungeon.effects.Speck.SCREAM), 0.3f, 3);
+		com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.CHALLENGE);
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(Messages.get(WarDrum.class, n > 0 ? "rally_done" : "rally_none", n));
+		hero.sprite.operate(hero.pos);
+		hero.spendAndNext(1f);
+	}
+
+	public static class RallyCooldown extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{
+			type = buffType.NEUTRAL;
+		}
+
+		@Override
+		public int icon() {
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.TIME;
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return Math.max(0, (RALLY_COOLDOWN - visualcooldown()) / RALLY_COOLDOWN);
+		}
 	}
 }

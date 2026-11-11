@@ -39,6 +39,9 @@ import java.util.ArrayList;
  */
 public class PrideCrown extends SinArtifact {
 
+	/** growth copy: dignity cost (the base maximum) */
+	public static final int COPY_COST = 10;
+
 	public static final String AC_DECREE = "COMMAND";
 
 	public static final int COST_COMMAND = 3;
@@ -147,6 +150,9 @@ public class PrideCrown extends SinArtifact {
 				.usableIf(h -> glory(h).dignity >= COST_EFFIGY)
 				.descArgs(h -> new Object[]{effigyHP(h), Math.round(EFFIGY_LIFE), PrideEffigy.TAUNT_RADIUS})
 				.onUse(h -> GameScene.selectCell(effigy)));
+		//growth copy: a royal grant (all of the base dignity)
+		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, PrideCrown.class, 3, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.DIGNITY,
+				h -> COPY_COST, h -> glory(h).dignity >= COPY_COST, h -> glory(h).useDignity(COPY_COST), true);
 		return list;
 	}
 

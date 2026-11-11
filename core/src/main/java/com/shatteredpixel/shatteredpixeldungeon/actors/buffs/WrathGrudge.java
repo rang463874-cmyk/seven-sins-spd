@@ -40,6 +40,7 @@ public class WrathGrudge extends Buff {
 	}
 
 	// ------------------------------------------------------------------ permanent stats
+	// (Nov 2026: back to the original, pre-nerf growth rates, owner's call: rage makes wrath slow to start)
 
 	public float pts() {
 		Hero h = hero();
@@ -48,7 +49,7 @@ public class WrathGrudge extends Buff {
 	}
 
 	public int meleeBonus() {
-		return (int) (0.0375f * pts());
+		return (int) (0.10f * pts());
 	}
 
 	public float accuracyBonus() {
@@ -60,11 +61,11 @@ public class WrathGrudge extends Buff {
 	}
 
 	public int hpBonus() {
-		return (int) (0.125f * pts());
+		return (int) (0.5f * pts());
 	}
 
 	public int drMax() {
-		return (int) (0.03f * pts());
+		return (int) (0.06f * pts());
 	}
 
 	public int drRoll() {

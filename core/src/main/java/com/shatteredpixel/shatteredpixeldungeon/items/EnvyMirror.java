@@ -30,6 +30,9 @@ import java.util.ArrayList;
  */
 public class EnvyMirror extends SinArtifact {
 
+	/** growth copy: jealousy cost (the base gauge) */
+	public static final int COPY_COST = 100;
+
 	public static final String AC_GAZE = "GAZE";
 	public static final String AC_CODEX = "CODEX";
 
@@ -119,6 +122,9 @@ public class EnvyMirror extends SinArtifact {
 		list.add(new BasicSkill(EnvyMirror.class, "growth", 41, SinSkill.CostType.NONE)
 				.descArgs(h -> new Object[]{Math.round(EnvyMimicry.growthEfficiency(h) * 100), covet(h).growthTitle()})
 				.onUse(EnvyMirror::chooseGrowth));
+		//growth copy: a perfect imitation (a full base gauge)
+		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, EnvyMirror.class, 5, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.JEALOUSY,
+				h -> COPY_COST, h -> covet(h).jealousy >= COPY_COST, h -> covet(h).useJealousy(COPY_COST), true);
 		return list;
 	}
 

@@ -42,6 +42,9 @@ import java.util.ArrayList;
  */
 public class PredatorMaw extends SinArtifact {
 
+	/** growth copy: base satiety cost (a full stomach) */
+	public static final int COPY_COST = 300;
+
 	public static final String AC_FEED = "FEED";
 	public static final String AC_CODEX = "CODEX";
 
@@ -183,6 +186,9 @@ public class PredatorMaw extends SinArtifact {
 							HEAVY_RUMINATE};
 				})
 				.onUse(PredatorMaw::ruminate));
+		//growth copy: regurgitate a growth item (a full stomach's worth of satiety)
+		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, PredatorMaw.class, 0, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.SATIETY,
+				h -> hungerCost(h, COPY_COST), h -> canAfford(h, COPY_COST), h -> pay(h, COPY_COST), true);
 		return list;
 	}
 

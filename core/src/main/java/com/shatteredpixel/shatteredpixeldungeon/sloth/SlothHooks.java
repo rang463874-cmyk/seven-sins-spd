@@ -80,6 +80,39 @@ public final class SlothHooks {
 		}
 	}
 
+	/** true if a dream puppet shows this tile to the hero (dream sight) */
+	public static boolean puppetSees(int cell) {
+		Hero h = Dungeon.hero;
+		if (h == null) return false;
+		int pts = h.pointsInTalent(Talent.SLOTH_COMFY);
+		if (pts <= 0) return false;
+		for (DreamPuppet p : DreamPuppet.active()) {
+			if (pts >= 2) {
+				if (p.fieldOfView != null && cell < p.fieldOfView.length && p.fieldOfView[cell]) return true;
+			} else if (Dungeon.level.distance(p.pos, cell) <= 2) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** enemies the hero only sees through the puppets: they don't stop resting or searching */
+	private static final java.util.HashSet<Integer> puppetOnly = new java.util.HashSet<>();
+
+	/**
+	 * Called from Hero.checkVisibleMobs for each visible enemy. Returns true if it should count as newly
+	 * spotted (interrupting rest): not when only a puppet sees it, but yes once the hero sees it with
+	 * its own eyes after having watched it through a puppet.
+	 */
+	public static boolean spotted(Hero hero, Mob m, boolean wasVisible) {
+		boolean onlyPuppet = hero.mindVisionEnemies.contains(m) && puppetSees(m.pos);
+		boolean wasPuppetOnly = puppetOnly.contains(m.id());
+		if (onlyPuppet) puppetOnly.add(m.id());
+		else puppetOnly.remove(m.id());
+		if (onlyPuppet) return false;
+		return !wasVisible || wasPuppetOnly;
+	}
+
 	/** sloth's own melee attacks deal 30% less */
 	public static final float MELEE_PENALTY = 0.7f;
 
@@ -152,11 +185,69 @@ public final class SlothHooks {
 			return;
 		}
 
+		if (byPuppet) restfulSleep(hero);
+
 		//dream lord: what a puppet defeats rises again as a short-lived nightmare
 		if (byPuppet && hero.subClass == HeroSubClass.DREAM_LORD
 				&& DreamPuppet.puppets(true).size() < r.maxLordNightmares()) {
 			spawnNear(mob.pos, DreamPuppet.create(true, SlothRepose.lordNightmareLife(hero)));
 		}
+	}
+
+	/** satiety per point of restful sleep for each kill a puppet makes */
+	public static final int RESTFUL_FEED = 15;
+
+	/** the harmful states restful sleep can wash away */
+	@SuppressWarnings("unchecked")
+	private static final Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff>[] RESTFUL_CURES = new Class[]{
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Poison.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bleeding.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Ooze.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corrosion.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Cripple.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Blindness.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Slow.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Roots.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hex.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Degrade.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Daze.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Drowsy.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Terror.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Dread.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm.class,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Amok.class,
+	};
+
+	/** restful sleep: enemies killed by dream puppets drop no loot */
+	public static boolean dropsLoot(Mob mob, Object cause) {
+		Hero hero = Dungeon.hero;
+		return !(cause instanceof DreamPuppet && hero != null && hero.pointsInTalent(Talent.SLOTH_RESTFUL) > 0);
+	}
+
+	/** restful sleep: each puppet kill feeds the sloth and cures one (+1) or every (+2) harmful state */
+	private static void restfulSleep(Hero hero) {
+		int pts = hero.pointsInTalent(Talent.SLOTH_RESTFUL);
+		if (pts <= 0) return;
+		Hunger hunger = hero.buff(Hunger.class);
+		if (hunger != null) hunger.satisfy(RESTFUL_FEED * pts);
+		ArrayList<com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff> found = new ArrayList<>();
+		for (Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff> c : RESTFUL_CURES) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff b = hero.buff(c);
+			if (b != null) found.add(b);
+		}
+		if (found.isEmpty()) return;
+		if (pts >= 2) {
+			for (com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff b : found) b.detach();
+		} else {
+			com.watabou.utils.Random.element(found).detach();
+		}
+		if (hero.sprite != null) hero.sprite.emitter().burst(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.factory(
+				com.shatteredpixel.shatteredpixeldungeon.effects.Speck.HEALING), 2);
 	}
 
 	/** places a puppet on or next to a cell; returns false if there was no room */

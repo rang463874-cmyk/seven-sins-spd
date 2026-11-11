@@ -44,6 +44,7 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 				GLog.p(Messages.get(SinArtifact.class, "levelup", name(), level()));
 			}
 		}
+		if (level() >= levelCap) ascend(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero);
 		if (level() >= levelCap) partialExp = 0;
 		updateQuickslot();
 	}
@@ -65,7 +66,65 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 	/** call whenever a skill actually spends its resource; only a worn artifact learns from it */
 	public static void onSpent(Hero hero, float exp) {
 		SinArtifact a = of(hero);
-		if (a != null && a.isEquipped(hero)) a.gainExp(exp);
+		if (a != null && a.isEquipped(hero)) {
+			a.gainExp(exp);
+			//artifacts that reached +10 before this rule came in ascend on their next use
+			if (a.level() >= a.levelCap) a.ascend(hero);
+		}
+	}
+
+	/** true for the vault mirror's reflections (the +10 form) */
+	public boolean isMirrorForm() {
+		return getClass().getEnclosingClass() == com.shatteredpixel.shatteredpixeldungeon.items.MirrorRelics.class;
+	}
+
+	/**
+	 * Seven Sins (Nov 2026, owner's call): at +10 the signature item turns into its old vault-mirror
+	 * reflection (golden maw, black card, ...) and switches the buff's mirrored bonuses on. Level, exp
+	 * and charge carry over through the bundle; the new item takes the old one's slot and quickslot.
+	 */
+	public void ascend(Hero hero) {
+		if (hero == null || isMirrorForm()) return;
+		Item r = com.shatteredpixel.shatteredpixeldungeon.items.MirrorRelics.rewardFor(hero.heroClass);
+		if (!(r instanceof SinArtifact) || !getClass().isInstance(r)) return;
+		SinArtifact relic = (SinArtifact) r;
+		com.watabou.utils.Bundle b = new com.watabou.utils.Bundle();
+		storeInBundle(b);
+		relic.restoreFromBundle(b);
+		relic.cursed = false;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings bel = hero.belongings;
+		boolean worn = false;
+		if (bel.artifact == this) { bel.artifact = relic; worn = true; }
+		else if (bel.misc == this) { bel.misc = relic; worn = true; }
+		else if (bel.misc2 == this) { bel.misc2 = relic; worn = true; }
+		else if (bel.misc3 == this) { bel.misc3 = relic; worn = true; }
+		else {
+			int idx = bel.backpack.items.indexOf(this);
+			if (idx < 0) return;
+			bel.backpack.items.set(idx, relic);
+		}
+		if (worn) {
+			if (passiveBuff != null) {
+				if (passiveBuff.target != null) passiveBuff.detach();
+				passiveBuff = null;
+			}
+			relic.activate(hero);
+		}
+		int slot = com.shatteredpixel.shatteredpixeldungeon.Dungeon.quickslot.getSlot(this);
+		if (slot != -1) com.shatteredpixel.shatteredpixeldungeon.Dungeon.quickslot.setSlot(slot, relic);
+		com.shatteredpixel.shatteredpixeldungeon.items.MirrorRelics.markMirrored(hero);
+		relic.identify();
+
+		GLog.p(Messages.get(SinArtifact.class, "ascended", name(), relic.name()));
+		if (hero.sprite != null) {
+			hero.sprite.emitter().burst(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.factory(
+					com.shatteredpixel.shatteredpixeldungeon.effects.Speck.LIGHT), 12);
+		}
+		com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.LEVELUP);
+		hero.updateHT(false);
+		Item.updateQuickslot();
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.syncSkillBarPos();
 	}
 
 	/** +1 max charge at +3, +6 and +9 */

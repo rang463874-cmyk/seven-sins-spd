@@ -41,6 +41,9 @@ import java.util.ArrayList;
  */
 public class SlothPillow extends SinArtifact {
 
+	/** growth copy: base turns of dozing */
+	public static final int COPY_COST = 150;
+
 	public static final String AC_LAZE = "LAZE";
 
 	public static final int COST_SUMMON = 4;
@@ -121,9 +124,11 @@ public class SlothPillow extends SinArtifact {
 		list.add(new BasicSkill(SlothPillow.class, "forge", 53, SinSkill.CostType.TURNS)
 				.cost(h -> forgePreviewTurns(h))
 				.usableIf(h -> !repose(h).forgedHere() && hasForgeTarget(h))
-				.descArgs(h -> new Object[]{repose(h).forgedHere()
-						? Messages.get(SlothPillow.class, "forge_used") : Messages.get(SlothPillow.class, "forge_ready")})
 				.onUse(h -> forge(h, repose(h))));
+		//growth copy: dream up another one (a long doze; dozing ends the turn itself)
+		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, SlothPillow.class, 6, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.TURNS,
+				h -> SlothRepose.turnCost(h, COPY_COST), h -> true,
+				h -> { SlothRepose.doze(h, SlothRepose.turnCost(h, COPY_COST)); return true; }, false);
 		return list;
 	}
 

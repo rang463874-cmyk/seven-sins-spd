@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, "core", "src", "main", "assets", "interfaces", "skill_i
 
 SIZE = 16
 COLS = 8
-ROWS = 9
+ROWS = 10
 
 SIN_COLORS = [
     (150, 50, 180),   # gluttony
@@ -28,9 +28,38 @@ SIN_COLORS = [
     (70, 110, 200),   # sloth
     (140, 95, 55),    # envy's mimicked monster abilities
     (120, 20, 40),    # demon lords' skills (64 + DemonLord ordinal; tinted per lord below)
+    (90, 90, 90),     # growth copy, one per sin (72 + sin index; tinted with the sin's colour below)
 ]
 
 G = {
+    "COPY": [
+        "............",
+        ".XXXXX......",
+        ".X...X......",
+        ".X.X.X......",
+        ".X...XXXXX..",
+        ".XXXXX...X..",
+        "....X.X.X.X.",
+        "....X..X..X.",
+        "....X.X.X.X.",
+        "....X.....X.",
+        "....XXXXXXX.",
+        "............",
+    ],
+    "RALLY": [
+        "............",
+        "X..........X",
+        "X.X......X.X",
+        "X.X.X..X.X.X",
+        "X.X.X..X.X.X",
+        "X.X.XXXX.X.X",
+        "X.X.XXXX.X.X",
+        "X.X.X..X.X.X",
+        "X.X.X..X.X.X",
+        "X.X......X.X",
+        "X..........X",
+        "............",
+    ],
     "JAW": [
         "............",
         ".XXXXXXXXXX.",
@@ -582,12 +611,13 @@ G = {
 ICONS = {
     0: "JAW", 1: "FANG", 2: "LOOP", 3: "BOLT", 4: "SPLASH",
     8: "COIN", 9: "SHIELD", 10: "ARROW", 11: "HAND", 12: "SCROLL", 13: "BAG", 14: "CART", 15: "UP",
-    16: "EXCLAIM", 17: "CROSSARROWS", 18: "BURST", 19: "ARROW",
+    16: "EXCLAIM", 17: "CROSSARROWS", 18: "BURST", 19: "ARROW", 20: "RALLY",
     24: "CROWN", 25: "SWORDS", 26: "STAR", 27: "SCROLL", 28: "EYE", 29: "STATUE", 30: "PUSH",
     32: "HEART", 33: "WAVE", 34: "DROP", 35: "DHEART",
     40: "MASK", 41: "SWAP", 42: "SWAP", 43: "MASK",
     48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ", 52: "TARGET", 53: "ANVIL",
     64: "STAR", 65: "COIN", 66: "HEART", 67: "WAVE", 68: "FLY", 69: "FLAME", 70: "ZZZ",
+    72: "COPY", 73: "COPY", 74: "COPY", 75: "COPY", 76: "COPY", 77: "COPY", 78: "COPY",
     56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
 
@@ -615,7 +645,8 @@ def main():
     sheet = Image.new("RGBA", (SIZE * COLS, SIZE * ROWS), (0, 0, 0, 0))
     for index, glyph in ICONS.items():
         row, col = divmod(index, COLS)
-        ic = tile(LORD_COLORS.get(index, SIN_COLORS[row]))
+        color = SIN_COLORS[index - 72] if 72 <= index < 79 else SIN_COLORS[row]
+        ic = tile(LORD_COLORS.get(index, color))
         pattern = G[glyph]
         assert len(pattern) == 12 and all(len(r) == 12 for r in pattern), glyph
         for y, line in enumerate(pattern):

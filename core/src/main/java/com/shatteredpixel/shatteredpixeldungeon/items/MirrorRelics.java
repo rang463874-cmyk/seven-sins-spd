@@ -37,6 +37,20 @@ public final class MirrorRelics {
 		}
 	}
 
+	/** switches on the sin buff's mirrored bonuses (the vault mirror's, and a +10 signature item's) */
+	public static void markMirrored(Hero hero) {
+		switch (hero.heroClass) {
+			case GLUTTONY: Buff.affect(hero, PredatorStomach.class).mirrored = true; break;
+			case GREED:    Buff.affect(hero, GreedVault.class).mirrored = true; break;
+			case WRATH:    Buff.affect(hero, WrathGrudge.class).mirrored = true; break;
+			case PRIDE:    Buff.affect(hero, PrideGlory.class).mirrored = true; break;
+			case LUST:     Buff.affect(hero, LustDesire.class).mirrored = true; break;
+			case ENVY:     Buff.affect(hero, EnvyCovet.class).mirrored = true; break;
+			case SLOTH:    Buff.affect(hero, SlothRepose.class).mirrored = true; break;
+			default: break;
+		}
+	}
+
 	/** removes the old signature item, moving its quickslot to the relic */
 	static void replaceOld(Hero hero, Item relic, Class<? extends Item> base) {
 		Item old = null;

@@ -47,7 +47,8 @@ public class SlothRepose extends Buff {
 	public java.util.HashSet<Integer> forgedDepths = new java.util.HashSet<>();
 
 	public boolean forgedHere() {
-		return forgedDepths.contains(Dungeon.depth * 10 + Dungeon.branch);
+		//the once-per-floor limit is gone (owner's call); the set is still kept for saves
+		return false;
 	}
 
 	public void markForged() {
@@ -165,7 +166,6 @@ public class SlothRepose extends Buff {
 	/** turns a pillow skill with this base cost puts the sloth to sleep for */
 	public static int turnCost(Hero h, int base) {
 		float t = base * SinArtifact.rechargeScale(h);
-		t *= 1f - 0.2f * (h == null ? 0 : h.pointsInTalent(Talent.SLOTH_RESTFUL));
 		if (h != null) t *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothDoze(h); //Seven Sins: awakening
 		return Math.max(1, Math.round(t));
 	}
