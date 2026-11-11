@@ -36,6 +36,16 @@ public class GoetiaSigil extends Trap {
 			GLog.i(Messages.get(this, "spent"));
 			return;
 		}
+		//traps go off on the actor thread: windows must be opened on the render thread (like NPC dialogs)
+		com.watabou.noosa.Game.runOnRenderThread(new com.watabou.utils.Callback() {
+			@Override
+			public void call() {
+				showOffer(hero, lord);
+			}
+		});
+	}
+
+	private void showOffer(final Hero hero, final GoetiaDemon lord) {
 		final int cost = GoetiaHooks.offerCost(Dungeon.depth);
 		DemonEssence held = hero.belongings.getItem(DemonEssence.class);
 		final int have = held == null ? 0 : held.quantity();

@@ -227,7 +227,8 @@ Done and pushed (see `git log`):
   from demons, double essences, +10% damage dealt (`modifyDamage` in `Char.damage`), +3 armor (`drBonus`), +20% exp
   (`bonusExp`), +30 HP and +10% accuracy. The codex is the essence bag's LESSER KEY action (`EssenceBag.AC_CODEX`,
   `codexText`). Boss floors: `onMobDeath` (Goo/Tengu/DM300/DwarfKing/Yog) sets `pendingSigil`; `tick` (from `Hero.act`)
-  places a hidden `levels/traps/GoetiaSigil` (never disarms) once the floor is unlocked; stepping on it asks for
+  places a hidden `levels/traps/GoetiaSigil` (never disarms; traps fire on the actor thread, so its window opens via
+  `Game.runOnRenderThread` like NPC dialogs, or the game crashes) once the floor is unlocked; stepping on it asks for
   `OFFER` 3/4/5/6/7 essences and sends the hero (`travelToArena`, InterlevelScene RETURN) to `levels/GoetiaArenaLevel`
   (branch `ARENA_BRANCH` 8, same depth, built in `Dungeon.newLevel`; round hall in the region's tiles, ember circle,
   stairs back = BRANCH_ENTRANCE to the boss floor's REGULAR_EXIT, LOCKED_EXIT until the king dies). Kings
