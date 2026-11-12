@@ -458,7 +458,13 @@ pixel tall), redraws the outline only where the picture had one, derives all 21 
 die 8-9 = squashed front, 10-12 = lying, attack 13 walk / 14-15 attack mirrored to face right, the rest from front) and
 recolours the green clothes per armor tier (`TIER_CLOTHES`; tier 6 = the sin's hue). Also writes the 24x32 avatar and
 `hero_art/<sin>/preview.png`. `make_sin_assets.py` skips the sheet/avatar of any sin with a `hero_art/<sin>` folder.
-Done: gluttony. The tier recolour only knows green clothes; other sins' pictures may need their own clothes hue range.
+Done: gluttony (grid pictures), greed. Pictures without a grid (`NO_GRID`, soft Gemini pixel art) are median-filtered and
+box-shrunk instead; when they are too detailed for 12x15 (greed's chibi), `hero_art/<sin>/poses.txt` holds hand-pixelled
+front/walk/attack/die poses (palette + grids, after the owner's pictures) that replace the shrunk poses, and the avatar is the
+front pose at 2x. Per-sin `CLOTHES` (hue range, min sat/value, rows below a share of the figure) picks what the tier recolour
+touches (greed: the red skirt, not the hood or eyes); `ISLAND_SHARE` drops flying coins/swooshes. `hero_art/<sin>/splash_src.png`
+becomes `splashes/<sin>.jpg` (800x450 like every splash: fitted to the height on black, character at `SPLASH_FOCUS`);
+make_sin_assets.py then leaves that splash alone.
 Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
 screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
 chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,

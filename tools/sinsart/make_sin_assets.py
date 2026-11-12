@@ -780,7 +780,9 @@ def main():
             sheet.paste(cleric_sheet.crop((96, 0, 156, cleric_sheet.height)), (96, 0))
             sheet.save(p("sprites/%s.png" % name))
             avatars.paste(recolor(cleric_avatar, hero_px(hue, acc, sin.get("hair_v", 0.85), sin.get("hair_s", 0.8))), cell(FIRST_SIN_ORDINAL + k, 1000, 24, 32)[:2])
-        recolor(cleric_splash, splash_px(hue, acc)).convert("RGB").save(p("splashes/%s.jpg" % name), quality=92)
+        # a splash picture from the owner (hero_art/<name>/splash_src.png) is placed by make_hero_sprites.py
+        if not os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hero_art", name, "splash_src.png")):
+            recolor(cleric_splash, splash_px(hue, acc)).convert("RGB").save(p("splashes/%s.jpg" % name), quality=92)
 
         srcs = sin.get("talents") or list(range(CLERIC_TALENT_ROW, CLERIC_TALENT_ROW + 27))
         for i, src in enumerate(srcs):

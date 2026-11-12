@@ -40,6 +40,19 @@ TIER_CLOTHES = {
     "default": [None, (40, 0.18, 1.35), (28, 0.55, 0.95), (225, 0.10, 1.25), (8, 0.60, 1.15),
                 (250, 0.12, 1.55), None],
 }
+# pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
+NO_GRID = {"greed"}
+NO_GRID_STEP = 12          # source px per intermediate px for those
+# drop islands smaller than this share of the biggest one (flying coins, motion swooshes, sparkles)
+ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
+
+# which pixels are "clothes" for the tier recolour: hue range (0..1, may wrap), min saturation, min value,
+# and only rows at or below this share of the figure's height (keeps hoods/hair/eyes as drawn)
+CLOTHES = {
+    "default": dict(hue=(0.2, 0.48), smin=0.3, vmin=0.0, below=0.0),     # gluttony's green tunic
+    "greed": dict(hue=(0.94, 0.04), smin=0.5, vmin=0.35, below=0.45),   # the red skirt (not the hood)
+}
+
 SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215}
 
 
@@ -76,6 +89,15 @@ def native(path):
     return out
 
 
+def native_plain(path, step=NO_GRID_STEP):
+    """Pictures without a grid: median-filter away soft edges, box-shrink, merge near shades."""
+    im = Image.open(path).convert("RGB").filter(ImageFilter.MedianFilter(7))
+    w, h = im.size
+    small = im.resize((max(1, round(w / step)), max(1, round(h / step))), Image.BOX)
+    small = small.quantize(colors=64, method=Image.MEDIANCUT, dither=Image.Dither.NONE).convert("RGB")
+    return np.array(small)
+
+
 def hsv(c):
     return colorsys.rgb_to_hsv(*(np.asarray(c[:3], float) / 255))
 
@@ -85,7 +107,7 @@ def is_blood(c):
     return (h < 0.03 or h > 0.97) and s > 0.45 and 0.3 < v < 0.65
 
 
-def cut_background(img):
+def cut_background_(img, island=0.05):
     """RGBA with the background, blood and stray marks cleared (flood fill from the border)."""
     rows, cols, _ = img.shape
     border = np.concatenate([img[0], img[-1], img[:, 0], img[:, -1]]).astype(int)
@@ -129,7 +151,7 @@ def cut_background(img):
                 sizes[n] = cnt
     big = max(sizes.values())
     for k, sz in sizes.items():
-        if sz < big * 0.05:
+        if sz < big * island:
             keep[lab == k] = False
     out = np.zeros((rows, cols, 4), np.uint8)
     out[..., :3] = img
@@ -312,7 +334,12 @@ def squash(a, rows):
     return a[keep]
 
 
-def build_frames(pics):
+def build_frames(pics, name="default"):
+    isl = ISLAND_SHARE.get(name, ISLAND_SHARE["default"])
+
+    def cut_background(img):
+        return cut_background_(img, isl)
+
     front_n = cut_background(pics["front"])
     scale = min(FH / front_n.shape[0], FW / front_n.shape[1])
     front = shrink(front_n, scale)
@@ -348,19 +375,84 @@ def build_frames(pics):
     return fr, front_n
 
 
-def recolor_clothes(frame, spec):
-    """Shift the clothes (the most common saturated non-skin, non-hair hue) to a tier colour."""
+def load_poses(path):
+    """Hand-pixelled poses (hero_art/<sin>/poses.txt): a palette block, then front/walk/attack/die grids."""
+    pal, poses, cur = {}, {}, None
+    for line in open(path):
+        line = line.rstrip("\n")
+        if not line.strip() or line.startswith("#"):
+            continue
+        word = line.strip()
+        if word in ("palette", "front", "walk", "attack", "die"):
+            cur = word
+            if cur != "palette":
+                poses[cur] = []
+            continue
+        if cur == "palette":
+            k, rgb = word.split()
+            pal[k] = tuple(int(v) for v in rgb.split(","))
+        else:
+            poses[cur].append(line)
+    out = {}
+    for k, rows in poses.items():
+        a = np.zeros((len(rows), max(len(r) for r in rows), 4), np.uint8)
+        for y, r in enumerate(rows):
+            for x, ch in enumerate(r):
+                if ch != ".":
+                    a[y, x] = (*pal[ch], 255)
+        out[k] = a
+    return out
+
+
+def frames_from_poses(p):
+    """The same frame layout as build_frames, from ready-made 12x15 poses."""
+    front, walk, attack, die = p["front"], p["walk"], p["attack"], p["die"]
+    fr = [None] * FRAMES
+    fr[0] = place(front)
+    fr[1] = place(squash(front, 1))
+    walk2 = swap_legs(walk)
+    for i, (img, dy) in enumerate([(walk, 0), (walk, -1), (walk, 0), (walk2, 0), (walk2, -1), (walk2, 0)]):
+        fr[2 + i] = place(img, dy=dy)
+    fr[8] = place(squash(front, 2))
+    fr[9] = place(squash(front, 5))
+    for i in (10, 11, 12):
+        fr[i] = place(die, cx=die.shape[1] / 2 - 0.5)
+    fr[13] = place(walk)
+    fr[14] = place(attack, cx=head_center(attack))
+    fr[15] = place(attack, cx=head_center(attack) + 1)
+    fr[16] = place(squash(front, 1))
+    fr[17] = place(squash(front, 2))
+    fr[18] = place(walk, dy=-1)
+    fr[19] = place(front)
+    fr[20] = place(squash(front, 1))
+    return fr
+
+
+def in_hue(h, rng):
+    lo, hi = rng
+    return lo <= h <= hi if lo <= hi else (h >= lo or h <= hi)
+
+
+def recolor_clothes(frame, spec, name="default"):
+    """Shift the clothes (see CLOTHES) to a tier colour."""
     if spec is None:
         return frame
     hue, sat, vmul = spec
+    cl = CLOTHES.get(name, CLOTHES["default"])
     out = frame.copy()
+    ys = np.where(frame[..., 3] > 0)[0]
+    if not len(ys):
+        return out
+    first = ys.min() + (ys.max() - ys.min()) * cl["below"]
     for y in range(FH):
+        if y < first:
+            continue
         for x in range(FW):
             p = frame[y, x]
             if not p[3]:
                 continue
             h, s, v = hsv(p)
-            if 0.2 < h < 0.48 and s > 0.3:        # greens (the gluttony tunic)
+            if in_hue(h, cl["hue"]) and s > cl["smin"] and v > cl["vmin"]:
                 r, g, b = colorsys.hsv_to_rgb(hue / 360, sat, min(1, v * vmul))
                 out[y, x, :3] = (int(r * 255), int(g * 255), int(b * 255))
     return out
@@ -374,7 +466,7 @@ def build_sheet(name, frames):
         if t == 6:
             spec = (SIN_HUE[name], 0.55, 1.0)
         for i, f in enumerate(frames):
-            sheet.paste(Image.fromarray(recolor_clothes(f, spec)), (i * FW, t * FH))
+            sheet.paste(Image.fromarray(recolor_clothes(f, spec, name)), (i * FW, t * FH))
     return sheet
 
 
@@ -389,23 +481,56 @@ def avatar(front_n):
     return img
 
 
+# where the character's body is in each splash picture (share of the width), centred in the 800x450 splash
+SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
+
+
+def splash(name, src):
+    """Hero select background: every splash must be 800x450 (the scene scales by the first texture's height).
+    The owner's picture is fitted to the height on black, its character in the middle (portrait phones only
+    show the middle)."""
+    im = Image.open(src).convert("RGB")
+    s = 450 / im.height
+    im = im.resize((round(im.width * s), 450), Image.LANCZOS)
+    out = Image.new("RGB", (800, 450), (0, 0, 0))
+    fx = SPLASH_FOCUS.get(name, SPLASH_FOCUS["default"]) * im.width
+    out.paste(im, (int(400 - fx), 0))
+    out.save(os.path.join(ASSETS, "splashes", name + ".jpg"), quality=92)
+
+
 def main():
     names = sys.argv[1:] or [s for s in SINS if os.path.isdir(os.path.join(ART, s))]
     avatars_path = os.path.join(ASSETS, "sprites", "avatars.png")
     avatars = Image.open(avatars_path).convert("RGBA")
     for name in names:
         d = os.path.join(ART, name)
-        pics = {k: native(os.path.join(d, k + ".png")) for k in ("front", "walk", "attack", "die")}
-        frames, front_n = build_frames(pics)
+        load = native_plain if name in NO_GRID else native
+        pics = {k: load(os.path.join(d, k + ".png")) for k in ("front", "walk", "attack", "die")}
+        frames, front_n = build_frames(pics, name)
+        poses = os.path.join(d, "poses.txt")
+        if os.path.exists(poses):          # too detailed to shrink well: hand-pixelled poses win
+            pz = load_poses(poses)
+            frames = frames_from_poses(pz)
+            front_n = None
+            pose_avatar = Image.fromarray(pz["front"]).resize((pz["front"].shape[1] * 2, pz["front"].shape[0] * 2),
+                                                             Image.NEAREST)
         sheet = build_sheet(name, frames)
         sheet.save(os.path.join(ASSETS, "sprites", name + ".png"))
         k = SINS.index(name)
         x = 24 * (FIRST_SIN_ORDINAL + k)
         avatars.paste(Image.new("RGBA", (24, 32), (0, 0, 0, 0)), (x, 0))
-        avatars.paste(avatar(front_n), (x, 0))
+        if front_n is None:                # hand poses: the avatar is the front pose at 2x
+            av = Image.new("RGBA", (24, 32), (0, 0, 0, 0))
+            av.paste(pose_avatar, ((24 - pose_avatar.width) // 2, 32 - pose_avatar.height))
+            avatars.paste(av, (x, 0))
+        else:
+            avatars.paste(avatar(front_n), (x, 0))
         prev = Image.new("RGBA", sheet.size, (90, 90, 90, 255))
         prev.alpha_composite(sheet)
         prev.resize((sheet.width * 6, sheet.height * 6), Image.NEAREST).save(os.path.join(d, "preview.png"))
+        sp = os.path.join(d, "splash_src.png")
+        if os.path.exists(sp):
+            splash(name, sp)
         print("built", name)
     avatars.save(avatars_path)
 
