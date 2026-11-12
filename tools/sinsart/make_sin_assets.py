@@ -772,12 +772,15 @@ def main():
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]
 
-        sheet = recolor(cleric_sheet, hero_px(hue, acc, sin.get("hair_v", 0.85), sin.get("hair_s", 0.8)))
-        # keep the death/skull frames (frames 8..12, x 96..156) untouched
-        sheet.paste(cleric_sheet.crop((96, 0, 156, cleric_sheet.height)), (96, 0))
-        sheet.save(p("sprites/%s.png" % name))
+        # sins with the owner's pictures in hero_art/<name>/ get their sheet and avatar from make_hero_sprites.py
+        own_art = os.path.isdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hero_art", name))
+        if not own_art:
+            sheet = recolor(cleric_sheet, hero_px(hue, acc, sin.get("hair_v", 0.85), sin.get("hair_s", 0.8)))
+            # keep the death/skull frames (frames 8..12, x 96..156) untouched
+            sheet.paste(cleric_sheet.crop((96, 0, 156, cleric_sheet.height)), (96, 0))
+            sheet.save(p("sprites/%s.png" % name))
+            avatars.paste(recolor(cleric_avatar, hero_px(hue, acc, sin.get("hair_v", 0.85), sin.get("hair_s", 0.8))), cell(FIRST_SIN_ORDINAL + k, 1000, 24, 32)[:2])
         recolor(cleric_splash, splash_px(hue, acc)).convert("RGB").save(p("splashes/%s.jpg" % name), quality=92)
-        avatars.paste(recolor(cleric_avatar, hero_px(hue, acc, sin.get("hair_v", 0.85), sin.get("hair_s", 0.8))), cell(FIRST_SIN_ORDINAL + k, 1000, 24, 32)[:2])
 
         srcs = sin.get("talents") or list(range(CLERIC_TALENT_ROW, CLERIC_TALENT_ROW + 27))
         for i, src in enumerate(srcs):

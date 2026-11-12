@@ -450,6 +450,15 @@ Adding a new class means touching all of the above; follow an existing sin as th
 `tools/sinsart/make_sin_assets.py` regenerates all placeholder art from the Cleric's art
 (hero sheet, splash, avatar, talent/hero icons, signature items, class armor, sin weapons,
 mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.py`.
+Hero redesigns (Nov 13 2026, owner draws them in Gemini): `tools/sinsart/hero_art/<sin>/{front,walk,attack,die}.png`
+(big pixel art on a visible grid, ~23px per art pixel; front = idle, walk/attack = side view, die = lying) ->
+`tools/sinsart/make_hero_sprites.py [sin]`: finds the grid, samples one colour per art pixel, flood-fills the background,
+blood splashes and the Gemini sparkle away, shrinks to 12x15 by area majority (small dark blobs on skin = eyes stay one
+pixel tall), redraws the outline only where the picture had one, derives all 21 frames (run = walk + mirrored legs + bob,
+die 8-9 = squashed front, 10-12 = lying, attack 13 walk / 14-15 attack mirrored to face right, the rest from front) and
+recolours the green clothes per armor tier (`TIER_CLOTHES`; tier 6 = the sin's hue). Also writes the 24x32 avatar and
+`hero_art/<sin>/preview.png`. `make_sin_assets.py` skips the sheet/avatar of any sin with a `hero_art/<sin>` folder.
+Done: gluttony. The tier recolour only knows green clothes; other sins' pictures may need their own clothes hue range.
 Reserved layout (must match the Java constants):
 - `talent_icons.png`: row 8 + k (icon 256 + 32k + i), heroic energy at +26
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
