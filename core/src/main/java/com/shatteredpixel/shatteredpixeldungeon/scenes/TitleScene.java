@@ -46,6 +46,7 @@ import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndSettings;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndVictoryCongrats;
 import com.watabou.glwrap.Blending;
+import com.watabou.glwrap.Texture;
 import com.watabou.input.PointerEvent;
 import com.watabou.noosa.BitmapText;
 import com.watabou.noosa.Camera;
@@ -67,6 +68,9 @@ public class TitleScene extends PixelScene {
 	private Fireball leftFB;
 	private Fireball rightFB;
 	private Image signs;
+
+	//Seven Sins: bottom of the logo ornament in title_art.jpg (source pixels)
+	private static final float TITLE_ART_LOGO_BOTTOM = 735;
 
 	private StyledButton btnPlay;
 	private StyledButton btnSupport;
@@ -101,13 +105,27 @@ public class TitleScene extends PixelScene {
 		TitleBackground BG = new TitleBackground( w, h );
 		add( BG );
 
+		//Seven Sins: the owner's title art (logo, angel and demon wings) over the whole screen.
+		//Cover-fit from the top, but never so big that the logo pushes the buttons off a short/wide screen.
+		Image art = new Image(Assets.Interfaces.TITLE_ART);
+		art.texture.filter(Texture.LINEAR, Texture.LINEAR);
+		float artScale = Math.max(w / art.width, h / art.height);
+		artScale = Math.min(artScale, (h * 0.52f) / TITLE_ART_LOGO_BOTTOM);
+		art.scale.set(artScale);
+		art.x = (w - art.width()) / 2f;
+		art.y = 0;
+		add( art );
+		float logoBottom = TITLE_ART_LOGO_BOTTOM * artScale;
+
 		w -= insets.left + insets.right;
 		h -= insets.top + insets.bottom;
 
+		//the vanilla banner, torches and glowing signs are kept as objects (fading code uses them) but hidden
 		title = BannerSprites.get( landscape() ? BannerSprites.Type.TITLE_LAND : BannerSprites.Type.TITLE_PORT);
+		title.visible = false;
 		add( title );
 
-		float topRegion = Math.max(title.height - 6, h*0.45f);
+		float topRegion = Math.max(logoBottom - insets.top, h*0.45f);
 
 		title.x = insets.left + (w - title.width()) / 2f;
 		title.y = insets.top + 2 + (topRegion - title.height()) / 2f;
@@ -140,7 +158,10 @@ public class TitleScene extends PixelScene {
 		};
 		signs.x = title.x + (title.width() - signs.width())/2f;
 		signs.y = title.y;
+		signs.visible = false;
 		add( signs );
+		leftFB.visible = false;
+		rightFB.visible = false;
 
 		final Chrome.Type GREY_TR = Chrome.Type.GREY_BUTTON_TR;
 		

@@ -459,6 +459,11 @@ die 8-9 = squashed front, 10-12 = lying, attack 13 walk / 14-15 attack mirrored 
 recolours the green clothes per armor tier (`TIER_CLOTHES`; tier 6 = the sin's hue). Also writes the 24x32 avatar and
 `hero_art/<sin>/preview.png`. `make_sin_assets.py` skips the sheet/avatar of any sin with a `hero_art/<sin>` folder.
 Done: gluttony. The tier recolour only knows green clothes; other sins' pictures may need their own clothes hue range.
+Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
+screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
+chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,
+scale capped so the logo bottom (`TITLE_ART_LOGO_BOTTOM` 735 source px) stays within 52% of the height; buttons start below
+the logo. The vanilla banner, glow signs and torches are still created (fade code) but hidden.
 Reserved layout (must match the Java constants):
 - `talent_icons.png`: row 8 + k (icon 256 + 32k + i), heroic energy at +26
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
