@@ -328,12 +328,14 @@ Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` li
 sins' skills (unlocked by hero level 2,4..24) and 8 monster abilities (unlocked by bestiary traits); their own
 implementations live there (not the other sins' code). The mirror holds `EnvyCovet.slots` (3 + Copycat +
 mirrored), chosen in `EnvyMirror.chooseMimic`; newly learned copies fill free slots (`refreshSlots`).
-Paid from `EnvyCovet.jealousy` (0..maxJealousy, ~3 turns per point, x2 with a rival in view). `EnvyCovet.growth`
-imitates another sin's growth at 50% (+15%/pt ENVY_SWITCH) in `EnvyHooks` (gluttony via
+Paid from `EnvyCovet.jealousy` (0..maxJealousy, ~3 turns per point, x2 with a rival in view). Since Nov 12 2026 Envy
+imitates **all six** other sins' growth at once at `EnvyMimicry.BASE_GROWTH` 0.30 (+0.05/pt ENVY_SWITCH, +0.05/pt awakening
+E_GROWTH; Doppelganger x1.2 +0.1/pt USURP_TYRANNY) via `growthEfficiency`; `EnvyCovet.imitating` is always true, the mirror's
+"imitate growth" skill is gone (`growth/growth2` kept in saves, unused); the hooks live in `EnvyHooks` (gluttony via
 `PredatorHooks.onConsumed`, greed = carried gold in `pts()`, wrath/pride/sloth kills in `mimicKill`, lust
 lifesteal in `onAttack`). Robbed stacks are gone (`EnvyCovet.Robbed` kept only for old saves, detaches
 itself); Envy's own envy comes from new bestiary entries (`EnvyHooks.registerEnvy`). USURPER is now shown as the
-**Doppelganger**: imitates two growths (`growth2`, `secondEfficiency`), sin copies -25% cost. Talent enums
+**Doppelganger**: growth efficiency x1.2 (see above), sin copies -25% cost. Talent enums
 unchanged, meanings changed. `WndHeroInfo` tolerates more description paragraphs than icons.
 Monster ability icons are row 7 of skill_icons.png.
 Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.hpCost/pay`), lifesteal

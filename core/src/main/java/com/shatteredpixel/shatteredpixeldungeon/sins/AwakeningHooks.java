@@ -200,7 +200,7 @@ public class AwakeningHooks {
 	}
 
 	public static float envyGrowth(Hero hero) {
-		return 0.15f * pts(hero, E_GROWTH);
+		return 0.05f * pts(hero, E_GROWTH);
 	}
 
 	/** EnvyHooks.onAttack: stolen strength and rivalry */

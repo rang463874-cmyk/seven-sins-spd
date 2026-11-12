@@ -119,9 +119,7 @@ public class EnvyMirror extends SinArtifact {
 		list.add(new BasicSkill(EnvyMirror.class, "copy", 40, SinSkill.CostType.NONE)
 				.descArgs(h -> new Object[]{covet(h).maxSlots()})
 				.onUse(EnvyMirror::chooseCategory));
-		list.add(new BasicSkill(EnvyMirror.class, "growth", 41, SinSkill.CostType.NONE)
-				.descArgs(h -> new Object[]{Math.round(EnvyMimicry.growthEfficiency(h) * 100), covet(h).growthTitle()})
-				.onUse(EnvyMirror::chooseGrowth));
+		//(the old "imitate growth" choice is gone: Envy imitates every sin's growth at once, see EnvyMimicry.growthEfficiency)
 		//growth copy: a perfect imitation (a full base gauge)
 		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, EnvyMirror.class, 5, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.JEALOUSY,
 				h -> COPY_COST, h -> covet(h).jealousy >= COPY_COST, h -> covet(h).useJealousy(COPY_COST), true);

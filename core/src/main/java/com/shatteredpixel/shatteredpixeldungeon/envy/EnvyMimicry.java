@@ -147,9 +147,15 @@ public final class EnvyMimicry {
 		}
 	}
 
-	/** share of the original sin's growth that Envy gets */
+	/** base share of every other sin's growth that Envy gets (Nov 12 2026, owner: all six at 0.3x) */
+	public static final float BASE_GROWTH = 0.30f;
+
+	/** share of the original sins' growth that Envy gets (all six at once) */
 	public static float growthEfficiency(Hero hero) {
-		return 0.5f + 0.15f * hero.pointsInTalent(Talent.ENVY_SWITCH) + com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.envyGrowth(hero); //Seven Sins: awakening
+		float eff = BASE_GROWTH + 0.05f * hero.pointsInTalent(Talent.ENVY_SWITCH) + com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.envyGrowth(hero); //Seven Sins: awakening
+		//the Doppelganger wears the others' shapes more fully
+		if (hero.subClass == HeroSubClass.USURPER) eff *= 1.2f + 0.1f * hero.pointsInTalent(Talent.USURP_TYRANNY);
+		return eff;
 	}
 
 	public static int cost(Hero hero, Mimic m) {

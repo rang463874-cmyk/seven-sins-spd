@@ -175,7 +175,7 @@ public final class EnvyHooks {
 
 	/** kill-based growth of the sin being imitated (wrath, pride, sloth) */
 	private static void mimicKill(Hero hero, EnvyCovet c, Mob mob, Object cause) {
-		for (EnvyMimicry.Growth g : new EnvyMimicry.Growth[]{c.growth, c.growth2}) {
+		for (EnvyMimicry.Growth g : new EnvyMimicry.Growth[]{EnvyMimicry.Growth.WRATH, EnvyMimicry.Growth.PRIDE, EnvyMimicry.Growth.SLOTH}) {
 			if (c.imitating(g)) mimicKill(hero, c, mob, cause, g, c.efficiency(g));
 		}
 	}

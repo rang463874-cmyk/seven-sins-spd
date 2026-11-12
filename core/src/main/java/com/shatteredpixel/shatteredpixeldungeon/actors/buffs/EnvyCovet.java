@@ -222,9 +222,11 @@ public class EnvyCovet extends Buff {
 
 	// ------------------------------------------------------------------ imitated growth
 
+	/** Envy now imitates every other sin's growth at once (the old single/double choice is kept in saves, unused) */
 	public String growthTitle() {
-		if (doppelganger() && growth2 != EnvyMimicry.Growth.NONE) return growth.title() + " + " + growth2.title();
-		return growth.title();
+		Hero h = hero();
+		int pct = h == null ? Math.round(EnvyMimicry.BASE_GROWTH * 100) : Math.round(EnvyMimicry.growthEfficiency(h) * 100);
+		return Messages.get(EnvyCovet.class, "growth_all", pct);
 	}
 
 	public boolean doppelganger() {
@@ -234,17 +236,14 @@ public class EnvyCovet extends Buff {
 
 	/** true if this sin's growth is being imitated (the Doppelganger imitates two) */
 	public boolean imitating(EnvyMimicry.Growth g) {
-		return g != EnvyMimicry.Growth.NONE && (growth == g || (doppelganger() && growth2 == g));
+		return g != EnvyMimicry.Growth.NONE;
 	}
 
 	/** efficiency of imitating this sin's growth (the Doppelganger's second one is weaker) */
 	public float efficiency(EnvyMimicry.Growth g) {
 		Hero h = hero();
 		if (h == null) return 0;
-		float eff = EnvyMimicry.growthEfficiency(h);
-		if (growth == g) return eff;
-		if (doppelganger() && growth2 == g) return secondEfficiency();
-		return 0;
+		return g == EnvyMimicry.Growth.NONE ? 0 : EnvyMimicry.growthEfficiency(h);
 	}
 
 	public float secondEfficiency() {
