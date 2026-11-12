@@ -33,7 +33,7 @@ public class TemperanceChampion extends VirtueChampion {
 	@Override
 	protected int[] prepare(int s, Char target) {
 		if (dist(target) > 6) return null;
-		return s == FAST ? square(target.pos) : plus(target.pos);
+		return s == FAST ? xCross(target.pos, 2) : plus(target.pos);
 	}
 
 	@Override

@@ -104,6 +104,106 @@ public abstract class RegionElite extends Mob {
 		if (c >= 0 && c < Dungeon.level.length() && !Dungeon.level.solid[c] && !cells.contains(c)) cells.add(c);
 	}
 
+	// ---- telegraph shapes (Nov 2026, owner: no more 3x3 squares centred on the hero) ----
+
+	/** an X: both diagonals through the centre, r cells each way (the centre included) */
+	protected int[] xCross(int center, int r) {
+		ArrayList<Integer> cells = new ArrayList<>();
+		addIfOpen(cells, center);
+		int w = Dungeon.level.width();
+		int cx = center % w, cy = center / w;
+		for (int i = 1; i <= r; i++) {
+			for (int[] d : new int[][]{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}) {
+				int x = cx + d[0] * i, y = cy + d[1] * i;
+				if (inside(x, y)) addIfOpen(cells, x + y * w);
+			}
+		}
+		cells.remove((Integer) pos);
+		return toArray(cells);
+	}
+
+	/** the whole row and column through the centre, r cells each way */
+	protected int[] crossLines(int center, int r) {
+		ArrayList<Integer> cells = new ArrayList<>();
+		addIfOpen(cells, center);
+		int w = Dungeon.level.width();
+		int cx = center % w, cy = center / w;
+		for (int i = 1; i <= r; i++) {
+			for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+				int x = cx + d[0] * i, y = cy + d[1] * i;
+				if (inside(x, y)) addIfOpen(cells, x + y * w);
+			}
+		}
+		cells.remove((Integer) pos);
+		return toArray(cells);
+	}
+
+	/** every other tile (the centre's colour, like a chessboard) within r: a step straight sideways is safe */
+	protected int[] checker(int center, int r) {
+		ArrayList<Integer> cells = new ArrayList<>();
+		int w = Dungeon.level.width();
+		int cx = center % w, cy = center / w;
+		for (int dy = -r; dy <= r; dy++) {
+			for (int dx = -r; dx <= r; dx++) {
+				if (((dx + dy) & 1) != 0) continue;
+				int x = cx + dx, y = cy + dy;
+				if (inside(x, y)) addIfOpen(cells, x + y * w);
+			}
+		}
+		cells.remove((Integer) pos);
+		return toArray(cells);
+	}
+
+	/** the centre plus n random open tiles within r (a rain of strikes) */
+	protected int[] scatter(int center, int r, int n) {
+		ArrayList<Integer> cells = new ArrayList<>();
+		addIfOpen(cells, center);
+		ArrayList<Integer> pool = new ArrayList<>();
+		for (int c = 0; c < Dungeon.level.length(); c++) {
+			if (c != center && c != pos && Dungeon.level.distance(center, c) <= r) addIfOpen(pool, c);
+		}
+		while (n-- > 0 && !pool.isEmpty()) cells.add(pool.remove(Random.Int(pool.size())));
+		cells.remove((Integer) pos);
+		return toArray(cells);
+	}
+
+	/** a fan from this mob toward the target: up to len tiles out, within about 35 degrees of the line */
+	protected int[] cone(int target, int len) {
+		ArrayList<Integer> cells = new ArrayList<>();
+		int w = Dungeon.level.width();
+		double ax = target % w - pos % w, ay = target / w - pos / w;
+		double alen = Math.hypot(ax, ay);
+		if (alen == 0) return toArray(cells);
+		double cosMax = Math.cos(Math.toRadians(35));
+		for (int c = 0; c < Dungeon.level.length(); c++) {
+			if (c == pos || Dungeon.level.distance(pos, c) > len) continue;
+			double bx = c % w - pos % w, by = c / w - pos / w;
+			double blen = Math.hypot(bx, by);
+			if ((ax * bx + ay * by) / (alen * blen) < cosMax) continue;
+			//walls block the fan
+			com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica b = new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(
+					pos, c, com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.STOP_SOLID | com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.IGNORE_SOFT_SOLID);
+			int at = b.path.indexOf(c);
+			if (at < 0 || at > b.dist) continue;
+			addIfOpen(cells, c);
+		}
+		return toArray(cells);
+	}
+
+	/** a ring around this mob: tiles at distance rIn..rOut (stand close or far to be safe) */
+	protected int[] donut(int rIn, int rOut) {
+		ArrayList<Integer> cells = new ArrayList<>();
+		for (int c = 0; c < Dungeon.level.length(); c++) {
+			int d = Dungeon.level.distance(pos, c);
+			if (d >= rIn && d <= rOut) addIfOpen(cells, c);
+		}
+		return toArray(cells);
+	}
+
+	private static boolean inside(int x, int y) {
+		return x >= 0 && y >= 0 && x < Dungeon.level.width() && y < Dungeon.level.height();
+	}
+
 	protected static int[] toArray(ArrayList<Integer> list) {
 		int[] out = new int[list.size()];
 		for (int i = 0; i < out.length; i++) out[i] = list.get(i);

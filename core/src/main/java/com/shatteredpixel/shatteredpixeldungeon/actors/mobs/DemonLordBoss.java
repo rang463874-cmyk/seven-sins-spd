@@ -133,12 +133,6 @@ public class DemonLordBoss extends RegionElite {
 		return n;
 	}
 
-	private int[] square(int center) {
-		ArrayList<Integer> cells = new ArrayList<>();
-		for (int i : PathFinder.NEIGHBOURS9) addIfOpen(cells, center + i);
-		return toArray(cells);
-	}
-
 	private int[] radius(int center, int r) {
 		ArrayList<Integer> cells = new ArrayList<>();
 		for (int c = 0; c < Dungeon.level.length(); c++) {
@@ -161,8 +155,14 @@ public class DemonLordBoss extends RegionElite {
 				return minions() < (enraged ? 4 : 2) ? new int[0] : null;
 			default:
 				switch (lord) {
-					case LUCIFER: case MAMMON: case ASMODEUS: case BELPHEGOR:
-						return dist <= 6 ? square(target.pos) : null;
+					case LUCIFER:   //a falling star's fan of light
+						return dist <= 6 ? cone(target.pos, 6) : null;
+					case MAMMON:    //a rain of gold
+						return dist <= 6 ? scatter(target.pos, 3, 6) : null;
+					case ASMODEUS:  //a chessboard of desire: step straight sideways
+						return dist <= 6 ? checker(target.pos, 2) : null;
+					case BELPHEGOR: //a ring of slumber around itself: come close or stay away
+						return dist >= 2 && dist <= 4 ? donut(2, 4) : null;
 					case LEVIATHAN: {
 						if (dist > 7) return null;
 						Ballistica b = new Ballistica(pos, target.pos, Ballistica.STOP_SOLID);

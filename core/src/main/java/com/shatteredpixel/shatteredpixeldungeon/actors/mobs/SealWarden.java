@@ -298,10 +298,19 @@ public class SealWarden extends Mob {
 				//it has to pass through the target, and land somewhere free
 				if (!throughTarget || landingCell(cells) == -1) return null;
 				break;
-			case BLIGHT:
+			case BLIGHT: {
+				//an X of withering through the target (diagonals, 2 each way)
 				addIfOpen(cells, target.pos);
-				for (int n : PathFinder.NEIGHBOURS8) addIfOpen(cells, target.pos + n);
+				int w = level.width(), tx = target.pos % w, ty = target.pos / w;
+				for (int i = 1; i <= 2; i++) {
+					for (int[] d : new int[][]{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}) {
+						int x = tx + d[0] * i, y = ty + d[1] * i;
+						if (x >= 0 && y >= 0 && x < w && y < level.height()) addIfOpen(cells, x + y * w);
+					}
+				}
+				cells.remove((Integer) pos);
 				break;
+			}
 			case REAP:
 				//only worth it with the target close by
 				if (level.distance(pos, target.pos) > 2) return null;

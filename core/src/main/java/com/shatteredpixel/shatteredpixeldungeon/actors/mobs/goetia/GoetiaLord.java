@@ -131,7 +131,9 @@ public class GoetiaLord extends RegionElite {
 				if (minions() >= 2) return null;
 				return new int[0];
 			default:
-				for (int n : PathFinder.NEIGHBOURS9) addIfOpen(cells, target.pos + n);
+				//doom: a fan of hellfire toward the target
+				if (Dungeon.level.distance(pos, target.pos) > 7) return null;
+				return cone(target.pos, 7);
 		}
 		return cells.isEmpty() ? null : toArray(cells);
 	}

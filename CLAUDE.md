@@ -188,6 +188,12 @@ Done and pushed (see `git log`):
 - Boss damage softcap (Nov 2026): `RegionElite.soften(dmg, softThreshold(HT))` (threshold HT/12, min 12; past it only
   ~sqrt(2 x excess), like the vanilla Pylon cap) in `VirtueChampion.damage`, `ArchangelBoss.damage`, `DemonLordBoss.damage`
   (Leviathan too) and `GiantFist.damage` (threshold from `ARM_HT`).
+- Boss telegraph shapes (Nov 12 2026, owner: no 3x3 squares centred on the hero): `RegionElite` helpers `xCross`, `crossLines`,
+  `checker` (same-colour tiles, a straight side step is safe), `scatter` (target + n random), `cone` (fan from the mob, ~35 deg,
+  walls block), `donut` (ring around the mob). Used by: Lucifer cone, Mammon scatter, Asmodeus checker, Belphegor donut 2-4;
+  archangel Judgment = row+column cross r5, Charity scatter, Kindness checker; champions Temperance fast = X, Kindness checker,
+  Charity scatter; Goetia Doom = cone 7; Seal Warden Blight = X r2 (inline, it isn't a RegionElite); Gnoll Foreman bombs =
+  scatter, Fallen Priest curse = X. Don't add new hero-centred 3x3 squares.
 - Stairs past depth 26: `Hero.handle` only allowed entrances at depth >= 26; REGULAR_EXIT is allowed too now (26's heaven
   stairs and the exits of 27-30).
 - Nov 11 2026 batch (owner's list):

@@ -42,7 +42,7 @@ public class CharityChampion extends VirtueChampion {
 	@Override
 	protected int[] prepare(int s, Char target) {
 		if (s == ALMS) return flock().isEmpty() ? null : new int[0];
-		return dist(target) <= 6 ? square(target.pos) : null;
+		return dist(target) <= 6 ? scatter(target.pos, 2, 5) : null;
 	}
 
 	@Override

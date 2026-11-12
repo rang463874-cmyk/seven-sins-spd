@@ -46,9 +46,8 @@ public class GnollForeman extends RegionElite {
 		ArrayList<Integer> cells = new ArrayList<>();
 		if (s == BOMB) {
 			if (Dungeon.level.distance(pos, target.pos) < 2) return null;
-			addIfOpen(cells, target.pos);
-			for (int n : PathFinder.NEIGHBOURS8) addIfOpen(cells, target.pos + n);
-			cells.remove((Integer) pos);
+			//cluster bombs: the target's tile and 4 random ones near it
+			return scatter(target.pos, 2, 4);
 		} else {
 			addIfOpen(cells, target.pos);
 			for (int n : PathFinder.NEIGHBOURS4) {

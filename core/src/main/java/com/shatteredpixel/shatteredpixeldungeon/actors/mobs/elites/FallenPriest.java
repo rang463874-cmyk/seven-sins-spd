@@ -60,11 +60,8 @@ public class FallenPriest extends RegionElite {
 			for (Mob m : flock()) if (m.HP < m.HT * 0.8f) return new int[0];
 			return null;
 		}
-		ArrayList<Integer> cells = new ArrayList<>();
-		addIfOpen(cells, target.pos);
-		for (int n : PathFinder.NEIGHBOURS8) addIfOpen(cells, target.pos + n);
-		cells.remove((Integer) pos);
-		return toArray(cells);
+		//an X of dark light through the target
+		return xCross(target.pos, 2);
 	}
 
 	@Override

@@ -33,7 +33,7 @@ public class KindnessChampion extends VirtueChampion {
 	@Override
 	protected int[] prepare(int s, Char target) {
 		if (s == MERCY) return HP < HT * 0.7f ? new int[0] : null;
-		return dist(target) <= 6 ? square(target.pos) : null;
+		return dist(target) <= 6 ? checker(target.pos, 2) : null;
 	}
 
 	@Override

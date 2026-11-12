@@ -129,12 +129,6 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		return Dungeon.level.distance(pos, t.pos);
 	}
 
-	private int[] square(int center) {
-		ArrayList<Integer> cells = new ArrayList<>();
-		for (int n : PathFinder.NEIGHBOURS9) addIfOpen(cells, center + n);
-		return toArray(cells);
-	}
-
 	private int[] plus(int center) {
 		ArrayList<Integer> cells = new ArrayList<>();
 		addIfOpen(cells, center);
@@ -163,11 +157,12 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 	@Override
 	protected int[] prepare(int s, Char t) {
 		int d = dist(t);
-		if (s == JUDGMENT) return d <= 7 ? square(t.pos) : null;
+		if (s == JUDGMENT) return d <= 7 ? crossLines(t.pos, 5) : null;
 		if (s == LANCE) return d >= 2 && d <= 9 ? line(t, 9) : null;
 		switch (virtue) {
 			case HUMILITY: case TEMPERANCE: return d <= 7 ? plus(t.pos) : null;
-			case CHARITY: case KINDNESS: return d <= 7 ? square(t.pos) : null;
+			case CHARITY: return d <= 7 ? scatter(t.pos, 3, 7) : null;
+			case KINDNESS: return d <= 7 ? checker(t.pos, 3) : null;
 			case CHASTITY: case PATIENCE: return d <= 2 ? around(2) : null;
 			case DILIGENCE: default: return d >= 2 && d <= 7 ? line(t, 8) : null;
 		}
