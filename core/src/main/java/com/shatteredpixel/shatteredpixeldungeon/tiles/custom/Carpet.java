@@ -75,7 +75,8 @@ public class Carpet extends CustomTilemap {
 	public Tilemap create() {
 		Tilemap v = super.create();
 		int[] data = new int[tileW*tileH];
-		int regionOfs = 16 * (int)((Dungeon.depth-1)/5);
+		//Seven Sins: past the halls (the heavens, 27-31) the row would run into the statue tiles; use the city's carpet
+		int regionOfs = Dungeon.depth > 25 ? 16 * 3 : 16 * (int)((Dungeon.depth-1)/5);
 		int i = 0;
 		for (int y = 0; y < tileH; y++){
 			for (int x = 0; x < tileW; x++){

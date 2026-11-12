@@ -92,9 +92,13 @@ def main():
     sp = tile(src, SPECIAL)
     put(sheet, 4, sp)
     put(sheet, 10, sp)
-    # CHASM 24: the starry sky
-    sky = src.crop(CHASM).resize((32, 20), Image.BOX).crop((0, 0, 16, 16)).convert("RGBA")
-    put(sheet, 24, sprinkle(sky, 3, rng, (255, 255, 240, 255)))
+    # CHASM 24: a starry piece of the night sky (HeavenSky draws the whole picture over chasms; this is the fallback)
+    skyfile = os.path.join(ENV, "custom_tiles", "heaven_sky.png")
+    if os.path.exists(skyfile):
+        put(sheet, 24, Image.open(skyfile).convert("RGBA").crop((16, 0, 32, 16)))
+    else:
+        sky = src.crop(CHASM).resize((32, 20), Image.BOX).crop((0, 0, 16, 16)).convert("RGBA")
+        put(sheet, 24, sprinkle(sky, 3, rng, (255, 255, 240, 255)))
     sheet.save(os.path.join(ENV, "tiles_heaven.png"))
 
     # water: glowing teal with drifting sparkles (32x32, tiles seamlessly)

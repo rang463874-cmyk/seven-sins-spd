@@ -93,7 +93,15 @@ public class HolyGiantLevel extends Level {
 
 		map[entranceCell()] = Terrain.ENTRANCE;
 		transitions.add(new LevelTransition(this, entranceCell(), LevelTransition.Type.REGULAR_ENTRANCE));
+		com.shatteredpixel.shatteredpixeldungeon.tiles.custom.HeavenSky.addTo(this);
 		return true;
+	}
+
+	@Override
+	public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
+		super.restoreFromBundle(bundle);
+		//levels made before the sky existed get it too
+		com.shatteredpixel.shatteredpixeldungeon.tiles.custom.HeavenSky.addTo(this);
 	}
 
 	@Override

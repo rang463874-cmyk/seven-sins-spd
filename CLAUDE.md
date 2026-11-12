@@ -147,6 +147,11 @@ Done and pushed (see `git log`):
   `water_heaven.png` (`Assets.Environment.TILES_HEAVEN/WATER_HEAVEN`) by `tools/sinsart/make_heaven_tiles.py`: the city
   sheet's layout recoloured (stone -> cream marble, wood -> gold, floor -> pale marble, blacks kept) with floor/deco/special
   floor/chasm tiles cut from the owner's mock-up `heaven_art/heaven_map.png` (~31px tiles; boxes in the script).
+  Chasms on 27-31 show one continuous night sky: `tiles/custom/HeavenSky` (CustomTilemap over the whole level, added first in
+  `HeavenLevel.build`/`HolyGiantLevel.build` and on restore for old saves; frame by tile position, 26x7-tile repeat, shadowed
+  copy under non-chasm tiles) from the owner's `heaven_art/night_sky.jpg` via `tools/sinsart/make_heaven_sky.py` ->
+  `environment/custom_tiles/heaven_sky.png` (`Assets.Environment.HEAVEN_SKY`). Vanilla `Carpet` used row (depth-1)/5, which
+  past 25 ran into the statue/stairs tiles; it now uses the city carpet (row 3) there.
   Headless level test trick: build `HeavenLevel` subclasses without special/secret rooms and a texture-free
   `TextureFilm` stub on the classpath (Level.create needs textures for items).
 - Floor 31, the holy giant (Nov 2026): floor 30's stairs (kept; its chasms are filled) lead to `levels/HolyGiantLevel`

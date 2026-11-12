@@ -118,7 +118,15 @@ public class HeavenLevel extends RegularLevel {
 				if (map[i] == Terrain.CHASM) map[i] = Terrain.EMPTY_SP;
 			}
 		}
+		com.shatteredpixel.shatteredpixeldungeon.tiles.custom.HeavenSky.addTo(this);
 		return true;
+	}
+
+	@Override
+	public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
+		super.restoreFromBundle(bundle);
+		//levels made before the sky existed get it too
+		com.shatteredpixel.shatteredpixeldungeon.tiles.custom.HeavenSky.addTo(this);
 	}
 
 	// ------------------------------------------------------------------ monsters

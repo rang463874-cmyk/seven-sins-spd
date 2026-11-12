@@ -58,6 +58,7 @@ public class Assets {
 		public static final String WATER_HEAVEN = "environment/water_heaven.png";
 
 		public static final String CARPET           = "environment/custom_tiles/carpet.png";
+		public static final String HEAVEN_SKY       = "environment/custom_tiles/heaven_sky.png";
 		public static final String RAT_KING_ROOM    = "environment/custom_tiles/rat_king_room.png";
 		public static final String WEAK_FLOOR       = "environment/custom_tiles/weak_floor.png";
 		public static final String SEWER_BOSS       = "environment/custom_tiles/sewer_boss.png";
