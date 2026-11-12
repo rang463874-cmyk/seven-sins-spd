@@ -35,7 +35,7 @@ import java.util.ArrayList;
  */
 public class GoetiaLord extends RegionElite {
 
-	private static final int HELLFIRE = 0, LANCE = 1, LEGION = 2, DOOM = 3;
+	private static final int HELLFIRE = 0, LANCE = 1, LEGION = 2, SPREAD = 3, DOOM = 4;
 
 	{
 		spriteClass = GoetiaSprite.class;
@@ -94,7 +94,7 @@ public class GoetiaLord extends RegionElite {
 
 	@Override
 	protected int skillCount() {
-		return HP < HT / 2 ? 4 : 3;
+		return HP < HT / 2 ? 5 : 4;
 	}
 
 	@Override
@@ -108,8 +108,17 @@ public class GoetiaLord extends RegionElite {
 			case HELLFIRE: return "hellfire";
 			case LANCE: return "lance";
 			case LEGION: return "legion";
+			case SPREAD: return "spread";
 			default: return "doom";
 		}
+	}
+
+	/** Brimstone tide: a 3-wide band of fire rolls out from the king toward the target, 2 tiles a turn */
+	@Override
+	protected int[][] prepareWaves(int s, Char target) {
+		if (s != SPREAD) return null;
+		if (Dungeon.level.distance(pos, target.pos) > 8) return new int[0][];
+		return bandWaves(target.pos, 10, 2);
 	}
 
 	@Override
@@ -160,6 +169,14 @@ public class GoetiaLord extends RegionElite {
 				break;
 			case LEGION:
 				summonMinions();
+				break;
+			case SPREAD:
+				for (int c : cells) {
+					CellEmitter.get(c).burst(FlameParticle.FACTORY, 4);
+					Char ch = strike(c, d, d * 2);
+					if (ch != null) GoetiaFiend.applyKind(this, ch, demon.kind, depth, d);
+				}
+				Sample.INSTANCE.play(Assets.Sounds.BURNING, 0.7f);
 				break;
 			default:
 				for (int c : cells) {

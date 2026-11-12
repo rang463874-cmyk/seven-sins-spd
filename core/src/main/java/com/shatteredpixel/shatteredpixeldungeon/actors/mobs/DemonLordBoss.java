@@ -54,7 +54,7 @@ public class DemonLordBoss extends RegionElite {
 		properties.add(Property.DEMONIC);
 	}
 
-	private static final int HELLFIRE = 0, SUMMON = 1, SIGNATURE = 2;
+	private static final int HELLFIRE = 0, SUMMON = 1, SIGNATURE = 2, SPREAD = 3;
 
 	protected boolean enraged = false;
 	private int stolenGold = 0;
@@ -91,7 +91,15 @@ public class DemonLordBoss extends RegionElite {
 
 	@Override
 	protected int skillCount() {
-		return 3;
+		return 4;
+	}
+
+	/** Spreading hellfire: rings roll outward from the lord, one tile per turn */
+	@Override
+	protected int[][] prepareWaves(int skill, Char target) {
+		if (skill != SPREAD || getClass() != DemonLordBoss.class) return null;
+		if (Dungeon.level.distance(pos, target.pos) > 5) return new int[0][];
+		return ringWaves(1, enraged ? 6 : 5);
 	}
 
 	@Override
@@ -99,6 +107,7 @@ public class DemonLordBoss extends RegionElite {
 		switch (skill) {
 			case HELLFIRE: return "hellfire";
 			case SUMMON:   return "summon";
+			case SPREAD:   return "spread";
 			default:       return lord.key();
 		}
 	}
@@ -109,6 +118,7 @@ public class DemonLordBoss extends RegionElite {
 		switch (skill) {
 			case HELLFIRE: cd = 3; break;
 			case SUMMON:   cd = 6; break;
+			case SPREAD:   cd = 6; break;
 			default:       cd = 4; break;
 		}
 		return enraged ? Math.max(2, cd / 2) : cd;
@@ -189,6 +199,14 @@ public class DemonLordBoss extends RegionElite {
 					if (ch != null && ch.isAlive()) Buff.affect(ch, Burning.class).reignite(ch, 4f);
 				}
 				Sample.INSTANCE.play(Assets.Sounds.BURNING);
+				break;
+			case SPREAD:
+				for (int c : cells) {
+					CellEmitter.get(c).burst(FlameParticle.FACTORY, 4);
+					Char ch = strike(c, 10, 18);
+					if (ch != null && ch.isAlive()) Buff.affect(ch, Burning.class).reignite(ch, 3f);
+				}
+				Sample.INSTANCE.play(Assets.Sounds.BURNING, 0.7f);
 				break;
 			case SUMMON:
 				for (int i = 0; i < 2; i++) {

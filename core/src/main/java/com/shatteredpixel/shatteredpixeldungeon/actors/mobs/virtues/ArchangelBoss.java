@@ -39,7 +39,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	public Virtue virtue = Virtue.HUMILITY;
 
-	private static final int JUDGMENT = 0, LANCE = 1, SIGNATURE = 2;
+	private static final int JUDGMENT = 0, LANCE = 1, SIGNATURE = 2, BLOOM = 3;
 
 	private int ascensions = 0;
 
@@ -110,11 +110,19 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	// ------------------------------------------------------------------ skills
 
-	@Override protected int skillCount() { return 3; }
+	@Override protected int skillCount() { return 4; }
+
+	/** Radiant bloom: light blooms from the hero's tile and grows one tile a turn, like the spire's crystals */
+	@Override
+	protected int[][] prepareWaves(int s, Char t) {
+		if (s != BLOOM) return null;
+		if (dist(t) > 7) return new int[0][];
+		return diamondWaves(t.pos, ascensions >= 1 ? 4 : 3);
+	}
 
 	@Override
 	protected int cooldown(int s) {
-		int cd = s == JUDGMENT ? 4 : s == LANCE ? 5 : 6;
+		int cd = s == JUDGMENT ? 4 : s == LANCE ? 5 : s == BLOOM ? 7 : 6;
 		return ascensions >= 2 ? Math.max(2, cd - 2) : cd;
 	}
 
@@ -122,6 +130,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 	protected String skillKey(int s) {
 		if (s == JUDGMENT) return "judgment";
 		if (s == LANCE) return "lance";
+		if (s == BLOOM) return "bloom";
 		return virtue.name().toLowerCase();
 	}
 
@@ -185,6 +194,14 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 				if (ch != null && ch.isAlive()) Buff.prolong(ch, Blindness.class, 2f);
 			}
 			Sample.INSTANCE.play(Assets.Sounds.BLAST);
+			return;
+		}
+		if (s == BLOOM) {
+			for (int c : cells) {
+				CellEmitter.center(c).burst(Speck.factory(Speck.LIGHT), 2);
+				strike(c, 20, 34);
+			}
+			Sample.INSTANCE.play(Assets.Sounds.RAY, 0.8f);
 			return;
 		}
 		if (s == LANCE) {

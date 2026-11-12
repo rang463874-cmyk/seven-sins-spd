@@ -48,6 +48,37 @@ public abstract class RegionElite extends Mob {
 
 	protected abstract String skillKey(int skill);
 
+	// ---- spreading skills (Nov 12 2026, like the crystal spire of the blacksmith's mine) ----
+	// A skill can come as several waves instead of one strike: the first wave is marked, and on each of the
+	// mob's following turns the marked wave lands (release(skill, cells)) and the next one is marked. The mob
+	// keeps moving and fighting meanwhile; no other skill starts until the last wave has landed.
+
+	protected int waveSkill = NONE;
+	protected int[] waveMarked = null;
+	protected ArrayList<int[]> waveQueue = new ArrayList<>();
+
+	/** waves for a skill (each an array of cells); null = not a spreading skill (prepare() is asked), empty = spreading but not now */
+	protected int[][] prepareWaves(int skill, Char target) {
+		return null;
+	}
+
+	protected boolean wavesRunning() {
+		return waveMarked != null;
+	}
+
+	private void advanceWaves() {
+		if (waveMarked == null) return;
+		int[] landing = waveMarked;
+		waveMarked = waveQueue.isEmpty() ? null : waveQueue.remove(0);
+		int s = waveSkill;
+		if (waveMarked != null) {
+			for (int c : waveMarked) GameScene.targetedCell(c, 1f);
+		} else {
+			waveSkill = NONE;
+		}
+		release(s, landing);
+	}
+
 	/** whether this one drops the region reward when it dies (twins: only the last one) */
 	protected boolean dropsReward() {
 		return true;
@@ -60,6 +91,8 @@ public abstract class RegionElite extends Mob {
 			marked = new int[0];
 		}
 		if (paralysed <= 0 && skillCooldown > 0) skillCooldown--;
+		advanceWaves();
+		if (!isAlive()) return true;
 		return super.act();
 	}
 
@@ -76,10 +109,28 @@ public abstract class RegionElite extends Mob {
 				spend(TICK);
 				return true;
 			}
-			if (skillCooldown <= 0 && enemyInFOV && enemy != null && !isCharmedBy(enemy)) {
+			if (skillCooldown <= 0 && !wavesRunning() && enemyInFOV && enemy != null && !isCharmedBy(enemy)) {
 				int start = Random.Int(skillCount());
 				for (int i = 0; i < skillCount(); i++) {
 					int s = (start + i) % skillCount();
+					int[][] waves = prepareWaves(s, enemy);
+					if (waves != null && waves.length > 0 && waves[0].length > 0) {
+						waveSkill = s;
+						waveMarked = waves[0];
+						waveQueue.clear();
+						for (int w = 1; w < waves.length; w++) if (waves[w].length > 0) waveQueue.add(waves[w]);
+						skillCooldown = cooldown(s) + waves.length;
+						for (int c : waveMarked) GameScene.targetedCell(c, 1f);
+						if (sprite != null) {
+							sprite.turnTo(pos, enemy.pos);
+							sprite.showStatus(CharSprite.WARNING, Messages.get(RegionElite.this, "skill_" + skillKey(s)));
+						}
+						Sample.INSTANCE.play(Assets.Sounds.CHALLENGE, 0.6f, 1.3f);
+						Dungeon.hero.interrupt();
+						spend(TICK);
+						return true;
+					}
+					if (waves != null) continue;
 					int[] cells = prepare(s, enemy);
 					if (cells == null) continue;
 					skill = s;
@@ -200,6 +251,71 @@ public abstract class RegionElite extends Mob {
 		return toArray(cells);
 	}
 
+	// ---- spreading shapes ----
+
+	/** like the spire's diamond: starts on the centre and grows by one tile (4-way) per wave, n waves, cumulative */
+	protected int[][] diamondWaves(int center, int n) {
+		int[][] out = new int[n][];
+		ArrayList<Integer> area = new ArrayList<>();
+		addIfOpen(area, center);
+		for (int w = 0; w < n; w++) {
+			if (w > 0) {
+				ArrayList<Integer> grow = new ArrayList<>();
+				for (int c : area) {
+					for (int d : com.watabou.utils.PathFinder.NEIGHBOURS4) {
+						if (!area.contains(c + d)) addIfOpen(grow, c + d);
+					}
+				}
+				area.addAll(grow);
+			}
+			ArrayList<Integer> wave = new ArrayList<>(area);
+			wave.remove((Integer) pos);
+			out[w] = toArray(wave);
+		}
+		return out;
+	}
+
+	/** rings rolling outward from this mob: wave k hits the tiles at distance from+k (step back in behind it) */
+	protected int[][] ringWaves(int from, int to) {
+		int[][] out = new int[to - from + 1][];
+		for (int r = from; r <= to; r++) {
+			ArrayList<Integer> wave = new ArrayList<>();
+			for (int c = 0; c < Dungeon.level.length(); c++) {
+				if (Dungeon.level.distance(pos, c) == r) addIfOpen(wave, c);
+			}
+			out[r - from] = toArray(wave);
+		}
+		return out;
+	}
+
+	/** a 3-wide band rolling from this mob toward the target, step tiles per wave, len tiles in all (sidestep it) */
+	protected int[][] bandWaves(int target, int len, int step) {
+		int w = Dungeon.level.width();
+		double ax = target % w - pos % w, ay = target / w - pos / w;
+		double alen = Math.hypot(ax, ay);
+		if (alen == 0) return new int[0][];
+		ax /= alen; ay /= alen;
+		ArrayList<int[]> waves = new ArrayList<>();
+		for (int i = 1; i <= len; i += step) {
+			ArrayList<Integer> wave = new ArrayList<>();
+			for (int c = 0; c < Dungeon.level.length(); c++) {
+				if (c == pos || Dungeon.level.distance(pos, c) > len + 1) continue;
+				double bx = c % w - pos % w, by = c / w - pos / w;
+				double along = bx * ax + by * ay, across = Math.abs(bx * ay - by * ax);
+				if (along <= i - 0.5 || along > i + step - 0.5 || across > 1.0) continue;
+				//walls stop the tide
+				com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica b = new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(
+						pos, c, com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.STOP_SOLID | com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.IGNORE_SOFT_SOLID);
+				int at = b.path.indexOf(c);
+				if (at < 0 || at > b.dist) continue;
+				addIfOpen(wave, c);
+			}
+			if (wave.isEmpty()) break;
+			waves.add(toArray(wave));
+		}
+		return waves.toArray(new int[0][]);
+	}
+
 	private static boolean inside(int x, int y) {
 		return x >= 0 && y >= 0 && x < Dungeon.level.width() && y < Dungeon.level.height();
 	}
@@ -251,6 +367,10 @@ public abstract class RegionElite extends Mob {
 		bundle.put("marked", marked);
 		bundle.put("skill_cd", skillCooldown);
 		bundle.put("greeted", greeted);
+		bundle.put("wave_skill", waveSkill);
+		if (waveMarked != null) bundle.put("wave_marked", waveMarked);
+		bundle.put("wave_count", waveQueue.size());
+		for (int i = 0; i < waveQueue.size(); i++) bundle.put("wave_" + i, waveQueue.get(i));
 	}
 
 	@Override
@@ -261,6 +381,12 @@ public abstract class RegionElite extends Mob {
 		if (marked == null) marked = new int[0];
 		skillCooldown = bundle.getFloat("skill_cd");
 		greeted = bundle.getBoolean("greeted");
+		waveSkill = bundle.contains("wave_skill") ? bundle.getInt("wave_skill") : NONE;
+		waveMarked = bundle.contains("wave_marked") ? bundle.getIntArray("wave_marked") : null;
+		waveQueue.clear();
+		int wc = bundle.getInt("wave_count");
+		for (int i = 0; i < wc; i++) waveQueue.add(bundle.getIntArray("wave_" + i));
+		if (waveMarked == null) waveSkill = NONE;
 	}
 
 

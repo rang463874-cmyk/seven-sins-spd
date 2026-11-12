@@ -194,6 +194,14 @@ Done and pushed (see `git log`):
   archangel Judgment = row+column cross r5, Charity scatter, Kindness checker; champions Temperance fast = X, Kindness checker,
   Charity scatter; Goetia Doom = cone 7; Seal Warden Blight = X r2 (inline, it isn't a RegionElite); Gnoll Foreman bombs =
   scatter, Fallen Priest curse = X. Don't add new hero-centred 3x3 squares.
+- Spreading skills (Nov 12 2026, owner: like the blacksmith mine's crystal spire): `RegionElite.prepareWaves(skill, target)`
+  returns waves (null = not a wave skill, empty = not now); the first wave is marked, then each of the mob's turns lands the
+  marked wave (`advanceWaves` from `act`, `release(skill, cells)` per wave) and marks the next; the mob keeps fighting, no other
+  skill starts meanwhile, cooldown = `cooldown + waves`; saved as `wave_*`. Shapes: `diamondWaves` (spire-style, grows 1 tile
+  4-way per wave, cumulative), `ringWaves` (rings rolling out from the mob), `bandWaves` (3-wide strip rolling toward the target,
+  `step` tiles per wave, walls stop it). Users: demon lords SPREAD = id 3 (ring 1..5, 6 enraged; not Leviathan, guarded by
+  class), archangel BLOOM = id 3 (diamond from the hero, 3 waves, 4 after the first ascension), Goetia kings SPREAD = id 3
+  (band 10 tiles, 2/turn; DOOM moved to id 4).
 - Stairs past depth 26: `Hero.handle` only allowed entrances at depth >= 26; REGULAR_EXIT is allowed too now (26's heaven
   stairs and the exits of 27-30).
 - Nov 11 2026 batch (owner's list):
