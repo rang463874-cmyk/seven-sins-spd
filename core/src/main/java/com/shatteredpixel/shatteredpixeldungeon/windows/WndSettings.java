@@ -368,6 +368,7 @@ public class WndSettings extends WndTabbed {
 		ColorBlock sep2;
 		CheckBox chkFont;
 		CheckBox chkVibrate;
+		RedButton btnConvenience; //Seven Sins
 
 		@Override
 		protected void createChildren() {
@@ -601,6 +602,86 @@ public class WndSettings extends WndTabbed {
 				chkVibrate.checked(SPDSettings.vibration());
 			}
 			add(chkVibrate);
+
+			//Seven Sins: auto pickup and animation speed
+			btnConvenience = new RedButton(Messages.get(this, "convenience"), 9){
+				@Override
+				protected void onClick() {
+					ShatteredPixelDungeon.scene().addToFront(new Window(){
+
+						RenderedTextBlock head;
+						CheckBox chkDew;
+						CheckBox chkSeed;
+						RenderedTextBlock pickupDesc;
+						OptionSlider optAnimSpeed;
+						RenderedTextBlock speedDesc;
+
+						{
+							head = PixelScene.renderTextBlock(Messages.get(WndSettings.UITab.this, "convenience"), 9);
+							head.hardlight(TITLE_COLOR);
+							add(head);
+
+							chkDew = new CheckBox(Messages.get(WndSettings.UITab.this, "auto_dew")){
+								@Override
+								protected void onClick() {
+									super.onClick();
+									SPDSettings.autoDew(checked());
+								}
+							};
+							chkDew.checked(SPDSettings.autoDew());
+							add(chkDew);
+
+							chkSeed = new CheckBox(Messages.get(WndSettings.UITab.this, "auto_seed")){
+								@Override
+								protected void onClick() {
+									super.onClick();
+									SPDSettings.autoSeed(checked());
+								}
+							};
+							chkSeed.checked(SPDSettings.autoSeed());
+							add(chkSeed);
+
+							pickupDesc = PixelScene.renderTextBlock(Messages.get(WndSettings.UITab.this, "auto_desc"), 5);
+							pickupDesc.hardlight(0x888888);
+							add(pickupDesc);
+
+							optAnimSpeed = new OptionSlider(Messages.get(WndSettings.UITab.this, "anim_speed"),
+									"x1", "x4", 1, SPDSettings.ANIM_SPEEDS.length) {
+								@Override
+								protected void onChange() {
+									SPDSettings.animSpeed(getSelectedValue());
+								}
+							};
+							optAnimSpeed.setSelectedValue(SPDSettings.animSpeed());
+							add(optAnimSpeed);
+
+							speedDesc = PixelScene.renderTextBlock(Messages.get(WndSettings.UITab.this, "anim_speed_desc"), 5);
+							speedDesc.hardlight(0x888888);
+							add(speedDesc);
+
+							//layout
+							resize(WIDTH_P, 0);
+
+							head.setPos((width - head.width()) / 2f, GAP);
+							PixelScene.align(head);
+
+							chkDew.setRect(0, head.bottom() + 2*GAP, width, BTN_HEIGHT);
+							chkSeed.setRect(0, chkDew.bottom() + GAP, width, BTN_HEIGHT);
+
+							pickupDesc.maxWidth(width);
+							pickupDesc.setPos(0, chkSeed.bottom() + 1);
+
+							optAnimSpeed.setRect(0, pickupDesc.bottom() + 2*GAP, width, SLIDER_HEIGHT);
+
+							speedDesc.maxWidth(width);
+							speedDesc.setPos(0, optAnimSpeed.bottom() + 1);
+
+							resize(WIDTH_P, (int)Math.ceil(speedDesc.bottom()));
+						}
+					});
+				}
+			};
+			add(btnConvenience);
 		}
 
 		@Override
@@ -648,6 +729,9 @@ public class WndSettings extends WndTabbed {
 				chkVibrate.setRect(0, chkFont.bottom() + GAP, width, BTN_HEIGHT);
 				height = chkVibrate.bottom();
 			}
+
+			btnConvenience.setRect(0, height + GAP, width, BTN_HEIGHT);
+			height = btnConvenience.bottom();
 		}
 
 	}

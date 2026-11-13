@@ -208,6 +208,33 @@ public class SPDSettings extends GameSettings {
 		return getBoolean(KEY_VIBRATION, true);
 	}
 
+	//Seven Sins: convenience settings
+	public static final String KEY_AUTO_DEW    = "auto_pickup_dew";
+	public static final String KEY_AUTO_SEED   = "auto_pickup_seed";
+	public static final String KEY_ANIM_SPEED  = "anim_speed";
+
+	public static final float[] ANIM_SPEEDS = { 1f, 1.5f, 2f, 3f, 4f };
+	private static int animSpeedCache = -1;
+
+	public static void autoDew(boolean value){ put(KEY_AUTO_DEW, value); }
+	public static boolean autoDew(){ return getBoolean(KEY_AUTO_DEW, false); }
+
+	public static void autoSeed(boolean value){ put(KEY_AUTO_SEED, value); }
+	public static boolean autoSeed(){ return getBoolean(KEY_AUTO_SEED, false); }
+
+	//1..5, 1 = the normal speed
+	public static void animSpeed(int value){
+		put(KEY_ANIM_SPEED, value);
+		animSpeedCache = value;
+	}
+	public static int animSpeed(){
+		if (animSpeedCache == -1) animSpeedCache = getInt(KEY_ANIM_SPEED, 1, 1, ANIM_SPEEDS.length);
+		return animSpeedCache;
+	}
+	public static float animSpeedFactor(){
+		return ANIM_SPEEDS[animSpeed()-1];
+	}
+
 	public static String gamesInProgressSort(){
 		return getString(KEY_GAMES_SORT, "level");
 	}

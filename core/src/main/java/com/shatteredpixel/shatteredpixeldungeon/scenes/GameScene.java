@@ -875,6 +875,7 @@ public class GameScene extends PixelScene {
 
 	@Override
 	public synchronized void update() {
+		Game.timeScale = SPDSettings.animSpeedFactor(); //Seven Sins: animation speed setting (scene changes reset it to 1)
 		syncSkillBar();
 
 		lastOffset = null;

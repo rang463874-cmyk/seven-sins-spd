@@ -138,6 +138,7 @@ public class Item implements Bundlable {
 	}
 	
 	public void doDrop( Hero hero ) {
+		hero.autoPickUpSkip = hero.pos; //Seven Sins: don't auto-collect what was just put down
 		hero.spendAndNext(TIME_TO_DROP);
 		int pos = hero.pos;
 		Dungeon.level.drop(detachAll(hero.belongings.backpack), pos).sprite.drop(pos);
@@ -708,7 +709,11 @@ public class Item implements Bundlable {
 		return TIME_TO_THROW;
 	}
 
+	//Seven Sins: set by Hero.autoPickUp while it collects dew/seeds, which then takes no time
+	public static boolean autoPickingUp = false;
+
 	public float pickupDelay(){
+		if (autoPickingUp) return 0;
 		return TIME_TO_PICK_UP;
 	}
 	

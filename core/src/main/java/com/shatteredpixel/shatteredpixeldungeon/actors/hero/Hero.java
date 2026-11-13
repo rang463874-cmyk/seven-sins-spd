@@ -925,6 +925,49 @@ public class Hero extends Char {
 		next();
 	}
 
+	//Seven Sins: the cell whose heap auto pickup leaves alone (a failed pickup or a dropped item), until the hero leaves it
+	public int autoPickUpSkip = -1;
+
+	private boolean autoPickUp() {
+		if (autoPickUpSkip != pos) autoPickUpSkip = -1;
+		boolean dew = SPDSettings.autoDew(), seed = SPDSettings.autoSeed();
+		if ((!dew && !seed) || autoPickUpSkip == pos || !isAlive()) return false;
+
+		Heap heap = Dungeon.level.heaps.get( pos );
+		if (heap == null || heap.type != Heap.Type.HEAP || heap.isEmpty()) return false;
+
+		Item item = heap.peek();
+		if (item instanceof Dewdrop) {
+			if (!dew) return false;
+			//a drop that would be wasted stays on the floor
+			com.shatteredpixel.shatteredpixeldungeon.items.Waterskin flask = belongings.getItem( com.shatteredpixel.shatteredpixeldungeon.items.Waterskin.class );
+			if ((flask == null || flask.isFull()) && HP >= HT) return false;
+		} else if (item instanceof com.shatteredpixel.shatteredpixeldungeon.plants.Plant.Seed) {
+			if (!seed) return false;
+		} else {
+			return false;
+		}
+
+		boolean picked;
+		Item.autoPickingUp = true;
+		try {
+			picked = item.doPickUp( this );
+		} finally {
+			Item.autoPickingUp = false;
+		}
+
+		if (picked) {
+			heap.pickUp();
+			if (!(item instanceof Dewdrop)) {
+				GLog.i( Messages.capitalize(Messages.get(this, "you_now_have", item.name())) );
+			}
+			return true;
+		} else {
+			autoPickUpSkip = pos;
+			return false;
+		}
+	}
+
 	public void spendAndNext( float time ) {
 		busy();
 		spend( time );
@@ -964,6 +1007,11 @@ public class Hero extends Char {
 			return false;
 		}
 		
+		//Seven Sins: auto pickup settings; a pickup takes no time and keeps the current action
+		if (autoPickUp()) {
+			return false;
+		}
+
 		boolean actResult;
 		if (curAction == null) {
 			

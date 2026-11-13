@@ -292,6 +292,13 @@ Done and pushed (see `git log`):
   ripper (lords x1.6); essence icon items.png row 38 +4. Strings `tools/strings/goetia_*` (+ trap strings appended by hand
   to messages/levels/levels*.properties). Demon lord bosses were made harder at the same time (450 HP, 13-26 damage,
   36 accuracy, 2-10 armor, shorter cooldowns; Leviathan's cooldowns -1).
+- Convenience settings (Nov 13 2026, owner): settings window, UI tab, "편의 설정" button -> a window with auto-collect dew /
+  auto-collect seeds (`SPDSettings.autoDew/autoSeed`, both off by default; `Hero.autoPickUp` at the top of `Hero.act` takes
+  the top item of the heap under the hero through the normal `doPickUp` with `Item.autoPickingUp` making `pickupDelay` 0,
+  keeps `curAction`; dew that would be wasted stays; `Hero.autoPickUpSkip` = the cell of a failed pickup or of `Item.doDrop`,
+  left alone until the hero moves) and animation speed (`SPDSettings.animSpeed` 1..5 = `ANIM_SPEEDS` x1/1.5/2/3/4, applied as
+  `Game.timeScale` in `GameScene.update`; scene changes reset it to 1, so only the dungeon is sped up). Strings are in
+  messages/windows/windows*.properties next to the vanilla `uitab` keys (not synced).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
