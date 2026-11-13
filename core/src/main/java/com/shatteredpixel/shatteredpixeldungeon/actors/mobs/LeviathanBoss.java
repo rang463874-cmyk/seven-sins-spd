@@ -2,20 +2,16 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Cripple;
 import com.shatteredpixel.shatteredpixeldungeon.demons.DemonLord;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
-import com.shatteredpixel.shatteredpixeldungeon.effects.Pushing;
+import com.shatteredpixel.shatteredpixeldungeon.effects.LeviathanFx;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
-import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave;
+import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
-import com.shatteredpixel.shatteredpixeldungeon.levels.Terrain;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.DemonSprites;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
@@ -24,159 +20,42 @@ import com.watabou.utils.Random;
 import java.util.ArrayList;
 
 /**
- * Leviathan's true form: a gimmick boss that fills one whole wall of the arena. The head (this mob) sits
- * in the middle of the wall; the rest of the wall is its body ({@link LeviathanCoil}s), which can be hit
- * like the head. It never moves. Skills, all telegraphed:
- *  - Great Wave: floods every lane of the arena except one or two safe lanes, pushing victims away;
- *  - Bite: the 6 cells in front of the head;
- *  - Undertow: drags everyone on the hero's line back to the wall and cripples them;
- *  - Summon: two wraiths rise from the water.
- * Enraged below half HP: one safe lane only, shorter cooldowns.
+ * Leviathan's true form (owner's rework, Nov 14 2026): only its head rises out of the abyss at the far side of
+ * its arena (DemonArenaLevel's "sea" layout), like the holy giant over its void. It never moves and has three
+ * telegraphed attacks:
+ *  - LASER: it opens its mouth, and a turn later a beam burns the straight line through where the target stood,
+ *    as far as the first pillar or wall (three tiles wide once enraged);
+ *  - TSUNAMI: a tidal wave rolls from the left edge to the right over the whole floor, a few columns per turn.
+ *    Only the two tiles right behind a pillar stay dry;
+ *  - DROPS: water falls on marked tiles all over the floor.
+ * Saves from before the rework had a wall form with LeviathanCoil pieces: those pieces are cleared on its first
+ * turn, and the attacks work from wherever the head is.
  */
 public class LeviathanBoss extends DemonLordBoss {
 
 	{
 		lord = DemonLord.LEVIATHAN;
-		spriteClass = DemonSprites.Leviathan.class;
+		spriteClass = DemonSprites.LeviathanHead.class;
 		properties.add(Property.IMMOVABLE);
+		//it watches its whole arena
+		viewDistance = 20;
 	}
 
-	private static final int WAVE = 0, BITE = 1, UNDERTOW = 2, SUMMON = 3;
-	private static final int DEPTH = 8;
+	private static final int LASER = 0, TSUNAMI = 1, DROPS = 2;
 
-	/** step from the wall into the arena */
-	public int dir = 0;
-	/** the wall cells Leviathan lies on (head included), in order */
-	public int[] run = new int[0];
-	/** lateral step along the wall */
-	public int lateral = 1;
+	/** columns the tidal wave covers each turn */
+	private static final int WAVE_STEP = 3;
+	/** tiles right behind a pillar that the wave leaves dry */
+	private static final int SHELTER = 2;
 
-	// ------------------------------------------------------------------ emerging
-
-	private static boolean stops(Level lvl, int cell) {
-		int t = lvl.map[cell];
-		return lvl.solid[cell] || !lvl.passable[cell] || t == Terrain.DOOR
-				|| t == Terrain.OPEN_DOOR || t == Terrain.LOCKED_DOOR || t == Terrain.CRYSTAL_DOOR;
+	@Override
+	public CharSprite sprite() {
+		return new DemonSprites.LeviathanHead();
 	}
 
-	private static boolean isDoor(Level lvl, int cell) {
-		int t = lvl.map[cell];
-		return t == Terrain.DOOR || t == Terrain.OPEN_DOOR || t == Terrain.LOCKED_DOOR || t == Terrain.CRYSTAL_DOOR;
-	}
-
-	/** a real wall behind the body (never a door, so the way out stays open) */
-	private static boolean isWall(Level lvl, int cell) {
-		return lvl.solid[cell] && !isDoor(lvl, cell);
-	}
-
-	/** finds the wall to lie along, starting from a cell inside the arena; null if there is no room */
-	private static int[][] findWall(Level lvl, int start) {
-		int w = lvl.width();
-		int[] dirs = {-w, w, -1, 1};
-		int[][] best = null;
-		int bestScore = 0;
-		for (int d : dirs) {
-			int c = start;
-			int guard = 0;
-			while (!stops(lvl, c + d) && guard++ < 20) c += d;
-			if (!isWall(lvl, c + d)) continue;
-			int lat = Math.abs(d) == 1 ? w : 1;
-			ArrayList<Integer> cells = new ArrayList<>();
-			cells.add(c);
-			for (int sgn = -1; sgn <= 1; sgn += 2) {
-				int x = c;
-				for (int i = 0; i < 5; i++) {
-					x += sgn * lat;
-					if (stops(lvl, x) || !isWall(lvl, x + d)) break;
-					if (sgn < 0) cells.add(0, x); else cells.add(x);
-				}
-			}
-			//prefer horizontal walls (the body art lies along them), then the far (top) wall
-			int score = cells.size() * 10 + (Math.abs(d) == w ? 5 : 0) + (d == -w ? 1 : 0);
-			if (cells.size() >= 3 && score > bestScore) {
-				bestScore = score;
-				int[] arr = new int[cells.size()];
-				for (int i = 0; i < arr.length; i++) arr[i] = cells.get(i);
-				best = new int[][]{arr, {-d, lat}};
-			}
-		}
-		return best;
-	}
-
-	/** raises Leviathan's wall form near a cell of the current level; null if no wall fits */
-	public static LeviathanBoss emerge(int near) {
-		return emerge(Dungeon.level, near, true);
-	}
-
-	/**
-	 * Leviathan's wall form on a level. live = the level is being played (adds to the scene with effects);
-	 * otherwise it is being built (mobs go straight into its list).
-	 */
-	public static LeviathanBoss emerge(Level lvl, int near, boolean live) {
-		int[][] wall = findWall(lvl, near);
-		if (wall == null) return null;
-		int[] cells = wall[0];
-		int mid = cells.length / 2;
-		//the head goes on the free cell nearest the middle
-		int headIdx = -1;
-		for (int off = 0; off <= cells.length; off++) {
-			for (int sgn = -1; sgn <= 1; sgn += 2) {
-				int i = mid + sgn * off;
-				if (i >= 0 && i < cells.length && lvl.findMob(cells[i]) == null
-						&& (!live || Actor.findChar(cells[i]) == null)) { headIdx = i; break; }
-			}
-			if (headIdx != -1) break;
-		}
-		if (headIdx == -1) return null;
-
-		LeviathanBoss boss = new LeviathanBoss();
-		boss.run = cells;
-		boss.dir = wall[1][0];
-		boss.lateral = wall[1][1];
-		boss.pos = cells[headIdx];
-		if (live) {
-			GameScene.add(boss);
-			CellEmitter.get(boss.pos).burst(Speck.factory(Speck.STEAM), 20);
-		} else {
-			lvl.mobs.add(boss);
-		}
-
-		for (int i = 0; i < cells.length; i++) {
-			if (i == headIdx || lvl.findMob(cells[i]) != null || (live && Actor.findChar(cells[i]) != null)) continue;
-			LeviathanCoil c = new LeviathanCoil();
-			c.head = boss.id();
-			c.pos = cells[i];
-			c.variant = pieceAt(i, headIdx, cells.length);
-			//the tail curls outward: art curls to the right, so the left side is mirrored
-			c.flip = i < headIdx;
-			if (live) {
-				GameScene.add(c);
-				CellEmitter.get(c.pos).burst(Speck.factory(Speck.STEAM), 6);
-			} else {
-				lvl.mobs.add(c);
-			}
-		}
-		if (live) Sample.INSTANCE.play(Assets.Sounds.WATER);
-		return boss;
-	}
-
-	/** which 48px piece a wall cell shows: one piece every 3 cells from the head, the outermost being the tail */
-	static int pieceAt(int i, int headIdx, int length) {
-		int d = Math.abs(i - headIdx);
-		int end = i < headIdx ? headIdx : length - 1 - headIdx;   //cells on this side
-		int last = (end / 3) * 3;                                    //farthest regular piece
-		if (end - last >= 2) last = end;                             //uncovered end: the tail goes there
-		if (d == last && d > 0) return DemonSprites.Coil.TAIL;
-		if (d % 3 == 0 && d > 0 && d < last) return DemonSprites.Coil.BODY;
-		return DemonSprites.Coil.HIDDEN;
-	}
-
-	private ArrayList<LeviathanCoil> coils() {
-		ArrayList<LeviathanCoil> out = new ArrayList<>();
-		for (Mob m : Dungeon.level.mobs) {
-			if (m instanceof LeviathanCoil && ((LeviathanCoil) m).head == id()) out.add((LeviathanCoil) m);
-		}
-		return out;
+	/** the mouth is open while the laser is charging */
+	public boolean charging() {
+		return skill == LASER;
 	}
 
 	// ------------------------------------------------------------------ it never moves
@@ -192,26 +71,33 @@ public class LeviathanBoss extends DemonLordBoss {
 	}
 
 	@Override
-	protected boolean canAttack(Char enemy) {
-		if (Dungeon.level.adjacent(pos, enemy.pos)) return true;
-		for (int c : run) if (Dungeon.level.adjacent(c, enemy.pos)) return true;
-		return false;
+	protected boolean act() {
+		//saves from before the rework: the body pieces along the wall are gone
+		for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])) {
+			if (m instanceof LeviathanCoil && ((LeviathanCoil) m).head == id()) ((LeviathanCoil) m).vanish();
+		}
+		boolean result = super.act();
+		syncMouth();
+		return result;
+	}
+
+	private void syncMouth() {
+		if (sprite instanceof DemonSprites.LeviathanHead) ((DemonSprites.LeviathanHead) sprite).open(charging());
 	}
 
 	// ------------------------------------------------------------------ skills
 
 	@Override
 	protected int skillCount() {
-		return 4;
+		return 3;
 	}
 
 	@Override
 	protected String skillKey(int skill) {
 		switch (skill) {
-			case WAVE:     return "wave";
-			case BITE:     return "bite";
-			case UNDERTOW: return "undertow";
-			default:       return "summon";
+			case LASER:   return "laser";
+			case TSUNAMI: return "tsunami";
+			default:      return "drops";
 		}
 	}
 
@@ -219,175 +105,152 @@ public class LeviathanBoss extends DemonLordBoss {
 	protected int cooldown(int skill) {
 		int cd;
 		switch (skill) {
-			case WAVE:     cd = 4; break;
-			case BITE:     cd = 2; break;
-			case UNDERTOW: cd = 5; break;
-			default:       cd = 8; break;
+			case LASER:   cd = 3; break;
+			case TSUNAMI: cd = 6; break;
+			default:      cd = 3; break;
 		}
 		return enraged ? Math.max(2, cd / 2) : cd;
 	}
 
-	private int headIndex() {
-		for (int i = 0; i < run.length; i++) if (run[i] == pos) return i;
-		return run.length / 2;
+	private boolean floor(int c) {
+		Level l = Dungeon.level;
+		return c >= 0 && c < l.length() && l.passable[c] && !l.solid[c] && !l.pit[c];
 	}
 
-	/** how far a cell is from the wall (1 = right in front of the body), or -1 if it isn't in front of it */
-	private int depthOf(int cell) {
-		for (int i = 0; i < run.length; i++) {
-			int c = run[i];
-			for (int k = 1; k <= DEPTH; k++) {
-				c += dir;
-				if (c < 0 || c >= Dungeon.level.length() || Dungeon.level.solid[c]) break;
-				if (c == cell) return k;
+	/** the tidal wave: bands of columns from the left edge to the right; the tiles right behind a pillar stay dry */
+	@Override
+	protected int[][] prepareWaves(int skill, Char target) {
+		if (skill != TSUNAMI) return null;
+		Level l = Dungeon.level;
+		int w = l.width(), h = l.height();
+		//which tiles the wave reaches, row by row
+		boolean[] wet = new boolean[l.length()];
+		for (int y = 1; y < h - 1; y++) {
+			boolean started = false;
+			int cover = 0;
+			for (int x = 1; x < w - 1; x++) {
+				int c = x + y * w;
+				if (floor(c)) {
+					started = true;
+					if (cover > 0) cover--;
+					else if (c != pos) wet[c] = true;
+				} else if (started && l.solid[c]) {
+					cover = SHELTER;
+				}
 			}
 		}
-		return -1;
-	}
-
-	private void lane(ArrayList<Integer> cells, int i, int fromDepth, int toDepth) {
-		int c = run[i];
-		for (int k = 1; k <= toDepth; k++) {
-			c += dir;
-			if (c < 0 || c >= Dungeon.level.length() || Dungeon.level.solid[c]) break;
-			if (k >= fromDepth) addIfOpen(cells, c);
+		ArrayList<int[]> waves = new ArrayList<>();
+		for (int x0 = 1; x0 < w - 1; x0 += WAVE_STEP) {
+			ArrayList<Integer> band = new ArrayList<>();
+			for (int x = x0; x < Math.min(w - 1, x0 + WAVE_STEP); x++) {
+				for (int y = 1; y < h - 1; y++) if (wet[x + y * w]) band.add(x + y * w);
+			}
+			if (!band.isEmpty()) waves.add(toArray(band));
 		}
+		return waves.toArray(new int[0][]);
 	}
 
 	@Override
 	protected int[] prepare(int skill, Char target) {
-		int hd = depthOf(target.pos);
+		Level l = Dungeon.level;
 		switch (skill) {
-			case WAVE: {
-				if (hd < 1 || run.length < 3) return null;
-				ArrayList<Integer> lanes = new ArrayList<>();
-				for (int i = 0; i < run.length; i++) if (run[i] != pos) lanes.add(i);
-				int safe = enraged ? 1 : 2;
-				ArrayList<Integer> safeLanes = new ArrayList<>();
-				while (safeLanes.size() < safe && !lanes.isEmpty()) {
-					safeLanes.add(lanes.remove(Random.Int(lanes.size())));
-				}
+			case LASER: {
+				if (target.pos == pos) return null;
+				Ballistica b = new Ballistica(pos, target.pos, Ballistica.STOP_SOLID | Ballistica.IGNORE_SOFT_SOLID);
 				ArrayList<Integer> cells = new ArrayList<>();
-				for (int i = 0; i < run.length; i++) {
-					if (!safeLanes.contains(i)) lane(cells, i, 1, DEPTH);
+				for (int i = 1; i <= b.dist; i++) {
+					int c = b.path.get(i);
+					addIfOpen(cells, c);
+					if (enraged) {
+						if (c % l.width() > 0) addIfOpen(cells, c - 1);
+						if (c % l.width() < l.width() - 1) addIfOpen(cells, c + 1);
+					}
 				}
+				cells.remove((Integer) pos);
+				if (cells.isEmpty()) return null;
+				syncMouthSoon();
 				return toArray(cells);
 			}
-			case BITE: {
-				if (Dungeon.level.distance(pos, target.pos) > 2) return null;
+			case DROPS: {
+				ArrayList<Integer> open = new ArrayList<>();
+				for (int c = 0; c < l.length(); c++) if (floor(c) && c != pos) open.add(c);
+				if (open.isEmpty()) return null;
 				ArrayList<Integer> cells = new ArrayList<>();
-				int hi = headIndex();
-				for (int i = hi - 1; i <= hi + 1; i++) {
-					if (i >= 0 && i < run.length) lane(cells, i, 1, 2);
+				//one on the target, the rest anywhere
+				if (floor(target.pos)) cells.add(target.pos);
+				int n = Math.min(open.size(), enraged ? 24 : 16);
+				int guard = 0;
+				while (cells.size() < n && guard++ < 200) {
+					int c = Random.element(open);
+					if (!cells.contains(c)) cells.add(c);
 				}
-				return toArray(cells);
-			}
-			case UNDERTOW: {
-				if (hd < 3) return null;
-				ArrayList<Integer> cells = new ArrayList<>();
-				for (int i = 0; i < run.length; i++) lane(cells, i, hd, hd);
 				return toArray(cells);
 			}
 			default:
-				return minionCount() < (enraged ? 4 : 2) ? new int[0] : null;
+				return null;
 		}
 	}
 
-	private int minionCount() {
-		int n = 0;
-		for (Mob m : Dungeon.level.mobs) if (m instanceof Wraith && m.alignment == Alignment.ENEMY) n++;
-		return n;
+	/** prepare() runs before the skill is recorded, so the mouth opens right after */
+	private void syncMouthSoon() {
+		if (sprite instanceof DemonSprites.LeviathanHead) ((DemonSprites.LeviathanHead) sprite).open(true);
 	}
 
 	@Override
 	protected void release(int skill, int[] cells) {
+		Level l = Dungeon.level;
+		int w = l.width();
 		switch (skill) {
-			case WAVE:
+			case LASER: {
+				int far = pos;
+				for (int c : cells) if (l.trueDistance(pos, c) > l.trueDistance(pos, far)) far = c;
+				LeviathanFx.beam(pos, far, enraged);
 				for (int c : cells) {
-					CellEmitter.center(c).burst(Speck.factory(Speck.STEAM), 3);
-					Char ch = strike(c, 14, 26);
-					if (ch != null && ch.isAlive()) push(ch, 2);
+					CellEmitter.center(c).burst(Speck.factory(Speck.LIGHT), 2);
+					strike(c, 20, 36);
 				}
-				GameScene.flash(0x302060C0);
+				GameScene.flash(0x4040E0FF);
+				Sample.INSTANCE.play(Assets.Sounds.RAY);
+				syncMouth();
+				break;
+			}
+			case TSUNAMI: {
+				if (cells.length == 0) break;
+				int left = w, right = 0, top = l.height(), bottom = 0;
+				for (int c : cells) {
+					left = Math.min(left, c % w);
+					right = Math.max(right, c % w);
+				}
+				//the picture spans the whole floor, not just this band's rows
+				for (int c = 0; c < l.length(); c++) {
+					if (floor(c)) {
+						top = Math.min(top, c / w);
+						bottom = Math.max(bottom, c / w);
+					}
+				}
+				LeviathanFx.wave(left, right, top, bottom);
+				for (int c : cells) {
+					if (Random.Int(3) == 0) Splash.at(c, 0x3A7BD5, 4);
+					strike(c, 16, 28);
+				}
 				Sample.INSTANCE.play(Assets.Sounds.WATER, 1f, 0.8f);
 				break;
-			case BITE:
-				if (sprite != null && cells.length > 0) sprite.attack(cells[0]);
-				for (int c : cells) strike(c, 18, 30);
-				Sample.INSTANCE.play(Assets.Sounds.HIT_STRONG);
-				break;
-			case UNDERTOW:
+			}
+			default: {
 				for (int c : cells) {
-					CellEmitter.center(c).burst(Speck.factory(Speck.STEAM), 2);
-					Char ch = Actor.findChar(c);
-					if (ch == null || ch == this || ch.alignment == alignment) continue;
-					pull(ch);
-					Buff.prolong(ch, Cripple.class, 3f);
+					LeviathanFx.drop(c);
+					Splash.at(c, 0x6AB8F0, 6);
+					strike(c, 10, 20);
 				}
-				Sample.INSTANCE.play(Assets.Sounds.WATER, 1f, 1.2f);
+				Sample.INSTANCE.play(Assets.Sounds.WATER, 1f, 1.3f);
 				break;
-			default:
-				for (int i = 0; i < 2; i++) {
-					Wraith w = Wraith.spawnAt(pos + dir);
-					if (w != null) w.beckon(Dungeon.hero.pos);
-				}
-				CellEmitter.get(pos + dir).burst(ShadowParticle.CURSE, 10);
-				Sample.INSTANCE.play(Assets.Sounds.CURSED);
-				break;
+			}
 		}
-	}
-
-	/** pushes a character away from the wall */
-	private void push(Char ch, int power) {
-		int far = ch.pos + dir * (power + 1);
-		if (far < 0 || far >= Dungeon.level.length()) return;
-		WandOfBlastWave.throwChar(ch, new Ballistica(ch.pos, far, Ballistica.MAGIC_BOLT), power, true, true, this);
-	}
-
-	/** drags a character back toward the wall, as far as the cells in front of the body */
-	private void pull(Char ch) {
-		if (Char.hasProp(ch, Property.IMMOVABLE)) return;
-		int dest = ch.pos;
-		while (true) {
-			int next = dest - dir;
-			if (next < 0 || next >= Dungeon.level.length() || Dungeon.level.solid[next]
-					|| !Dungeon.level.passable[next] || Actor.findChar(next) != null) break;
-			dest = next;
-		}
-		if (dest == ch.pos) return;
-		Actor.add(new Pushing(ch, ch.pos, dest));
-		ch.pos = dest;
-		Dungeon.level.occupyCell(ch);
-		if (ch == Dungeon.hero) {
-			Dungeon.hero.interrupt();
-			Dungeon.observe();
-			GameScene.updateFog();
-		}
-	}
-
-	// ------------------------------------------------------------------ end
-
-	@Override
-	public void die(Object cause) {
-		for (LeviathanCoil c : coils()) c.vanish();
-		super.die(cause);
-	}
-
-	@Override
-	public void storeInBundle(Bundle bundle) {
-		super.storeInBundle(bundle);
-		bundle.put("dir", dir);
-		bundle.put("run", run);
-		bundle.put("lateral", lateral);
 	}
 
 	@Override
 	public void restoreFromBundle(Bundle bundle) {
 		super.restoreFromBundle(bundle);
-		dir = bundle.getInt("dir");
-		run = bundle.getIntArray("run");
-		if (run == null) run = new int[0];
-		lateral = bundle.getInt("lateral");
 		lord = DemonLord.LEVIATHAN;
 	}
 }

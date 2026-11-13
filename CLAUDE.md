@@ -132,6 +132,21 @@ Done and pushed (see `git log`):
   of 3..11 cells, never covering a door, prefers horizontal walls; head in the middle, `LeviathanCoil`s on the rest,
   which forward damage to the head; immovable; Great Wave = every lane but 1-2 safe ones, Bite, Undertow pull, wraiths;
   falls back to the normal boss if no wall fits). Flies are a tinted swarm; seal at items.png row 37 +12. Dev tools: "마왕 단계 진행" advances the stage.
+- Leviathan reworked (Nov 14 2026, owner's design and pictures; replaces the wall form described above):
+  `DemonArenaLevel.sea` (set at build when the lord is Leviathan, saved): rows 1..4 are an abyss of CHASM that is neither
+  passable nor a pit (like the holy giant's void), the floor is rows 5..14 with six STATUE pillars (`SEA_PILLARS`), same
+  size and arrival/portal cells as the other lords' arena. `actors/mobs/LeviathanBoss` sits on the ledge (9,5), IMMOVABLE,
+  `viewDistance` 20, sprite `DemonSprites.LeviathanHead` (56x71 frames drawn up from its tile; `open()` = the charging
+  mouth, synced from `charging()`). Three telegraphed skills: LASER (mouth opens, next turn the straight line through the
+  target's tile to the first pillar/wall, 20-36; 3 wide when enraged), TSUNAMI (`prepareWaves`: bands of `WAVE_STEP` 3
+  columns from the left edge to the right over the whole floor, 16-28; the `SHELTER` 2 tiles right of a pillar stay dry),
+  DROPS (16 marked tiles anywhere incl. the target's, 24 enraged, 10-20). No bite/undertow/wraiths any more. Pictures:
+  `effects/LeviathanFx` (beam stretched and rotated from the mouth, the wave picture sliding over each band, falling
+  drops). Art: `tools/sinsart/demon_art/leviathan/{head_closed,head_open,beam}.png, wave.jpg` (the wave is a pixel
+  version of Hokusai's Great Wave) -> `tools/sinsart/make_leviathan_art.py` -> `sprites/demon_leviathan_head.png`,
+  `effects/leviathan_{beam,ball,wave,drop}.png` (the drop is drawn in the script; preview.png next to the sources).
+  Old saves: `LeviathanCoil` pieces are cleared on the boss's first turn and the skills work from wherever the head is.
+  Headless check of the patterns: build the arena as in the sigil note and call `prepare`/`prepareWaves` by reflection.
 - Seven virtues, phase 1 (Nov 2026): the opposing faction. `virtues/Virtue` enum (humility/pride, charity/greed,
   chastity/lust, patience/wrath, temperance/gluttony, kindness/envy, diligence/sloth; `sin`, `color`, champion class)
   and `virtues/VirtueHooks` (state in the Dungeon quests bundle: regions done, virtues used, nemesis region).

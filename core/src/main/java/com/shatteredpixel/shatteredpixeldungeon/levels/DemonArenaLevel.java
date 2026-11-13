@@ -26,6 +26,12 @@ public class DemonArenaLevel extends Level {
 	/** interior: x 2..16, y 2..14 */
 	private static final int LEFT = 2, TOP = 2, RIGHT = 16, BOTTOM = 14;
 
+	/** Leviathan's arena (owner, Nov 14 2026): the far side is an abyss (rows 1..4) and only its head rises over
+	 *  the ledge (row 5), like the holy giant; pillars on the floor give shelter from its wave and laser. */
+	public boolean sea = false;
+	private static final int SEA_VOID_TOP = 1, SEA_VOID_BOTTOM = 4, SEA_LEDGE = 5;
+	private static final int[][] SEA_PILLARS = {{5, 8}, {13, 8}, {7, 10}, {11, 10}, {4, 12}, {14, 12}};
+
 	{
 		color1 = 0x801500;
 		color2 = 0xa68521;
@@ -54,6 +60,23 @@ public class DemonArenaLevel extends Level {
 	protected boolean build() {
 		setSize(W, H);
 		for (int i = 0; i < length(); i++) map[i] = Terrain.WALL;
+
+		sea = DemonHooks.lord == DemonLord.LEVIATHAN;
+		if (sea) {
+			for (int y = SEA_VOID_TOP; y <= SEA_VOID_BOTTOM; y++) {
+				for (int x = 1; x < W - 1; x++) map[y * W + x] = Terrain.CHASM;
+			}
+			for (int y = SEA_LEDGE; y <= BOTTOM; y++) {
+				for (int x = LEFT; x <= RIGHT; x++) {
+					map[y * W + x] = Random.Int(6) == 0 ? Terrain.EMPTY_DECO : Terrain.EMPTY;
+				}
+			}
+			for (int[] p : SEA_PILLARS) map[p[1] * W + p[0]] = Terrain.STATUE;
+			map[portalCell()] = DemonHooks.stage == DemonHooks.DEFEATED ? Terrain.ENTRANCE : Terrain.LOCKED_EXIT;
+			transitions.add(new LevelTransition(this, portalCell(), LevelTransition.Type.BRANCH_ENTRANCE,
+					DemonHooks.ARENA_DEPTH, 0, LevelTransition.Type.REGULAR_EXIT));
+			return true;
+		}
 
 		for (int y = TOP; y <= BOTTOM; y++) {
 			for (int x = LEFT; x <= RIGHT; x++) {
@@ -92,12 +115,12 @@ public class DemonArenaLevel extends Level {
 		if (lord == null || DemonHooks.stage == DemonHooks.DEFEATED) return;
 		int center = (TOP + 4) * W + W / 2;
 		if (lord == DemonLord.LEVIATHAN) {
-			//along the far wall
-			LeviathanBoss lev = LeviathanBoss.emerge(this, (TOP + 2) * W + W / 2, false);
-			if (lev != null) {
-				lev.state = lev.WANDERING;
-				return;
-			}
+			//its head over the abyss, on the middle of the ledge
+			LeviathanBoss lev = new LeviathanBoss();
+			lev.pos = (sea ? SEA_LEDGE : TOP) * W + W / 2;
+			lev.state = lev.WANDERING;
+			mobs.add(lev);
+			return;
 		}
 		DemonLordBoss boss = new DemonLordBoss();
 		boss.lord = lord;
@@ -122,8 +145,48 @@ public class DemonArenaLevel extends Level {
 	}
 
 	@Override
+	public void buildFlagMaps() {
+		super.buildFlagMaps();
+		if (sea) for (int i = 0; i < length(); i++) voidCell(i);
+	}
+
+	@Override
+	public void updateCellFlags(int cell) {
+		super.updateCellFlags(cell);
+		if (sea) voidCell(cell);
+	}
+
+	/** the abyss can be seen across but never entered or fallen into */
+	private void voidCell(int i) {
+		if (map[i] == Terrain.CHASM) {
+			passable[i] = avoid[i] = false;
+			pit[i] = false;
+		}
+	}
+
+	@Override
+	public void storeInBundle(com.watabou.utils.Bundle bundle) {
+		super.storeInBundle(bundle);
+		bundle.put("sea", sea);
+	}
+
+	@Override
+	public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
+		//before super: it builds the flag maps
+		sea = bundle.getBoolean("sea");
+		super.restoreFromBundle(bundle);
+	}
+
+	@Override
 	public String tileName(int tile) {
 		if (tile == Terrain.EMBERS) return Messages.get(DemonArenaLevel.class, "embers_name");
+		if (sea && tile == Terrain.CHASM) return Messages.get(DemonArenaLevel.class, "abyss_name");
 		return super.tileName(tile);
+	}
+
+	@Override
+	public String tileDesc(int tile) {
+		if (sea && tile == Terrain.CHASM) return Messages.get(DemonArenaLevel.class, "abyss_desc");
+		return super.tileDesc(tile);
 	}
 }

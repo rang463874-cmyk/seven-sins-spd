@@ -134,6 +134,73 @@ public class DemonSprites {
 		}
 	}
 
+	/** Leviathan's head rising out of the abyss (sprites/demon_leviathan_head.png, 56x71 frames, the owner's art,
+	 *  tools/sinsart/make_leviathan_art.py). Its cell is the ledge tile under its jaw; the rest towers over the void. */
+	public static class LeviathanHead extends MobSprite {
+
+		private Animation charge;
+		private boolean open = false;
+
+		public LeviathanHead() {
+			super();
+			texture("sprites/demon_leviathan_head.png");
+			TextureFilm frames = new TextureFilm(texture, 56, 71);
+			idle = new Animation(2, true);
+			idle.frames(frames, 0, 1);
+			run = idle.clone();
+			charge = new Animation(4, true);
+			charge.frames(frames, 2, 3);
+			attack = new Animation(8, false);
+			attack.frames(frames, 2, 2, 0);
+			zap = attack.clone();
+			die = new Animation(5, false);
+			die.frames(frames, 4, 5, 6, 7);
+			play(idle);
+		}
+
+		/** the mouth stays open while the laser charges */
+		public void open(boolean value) {
+			if (open == value) return;
+			open = value;
+			if (curAnim != die) play(open ? charge : idle);
+		}
+
+		@Override
+		public void idle() {
+			if (open && charge != null) play(charge);
+			else super.idle();
+		}
+
+		@Override
+		public void link(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch) {
+			super.link(ch);
+			renderShadow = false;
+			if (ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.LeviathanBoss) {
+				open(((com.shatteredpixel.shatteredpixeldungeon.actors.mobs.LeviathanBoss) ch).charging());
+			}
+		}
+
+		@Override
+		public void turnTo(int from, int to) {
+			//it always faces the arena
+		}
+
+		@Override
+		public com.watabou.utils.PointF worldToCamera(int cell) {
+			final int csize = com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap.SIZE;
+			int w = com.shatteredpixel.shatteredpixeldungeon.Dungeon.level.width();
+			return new com.watabou.utils.PointF(
+					com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.align(com.watabou.noosa.Camera.main, ((cell % w) + 0.5f) * csize - width() * 0.5f),
+					com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.align(com.watabou.noosa.Camera.main, ((cell / w) + 1f) * csize - height())
+			);
+		}
+
+		@Override
+		public int blood() {
+			return 0xFF40C0FF;
+		}
+	}
+
 	public static class Lucifer extends LordSprite { protected DemonLord lord() { return DemonLord.LUCIFER; } }
 	public static class Mammon extends LordSprite { protected DemonLord lord() { return DemonLord.MAMMON; } }
 	public static class Asmodeus extends LordSprite { protected DemonLord lord() { return DemonLord.ASMODEUS; } }
