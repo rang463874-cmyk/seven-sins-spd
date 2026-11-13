@@ -40,7 +40,7 @@ TIER_CLOTHES = {
                 (250, 0.12, 1.55), None],
 }
 # pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
-NO_GRID = {"greed", "gluttony"}
+NO_GRID = {"greed", "gluttony", "wrath"}
 NO_GRID_STEP = 12          # source px per intermediate px for those
 # drop islands smaller than this share of the biggest one (flying coins, motion swooshes, sparkles)
 ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
@@ -50,10 +50,11 @@ ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
 CLOTHES = {
     "default": dict(hue=(0.2, 0.48), smin=0.3, vmin=0.0, below=0.0),     # gluttony's green tunic
     "greed": dict(hue=(0.95, 0.02), smin=0.6, vmin=0.35, below=0.45),   # the red skirt (not the hood)
+    "wrath": dict(hue=(0.84, 0.97), smin=0.35, vmin=0.0, below=0.0),    # the maroon uniform (hair is orange-red)
 }
 
 # class armor colour where the sin's hue on the picture's dark clothes would look muddy
-TIER6 = {"greed": (44, 0.75, 1.7)}
+TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7)}
 
 SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215}
 
@@ -385,7 +386,7 @@ SWAP_LEGS = {"gluttony": False}
 # per-pose size correction when Gemini drew a pose at a different zoom (matched by eye on the head/hood size)
 POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78}}
 # attack pictures are mirrored to face right when the weapon sticks out to the left; None = decide from the picture
-ATTACK_MIRROR = {"greed": False, "gluttony": False}
+ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False}
 
 
 def build_frames(pics, name="default"):
@@ -502,7 +503,12 @@ def splash(name, src):
     """Hero select background: every splash must be 800x450 (the scene scales by the first texture's height).
     The owner's picture is fitted to the height on black, its character in the middle (portrait phones only
     show the middle)."""
-    im = Image.open(src).convert("RGB")
+    im = Image.open(src)
+    if im.mode == "RGBA":                 # transparent background: onto black
+        flat = Image.new("RGBA", im.size, (0, 0, 0, 255))
+        flat.alpha_composite(im)
+        im = flat
+    im = im.convert("RGB")
     for box in SPLASH_ERASE.get(name, []):
         im.paste(im.getpixel((5, 5)), box)
     s = 450 / im.height

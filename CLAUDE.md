@@ -511,7 +511,9 @@ red skirt) to `TIER_CLOTHES`, tier 6 = the sin's hue or `TIER6`. Also writes the
 fitted to the height on black, character at `SPLASH_FOCUS`). `make_sin_assets.py` leaves the sheet/avatar/splash of a sin with
 pictures alone. `GLOBAL_BG` also clears the background colour inside closed loops (gluttony's attack swoosh), `SWAP_LEGS` False
 runs on the walk pose with bob only (long coats), `SPLASH_ERASE` paints boxes (the Gemini sparkle) out of a splash.
-Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid pictures sampled by `native_pitch` too), greed (65x54).
+Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid pictures sampled by `native_pitch` too), greed (65x54), wrath (Nov 13: drummer
+ in a maroon uniform, 76x79; `CLOTHES` = the maroon uniform, tier 6 bright red; her splash picture has a transparent background,
+ which `splash` now puts on black).
 Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
 screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
 chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,
