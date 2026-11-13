@@ -29,7 +29,7 @@ import java.util.HashSet;
 
 /**
  * Seven Sins: Solomon's demons (Nov 2026). Per run:
- * - 2-3 regular demons on every regular floor 2-24, drawn from the floor's region (unmet ones first);
+ * - 2-3 regular demons on every sewer floor 2-4, 3-4 on every regular floor 5-24, drawn from the floor's region (unmet ones first);
  * - each one killed goes into the codex ("the Lesser Key"); every milestone in {@link #MILESTONES} gives a
  *   lasting power for the run; each drops demon essences;
  * - after a floor boss (5..25) falls, a hidden sigil appears somewhere on its floor; offering essences
@@ -78,7 +78,8 @@ public class GoetiaHooks {
 		if (Dungeon.branch != 0 || depth < 2 || depth > 24 || Dungeon.bossLevel()) return;
 		int region = Math.min(4, (depth - 1) / 5);
 		ArrayList<GoetiaDemon> pool = GoetiaDemon.ofRegion(region);
-		int n = 2 + (Random.Int(4) == 0 ? 1 : 0);
+		//owner (Nov 13 2026): more demons now that their essences have more uses; the sewers keep 2-3 (only 3 kinds live there)
+		int n = region == 0 ? 2 + (Random.Int(4) == 0 ? 1 : 0) : 3 + (Random.Int(2) == 0 ? 1 : 0);
 		ArrayList<GoetiaDemon> chosen = new ArrayList<>();
 		for (int i = 0; i < n && !pool.isEmpty(); i++) {
 			ArrayList<GoetiaDemon> unmet = new ArrayList<>();
@@ -204,6 +205,9 @@ public class GoetiaHooks {
 
 	/** from Hero.act: place a pending sigil once the boss floor is no longer locked */
 	public static void tick(Hero hero) {
+		if (Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.GoetiaArenaLevel) {
+			((com.shatteredpixel.shatteredpixeldungeon.levels.GoetiaArenaLevel) Dungeon.level).checkRitual();
+		}
 		if (pendingSigil != Dungeon.depth || Dungeon.branch != 0 || Dungeon.level == null || Dungeon.level.locked) return;
 		Level level = Dungeon.level;
 		ArrayList<Integer> cells = new ArrayList<>();
@@ -219,12 +223,14 @@ public class GoetiaHooks {
 		int cell = Random.element(cells);
 		GoetiaSigil sigil = new GoetiaSigil();
 		level.setTrap(sigil, cell);
-		sigil.hide();
-		Level.set(cell, Terrain.SECRET_TRAP);
+		Level.set(cell, Terrain.TRAP); //owner: no longer hidden, it opens the way to the ritual chamber
 		GameScene.updateMap(cell);
 		sigils.add(Dungeon.depth);
 		GLog.w(Messages.get(GoetiaHooks.class, "sigil_hint"));
 	}
+
+	/** essences thrown onto the ritual chamber's four altars (one each) summon the king */
+	public static final int RITUAL_ESSENCES = 4;
 
 	public static int offerCost(int depth) {
 		return OFFER[Math.max(0, Math.min(OFFER.length - 1, depth / 5 - 1))];

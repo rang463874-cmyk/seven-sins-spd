@@ -45,27 +45,16 @@ public class GoetiaSigil extends Trap {
 		});
 	}
 
+	/** the sigil leads to the king's ritual chamber; the essences are offered there, on its four altars */
 	private void showOffer(final Hero hero, final GoetiaDemon lord) {
-		final int cost = GoetiaHooks.offerCost(Dungeon.depth);
 		DemonEssence held = hero.belongings.getItem(DemonEssence.class);
 		final int have = held == null ? 0 : held.quantity();
-		String body = Messages.get(this, "offer", lord.rankName(), lord.title(), cost, have);
-		if (have < cost) {
-			GameScene.show(new WndOptions(new ItemSprite(new DemonEssence()), Messages.titleCase(name()), body,
-					Messages.get(this, "leave")));
-			return;
-		}
+		String body = Messages.get(this, "offer", lord.rankName(), lord.title(), GoetiaHooks.RITUAL_ESSENCES, have);
 		GameScene.show(new WndOptions(new ItemSprite(new DemonEssence()), Messages.titleCase(name()), body,
-				Messages.get(this, "accept", cost), Messages.get(this, "leave")) {
+				Messages.get(this, "accept"), Messages.get(this, "leave")) {
 			@Override
 			protected void onSelect(int index) {
 				if (index != 0) return;
-				DemonEssence e = hero.belongings.getItem(DemonEssence.class);
-				if (e == null || e.quantity() < cost) return;
-				if (e.quantity() == cost) e.detachAll(hero.belongings.backpack);
-				else e.quantity(e.quantity() - cost);
-				Item.updateQuickslot();
-				GLog.n(Messages.get(GoetiaSigil.class, "summoned", lord.rankName(), lord.title()));
 				GoetiaHooks.travelToArena();
 			}
 		});

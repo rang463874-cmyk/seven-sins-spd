@@ -39,7 +39,7 @@ Done and pushed (see `git log`):
   +5%/lvl thrown damage while wielded via `Sling.thrownDamage` in `MissileWeapon.damageRoll`); T3 Flamberge (6-17, 50%
   bleed), WarPick (7-18, + a roll of the target's armor), CoinSack (5-15, kills drop 4+2xdepth gold), BattleScythe (7-17,
   50% to enemies adjacent to both); T4 ExecutionerSword (9-23, up to +80% by missing HP), CrescentAxe (10-24, 20% crit
-  x2.25), CrusaderMace (9-22, +60% vs UNDEAD), RuneSpear (8-21, reach 2, ignores armor, +6 max/lvl like the runic blade);
+  x2.25), CrusaderMace (9-22, +60% vs UNDEAD and DEMONIC), RuneSpear (8-21, reach 2, ignores armor, +6 max/lvl like the runic blade);
   T5 GiantSlayer (12-30, +50% vs LARGE/MINIBOSS/BOSS), AbyssScythe (11-28, kills heal 8% HT + lvl), HeavenlySpear (12-29,
   reach 2, the enemy behind the target takes the hit), RuinHammer (14-32, 40% to the target's neighbours).
   Tier 6 (`ApocalypseWeapon`, not in the generator): forged in the alchemy pot from an identified uncursed tier 5 melee
@@ -269,8 +269,8 @@ Done and pushed (see `git log`):
     minibosses can be enraged (`WrathGrudge.immune` = only `isImmune(Amok)`).
 - Solomon's demons, the Ars Goetia (Nov 2026, owner's design): `goetia/GoetiaDemon` enum = the 72 minus Asmoday (he is
   the demon lord Asmodeus) = 71, in Goetia order (`number()` skips 32), each with rank, region 0..4 (sewers..halls,
-  11/13/14/14/14) or a `bossFloor`, a fighting `Kind` and a colour. `goetia/GoetiaHooks` (state in the quests bundle, per
-  run): `onLevelMobs` (from `EliteHooks.onLevelMobs`) puts 2-3 regular demons (`actors/mobs/goetia/GoetiaFiend`, one class,
+  3/15/16/16/16 since Nov 13 2026: only Marbas, Leraje and Botis stay in the sewers, owner) or a `bossFloor`, a fighting `Kind` and a colour. `goetia/GoetiaHooks` (state in the quests bundle, per
+  run): `onLevelMobs` (from `EliteHooks.onLevelMobs`) puts 2-3 regular demons on sewer floors and 3-4 elsewhere (owner, Nov 13 2026) (`actors/mobs/goetia/GoetiaFiend`, one class,
   stats from depth, kind effects in `applyKind`, ranged kinds bolt without a sprite zap, SUMMON uses `level.createMob`,
   dev/bestiary instances pick a random demon of the floor's region) on every regular floor 2-24, unmet ones first. Kills
   -> `record` into the codex (`slain`), drop `items/DemonEssence` (1, 2 at milestone 15). Milestones `MILESTONES`
@@ -278,11 +278,14 @@ Done and pushed (see `git log`):
   from demons, double essences, +10% damage dealt (`modifyDamage` in `Char.damage`), +3 armor (`drBonus`), +20% exp
   (`bonusExp`), +30 HP and +10% accuracy. The codex (`EssenceBag.showCodex`, `codexText`) opens from a "소열쇠" button in the essence
   bag window's title (`WndBag.placeTitle`; bags can't be tapped for actions) and from the demon essence's CODEX action. Boss floors: `onMobDeath` (Goo/Tengu/DM300/DwarfKing/Yog) sets `pendingSigil`; `tick` (from `Hero.act`)
-  places a hidden `levels/traps/GoetiaSigil` (never disarms; traps fire on the actor thread, so its window opens via
-  `Game.runOnRenderThread` like NPC dialogs, or the game crashes) once the floor is unlocked; stepping on it asks for
-  `OFFER` 3/4/5/6/7 essences and sends the hero (`travelToArena`, InterlevelScene RETURN) to `levels/GoetiaArenaLevel`
+  places a visible `levels/traps/GoetiaSigil` (never disarms; traps fire on the actor thread, so its window opens via
+  `Game.runOnRenderThread` like NPC dialogs, or the game crashes) once the floor is unlocked; stepping on it offers to enter
+  the ritual chamber (free; `OFFER` is unused since Nov 13 2026) and sends the hero (`travelToArena`, InterlevelScene RETURN) to `levels/GoetiaArenaLevel`
   (branch `ARENA_BRANCH` 8, same depth, built in `Dungeon.newLevel`; round hall in the region's tiles, ember circle,
-  stairs back = BRANCH_ENTRANCE to the boss floor's REGULAR_EXIT, LOCKED_EXIT until the king dies). Kings
+  stairs back = BRANCH_ENTRANCE to the boss floor's REGULAR_EXIT). Ritual (owner: like the wandmaker's fire elemental): four
+  PEDESTAL altars around the circle; `checkRitual` (from `GoetiaHooks.tick`, every hero turn there) waits for a demon essence
+  heap on each (thrown or dropped, `RITUAL_ESSENCES` 4), burns one from each, raises the king in the centre (hunting) and
+  turns the stairs into LOCKED_EXIT until it dies; before that the stairs are open. `createMobs` no longer adds the king. Kings
   (`actors/mobs/goetia/GoetiaLord`, RegionElite + BOSS, HP 120+36*depth, softcapped): Purson 5, Vine 10, Beleth 15,
   Paimon 20, Bael 25; skills Hellfire ring, Lance line, Legion (2 half-HP minion fiends), Doom (3x3, below half HP);
   death -> codex, scroll of upgrade, region reward, 2 essences, `unlockPortal`. Art: `sprites/GoetiaSprite` = tinted

@@ -1,5 +1,14 @@
 package com.shatteredpixel.shatteredpixeldungeon.levels;
 
+import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
+import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ElmoParticle;
+import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.watabou.noosa.Camera;
+import com.watabou.noosa.audio.Sample;
+import com.watabou.utils.PathFinder;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -13,7 +22,10 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.watabou.utils.Random;
 
 /**
- * Seven Sins: the hidden room of a boss floor (branch GoetiaHooks.ARENA_BRANCH, same depth): a ritual hall in
+ * Seven Sins (ritual since Nov 13 2026, owner: like the wandmaker's fire elemental): the four ALTARS (pedestals) around
+ * the circle each need a demon essence thrown or dropped on them (checkRitual, from GoetiaHooks.tick); then the essences
+ * burn away, the king rises in the centre and the stairs seal until it falls. Before that the stairs stay open.
+ * The hidden room of a boss floor (branch GoetiaHooks.ARENA_BRANCH, same depth): a ritual hall in
  * the floor's own tileset with a summoning circle of embers, where the floor's demon king waits. The way
  * back (stairs to the boss floor's exit) stays sealed until the king falls.
  */
@@ -34,6 +46,61 @@ public class GoetiaArenaLevel extends Level {
 
 	public static int portalCell() {
 		return (BOTTOM + 1) * W + W / 2;
+	}
+
+	private static int[] altars() {
+		int cx = W / 2, cy = (TOP + BOTTOM) / 2 - 1;
+		return new int[]{(cy - 3) * W + cx, cy * W + cx - 3, cy * W + cx + 3, (cy + 3) * W + cx};
+	}
+
+	private boolean hinted = false;
+
+	private boolean lordPresent() {
+		for (Mob m : mobs) if (m instanceof GoetiaLord) return true;
+		return false;
+	}
+
+	/** every hero turn while here: four essences on the four altars summon the king */
+	public void checkRitual() {
+		if (GoetiaHooks.lordsBeaten.contains(Dungeon.depth) || lordPresent()) return;
+		GoetiaDemon d = GoetiaDemon.lordOf(Dungeon.depth);
+		if (d == null) return;
+		if (!hinted) {
+			hinted = true;
+			GLog.w(Messages.get(GoetiaArenaLevel.class, "ritual_hint", d.rankName(), d.title(), GoetiaHooks.RITUAL_ESSENCES));
+		}
+		for (int a : altars()) {
+			Heap h = heaps.get(a);
+			if (h == null || h.type != Heap.Type.HEAP || essenceIn(h) == null) return;
+		}
+		for (int a : altars()) {
+			Heap h = heaps.get(a);
+			Item e = essenceIn(h);
+			if (e.quantity() > 1) e.quantity(e.quantity() - 1);
+			else h.remove(e);
+			CellEmitter.get(a).burst(ElmoParticle.FACTORY, 12);
+		}
+		GoetiaLord lord = new GoetiaLord().setup(d, Dungeon.depth);
+		lord.pos = centerCell();
+		if (Actor.findChar(lord.pos) != null) {
+			for (int n : PathFinder.NEIGHBOURS8) {
+				if (Actor.findChar(lord.pos + n) == null && passable[lord.pos + n]) { lord.pos += n; break; }
+			}
+		}
+		lord.state = lord.HUNTING;
+		GameScene.add(lord);
+		lord.beckon(Dungeon.hero.pos);
+		CellEmitter.get(lord.pos).burst(ElmoParticle.FACTORY, 30);
+		Camera.main.shake(3, 0.7f);
+		Sample.INSTANCE.play(Assets.Sounds.BURNING);
+		set(portalCell(), Terrain.LOCKED_EXIT);
+		GameScene.updateMap(portalCell());
+		GLog.n(Messages.get(GoetiaArenaLevel.class, "ritual_done", d.rankName(), d.title()));
+	}
+
+	private static Item essenceIn(Heap h) {
+		for (Item i : h.items) if (i instanceof com.shatteredpixel.shatteredpixeldungeon.items.DemonEssence) return i;
+		return null;
 	}
 
 	private static int centerCell() {
@@ -83,8 +150,10 @@ public class GoetiaArenaLevel extends Level {
 		int[] pillars = {(cy - 4) * W + cx - 4, (cy - 4) * W + cx + 4, (cy + 4) * W + cx - 4, (cy + 4) * W + cx + 4};
 		for (int p : pillars) map[p] = Terrain.STATUE;
 		map[centerCell()] = Terrain.EMPTY_SP;
+		for (int a : altars()) map[a] = Terrain.PEDESTAL;
 
-		map[portalCell()] = GoetiaHooks.lordsBeaten.contains(Dungeon.depth) ? Terrain.ENTRANCE : Terrain.LOCKED_EXIT;
+		//the stairs stay open until the ritual summons the king
+		map[portalCell()] = Terrain.ENTRANCE;
 		transitions.add(new LevelTransition(this, portalCell(), LevelTransition.Type.BRANCH_ENTRANCE,
 				Dungeon.depth, 0, LevelTransition.Type.REGULAR_EXIT));
 		return true;
@@ -103,12 +172,7 @@ public class GoetiaArenaLevel extends Level {
 
 	@Override
 	protected void createMobs() {
-		GoetiaDemon d = GoetiaDemon.lordOf(Dungeon.depth);
-		if (d == null || GoetiaHooks.lordsBeaten.contains(Dungeon.depth)) return;
-		GoetiaLord lord = new GoetiaLord().setup(d, Dungeon.depth);
-		lord.pos = centerCell();
-		lord.state = lord.WANDERING;
-		mobs.add(lord);
+		//the king only rises through the ritual (checkRitual)
 	}
 
 	@Override
