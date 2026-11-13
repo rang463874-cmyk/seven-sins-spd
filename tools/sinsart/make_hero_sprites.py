@@ -40,7 +40,7 @@ TIER_CLOTHES = {
                 (250, 0.12, 1.55), None],
 }
 # pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
-NO_GRID = {"greed"}
+NO_GRID = {"greed", "gluttony"}
 NO_GRID_STEP = 12          # source px per intermediate px for those
 # drop islands smaller than this share of the biggest one (flying coins, motion swooshes, sparkles)
 ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
@@ -146,7 +146,7 @@ def is_blood(c):
     return (h < 0.03 or h > 0.97) and s > 0.45 and 0.3 < v < 0.65
 
 
-def cut_background_(img, island=0.05):
+def cut_background_(img, island=0.05, global_bg=False):
     """RGBA with the background, blood and stray marks cleared (flood fill from the border)."""
     rows, cols, _ = img.shape
     border = np.concatenate([img[0], img[-1], img[:, 0], img[:, -1]]).astype(int)
@@ -170,6 +170,8 @@ def cut_background_(img, island=0.05):
         seen[r, c] = True
         stack += [(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)]
     keep = ~seen
+    if global_bg:                      # the background colour inside closed loops too
+        keep &= np.abs(img.astype(int) - bg).sum(2) >= 60
     # drop small islands (sparkle, specks)
     lab = np.zeros((rows, cols), int)
     sizes = {}
@@ -374,17 +376,23 @@ def squash(a, rows):
     return a[keep]
 
 
+# sins whose background colour appears nowhere in the figure: clear it everywhere, also inside closed loops
+# (gluttony's attack swoosh); not for greed, whose crimson background is close to her skirt's shadows
+GLOBAL_BG = {"gluttony"}
+# run frames from the walk pose with mirrored legs; off where a long coat makes the mirrored bottom third look torn
+SWAP_LEGS = {"gluttony": False}
+
 # per-pose size correction when Gemini drew a pose at a different zoom (matched by eye on the head/hood size)
 POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78}}
 # attack pictures are mirrored to face right when the weapon sticks out to the left; None = decide from the picture
-ATTACK_MIRROR = {"greed": False}
+ATTACK_MIRROR = {"greed": False, "gluttony": False}
 
 
 def build_frames(pics, name="default"):
     """Frames at the pictures' own resolution (one art pixel = one sheet pixel, no resampling unless POSE_SCALE
     asks for it). Returns (frames, front art, frame width, frame height)."""
     isl = ISLAND_SHARE.get(name, ISLAND_SHARE["default"])
-    poses = {k: cut_background_(v, isl) for k, v in pics.items()}
+    poses = {k: cut_background_(v, isl, name in GLOBAL_BG) for k, v in pics.items()}
     mir = ATTACK_MIRROR.get(name)
     if mir is None:
         mir = faces_left(poses["attack"])
@@ -410,7 +418,7 @@ def build_frames(pics, name="default"):
     fr = [None] * FRAMES
     fr[0] = P(front)
     fr[1] = P(squash(front, sq(1)))
-    walk2 = swap_legs(walk)
+    walk2 = swap_legs(walk) if SWAP_LEGS.get(name, True) else walk
     for i, (img, dy) in enumerate([(walk, 0), (walk, bob), (walk, 0), (walk2, 0), (walk2, bob), (walk2, 0)]):
         fr[2 + i] = P(img, dy=dy)
     fr[8] = P(squash(front, sq(2)))
@@ -486,6 +494,8 @@ def avatar(front_n):
 
 # where the character's body is in each splash picture (share of the width), centred in the 800x450 splash
 SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
+# boxes (source px) painted with the background colour: the Gemini sparkle
+SPLASH_ERASE = {"gluttony": [(860, 870, 935, 945)]}
 
 
 def splash(name, src):
@@ -493,6 +503,8 @@ def splash(name, src):
     The owner's picture is fitted to the height on black, its character in the middle (portrait phones only
     show the middle)."""
     im = Image.open(src).convert("RGB")
+    for box in SPLASH_ERASE.get(name, []):
+        im.paste(im.getpixel((5, 5)), box)
     s = 450 / im.height
     im = im.resize((round(im.width * s), 450), Image.LANCZOS)
     out = Image.new("RGB", (800, 450), (0, 0, 0))
