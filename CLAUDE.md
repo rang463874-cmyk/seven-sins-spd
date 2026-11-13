@@ -452,7 +452,7 @@ Adding a new class means touching all of the above; follow an existing sin as th
 mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.py`.
 Hero redesigns (Nov 13 2026, owner draws them in Gemini; owner: keep the pictures as unchanged as possible): **hi-res hero
 sheets**. `HeroSprite.hiRes(tex)`: a sheet exactly 21 frames wide and 7 tier rows high (vanilla sheets are 256x128) has frames of
-width/21 x height/7 and is drawn at `artScale` = 15 / frame height (same on-screen size, more detail); `film(tex, tier)` and
+width/21 x height/7 and is drawn at `artScale` = 15 / frame height x `HI_RES_ZOOM` 1.2 (owner: a bit bigger than vanilla heroes; UI avatars stay 15 high); `film(tex, tier)` and
 `applyArtScale` (scale + a vanilla-width shadow, frames are wider than the figure) are used by `HeroSprite.updateArmor` and
 `MirrorSprite`; `avatar()` crops a square from the first frame and scales it (HeroSelectScene buttons and StartScene use it now;
 StatusPane lays the avatar out with width()/height()). Vanilla sheets are untouched.

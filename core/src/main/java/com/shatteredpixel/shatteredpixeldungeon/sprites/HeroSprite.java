@@ -173,6 +173,9 @@ public class HeroSprite extends CharSprite {
 	public static final int FRAMES = 21;
 	public static final int TIERS = 7;
 
+	//owner's call: hi-res heroes are drawn a little bigger than vanilla heroes in the dungeon (not in UI avatars)
+	public static final float HI_RES_ZOOM = 1.2f;
+
 	public static boolean hiRes( SmartTexture tx ) {
 		return tx != null && tx.width != 256 && tx.width % FRAMES == 0 && tx.height % TIERS == 0;
 	}
@@ -197,11 +200,16 @@ public class HeroSprite extends CharSprite {
 		return new TextureFilm( rows, Math.min( tier, TIERS - 1 ), frameW( tx ), frameH( tx ) );
 	}
 
-	//scale + a shadow as wide as a vanilla hero's (hi-res frames are wider than the figure, for lying/attack poses)
+	//scale (x HI_RES_ZOOM) + a shadow as wide as the figure's (hi-res frames are wider than the figure, for lying/attack poses)
 	public static void applyArtScale( CharSprite sprite, SmartTexture tx ) {
-		float s = artScale( tx );
+		if (!hiRes( tx )) {
+			sprite.scale.set( 1f );
+			sprite.shadowWidth = 1.2f;
+			return;
+		}
+		float s = artScale( tx ) * HI_RES_ZOOM;
 		sprite.scale.set( s );
-		sprite.shadowWidth = hiRes( tx ) ? 1.2f * FRAME_WIDTH / (frameW( tx ) * s) : 1.2f;
+		sprite.shadowWidth = 1.2f * FRAME_WIDTH * HI_RES_ZOOM / (frameW( tx ) * s);
 	}
 
 	public static TextureFilm tiers() {
