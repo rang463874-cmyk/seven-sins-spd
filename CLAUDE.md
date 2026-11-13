@@ -10,7 +10,8 @@ Done and pushed (see `git log`):
   +10/+100/+1000 to the current sin's points, refill charges/gauge/HP), monster summon
   (`devtools/WndDevMobs`: bestiary categories, tap a tile; bosses except Goo left out), level up, heal,
   identify all.
-- Cleric is hidden from hero select (kept for old saves). Hero select fits 12 classes.
+- Hero select shows only the seven sins (`HeroClass.selectable`, owner, Nov 13 2026); the six vanilla classes are hidden
+  but kept in the code for old saves, rankings, disguises and metamorphosis.
 - Seven sin classes, each with: signature artifact (`items/artifacts/SinArtifact`, starts worn in the
   artifact slot; growth/stats always work, skills and the skill bar only while worn; levels +0..+10 like
   the cloak of shadows from resource spent via `SinArtifact.onSpent`, 3+level per level: charge sins +1 max

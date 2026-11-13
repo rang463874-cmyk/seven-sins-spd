@@ -147,9 +147,10 @@ public enum HeroClass {
 		this.subClasses = subClasses;
 	}
 
-	//whether this class appears in hero selection (the cleric is hidden in this mod, but kept for old saves)
+	//whether this class appears in hero selection: only the seven sins (owner, Nov 13 2026).
+	//The six vanilla classes are kept for old saves, rankings, disguises and metamorphosis.
 	public boolean selectable(){
-		return this != CLERIC;
+		return ordinal() >= GLUTTONY.ordinal();
 	}
 
 	public void initHero( Hero hero ) {
