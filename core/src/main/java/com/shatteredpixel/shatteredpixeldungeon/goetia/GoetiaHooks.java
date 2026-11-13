@@ -208,25 +208,124 @@ public class GoetiaHooks {
 		if (Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.GoetiaArenaLevel) {
 			((com.shatteredpixel.shatteredpixeldungeon.levels.GoetiaArenaLevel) Dungeon.level).checkRitual();
 		}
-		if (pendingSigil != Dungeon.depth || Dungeon.branch != 0 || Dungeon.level == null || Dungeon.level.locked) return;
+		if (Dungeon.branch != 0 || Dungeon.level == null || Dungeon.level.locked) return;
+		int depth = Dungeon.depth;
+		if (depth % 5 != 0 || depth > 25 || sigils.contains(depth)) return;
+		//the boss fell just now, or (saves from before the sigils, a floor revisited) the hero has been deeper already
+		if (pendingSigil != depth && com.shatteredpixel.shatteredpixeldungeon.Statistics.deepestFloor <= depth) return;
 		Level level = Dungeon.level;
-		ArrayList<Integer> cells = new ArrayList<>();
-		for (int i = 0; i < level.length(); i++) {
-			int t = level.map[i];
-			if ((t == Terrain.EMPTY || t == Terrain.EMPTY_SP || t == Terrain.EMPTY_DECO || t == Terrain.GRASS)
-					&& level.passable[i] && !level.pit[i] && Actor.findChar(i) == null && level.heaps.get(i) == null
-					&& level.traps.get(i) == null && level.plants.get(i) == null && level.getTransition(i) == null
-					&& level.distance(i, hero.pos) >= 4) cells.add(i);
-		}
 		pendingSigil = -1;
-		if (cells.isEmpty()) return;
-		int cell = Random.element(cells);
-		GoetiaSigil sigil = new GoetiaSigil();
-		level.setTrap(sigil, cell);
-		Level.set(cell, Terrain.TRAP); //owner: no longer hidden, it opens the way to the ritual chamber
+		sigils.add(depth);
+
+		//owner (Nov 13 2026): a hidden room off the boss floor, like the rat king's.
+		//The sewer boss floor is built with one (GoetiaSigilRoom); the fixed boss maps get one dug into a wall
+		//where there is room. Caves and city have no spare wall: there the sigil appears beside the exit.
+		for (com.shatteredpixel.shatteredpixeldungeon.levels.traps.Trap t : level.traps.valueList()) {
+			if (t instanceof GoetiaSigil) {
+				GLog.w(Messages.get(GoetiaHooks.class, "chamber_hint"));
+				return;
+			}
+		}
+		int dist = carveChamber(level, hero);
+		if (dist >= 0) {
+			GLog.w(Messages.get(GoetiaHooks.class, dist <= 8 ? "chamber_hint_near" : "chamber_hint"));
+			return;
+		}
+
+		//no wall thick enough for a room: the sigil appears in the open instead
+		int target = level.exit();
+		if (target <= 0 || !level.insideMap(target)) target = hero.pos;
+		int cell = -1, best = Integer.MAX_VALUE;
+		for (int i = 0; i < level.length(); i++) {
+			if (openFloor(level, i) && Actor.findChar(i) == null && level.heaps.get(i) == null
+					&& level.traps.get(i) == null && level.plants.get(i) == null) {
+				int d = level.distance(i, target);
+				//beside the stairs, not right in the way
+				if (d >= 2 && d < best) {
+					best = d;
+					cell = i;
+				}
+			}
+		}
+		if (cell == -1) return;
+		level.setTrap(new GoetiaSigil(), cell);
+		Level.set(cell, Terrain.TRAP);
 		GameScene.updateMap(cell);
-		sigils.add(Dungeon.depth);
 		GLog.w(Messages.get(GoetiaHooks.class, "sigil_hint"));
+	}
+
+	private static boolean openFloor(Level level, int i) {
+		if (!level.insideMap(i)) return false;
+		int t = level.map[i];
+		return (t == Terrain.EMPTY || t == Terrain.EMPTY_SP || t == Terrain.EMPTY_DECO || t == Terrain.GRASS)
+				&& level.passable[i] && !level.pit[i] && level.getTransition(i) == null;
+	}
+
+	private static boolean covered(ArrayList<com.shatteredpixel.shatteredpixeldungeon.tiles.CustomTilemap> list, int x, int y) {
+		if (list == null) return false;
+		for (com.shatteredpixel.shatteredpixeldungeon.tiles.CustomTilemap c : list) {
+			if (x + 4 >= c.tileX && x < c.tileX + c.tileW && y + 4 >= c.tileY && y < c.tileY + c.tileH) return true;
+		}
+		return false;
+	}
+
+	/** a 5x5 block of plain wall (no custom tile art over it) with room to spare from the level's edge */
+	private static boolean solidBlock(Level level, int x, int y) {
+		int w = level.width();
+		for (int j = y; j < y + 5; j++) {
+			for (int i = x; i < x + 5; i++) {
+				int t = level.map[i + j * w];
+				if (t != Terrain.WALL && t != Terrain.WALL_DECO) return false;
+			}
+		}
+		return !covered(level.customTiles, x, y) && !covered(level.customWalls, x, y);
+	}
+
+	//door cell inside the block (dx, dy) and the step from it to the floor outside (ox, oy)
+	private static final int[][] DOORS = {{2, 0, 0, -1}, {2, 4, 0, 1}, {0, 2, -1, 0}, {4, 2, 1, 0}};
+
+	/**
+	 * Digs the sigil's chamber into solid wall: a 3x3 room behind a secret door, as close to the floor's exit as the
+	 * walls allow, with the sigil in its middle. Returns the door's distance from the exit, or -1 if no wall fits.
+	 */
+	private static int carveChamber(Level level, Hero hero) {
+		int w = level.width(), h = level.height();
+		int target = level.exit();
+		if (target <= 0 || !level.insideMap(target)) target = hero.pos;
+
+		int bestX = -1, bestY = -1, bestDoor = -1, bestDist = Integer.MAX_VALUE;
+		for (int y = 1; y + 5 <= h - 1; y++) {
+			for (int x = 1; x + 5 <= w - 1; x++) {
+				if (!solidBlock(level, x, y)) continue;
+				for (int d = 0; d < DOORS.length; d++) {
+					int door = (x + DOORS[d][0]) + (y + DOORS[d][1]) * w;
+					int out = door + DOORS[d][2] + DOORS[d][3] * w;
+					if (!openFloor(level, out)) continue;
+					int dist = level.distance(out, target);
+					if (dist < bestDist) {
+						bestDist = dist;
+						bestX = x;
+						bestY = y;
+						bestDoor = door;
+					}
+				}
+			}
+		}
+		if (bestDoor == -1) return -1;
+
+		for (int j = bestY + 1; j <= bestY + 3; j++) {
+			for (int i = bestX + 1; i <= bestX + 3; i++) {
+				Level.set(i + j * w, Terrain.EMPTY_SP, level);
+			}
+		}
+		Level.set(bestDoor, Terrain.SECRET_DOOR, level);
+		int centre = (bestX + 2) + (bestY + 2) * w;
+		level.setTrap(new GoetiaSigil(), centre);
+		Level.set(centre, Terrain.TRAP, level);
+		level.cleanWalls();
+		GameScene.updateMap();
+		Dungeon.observe();
+		return bestDist;
 	}
 
 	/** essences thrown onto the ritual chamber's four altars (one each) summon the king */

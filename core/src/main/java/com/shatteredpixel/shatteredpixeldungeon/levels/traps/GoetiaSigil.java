@@ -32,6 +32,11 @@ public class GoetiaSigil extends Trap {
 		if (hero == null || hero.pos != pos) return;
 		final GoetiaDemon lord = GoetiaDemon.lordOf(Dungeon.depth);
 		if (lord == null) return;
+		//in its hidden room from the start, but asleep until the floor's boss has fallen
+		if (!GoetiaHooks.sigils.contains(Dungeon.depth)) {
+			GLog.i(Messages.get(this, "dormant"));
+			return;
+		}
 		if (GoetiaHooks.lordsBeaten.contains(Dungeon.depth)) {
 			GLog.i(Messages.get(this, "spent"));
 			return;

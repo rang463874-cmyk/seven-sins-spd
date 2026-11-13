@@ -293,6 +293,15 @@ Done and pushed (see `git log`):
   ripper (lords x1.6); essence icon items.png row 38 +4. Strings `tools/strings/goetia_*` (+ trap strings appended by hand
   to messages/levels/levels*.properties). Demon lord bosses were made harder at the same time (450 HP, 13-26 damage,
   36 accuracy, 2-10 armor, shorter cooldowns; Leviathan's cooldowns -1).
+- Where the Goetia sigil is (later Nov 13 2026, owner: a hidden room like the rat king's; it "never appeared" as a random
+  open tile): `GoetiaHooks.tick` fires once per boss floor when the boss died (`pendingSigil`) or the hero has already been
+  deeper (`Statistics.deepestFloor`, for old saves), adds the depth to `sigils` and 1) the sewer boss floor is built with
+  `levels/rooms/secret/GoetiaSigilRoom` (5x5 secret room, sigil in the middle from the start; `GoetiaSigil.activate` says
+  "dormant" until the depth is in `sigils`), 2) otherwise `carveChamber` digs a 3x3 room behind a SECRET_DOOR into a 5x5
+  block of plain wall (not under a CustomTilemap) nearest the exit (works on the prison and halls boss maps), 3) the caves
+  and city boss maps have no spare wall, so there the sigil appears on the open floor nearest the exit stairs. Hints:
+  `goetia.goetiahooks.chamber_hint(_near)` / `sigil_hint`. Headless check: boss levels can be built with `Dungeon.daily`
+  (skips bones), `Game.version` set and a `Game.instance` made by `Unsafe.allocateInstance` (Level.drop asks the scene).
 - Convenience settings (Nov 13 2026, owner): settings window, UI tab, "편의 설정" button -> a window with auto-collect dew /
   auto-collect seeds (`SPDSettings.autoDew/autoSeed`, both off by default; `Hero.autoPickUp` at the top of `Hero.act` takes
   the top item of the heap under the hero through the normal `doPickUp` with `Item.autoPickingUp` making `pickupDelay` 0,

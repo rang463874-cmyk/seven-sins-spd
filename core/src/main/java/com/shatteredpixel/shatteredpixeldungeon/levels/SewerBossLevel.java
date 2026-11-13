@@ -100,6 +100,8 @@ public class SewerBossLevel extends SewerLevel {
 		initRooms.add(gooRoom);
 		((FigureEightBuilder)builder).setLandmarkRoom(gooRoom);
 		initRooms.add(new RatKingRoom());
+		//Seven Sins: the demon king's sigil waits in a hidden room of its own
+		initRooms.add(new com.shatteredpixel.shatteredpixeldungeon.levels.rooms.secret.GoetiaSigilRoom());
 		return initRooms;
 	}
 	
