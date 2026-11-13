@@ -299,7 +299,10 @@ Done and pushed (see `git log`):
   `levels/rooms/secret/GoetiaSigilRoom` (5x5 secret room, sigil in the middle from the start; `GoetiaSigil.activate` says
   "dormant" until the depth is in `sigils`), 2) otherwise `carveChamber` digs a 3x3 room behind a SECRET_DOOR into a 5x5
   block of plain wall (not under a CustomTilemap) nearest the exit (works on the prison and halls boss maps), 3) the caves
-  and city boss maps have no spare wall, so there the sigil appears on the open floor nearest the exit stairs. Hints:
+  and city boss maps had no spare wall, so they were made taller and are built with the room too: `CavesBossLevel` HEIGHT
+  44 (was 42; room at 3..7 x 39..43, secret door at 5,39 under the bottom-left corner, sigil at 5,41), `CityBossLevel`
+  HEIGHT 52 (was 48; room under the entrance room, secret door at 7,47 behind a gap in the bookshelves at 7,46, sigil at
+  7,49). Floors of those two generated before this get the sigil on the open floor nearest the exit stairs instead. Hints:
   `goetia.goetiahooks.chamber_hint(_near)` / `sigil_hint`. Headless check: boss levels can be built with `Dungeon.daily`
   (skips bones), `Game.version` set and a `Game.instance` made by `Unsafe.allocateInstance` (Level.drop asks the scene).
 - Convenience settings (Nov 13 2026, owner): settings window, UI tab, "편의 설정" button -> a window with auto-collect dew /

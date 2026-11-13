@@ -104,7 +104,7 @@ public class CavesBossLevel extends Level {
 	}
 
 	private static int WIDTH = 33;
-	private static int HEIGHT = 42;
+	private static int HEIGHT = 44; //Seven Sins: 42 + the hidden sigil room under the arena
 
 	public static Rect diggableArea = new Rect(2, 11, 31, 40);
 	public static Rect mainArena = new Rect(5, 14, 28, 37);
@@ -138,6 +138,16 @@ public class CavesBossLevel extends Level {
 		buildCorners();
 
 		new CavesPainter().paint(this, null);
+
+		//Seven Sins: the demon king's sigil waits in a hidden room under the arena's bottom-left corner
+		//(owner, Nov 13 2026); its secret door is in the bottom wall, right of the lower-left pylon.
+		Painter.fill(this, 3, 39, 5, 5, Terrain.WALL);
+		Painter.fill(this, 4, 40, 3, 3, Terrain.EMPTY_SP);
+		Painter.set(this, 5, 39, Terrain.SECRET_DOOR);
+		Painter.set(this, 5, 38, Terrain.EMPTY);
+		int sigilCell = 5 + 41*width();
+		setTrap(new com.shatteredpixel.shatteredpixeldungeon.levels.traps.GoetiaSigil(), sigilCell);
+		Painter.set(this, sigilCell, Terrain.TRAP);
 
 		//setup exit area above main boss arena
 		Painter.fill(this, 0, 3, width(), 4, Terrain.CHASM);

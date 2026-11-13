@@ -64,7 +64,7 @@ public class CityBossLevel extends Level {
 	}
 
 	private static int WIDTH = 15;
-	private static int HEIGHT = 48;
+	private static int HEIGHT = 52; //Seven Sins: 48 + the hidden sigil room under the entrance room
 
 	private static final Rect entry = new Rect(1, 37, 14, 48);
 	private static final Rect arena = new Rect(1, 25, 14, 38);
@@ -158,6 +158,16 @@ public class CityBossLevel extends Level {
 		int entrance = c.x + (c.y+2)*width();
 		Painter.set(this, entrance, Terrain.ENTRANCE);
 		transitions.add(new LevelTransition(this, entrance, LevelTransition.Type.REGULAR_ENTRANCE));
+
+		//Seven Sins: the demon king's sigil waits in a hidden room below the entrance room (owner, Nov 13 2026).
+		//Its secret door is in the bottom wall, behind a gap in the bookshelves.
+		Painter.fill(this, c.x-2, entry.bottom-1, 5, 5, Terrain.WALL);
+		Painter.fill(this, c.x-1, entry.bottom, 3, 3, Terrain.EMPTY_SP);
+		Painter.set(this, c.x, entry.bottom-1, Terrain.SECRET_DOOR);
+		Painter.set(this, c.x, entry.bottom-2, Terrain.EMPTY);
+		int sigilCell = c.x + (entry.bottom+1)*width();
+		setTrap(new com.shatteredpixel.shatteredpixeldungeon.levels.traps.GoetiaSigil(), sigilCell);
+		Painter.set(this, sigilCell, Terrain.TRAP);
 
 		//DK's throne room
 		Painter.fillDiamond(this, arena, 1, Terrain.EMPTY);
