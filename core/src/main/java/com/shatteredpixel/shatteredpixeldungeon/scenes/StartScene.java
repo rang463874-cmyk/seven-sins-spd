@@ -29,6 +29,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Journal;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.HeroSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Button;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ExitButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
@@ -221,7 +222,7 @@ public class StartScene extends PixelScene {
 				}
 				
 				if (hero == null){
-					hero = new Image(info.heroClass.spritesheet(), 0, 15*info.armorTier, 12, 15);
+					hero = HeroSprite.avatar(info.heroClass, info.armorTier); //Seven Sins: works with hi-res sheets
 					add(hero);
 					
 					steps = new Image(Icons.get(Icons.STAIRS));
@@ -234,7 +235,7 @@ public class StartScene extends PixelScene {
 					level = new BitmapText(PixelScene.pixelFont);
 					add(level);
 				} else {
-					hero.copy(new Image(info.heroClass.spritesheet(), 0, 15*info.armorTier, 12, 15));
+					hero.copy(HeroSprite.avatar(info.heroClass, info.armorTier));
 					
 					classIcon.copy(Icons.get(info.heroClass));
 				}

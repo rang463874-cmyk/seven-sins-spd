@@ -70,7 +70,9 @@ public class HeroSprite extends CharSprite {
 	
 	public void updateArmor() {
 
-		TextureFilm film = new TextureFilm( tiers(), Dungeon.hero.tier(), FRAME_WIDTH, FRAME_HEIGHT );
+		//Seven Sins: hi-res sheets are shown at their own frame size, scaled down to the vanilla height
+		TextureFilm film = film( texture, Dungeon.hero.tier() );
+		applyArtScale( this, texture );
 		
 		idle = new Animation( 1, true );
 		idle.frames( film, 0, 0, 0, 1, 0, 0, 1, 1 );
@@ -165,6 +167,43 @@ public class HeroSprite extends CharSprite {
 		run.delay = 1f / speed / RUN_FRAMERATE;
 	}
 	
+	//Seven Sins: hi-res hero sheets (the owner's redesigns). A sheet whose width is exactly FRAMES frames and whose
+	//height is exactly TIERS rows (the vanilla sheets are 256x128) holds frames of width/FRAMES x height/TIERS pixels;
+	//they are drawn at FRAME_HEIGHT / frame height so the hero keeps its usual size on screen, with more detail.
+	public static final int FRAMES = 21;
+	public static final int TIERS = 7;
+
+	public static boolean hiRes( SmartTexture tx ) {
+		return tx != null && tx.width != 256 && tx.width % FRAMES == 0 && tx.height % TIERS == 0;
+	}
+
+	public static int frameW( SmartTexture tx ) {
+		return hiRes( tx ) ? tx.width / FRAMES : FRAME_WIDTH;
+	}
+
+	public static int frameH( SmartTexture tx ) {
+		return hiRes( tx ) ? tx.height / TIERS : FRAME_HEIGHT;
+	}
+
+	public static float artScale( SmartTexture tx ) {
+		return hiRes( tx ) ? FRAME_HEIGHT / (float)frameH( tx ) : 1f;
+	}
+
+	public static TextureFilm film( SmartTexture tx, int tier ) {
+		if (!hiRes( tx )) {
+			return new TextureFilm( tiers(), tier, FRAME_WIDTH, FRAME_HEIGHT );
+		}
+		TextureFilm rows = new TextureFilm( tx, tx.width, frameH( tx ) );
+		return new TextureFilm( rows, Math.min( tier, TIERS - 1 ), frameW( tx ), frameH( tx ) );
+	}
+
+	//scale + a shadow as wide as a vanilla hero's (hi-res frames are wider than the figure, for lying/attack poses)
+	public static void applyArtScale( CharSprite sprite, SmartTexture tx ) {
+		float s = artScale( tx );
+		sprite.scale.set( s );
+		sprite.shadowWidth = hiRes( tx ) ? 1.2f * FRAME_WIDTH / (frameW( tx ) * s) : 1.2f;
+	}
+
 	public static TextureFilm tiers() {
 		if (tiers == null) {
 			SmartTexture texture = TextureCache.get( Assets.Sprites.ROGUE );
@@ -183,6 +222,19 @@ public class HeroSprite extends CharSprite {
 	}
 	
 	public static Image avatar( HeroClass cl, int armorTier ) {
+
+		SmartTexture tx = TextureCache.get( cl.spritesheet() );
+		if (hiRes( tx )) {
+			//a square from the middle of the first frame (the figures are wider than vanilla's), scaled to 15 high
+			int fw = frameW( tx ), fh = frameH( tx );
+			float cw = Math.min( fw, fh );
+			float x0 = Math.round( (fw - cw) / 2f );
+			float y0 = armorTier * fh;
+			Image avatar = new Image( tx );
+			avatar.frame( tx.uvRect( x0, y0, x0 + Math.round(cw), y0 + fh ) );
+			avatar.scale.set( artScale( tx ) );
+			return avatar;
+		}
 		
 		RectF patch = tiers().get( armorTier );
 		Image avatar = new Image( cl.spritesheet() );

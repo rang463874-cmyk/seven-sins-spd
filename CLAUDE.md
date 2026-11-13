@@ -450,21 +450,24 @@ Adding a new class means touching all of the above; follow an existing sin as th
 `tools/sinsart/make_sin_assets.py` regenerates all placeholder art from the Cleric's art
 (hero sheet, splash, avatar, talent/hero icons, signature items, class armor, sin weapons,
 mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.py`.
-Hero redesigns (Nov 13 2026, owner draws them in Gemini): `tools/sinsart/hero_art/<sin>/{front,walk,attack,die}.png`
-(big pixel art on a visible grid, ~23px per art pixel; front = idle, walk/attack = side view, die = lying) ->
-`tools/sinsart/make_hero_sprites.py [sin]`: finds the grid, samples one colour per art pixel, flood-fills the background,
-blood splashes and the Gemini sparkle away, shrinks to 12x15 by area majority (small dark blobs on skin = eyes stay one
-pixel tall), redraws the outline only where the picture had one, derives all 21 frames (run = walk + mirrored legs + bob,
-die 8-9 = squashed front, 10-12 = lying, attack 13 walk / 14-15 attack mirrored to face right, the rest from front) and
-recolours the green clothes per armor tier (`TIER_CLOTHES`; tier 6 = the sin's hue). Also writes the 24x32 avatar and
-`hero_art/<sin>/preview.png`. `make_sin_assets.py` skips the sheet/avatar of any sin with a `hero_art/<sin>` folder.
-Done: gluttony (grid pictures), greed. Pictures without a grid (`NO_GRID`, soft Gemini pixel art) are median-filtered and
-box-shrunk instead; when they are too detailed for 12x15 (greed's chibi), `hero_art/<sin>/poses.txt` holds hand-pixelled
-front/walk/attack/die poses (palette + grids, after the owner's pictures) that replace the shrunk poses, and the avatar is the
-front pose at 2x. Per-sin `CLOTHES` (hue range, min sat/value, rows below a share of the figure) picks what the tier recolour
-touches (greed: the red skirt, not the hood or eyes); `ISLAND_SHARE` drops flying coins/swooshes. `hero_art/<sin>/splash_src.png`
-becomes `splashes/<sin>.jpg` (800x450 like every splash: fitted to the height on black, character at `SPLASH_FOCUS`);
-make_sin_assets.py then leaves that splash alone.
+Hero redesigns (Nov 13 2026, owner draws them in Gemini; owner: keep the pictures as unchanged as possible): **hi-res hero
+sheets**. `HeroSprite.hiRes(tex)`: a sheet exactly 21 frames wide and 7 tier rows high (vanilla sheets are 256x128) has frames of
+width/21 x height/7 and is drawn at `artScale` = 15 / frame height (same on-screen size, more detail); `film(tex, tier)` and
+`applyArtScale` (scale + a vanilla-width shadow, frames are wider than the figure) are used by `HeroSprite.updateArmor` and
+`MirrorSprite`; `avatar()` crops a square from the first frame and scales it (HeroSelectScene buttons and StartScene use it now;
+StatusPane lays the avatar out with width()/height()). Vanilla sheets are untouched.
+`tools/sinsart/hero_art/<sin>/{front,walk,attack,die}.png` -> `tools/sinsart/make_hero_sprites.py [sin]`: one sheet pixel per
+art pixel: grid pictures (gluttony, visible grid) via `native` (grid fit), soft Gemini pixel art (`NO_GRID`: greed) via
+`native_pitch` (pitch from the edge autocorrelation, offsets per axis, one sample per cell). Background/blood/sparkle cut by flood
+fill, islands under `ISLAND_SHARE` dropped (flying coins). Only `POSE_SCALE` resamples (Gemini drew greed's attack/die at another
+zoom: x0.78, by eye on the hood size); `ATTACK_MIRROR` overrides the face-right guess. Frame height = tallest standing pose + 1,
+width = what the head-centred poses and the lying pose need (0.8..2.2 x height). All 21 frames are derived (run = walk + mirrored
+legs + bob, die 8-9 = squashed front, 10-12 = lying, attack 13 walk / 14-15 attack, the rest from front; squash/bob scale with
+the frame height). Tier rows recolour `CLOTHES` (per sin: hue range, min sat/value, rows below a share of the figure; greed = the
+red skirt) to `TIER_CLOTHES`, tier 6 = the sin's hue or `TIER6`. Also writes the 24x32 avatar (shrunk front) and
+`hero_art/<sin>/preview.png` (sheet x3). `hero_art/<sin>/splash_src.png` -> `splashes/<sin>.jpg` (800x450 like every splash:
+fitted to the height on black, character at `SPLASH_FOCUS`). `make_sin_assets.py` leaves the sheet/avatar/splash of a sin with
+pictures alone. Done: gluttony (64x31 frames), greed (65x54).
 Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
 screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
 chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,
