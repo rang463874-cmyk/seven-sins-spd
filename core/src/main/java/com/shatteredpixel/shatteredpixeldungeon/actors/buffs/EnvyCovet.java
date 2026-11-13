@@ -76,7 +76,10 @@ public class EnvyCovet extends Buff {
 		DM201, SENIOR, CHAOS_ELEMENTAL, ACIDIC, TORMENTED_SPIRIT, PHANTOM_PIRANHA, GOLDEN_MIMIC,
 		FETID_RAT, GNOLL_TRICKSTER, GREAT_CRAB, NEWBORN_ELEMENTAL, ROT_HEART, GNOLL_GEOMANCER,
 		CRYSTAL_GUARDIAN, FUNGAL_CORE,
-		GOO, TENGU, DM300, DWARF_KING, YOG;
+		GOO, TENGU, DM300, DWARF_KING, YOG,
+		//the mod's own minibosses (Nov 14 2026); several classes can share one entry
+		SEAL_WARDEN, RAT_CHIEFTAIN, CHAIN_WARDEN, GNOLL_FOREMAN, FALLEN_PRIEST, HELLHOUND,
+		VIRTUE_CHAMPION, GOETIA_KING, DEMON_LORD, SERAPH;
 
 		public String title() {
 			return Messages.get(EnvyCovet.class, "trait_" + name().toLowerCase() + "_name");
@@ -119,6 +122,24 @@ public class EnvyCovet extends Buff {
 		CODEX.put(DM300.class,                        Trait.DM300);
 		CODEX.put(DwarfKing.class,                    Trait.DWARF_KING);
 		CODEX.put(YogDzewa.class,                     Trait.YOG);
+		//the mod's minibosses
+		CODEX.put(SealWarden.class,                   Trait.SEAL_WARDEN);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.RatChieftain.class, Trait.RAT_CHIEFTAIN);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.ChainWarden.class,  Trait.CHAIN_WARDEN);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.GnollForeman.class, Trait.GNOLL_FOREMAN);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.FallenPriest.class, Trait.FALLEN_PRIEST);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.elites.Hellhound.class,    Trait.HELLHOUND);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.HumilityChampion.class,   Trait.VIRTUE_CHAMPION);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.CharityChampion.class,    Trait.VIRTUE_CHAMPION);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ChastityChampion.class,   Trait.VIRTUE_CHAMPION);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.PatienceChampion.class,   Trait.VIRTUE_CHAMPION);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.TemperanceChampion.class, Trait.VIRTUE_CHAMPION);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.KindnessChampion.class,   Trait.VIRTUE_CHAMPION);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.DiligenceChampion.class,  Trait.VIRTUE_CHAMPION);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.goetia.GoetiaLord.class,   Trait.GOETIA_KING);
+		CODEX.put(DemonLordBoss.class,                Trait.DEMON_LORD);
+		CODEX.put(LeviathanBoss.class,                Trait.DEMON_LORD);
+		CODEX.put(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph.class,       Trait.SERAPH);
 	}
 
 	public boolean has(Trait t) {
@@ -156,25 +177,27 @@ public class EnvyCovet extends Buff {
 	}
 
 	public float accuracyBonus() {
-		return Math.min(0.40f, 0.004f * pts()) + trait(Trait.GNOLL_EXILE, 0.10f);
+		return Math.min(0.40f, 0.004f * pts()) + trait(Trait.GNOLL_EXILE, 0.10f) + trait(Trait.SEAL_WARDEN, 0.10f);
 	}
 
 	public float evasionBonus() {
 		return Math.min(0.30f, 0.003f * pts())
-				+ trait(Trait.SENIOR, 0.10f) + trait(Trait.PHANTOM_PIRANHA, 0.10f) + trait(Trait.TENGU, 0.15f);
+				+ trait(Trait.SENIOR, 0.10f) + trait(Trait.PHANTOM_PIRANHA, 0.10f) + trait(Trait.TENGU, 0.15f)
+				+ trait(Trait.SERAPH, 0.10f);
 	}
 
 	public int hpBonus() {
 		Hero h = hero();
 		int trophy = h == null ? 0 : h.pointsInTalent(Talent.ENVY_TROPHY);
 		return (int) (0.2f * pts())
-				+ Math.round(trait(Trait.TORMENTED_SPIRIT, 10f) + trait(Trait.GNOLL_GEOMANCER, 15f))
+				+ Math.round(trait(Trait.TORMENTED_SPIRIT, 10f) + trait(Trait.GNOLL_GEOMANCER, 15f)
+						+ trait(Trait.RAT_CHIEFTAIN, 10f) + trait(Trait.FALLEN_PRIEST, 15f))
 				+ codex.size() * 3 * trophy;
 	}
 
 	/** percentage bonus to max HP from traits, applied after flat bonuses */
 	public float hpMult() {
-		return 1f + trait(Trait.YOG, 0.20f);
+		return 1f + trait(Trait.YOG, 0.20f) + trait(Trait.VIRTUE_CHAMPION, 0.10f);
 	}
 
 	public int drMax() {
@@ -184,7 +207,8 @@ public class EnvyCovet extends Buff {
 	/** flat armor from traits, always applied */
 	public int traitDR() {
 		return Math.round(trait(Trait.HERMIT_CRAB, 2f) + trait(Trait.ARMORED_BRUTE, 3f)
-				+ trait(Trait.GREAT_CRAB, 4f) + trait(Trait.CRYSTAL_GUARDIAN, 3f) + trait(Trait.DM300, 5f));
+				+ trait(Trait.GREAT_CRAB, 4f) + trait(Trait.CRYSTAL_GUARDIAN, 3f) + trait(Trait.DM300, 5f)
+				+ trait(Trait.CHAIN_WARDEN, 3f) + trait(Trait.DEMON_LORD, 4f));
 	}
 
 	public int drRoll() {
@@ -196,9 +220,24 @@ public class EnvyCovet extends Buff {
 	/** melee damage multiplier from traits */
 	public float meleeMult() {
 		Hero h = hero();
-		float m = 1f + trait(Trait.DM201, 0.10f) + trait(Trait.DWARF_KING, 0.15f) + trait(Trait.YOG, 0.15f);
+		float m = 1f + trait(Trait.DM201, 0.10f) + trait(Trait.DWARF_KING, 0.15f) + trait(Trait.YOG, 0.15f)
+				+ trait(Trait.GNOLL_FOREMAN, 0.10f) + trait(Trait.GOETIA_KING, 0.10f);
 		if (h != null && h.HP * 2 < h.HT) m += trait(Trait.GOO, 0.25f);
 		return m;
+	}
+
+	// ------------------------------------------------------------------ allies (owner, Nov 14 2026)
+	//like Sloth's puppets, Envy's allies grow with its points: every ally of the hero (the copied dream puppet,
+	//summons, charmed helpers...) hits harder and takes less. Applied in EnvyHooks.modifyDamage.
+
+	/** flat damage added to every hit an ally lands on an enemy */
+	public int allyDamage() {
+		return (int) (0.10f * pts());
+	}
+
+	/** share of incoming damage the hero's allies ignore */
+	public float allyGuard() {
+		return Math.min(0.50f, 0.002f * pts());
 	}
 
 	public void addEnvy(float amount) {
@@ -520,13 +559,14 @@ public class EnvyCovet extends Buff {
 	}
 
 	private String statsTextBase() {
-		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), (int) jealousy, Math.round(maxJealousy()), growthTitle(), codex.size(), CODEX.size())
+		return Messages.get(EnvyCovet.class, "desc_head", Math.round(envy), (int) jealousy, Math.round(maxJealousy()), growthTitle(), codex.size(), Trait.values().length)
 				+ "\n\n" + Messages.get(EnvyCovet.class, "desc_stats",
 				meleeBonus(),
 				Math.round(accuracyBonus() * 100),
 				hpBonus(),
 				drMax(),
-				Math.round(evasionBonus() * 100));
+				Math.round(evasionBonus() * 100))
+				+ "\n" + Messages.get(EnvyCovet.class, "desc_allies", allyDamage(), Math.round(allyGuard() * 100));
 	}
 
 	public String codexText() {

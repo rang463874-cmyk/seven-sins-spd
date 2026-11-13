@@ -81,7 +81,13 @@ public final class EnvyMimicry {
 		FIRE(60, 25, Trait.NEWBORN_ELEMENTAL, Trait.CHAOS_ELEMENTAL),
 		OOZE(61, 25, Trait.GOO, Trait.ROT_HEART, Trait.FUNGAL_CORE),
 		SHELL(62, 30, Trait.HERMIT_CRAB, Trait.GREAT_CRAB, Trait.DWARF_KING, Trait.DM201, Trait.GOLDEN_MIMIC),
-		GAZE(63, 40, Trait.YOG, Trait.SENIOR);
+		GAZE(63, 40, Trait.YOG, Trait.SENIOR),
+		// ---- the mod's minibosses (Nov 14 2026; icons row 10 of skill_icons.png)
+		CHARGE(80, 25, Trait.SEAL_WARDEN, Trait.RAT_CHIEFTAIN, Trait.HELLHOUND),
+		CHAINS(81, 25, Trait.CHAIN_WARDEN),
+		BOMBS(82, 30, Trait.GNOLL_FOREMAN),
+		SMITE(83, 35, Trait.FALLEN_PRIEST, Trait.VIRTUE_CHAMPION, Trait.SERAPH),
+		HELLFIRE(84, 40, Trait.GOETIA_KING, Trait.DEMON_LORD);
 
 		public final Kind kind;
 		public final HeroClass sin;
@@ -181,6 +187,7 @@ public final class EnvyMimicry {
 			case COIN: case ROCK: case GAZE:
 				return com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.TARGET_PROJECTILE;
 			case BITE: case PROVOKE: case COMMAND: case KISS: case CONTAGION: case GAS: case DRAIN: case FIRE:
+			case CHARGE: case CHAINS: case BOMBS: case SMITE:
 				return com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.TARGET_ENEMY;
 			default:
 				return com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.TARGET_NONE;
@@ -198,6 +205,11 @@ public final class EnvyMimicry {
 			case DRAIN: return new Object[]{Math.round((2 + lvl / 3) * p), Math.round((5 + lvl * 2 / 3) * p)};
 			case SHELL: return new Object[]{Math.round(hero.HT * 0.20f * p)};
 			case GAZE: return new Object[]{Math.round((4 + lvl) * p), Math.round((8 + lvl * 1.5f) * p)};
+			case CHARGE: return new Object[]{Math.round((3 + lvl / 2) * p), Math.round((7 + lvl) * p)};
+			case CHAINS: return new Object[]{Math.round((1 + lvl / 3) * p), Math.round((3 + lvl / 2) * p)};
+			case BOMBS: return new Object[]{Math.round((3 + lvl / 2) * p), Math.round((6 + lvl) * p)};
+			case SMITE: return new Object[]{Math.round((4 + lvl) * p), Math.round((8 + lvl * 1.5f) * p)};
+			case HELLFIRE: return new Object[]{Math.round((2 + lvl / 3) * p), Math.round((5 + lvl / 2) * p)};
 			default: return new Object[0];
 		}
 	}
@@ -243,6 +255,7 @@ public final class EnvyMimicry {
 				return;
 			case YAWN: yawn(hero, m); return;
 			case OOZE: ooze(hero, m); return;
+			case HELLFIRE: hellfire(hero, m); return;
 			case SHELL:
 				if (!pay(hero, m)) return;
 				int sh = Math.round(hero.HT * 0.20f * power(hero, m));
@@ -384,6 +397,10 @@ public final class EnvyMimicry {
 					break;
 				}
 				case GAZE: gaze(hero, m, cell); break;
+				case CHARGE: charge(hero, m, cell); break;
+				case CHAINS: chains(hero, m, cell); break;
+				case BOMBS: bombs(hero, m, cell); break;
+				case SMITE: smite(hero, m, cell); break;
 				default: break;
 			}
 		}
@@ -602,5 +619,108 @@ public final class EnvyMimicry {
 		Sample.INSTANCE.play(Assets.Sounds.RAY);
 		Invisibility.dispel();
 		hero.spendAndNext(1f);
+	}
+
+	// ------------------------------------------------------------------ the mod's minibosses
+
+	/** Seal Warden / Rat Chieftain / Hellhound: dash to an enemy and run it down */
+	private static void charge(Hero hero, Mimic m, int cell) {
+		Mob mob = enemyAt(cell, 6);
+		if (mob == null) return;
+		int land = landNextTo(hero, mob);
+		if (land < 0) {
+			GLog.w(Messages.get(EnvyMimicry.class, "no_room"));
+			return;
+		}
+		if (!pay(hero, m)) return;
+		if (land != hero.pos) blink(hero, land);
+		float p = power(hero, m);
+		mob.damage(Math.round(Random.NormalIntRange(3 + hero.lvl / 2, 7 + hero.lvl) * p), EnvyMimicry.class);
+		if (mob.isAlive()) Buff.prolong(mob, Cripple.class, 3f);
+		Sample.INSTANCE.play(Assets.Sounds.HIT_STRONG);
+		finish(hero, mob.pos);
+	}
+
+	/** Chain Warden: drag an enemy to the hero's side and root it there */
+	private static void chains(Hero hero, Mimic m, int cell) {
+		Mob mob = enemyAt(cell, 6);
+		if (mob == null || !pay(hero, m)) return;
+		float p = power(hero, m);
+		if (!mob.properties().contains(Char.Property.IMMOVABLE) && !Dungeon.level.adjacent(hero.pos, mob.pos)) {
+			int to = -1;
+			for (int n : PathFinder.NEIGHBOURS8) {
+				int c = hero.pos + n;
+				if (Dungeon.level.passable[c] && !Dungeon.level.avoid[c] && Actor.findChar(c) == null
+						&& (!Char.hasProp(mob, Char.Property.LARGE) || Dungeon.level.openSpace[c])
+						&& (to == -1 || Dungeon.level.distance(mob.pos, c) < Dungeon.level.distance(mob.pos, to))) {
+					to = c;
+				}
+			}
+			if (to != -1) {
+				Actor.add(new com.shatteredpixel.shatteredpixeldungeon.effects.Pushing(mob, mob.pos, to));
+				mob.pos = to;
+				Dungeon.level.occupyCell(mob);
+			}
+		}
+		mob.damage(Math.round(Random.NormalIntRange(1 + hero.lvl / 3, 3 + hero.lvl / 2) * p), EnvyMimicry.class);
+		if (mob.isAlive()) Buff.prolong(mob, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Roots.class, 3f * p);
+		Sample.INSTANCE.play(Assets.Sounds.CHAINS);
+		finish(hero, mob.pos);
+	}
+
+	/** Gnoll Foreman: a bomb that only hurts enemies, on a tile and everything around it */
+	private static void bombs(Hero hero, Mimic m, int cell) {
+		if (!Dungeon.level.heroFOV[cell] || Dungeon.level.solid[cell] || Dungeon.level.distance(hero.pos, cell) > 6) {
+			GLog.w(Messages.get(EnvyMimicry.class, "no_tile"));
+			return;
+		}
+		if (!pay(hero, m)) return;
+		float p = power(hero, m);
+		for (int n : PathFinder.NEIGHBOURS9) {
+			int c = cell + n;
+			if (!Dungeon.level.insideMap(c) || Dungeon.level.solid[c]) continue;
+			CellEmitter.center(c).burst(com.shatteredpixel.shatteredpixeldungeon.effects.particles.BlastParticle.FACTORY, 4);
+			Char ch = Actor.findChar(c);
+			if (ch != null && ch.alignment == Char.Alignment.ENEMY) {
+				ch.damage(Math.round(Random.NormalIntRange(3 + hero.lvl / 2, 6 + hero.lvl) * p), EnvyMimicry.class);
+			}
+		}
+		Sample.INSTANCE.play(Assets.Sounds.BLAST);
+		finish(hero, cell);
+	}
+
+	/** Fallen Priest / virtue champions / Seraph: holy light that blinds, worse for the undead and demons */
+	private static void smite(Hero hero, Mimic m, int cell) {
+		Mob mob = enemyAt(cell, 0);
+		if (mob == null || !pay(hero, m)) return;
+		float p = power(hero, m);
+		if (mob.properties().contains(Char.Property.UNDEAD) || mob.properties().contains(Char.Property.DEMONIC)) p *= 1.5f;
+		mob.damage(Math.round(Random.NormalIntRange(4 + hero.lvl, Math.round(8 + hero.lvl * 1.5f)) * p), EnvyMimicry.class);
+		if (mob.isAlive()) Buff.prolong(mob, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Blindness.class, 3f);
+		CellEmitter.center(mob.pos).burst(Speck.factory(Speck.LIGHT), 10);
+		Sample.INSTANCE.play(Assets.Sounds.RAY);
+		finish(hero, mob.pos);
+	}
+
+	/** Goetia kings / demon lords: hellfire over every enemy within 2 tiles */
+	private static void hellfire(Hero hero, Mimic m) {
+		ArrayList<Char> targets = new ArrayList<>();
+		for (Mob mob : Dungeon.level.mobs) {
+			if (mob.alignment == Char.Alignment.ENEMY && Dungeon.level.heroFOV[mob.pos]
+					&& Dungeon.level.distance(hero.pos, mob.pos) <= 2) targets.add(mob);
+		}
+		if (targets.isEmpty()) {
+			GLog.w(Messages.get(EnvyMimicry.class, "no_target"));
+			return;
+		}
+		if (!pay(hero, m)) return;
+		float p = power(hero, m);
+		for (Char ch : targets) {
+			CellEmitter.center(ch.pos).burst(com.shatteredpixel.shatteredpixeldungeon.effects.particles.FlameParticle.FACTORY, 6);
+			ch.damage(Math.round(Random.NormalIntRange(2 + hero.lvl / 3, 5 + hero.lvl / 2) * p), EnvyMimicry.class);
+			if (ch.isAlive()) Buff.affect(ch, Burning.class).reignite(ch, 5f);
+		}
+		Sample.INSTANCE.play(Assets.Sounds.BURNING);
+		finish(hero, hero.pos);
 	}
 }

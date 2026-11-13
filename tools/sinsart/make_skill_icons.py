@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, "core", "src", "main", "assets", "interfaces", "skill_i
 
 SIZE = 16
 COLS = 8
-ROWS = 10
+ROWS = 11
 
 SIN_COLORS = [
     (150, 50, 180),   # gluttony
@@ -29,6 +29,7 @@ SIN_COLORS = [
     (140, 95, 55),    # envy's mimicked monster abilities
     (120, 20, 40),    # demon lords' skills (64 + DemonLord ordinal; tinted per lord below)
     (90, 90, 90),     # growth copy, one per sin (72 + sin index; tinted with the sin's colour below)
+    (140, 95, 55),    # envy's copies of the mod's minibosses (80..84), same brown as row 7
 ]
 
 G = {
@@ -632,6 +633,7 @@ ICONS = {
     48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ", 52: "TARGET", 53: "MAP",
     64: "STAR", 65: "COIN", 66: "HEART", 67: "WAVE", 68: "FLY", 69: "FLAME", 70: "ZZZ",
     72: "COPY", 73: "COPY", 74: "COPY", 75: "COPY", 76: "COPY", 77: "COPY", 78: "COPY",
+    80: "PUSH", 81: "LOOP", 82: "BURST", 83: "STAR", 84: "FLAME",
     56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
 

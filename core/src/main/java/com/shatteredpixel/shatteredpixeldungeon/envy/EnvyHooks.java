@@ -92,6 +92,7 @@ public final class EnvyHooks {
 		if (roll(c, Trait.BANDIT, 0.15f)) Buff.prolong(enemy, Blindness.class, 2f);
 		if (roll(c, Trait.FETID_RAT, 0.20f)) Buff.affect(enemy, Poison.class).set(3f);
 		if (roll(c, Trait.NEWBORN_ELEMENTAL, 0.10f)) Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
+		if (roll(c, Trait.HELLHOUND, 0.15f)) Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
 		if (roll(c, Trait.CHAOS_ELEMENTAL, 0.15f)) {
 			if (Random.Int(2) == 0) Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
 			else Buff.prolong(enemy, Chill.class, 3f);
@@ -101,6 +102,18 @@ public final class EnvyHooks {
 
 	/** Called from Char.damage before damage is applied (robbed stacks are gone; nothing to do now). */
 	public static int modifyDamage(Char victim, Object src, int dmg) {
+		if (dmg <= 0 || victim == null) return dmg;
+		Hero hero = Dungeon.hero;
+		EnvyCovet c = covet(hero);
+		if (c == null) return dmg;
+		//Envy's allies grow with its points, like Sloth's puppets do
+		if (src instanceof Mob && ((Mob) src).alignment == Char.Alignment.ALLY
+				&& victim.alignment == Char.Alignment.ENEMY) {
+			dmg += c.allyDamage();
+		}
+		if (victim instanceof Mob && victim.alignment == Char.Alignment.ALLY) {
+			dmg = Math.max(1, Math.round(dmg * (1f - c.allyGuard())));
+		}
 		return dmg;
 	}
 

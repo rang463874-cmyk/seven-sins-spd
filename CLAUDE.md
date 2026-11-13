@@ -418,6 +418,15 @@ itself); Envy's own envy comes from new bestiary entries (`EnvyHooks.registerEnv
 **Doppelganger**: growth efficiency x1.2 (see above), sin copies -25% cost. Talent enums
 unchanged, meanings changed. `WndHeroInfo` tolerates more description paragraphs than icons.
 Monster ability icons are row 7 of skill_icons.png.
+Nov 14 2026 (owner): the mod's minibosses are bestiary entries too. `EnvyCovet.Trait` SEAL_WARDEN, RAT_CHIEFTAIN,
+CHAIN_WARDEN, GNOLL_FOREMAN, FALLEN_PRIEST, HELLHOUND, VIRTUE_CHAMPION (all seven champion classes), GOETIA_KING,
+DEMON_LORD (DemonLordBoss + LeviathanBoss), SERAPH: several classes can map to one trait in `CODEX`, so totals use
+`Trait.values().length`. Each has a small passive (accuracy/HP/armor/melee/evasion, hellhound = burn on hit) and teaches
+one of five new copies (icons row 10 = 80..84): CHARGE (dash + cripple; warden, chieftain, hellhound), CHAINS (pull + root;
+chain warden), BOMBS (3x3 around a tile, enemies only; foreman), SMITE (damage + blind, x1.5 undead/demonic; priest,
+champions, seraph), HELLFIRE (enemies within 2, burn; Goetia kings, demon lords). Envy's allies grow with its points like
+Sloth's puppets: `EnvyCovet.allyDamage()` (+0.10/pt on every hit an ALLY mob lands on an enemy) and `allyGuard()` (-0.2%/pt
+damage taken by ALLY mobs, max 50%), applied in `EnvyHooks.modifyDamage` (Char.damage) and shown by `desc_allies`.
 Lust (reworked Nov 2026, dancer + vampire): perfume skills cost HP (`LustDesire.hpCost/pay`), lifesteal
 on charmed enemies via `LustDesire.drain` from `LustHooks.onAttack`; dodging charms the attacker
 (`LustHooks.onDodge`, called from the miss branch of `Char.attack`; Night Dancer counters there).
