@@ -32,6 +32,25 @@ Done and pushed (see `git log`):
   (T3, AC_PARRY (default when wielded, 1 turn): `Stance` for 3 turns, the next adjacent melee attack is evaded via
   `tryParry` in `Hero.defenseSkill` (+ `parryVerb` in `defenseVerb`) and a `Riposte` buff answers with a sure x1.5 hit).
   None has a duelist technique.
+- The owner's weapon list (Nov 13 2026, owner gave names, base damage and effects): `items/weapon/melee/mod/`, base
+  `ModMeleeWeapon` (baseMin..baseMax at +0, +minScale/+maxScale per level, default +1/+(tier+1); `armorFactor` read by
+  `armorPierce` from `Char.attack` after the DR roll; `splash` helper; strings fall back to its ability_name/desc). In the
+  generator's tier decks: T2 Kukri (4-12, DLY 0.8, 30% bleed), Morningstar (5-13, ignores 50% armor), Sling (2-8, +25%
+  +5%/lvl thrown damage while wielded via `Sling.thrownDamage` in `MissileWeapon.damageRoll`); T3 Flamberge (6-17, 50%
+  bleed), WarPick (7-18, + a roll of the target's armor), CoinSack (5-15, kills drop 4+2xdepth gold), BattleScythe (7-17,
+  50% to enemies adjacent to both); T4 ExecutionerSword (9-23, up to +80% by missing HP), CrescentAxe (10-24, 20% crit
+  x2.25), CrusaderMace (9-22, +60% vs UNDEAD), RuneSpear (8-21, reach 2, ignores armor, +6 max/lvl like the runic blade);
+  T5 GiantSlayer (12-30, +50% vs LARGE/MINIBOSS/BOSS), AbyssScythe (11-28, kills heal 8% HT + lvl), HeavenlySpear (12-29,
+  reach 2, the enemy behind the target takes the hit), RuinHammer (14-32, 40% to the target's neighbours).
+  Tier 6 (`ApocalypseWeapon`, not in the generator): forged in the alchemy pot from an identified uncursed tier 5 melee
+  weapon + 2 demon essences, 10 energy (`ApocalypseWeapon.Recipe` in `Recipe.variableRecipes`, on the Seven_Sins guide
+  page; greatsword/giantslayer -> DoomBlade, war scythe/abyss -> VoidScythe, glaive/heavenly -> SunJudgment, war hammer/
+  ruin -> WorldsEnd, others by class-name hash; keeps level/enchant/augment/war edge/sigil). `isUpgradable` false: AC_INFUSE
+  spends 2+level demon essences per level. DoomBlade (10-12 + `ruin`/15, ruin +1+0.25xlvl per hit, x5 on bosses, saved),
+  VoidScythe (16-40, 4%+1%/lvl instant death on non-bosses via `die`), SunJudgment (20-44, `charge` +20+lvl per hit; at 100
+  AC_SMITE (default action) = light beam up to 8 tiles, 2.5x a damage roll ignoring armor, x1.5 undead/demonic, blind 3),
+  WorldsEnd (22-48, 50% to enemies within 2 of the target). Icons: items.png row 38 +10..15 and row 39 (TX_HEIGHT now 624),
+  recoloured vanilla weapon icons + drawn sling/coin sack, by `tools/sinsart/weapon_icons.py`. Strings `tools/strings/modweapons_*`.
 - Imp quest vault mirror gives `items/MirrorCase` (every class; originals get it alongside their usual
   reward): one use per run, sets `Belongings.extraSlot`, opening `Belongings.misc2`, a second shared
   artifact/ring slot (equip logic in `KindofMisc`, shown in `WndBag`; `InventoryPane` lists it first in
@@ -491,7 +510,7 @@ the logo. The vanilla banner, glow signs and torches are still created (fade cod
 Reserved layout (must match the Java constants):
 - `talent_icons.png`: row 8 + k (icon 256 + 32k + i), heroic energy at +26
 - `hero_icons.png`: row 16 + k (icon 128 + 8k): sub1, sub2, ability 1-3 (`HeroIcon`)
-- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 608):
+- `items.png` (TX_HEIGHT in `ItemSpriteSheet` must equal the PNG height, now 624):
   row 33 signature item/class armor pairs, row 34 sin weapons + sigil, row 35 mirror relics,
   row 36 horsemen relics (gun, war sword, scales, scythe) + seal fragment (+0..4), sin remains (+5..11), mirror case (+12),
   row 37 sin essence, elixir of sin, sin bomb, sticky bomb, bandage, stimulant (`elite_art`), ... heavenly halo (+14), artifact shard (+15)

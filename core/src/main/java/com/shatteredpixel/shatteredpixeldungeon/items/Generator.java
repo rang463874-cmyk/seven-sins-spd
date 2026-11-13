@@ -433,9 +433,12 @@ public class Generator {
 					Quarterstaff.class,
 					Dirk.class,
 					Sickle.class,
-					Pickaxe.class
+					Pickaxe.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.Kukri.class, //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.Morningstar.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.Sling.class
 			};
-			WEP_T2.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 0 };
+			WEP_T2.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 0, 2, 2, 2 };
 			WEP_T2.probs = WEP_T2.defaultProbs.clone();
 			
 			WEP_T3.classes = new Class<?>[]{
@@ -446,9 +449,13 @@ public class Generator {
 					Sai.class,
 					Whip.class,
 					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Chakram.class,    //Seven Sins
-					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ParrySabre.class  //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ParrySabre.class,  //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.Flamberge.class, //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.WarPick.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.CoinSack.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.BattleScythe.class
 			};
-			WEP_T3.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T3.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T3.probs = WEP_T3.defaultProbs.clone();
 			
 			WEP_T4.classes = new Class<?>[]{
@@ -460,9 +467,13 @@ public class Generator {
 					Crossbow.class,
 					Katana.class,
 					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShiftingHalberd.class, //Seven Sins
-					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ThunderFlail.class     //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ThunderFlail.class,     //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ExecutionerSword.class, //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.CrescentAxe.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.CrusaderMace.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.RuneSpear.class
 			};
-			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T4.probs = WEP_T4.defaultProbs.clone();
 			
 			WEP_T5.classes = new Class<?>[]{
@@ -472,9 +483,13 @@ public class Generator {
 					Greataxe.class,
 					Greatshield.class,
 					Gauntlet.class,
-					WarScythe.class
+					WarScythe.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.GiantSlayer.class, //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.AbyssScythe.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.HeavenlySpear.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.RuinHammer.class
 			};
-			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T5.probs = WEP_T5.defaultProbs.clone();
 			
 			//see Generator.randomArmor

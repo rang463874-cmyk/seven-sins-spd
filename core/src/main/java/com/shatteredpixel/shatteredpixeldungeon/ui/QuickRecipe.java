@@ -293,6 +293,12 @@ public class QuickRecipe extends Component {
 		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard.Recipe(),
 				new ArrayList<>(Arrays.asList(new WndBag.Placeholder(ItemSpriteSheet.ARTIFACT_HOLDER))),
 				new com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard()));
+		result.add(null);
+		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.Recipe(),
+				new ArrayList<>(Arrays.asList(new WndBag.Placeholder(ItemSpriteSheet.WEAPON_HOLDER),
+						new com.shatteredpixel.shatteredpixeldungeon.items.DemonEssence().quantity(
+								com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.RECIPE_ESSENCES))),
+				new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.DoomBlade()));
 		return result;
 	}
 

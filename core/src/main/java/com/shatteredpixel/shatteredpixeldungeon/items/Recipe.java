@@ -185,7 +185,8 @@ public abstract class Recipe {
 			//(except liquid metal and thrown weapons), so these can take any number of slots
 			new com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.Recipe(),
 			new com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.Recipe(),
-			new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe()
+			new com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.Recipe(),
+			new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.Recipe()
 	};
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{

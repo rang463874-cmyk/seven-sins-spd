@@ -135,6 +135,84 @@ def sabre():
     return outline(im)
 
 
+def tint(im, hue, sat, vmul):
+    """recolour the mid tones of a vanilla icon (keeps outlines and bright highlights)"""
+    import colorsys
+    out = im.copy()
+    px = out.load()
+    for y in range(out.height):
+        for x in range(out.width):
+            r, g, b, a = px[x, y]
+            if not a:
+                continue
+            h, s_, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            if v < 0.12 or v > 0.88:
+                continue
+            nr, ng, nb = colorsys.hsv_to_rgb((hue % 360) / 360, sat, min(1, v * vmul))
+            px[x, y] = (int(nr * 255), int(ng * 255), int(nb * 255), a)
+    return out
+
+
+def sling():
+    im = canvas()
+    line(im, 5, 14, 7, 9, WOOD)                     # handle
+    line(im, 6, 14, 8, 9, WOOD_L)
+    line(im, 7, 9, 3, 4, WOOD)                      # left prong
+    line(im, 8, 9, 12, 3, WOOD)                     # right prong
+    line(im, 9, 9, 13, 4, WOOD_L)
+    line(im, 3, 4, 7, 6, LEATHER)                   # band and pouch
+    line(im, 12, 3, 8, 6, LEATHER)
+    put(im, 7, 6, STEEL_D); put(im, 8, 6, STEEL_D)
+    return outline(im)
+
+
+def coin_sack():
+    im = canvas()
+    sack, sack_l = (150, 104, 60, 255), (196, 150, 96, 255)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 8) / 5.5) ** 2 + ((y - 10.5) / 4.6) ** 2
+            if d <= 1:
+                put(im, x, y, sack_l if x < 7 and y < 11 else sack)
+    for x in range(6, 11):
+        put(im, x, 5, LEATHER)                       # tied neck
+    for (x, y) in ((6, 3), (8, 2), (10, 3), (7, 4), (9, 4), (8, 4)):
+        put(im, x, y, GOLD)                          # coins spilling out of the top
+    put(im, 8, 3, (255, 240, 150, 255))
+    put(im, 4, 14, GOLD); put(im, 12, 14, GOLD_D)
+    return outline(im)
+
+
+# owner's weapon list: (row offset from row 38, source vanilla icon or None, tint) in ItemSpriteSheet order
+VANILLA = {"DAGGER": 100, "SPEAR": 106, "DIRK": 108, "SICKLE": 109, "SWORD": 112, "MACE": 113, "LONGSWORD": 120,
+           "BATTLE_AXE": 121, "GREATSWORD": 128, "WAR_HAMMER": 129, "GLAIVE": 130, "WAR_SCYTHE": 134, "PICKAXE": 468}
+MOD_LIST = [
+    ("KUKRI", "DIRK", (30, 0.35, 1.0)), ("MORNINGSTAR", "MACE", (0, 0.35, 0.9)), ("SLING", None, None),
+    ("FLAMBERGE", "SWORD", (18, 0.55, 1.05)), ("WAR_PICK", "PICKAXE", (210, 0.3, 1.0)), ("COIN_SACK", None, None),
+    ("BATTLE_SCYTHE", "SICKLE", (95, 0.35, 1.0)), ("EXECUTIONER_SWORD", "LONGSWORD", (0, 0.25, 0.7)),
+    ("CRESCENT_AXE", "BATTLE_AXE", (190, 0.4, 1.05)), ("CRUSADER_MACE", "MACE", (48, 0.6, 1.2)),
+    ("RUNE_SPEAR", "SPEAR", (220, 0.6, 1.2)), ("GIANT_SLAYER", "GREATSWORD", (30, 0.22, 1.1)),
+    ("ABYSS_SCYTHE", "WAR_SCYTHE", (270, 0.6, 0.85)), ("HEAVENLY_SPEAR", "GLAIVE", (50, 0.5, 1.3)),
+    ("RUIN_HAMMER", "WAR_HAMMER", (10, 0.6, 0.85)), ("DOOM_BLADE", "GREATSWORD", (350, 0.85, 0.7)),
+    ("VOID_SCYTHE", "WAR_SCYTHE", (280, 0.85, 0.6)), ("SUN_JUDGMENT", "GLAIVE", (45, 0.9, 1.5)),
+    ("WORLDS_END", "WAR_HAMMER", (20, 0.9, 1.05)),
+]
+
+
+def mod_icons(items):
+    """(absolute icon index, image): row 38 +10..15, then row 39"""
+    out = []
+    for i, (name, src, t) in enumerate(MOD_LIST):
+        idx = ROW38 + 10 + i if i < 6 else ROW38 + 16 + (i - 6)
+        if src is None:
+            im = sling() if name == "SLING" else coin_sack()
+        else:
+            r, c = divmod(VANILLA[src], 16)
+            im = tint(items.crop((c * 16, r * 16, c * 16 + 16, r * 16 + 16)), *t)
+        out.append((idx, im))
+    return out
+
+
 def icons():
     """(row-38 offset, image)"""
     return [(5, halberd(False)), (6, halberd(True)), (7, flail()), (8, chakram()), (9, sabre())]
@@ -144,6 +222,10 @@ ROW38 = 37 * 16  # "row 38" counts from 1 (ItemSpriteSheet.xy), the 38th row of 
 
 
 def paste_into(items):
+    for idx, im in mod_icons(items):
+        r, c = divmod(idx, 16)
+        items.paste(Image.new("RGBA", (16, 16), (0, 0, 0, 0)), (c * 16, r * 16))
+        items.paste(im, (c * 16, r * 16))
     for off, im in icons():
         idx = ROW38 + off
         r, c = divmod(idx, 16)
@@ -155,6 +237,10 @@ if __name__ == "__main__":
     p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "core", "src", "main", "assets",
                      "sprites", "items.png")
     items = Image.open(p).convert("RGBA")
+    if items.height < 39 * 16:                    # row 39 for the owner's weapon list
+        grown = Image.new("RGBA", (items.width, 39 * 16), (0, 0, 0, 0))
+        grown.paste(items, (0, 0))
+        items = grown
     paste_into(items)
     items.save(p)
     print("patched", p)

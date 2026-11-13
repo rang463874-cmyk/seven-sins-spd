@@ -29,7 +29,7 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
-	private static final int TX_HEIGHT = 608; //extended by five rows for the seven sins mod
+	private static final int TX_HEIGHT = 624; //extended by five rows for the seven sins mod
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
 
@@ -973,6 +973,48 @@ public class ItemSpriteSheet {
 	public static final int THUNDER_FLAIL     = ELITE2+7;
 	public static final int CHAKRAM           = ELITE2+8;
 	public static final int PARRY_SABRE       = ELITE2+9;
+	//Seven Sins: the owner's weapon list (tier 2-6), row 38 +10..15 and row 39
+	public static final int KUKRI             = ELITE2+10;
+	public static final int MORNINGSTAR       = ELITE2+11;
+	public static final int SLING             = ELITE2+12;
+	public static final int FLAMBERGE         = ELITE2+13;
+	public static final int WAR_PICK          = ELITE2+14;
+	public static final int COIN_SACK         = ELITE2+15;
+	private static final int MODWEP     =                                   xy(1, 39);  //16 slots
+	public static final int BATTLE_SCYTHE     = MODWEP+0;
+	public static final int EXECUTIONER_SWORD = MODWEP+1;
+	public static final int CRESCENT_AXE      = MODWEP+2;
+	public static final int CRUSADER_MACE     = MODWEP+3;
+	public static final int RUNE_SPEAR        = MODWEP+4;
+	public static final int GIANT_SLAYER      = MODWEP+5;
+	public static final int ABYSS_SCYTHE      = MODWEP+6;
+	public static final int HEAVENLY_SPEAR    = MODWEP+7;
+	public static final int RUIN_HAMMER       = MODWEP+8;
+	public static final int DOOM_BLADE        = MODWEP+9;
+	public static final int VOID_SCYTHE       = MODWEP+10;
+	public static final int SUN_JUDGMENT      = MODWEP+11;
+	public static final int WORLDS_END        = MODWEP+12;
+	static{
+		assignItemRect(KUKRI, 16, 16);
+		assignItemRect(MORNINGSTAR, 16, 16);
+		assignItemRect(SLING, 16, 16);
+		assignItemRect(FLAMBERGE, 16, 16);
+		assignItemRect(WAR_PICK, 16, 16);
+		assignItemRect(COIN_SACK, 16, 16);
+		assignItemRect(BATTLE_SCYTHE, 16, 16);
+		assignItemRect(EXECUTIONER_SWORD, 16, 16);
+		assignItemRect(CRESCENT_AXE, 16, 16);
+		assignItemRect(CRUSADER_MACE, 16, 16);
+		assignItemRect(RUNE_SPEAR, 16, 16);
+		assignItemRect(GIANT_SLAYER, 16, 16);
+		assignItemRect(ABYSS_SCYTHE, 16, 16);
+		assignItemRect(HEAVENLY_SPEAR, 16, 16);
+		assignItemRect(RUIN_HAMMER, 16, 16);
+		assignItemRect(DOOM_BLADE, 16, 16);
+		assignItemRect(VOID_SCYTHE, 16, 16);
+		assignItemRect(SUN_JUDGMENT, 16, 16);
+		assignItemRect(WORLDS_END, 16, 16);
+	}
 	static{
 		assignItemRect(HALBERD_SPEAR, 16, 16);
 		assignItemRect(HALBERD_AXE,   16, 16);

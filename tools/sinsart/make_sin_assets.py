@@ -770,7 +770,7 @@ def main():
     hero_icons = Image.open(p("interfaces/hero_icons.png")).convert("RGBA")
     hero_icons = grow(hero_icons, 128, 16 * (16 + 7))
     items = Image.open(p("sprites/items.png")).convert("RGBA")
-    items = grow(items, 256, 16 * 38)
+    items = grow(items, 256, 16 * 39)
 
     for k, sin in enumerate(SINS):
         hue, acc, name = sin["hue"], sin["accent"], sin["name"]

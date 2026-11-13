@@ -544,6 +544,8 @@ abstract public class MissileWeapon extends Weapon {
 	@Override
 	public int damageRoll(Char owner) {
 		int damage = augment.damageFactor(super.damageRoll( owner ));
+		//Seven Sins: a wielded sling makes thrown weapons hit harder
+		damage = com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.Sling.thrownDamage(owner, damage);
 		
 		if (owner instanceof Hero) {
 			int exStr = ((Hero)owner).STR() - STRReq();

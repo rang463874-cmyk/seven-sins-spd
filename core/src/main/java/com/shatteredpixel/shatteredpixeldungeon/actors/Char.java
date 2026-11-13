@@ -394,6 +394,8 @@ public abstract class Char extends Actor {
 		} else if (hit( this, enemy, accMulti, false )) {
 			
 			int dr = Math.round(enemy.drRoll() * AscensionChallenge.statModifier(enemy));
+			//Seven Sins: armor-piercing weapons (morningstar, rune spear)
+			dr = com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ModMeleeWeapon.armorPierce(this, enemy, dr);
 			
 			if (this instanceof Hero){
 				Hero h = (Hero)this;
