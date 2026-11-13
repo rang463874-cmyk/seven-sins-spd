@@ -52,7 +52,7 @@ public class WarDrum extends SinArtifact {
 	public static final int COST_CONTAGION = 50;
 	public static final int COST_DASH = 25;
 	/** War Cry: free, on a cooldown; calls the enemies within RALLY_RANGE and fills some rage */
-	public static final int RALLY_RANGE = 8;
+	public static final int RALLY_RANGE = 12;
 	public static final float RALLY_COOLDOWN = 30f;
 	public static final float RALLY_TAUNT = 10f;
 	public static final int RALLY_RAGE_EACH = 5, RALLY_RAGE_MAX = 30;

@@ -294,6 +294,7 @@ public class Hero extends Char {
 		HT = SlothHooks.bonusHT(this, HT);
 		HT = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.bonusHT(this, HT);
 		HT = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.bonusHT(this, HT);
+		HT = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.bonusHT(this, HT); //Seven Sins: metamorphosed sin talents
 		HT = Math.max(1, Math.round(HT * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.htMultiplier(this))); //Seven Sins: awakening
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
@@ -584,6 +585,7 @@ public class Hero extends Char {
 		accuracy = SlothHooks.accuracy( this, accuracy );
 		accuracy = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.accuracy( this, accuracy );
 		accuracy = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.accuracy( this, accuracy );
+		accuracy = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.accuracy( this, accuracy );
 		
 		//precise assault and liquid agility
 		if (!(wep instanceof MissileWeapon)) {
@@ -665,6 +667,7 @@ public class Hero extends Char {
 		evasion = EnvyHooks.evasion( this, evasion );
 		evasion = SlothHooks.evasion( this, evasion );
 		evasion = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.evasion( this, evasion );
+		evasion = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.evasion( this, evasion );
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
 			if (pointsInTalent(Talent.LIQUID_AGILITY) == 1){
@@ -980,6 +983,7 @@ public class Hero extends Char {
 		//calls to dungeon.observe will also update hero's local FOV.
 		fieldOfView = Dungeon.level.heroFOV;
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.tick(this); //Seven Sins: a boss floor's hidden sigil
+		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.tick(this); //Seven Sins: metamorphosed sin talents
 
 		if (buff(Endure.EndureTracker.class) != null){
 			buff(Endure.EndureTracker.class).endEnduring();
@@ -1694,6 +1698,7 @@ public class Hero extends Char {
 		damage = SlothHooks.onAttack( this, enemy, damage );
 		damage = HorsemenHooks.onAttack( this, enemy, damage );
 		damage = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onAttack( this, enemy, damage );
+		damage = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onAttack( this, enemy, damage );
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );
@@ -1752,6 +1757,7 @@ public class Hero extends Char {
 			berserk.damage(damage);
 		}
 
+		damage = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onDefense( this, enemy, damage ); //first: it can turn the whole blow aside
 		damage = PredatorHooks.onDefense( this, enemy, damage );
 		damage = GreedHooks.onDefense( this, enemy, damage );
 		damage = WrathHooks.onDefense( this, enemy, damage );

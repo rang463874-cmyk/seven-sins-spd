@@ -300,6 +300,26 @@ Done and pushed (see `git log`):
   left alone until the hero moves) and animation speed (`SPDSettings.animSpeed` 1..5 = `ANIM_SPEEDS` x1/1.5/2/3/4, applied as
   `Game.timeScale` in `GameScene.update`; scene changes reset it to 1, so only the dungeon is sped up). Strings are in
   messages/windows/windows*.properties next to the vanilla `uitab` keys (not synced).
+- Metamorphosed sin talents (Nov 13 2026, owner approved the table): `sins/MetaTalents` = what a sin's tier 1-3 class talent
+  does for a hero of ANOTHER class (scroll of metamorphosis). `m(hero, talent)` = points, 0 for the talent's home class (by
+  name prefix), so the home class keeps its normal effect. 13 talents work as they are (gluttony's consumable ones, greed's
+  gold ones etc. are copied there because the originals sit inside the home buff), 23 follow shared rules: A points gained
+  +10%/pt (`pointGain`, in each buff's add*/`PredatorStomach.score`; Greed = more gold via `bonusGold`), B stat effects
+  +5%/pt (`statBonus`, each buff's `pts()`), C meal refills 10%/pt of the own resource (`mealShare` -> `restore`, in
+  `SinMeals`), D own skill costs -8/15% (`costMult`: hungerCost, GoldenCard.discounted, AwakeningHooks.rageCost,
+  LustDesire.hpCost, EnvyMimicry.cost, SlothRepose.turnCost; Pride = faster dignity), E resource max +10%/pt (`maxMult`;
+  gluttony/lust/sloth +5% max HP instead). `restore(hero, share)` = "my resource" (satiety, gauge, rage, dignity, HP,
+  jealousy; Sloth = `State.dozeCredit` shortening the next nap in `SlothRepose.doze`); `grantPoints` = `SinRewards.grant`
+  (Greed: depth gold per point). 41 talents have their own effect (see the `meta_desc` strings): hooks `onAttack`,
+  `onDefense` (first in `Hero.defenseProc`), `onDodge`, `modifyDamage`/`afterDamage` (Char.damage), `onMobDeath`,
+  `onGoldPickup`, `onConsumed` (from PredatorHooks), `onSkillSpent` (SinArtifact.onSpent), `bonusHT`, `accuracy`, `evasion`,
+  `regenMult`/`healMult` (through AwakeningHooks), `resist`, `shopPrice`, `sharesSight`/`revealAroundAllies`, `tick`.
+  State: invisible `MetaTalents.State` on every hero (kinds of enemies that died this run, hit chain, per-floor counters) and
+  `MetaTalents.Mark` on enemies (struck once, has hurt the hero, resented). Chance effects skip bosses/minibosses.
+  Strings: `actors.hero.talent.<name>.meta_desc` (64, in the sins' source files; shown by vanilla `Talent.desc(true)`).
+  The pool still offers the hidden vanilla classes' talents. Same day: Envy's own "trophies" is +3/6/9 max HP per bestiary
+  entry (owner's edit, was 2/4/6); Wrath gains a flat `WrathGrudge.HURT_RAGE` 5 per enemy attack that lands (plus the share
+  by damage) and War Cry reaches `RALLY_RANGE` 12 (was 8).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

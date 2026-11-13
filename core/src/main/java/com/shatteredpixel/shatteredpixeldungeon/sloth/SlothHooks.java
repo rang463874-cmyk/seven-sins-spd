@@ -61,12 +61,14 @@ public final class SlothHooks {
 
 	/** dream sight (SLOTH_COMFY +2): the hero sees everything its puppets see */
 	public static boolean sharesSight(Mob m) {
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.sharesSight(m)) return true; //the other classes: any ally
 		return m instanceof DreamPuppet && Dungeon.hero != null
 				&& Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) >= 2;
 	}
 
 	/** dream sight +1: the hero sees the tiles within 2 of every puppet */
 	public static void revealAroundPuppets(boolean[] fov) {
+		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.revealAroundAllies(fov); //the other classes: any ally
 		if (Dungeon.hero == null || Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) != 1) return;
 		int w = Dungeon.level.width();
 		for (DreamPuppet p : DreamPuppet.active()) {

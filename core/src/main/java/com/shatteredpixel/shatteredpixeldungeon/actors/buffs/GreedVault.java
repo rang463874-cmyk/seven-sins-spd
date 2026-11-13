@@ -57,7 +57,7 @@ public class GreedVault extends Buff {
 	/** wealth points: one per 100 gold carried */
 	public float pts() {
 		Hero h = hero();
-		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.GREED_PRESTIGE);
+		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.GREED_PRESTIGE) + com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.statBonus(h);
 		return Math.max(0, Dungeon.gold) / 100f * mult;
 	}
 
@@ -125,7 +125,7 @@ public class GreedVault extends Buff {
 
 	public float maxCharge() {
 		Hero h = hero();
-		return (100 + 50 * Math.max(1, Dungeon.depth)) * SinArtifact.gaugeScale(h);
+		return (100 + 50 * Math.max(1, Dungeon.depth)) * SinArtifact.gaugeScale(h) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.maxMult(h);
 	}
 
 	public void addCharge(float amount) {

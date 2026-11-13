@@ -80,7 +80,7 @@ public class PredatorStomach extends Buff {
 
 	private float apex() {
 		Hero h = hero();
-		return h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.PREDATOR_APEX);
+		return h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.PREDATOR_APEX) + com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.statBonus(h);
 	}
 
 	private Hero hero() {
@@ -338,6 +338,7 @@ public class PredatorStomach extends Buff {
 		int cat = category(item);
 		float s = baseScore(item);
 		float mult = 1f + 0.10f * hero.pointsInTalent(Talent.PREDATOR_EFFICIENCY);
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.pointGain(hero);
 		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.gluttonyScore(hero); //Seven Sins: awakening
 		if (hero.subClass == HeroSubClass.GOURMAND) {
 			mult += 0.10f * hero.pointsInTalent(Talent.GOURMAND_SECOND_STOMACH);

@@ -111,6 +111,7 @@ public class PredatorMaw extends SinArtifact {
 	public static int hungerCost(Hero hero, int base) {
 		float mult = SinArtifact.satietyScale(hero) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.gluttonyCost(hero); //Seven Sins: awakening
 		if (PredatorStomach.hasCodex(hero, PredatorStomach.CODEX_FRUGAL)) mult *= 0.5f;
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.costMult(hero);
 		return Math.max(1, Math.round(base * mult));
 	}
 

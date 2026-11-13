@@ -170,7 +170,10 @@ public final class WrathHooks {
 	/** Called from Hero.defenseProc. */
 	public static int onDefense(Hero hero, Char attacker, int dmg) {
 		WrathGrudge g = grudge(hero);
-		if (g == null || dmg <= 0) return dmg;
+		if (g == null) return dmg;
+		//every blow that lands stokes the rage, even one the armor soaks up (owner, Nov 13 2026)
+		if (attacker != null) g.addRage(WrathGrudge.HURT_RAGE);
+		if (dmg <= 0) return dmg;
 		g.onHurt(dmg);
 		int fuel = hero.pointsInTalent(Talent.WRATH_FUEL);
 		if (fuel > 0) g.gainCharge(0.10f * fuel);

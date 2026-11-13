@@ -47,7 +47,7 @@ public class EnvyCovet extends Buff {
 
 	public float maxJealousy() {
 		Hero h = hero();
-		return MAX_JEALOUSY + 10f * SinArtifact.level(h) + 25f * (h == null ? 0 : h.pointsInTalent(Talent.ENVY_POLISH));
+		return (MAX_JEALOUSY + 10f * SinArtifact.level(h) + 25f * (h == null ? 0 : h.pointsInTalent(Talent.ENVY_POLISH))) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.maxMult(h);
 	}
 	/** skills currently held by the mirror */
 	public final ArrayList<EnvyMimicry.Mimic> slots = new ArrayList<>();
@@ -142,7 +142,7 @@ public class EnvyCovet extends Buff {
 
 	public float pts() {
 		Hero h = hero();
-		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.ENVY_JEALOUSY);
+		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.ENVY_JEALOUSY) + com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.statBonus(h);
 		float p = envy;
 		//imitating greed: the gold being carried counts, like it does for Greed
 		if (imitating(EnvyMimicry.Growth.GREED)) {
@@ -169,7 +169,7 @@ public class EnvyCovet extends Buff {
 		int trophy = h == null ? 0 : h.pointsInTalent(Talent.ENVY_TROPHY);
 		return (int) (0.2f * pts())
 				+ Math.round(trait(Trait.TORMENTED_SPIRIT, 10f) + trait(Trait.GNOLL_GEOMANCER, 15f))
-				+ codex.size() * 2 * trophy;
+				+ codex.size() * 3 * trophy;
 	}
 
 	/** percentage bonus to max HP from traits, applied after flat bonuses */
@@ -204,6 +204,7 @@ public class EnvyCovet extends Buff {
 	public void addEnvy(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.ENVY_COVET);
+		amount *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.pointGain(h);
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
 		envy += amount;

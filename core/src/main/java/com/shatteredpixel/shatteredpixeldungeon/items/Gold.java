@@ -65,10 +65,12 @@ public class Gold extends Item {
 		Catalog.setSeen(getClass());
 		Statistics.itemTypesDiscovered.add(getClass());
 
-		quantity += GreedHooks.bonusGold( hero, quantity ) + EnvyHooks.bonusGold( hero, quantity );
+		quantity += GreedHooks.bonusGold( hero, quantity ) + EnvyHooks.bonusGold( hero, quantity )
+				+ com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.bonusGold( hero, quantity );
 		quantity += com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.goldDelta( hero, quantity );
 		Dungeon.gold += quantity;
 		GreedHooks.onGoldPickup( hero, quantity );
+		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onGoldPickup( hero, quantity );
 		Statistics.goldCollected += quantity;
 		Badges.validateGoldCollected();
 

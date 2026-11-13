@@ -44,7 +44,7 @@ public class WrathGrudge extends Buff {
 
 	public float pts() {
 		Hero h = hero();
-		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.WRATH_FURY);
+		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.WRATH_FURY) + com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.statBonus(h);
 		return grudge * mult;
 	}
 
@@ -76,6 +76,7 @@ public class WrathGrudge extends Buff {
 	public void addGrudge(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.WRATH_SPITE);
+		amount *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.pointGain(h);
 		if (SinWeapons.wields(h, WrathGreatsword.class, HeroClass.WRATH)) amount *= 1.5f;
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
@@ -88,7 +89,7 @@ public class WrathGrudge extends Buff {
 
 	public int maxRage() {
 		Hero h = hero();
-		return 100 + 10 * SinArtifact.bonusCharges(h) + (mirrored ? 20 : 0);
+		return Math.round((100 + 10 * SinArtifact.bonusCharges(h) + (mirrored ? 20 : 0)) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.maxMult(h));
 	}
 
 	/** multiplier on all rage gained */
@@ -109,6 +110,9 @@ public class WrathGrudge extends Buff {
 	public void gainCharge(float amount) {
 		addRage(amount * 25f);
 	}
+
+	/** flat rage for every enemy attack that lands, on top of the share by damage below */
+	public static final float HURT_RAGE = 5f;
 
 	/** rage from being hurt: a hit for your whole max HP fills 100 */
 	public void onHurt(int dmg) {

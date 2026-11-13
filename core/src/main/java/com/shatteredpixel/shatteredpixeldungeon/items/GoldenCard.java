@@ -82,6 +82,7 @@ public class GoldenCard extends SinArtifact {
 		float mult = 1f - 0.15f * hero.pointsInTalent(Talent.GREED_DISCOUNT);
 		GreedVault v = hero.buff(GreedVault.class);
 		if (v != null && v.mirrored) mult *= 0.75f;
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.costMult(hero);
 		return Math.max(1, Math.round(cost * mult));
 	}
 

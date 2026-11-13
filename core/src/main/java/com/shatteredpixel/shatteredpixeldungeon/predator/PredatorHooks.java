@@ -119,6 +119,7 @@ public final class PredatorHooks {
 	}
 
 	public static void onConsumed(Hero hero, Item item) {
+		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onConsumed(hero, item); //gluttony talents held by the other classes
 		if (hero != null && item != null && hero.heroClass == HeroClass.ENVY) {
 			com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks.onConsumed(hero, item);
 			return;
@@ -129,7 +130,10 @@ public final class PredatorHooks {
 
 	/** Called from Food.execute after eating. */
 	public static void onFoodEaten(Hero hero, Food food) {
-		if (!glutton(hero)) return;
+		if (!glutton(hero)) {
+			com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onConsumed(hero, food);
+			return;
+		}
 		if (hero.subClass == HeroSubClass.GOURMAND) {
 			Hunger hunger = hero.buff(Hunger.class);
 			if (hunger != null) hunger.satisfy(food.energy * 0.5f);

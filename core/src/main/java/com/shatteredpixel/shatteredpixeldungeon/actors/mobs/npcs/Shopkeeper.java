@@ -200,7 +200,7 @@ public class Shopkeeper extends NPC {
 	//shopkeepers are greedy!
 	public static int sellPrice(Item item){
 		//Seven Sins: awakening (lord of gold's discount)
-		return Math.max(1, Math.round(item.value() * 5 * (Dungeon.depth / 5 + 1) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.shopPrice()));
+		return Math.max(1, Math.round(item.value() * 5 * (Dungeon.depth / 5 + 1) * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.shopPrice() * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.shopPrice()));
 	}
 	
 	public static WndBag sell() {

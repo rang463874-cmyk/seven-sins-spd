@@ -163,6 +163,7 @@ public final class EnvyMimicry {
 		if (m.kind == Kind.SIN && hero.subClass == HeroSubClass.USURPER) {
 			mult *= 0.75f - 0.05f * hero.pointsInTalent(Talent.USURP_DRAIN);
 		}
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.costMult(hero);
 		return Math.max(1, Math.round(m.baseCost * mult));
 	}
 

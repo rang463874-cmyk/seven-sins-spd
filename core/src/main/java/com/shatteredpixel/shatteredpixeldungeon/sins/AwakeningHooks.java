@@ -65,20 +65,24 @@ public class AwakeningHooks {
 
 	/** natural regeneration (wrath's and lust's monsters: halved) */
 	public static float regenMultiplier(Char ch) {
+		return awakenedHealing(ch) * MetaTalents.regenMult(ch);
+	}
+
+	private static float awakenedHealing(Char ch) {
 		if (monster(ch, HeroClass.WRATH) || monster(ch, HeroClass.LUST)) return 0.5f;
 		return 1f;
 	}
 
 	/** healing over time from potions etc. (wrath's and lust's monsters: halved) */
 	public static float healMultiplier(Char ch) {
-		return regenMultiplier(ch);
+		return awakenedHealing(ch) * MetaTalents.healMult(ch);
 	}
 
 	// ------------------------------------------------------------------ wrath
 
 	/** a war drum skill's rage cost */
 	public static int rageCost(Hero hero, int base) {
-		return Math.max(1, Math.round(base * (1f - 0.10f * pts(hero, W_PRECISE))));
+		return Math.max(1, Math.round(base * (1f - 0.10f * pts(hero, W_PRECISE)) * MetaTalents.costMult(hero)));
 	}
 
 	/** how much rage cools per turn with no enemy in view (normally 1) */

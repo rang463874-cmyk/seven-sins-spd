@@ -48,7 +48,7 @@ public class PrideGlory extends Buff {
 
 	public float pts() {
 		Hero h = hero();
-		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.PRIDE_MAJESTY);
+		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.PRIDE_MAJESTY) + com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.statBonus(h);
 		return glory * mult;
 	}
 
@@ -80,6 +80,7 @@ public class PrideGlory extends Buff {
 	public void addGlory(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.PRIDE_VANITY);
+		amount *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.pointGain(h);
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
 		glory += amount;
@@ -105,14 +106,14 @@ public class PrideGlory extends Buff {
 		if (SinWeapons.wields(h, KingsAegis.class, HeroClass.PRIDE)) max += 5;
 		if (mirrored) max += 5;
 		max += com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.prideReign(h); //Seven Sins: awakening
-		return max;
+		return Math.round(max * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.maxMult(h));
 	}
 
 	public float turnsPerDignity() {
 		Hero h = hero();
 		float t = 3f - 0.5f * (h == null ? 0 : h.pointsInTalent(Talent.PRIDE_POISE));
 		if (SinWeapons.wields(h, DuelingSword.class, HeroClass.PRIDE)) t -= 1f;
-		t *= SinArtifact.rechargeScale(h);
+		t *= SinArtifact.rechargeScale(h) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.costMult(h);
 		return Math.max(0.5f, t);
 	}
 

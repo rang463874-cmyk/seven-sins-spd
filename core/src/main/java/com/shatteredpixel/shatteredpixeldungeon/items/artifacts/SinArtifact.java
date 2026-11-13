@@ -65,6 +65,7 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 
 	/** call whenever a skill actually spends its resource; only a worn artifact learns from it */
 	public static void onSpent(Hero hero, float exp) {
+		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onSkillSpent(hero);
 		SinArtifact a = of(hero);
 		if (a != null && a.isEquipped(hero)) {
 			a.gainExp(exp);

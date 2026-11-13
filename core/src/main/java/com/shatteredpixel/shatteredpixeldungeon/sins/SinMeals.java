@@ -66,9 +66,11 @@ public final class SinMeals {
 			EnvyCovet c = hero.buff(EnvyCovet.class);
 			if (c != null) c.addJealousy(15f * p);
 		}
-		if ((p = hero.pointsInTalent(Talent.SLOTH_PILLOW)) > 0) {
+		if ((p = hero.pointsInTalent(Talent.SLOTH_PILLOW)) > 0 && hero.heroClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.SLOTH) {
 			Buff.affect(hero, SlothRepose.Refreshed.class).skills = p;
 		}
+		//another sin's meal talent (metamorphosis) refills the hero's own resource instead
+		MetaTalents.restore(hero, MetaTalents.mealShare(hero));
 		if (quickEater(hero)) hero.sprite.emitter().burst(Speck.factory(Speck.STAR), 3);
 		Item.updateQuickslot();
 	}

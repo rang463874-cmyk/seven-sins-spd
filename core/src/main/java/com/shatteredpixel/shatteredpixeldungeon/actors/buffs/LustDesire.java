@@ -47,7 +47,7 @@ public class LustDesire extends Buff {
 
 	public float pts() {
 		Hero h = hero();
-		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.LUST_OBSESSION);
+		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.LUST_OBSESSION) + com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.statBonus(h);
 		return desire * mult;
 	}
 
@@ -79,6 +79,7 @@ public class LustDesire extends Buff {
 	public void addDesire(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.LUST_YEARNING);
+		amount *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.pointGain(h);
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
 		desire += amount;
@@ -141,6 +142,7 @@ public class LustDesire extends Buff {
 		if (mirrored) mult *= 0.75f;
 		if (h.subClass == HeroSubClass.CRIMSON_NOBLE) mult *= 0.5f;
 		mult *= SinArtifact.costScale(h);
+		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.costMult(h);
 		mult *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.lustCost(h); //Seven Sins: awakening
 		return Math.max(1, Math.round(h.HT * share * mult));
 	}

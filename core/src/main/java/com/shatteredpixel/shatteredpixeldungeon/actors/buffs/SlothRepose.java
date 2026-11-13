@@ -97,7 +97,7 @@ public class SlothRepose extends Buff {
 
 	public float pts() {
 		Hero h = hero();
-		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.SLOTH_APATHY);
+		float mult = h == null ? 1f : 1f + 0.10f * h.pointsInTalent(Talent.SLOTH_APATHY) + com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.statBonus(h);
 		return sloth * mult;
 	}
 
@@ -129,6 +129,7 @@ public class SlothRepose extends Buff {
 	public void addSloth(float amount) {
 		Hero h = hero();
 		if (h != null) amount *= 1f + 0.15f * h.pointsInTalent(Talent.SLOTH_IDLE);
+		amount *= com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.pointGain(h);
 		if (amount <= 0) return;
 		int oldHP = hpBonus();
 		sloth += amount;
@@ -165,7 +166,7 @@ public class SlothRepose extends Buff {
 
 	/** turns a pillow skill with this base cost puts the sloth to sleep for */
 	public static int turnCost(Hero h, int base) {
-		float t = base * SinArtifact.rechargeScale(h);
+		float t = base * SinArtifact.rechargeScale(h) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.costMult(h);
 		if (h != null) t *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.slothDoze(h); //Seven Sins: awakening
 		return Math.max(1, Math.round(t));
 	}
@@ -181,6 +182,7 @@ public class SlothRepose extends Buff {
 			h.spendAndNext(1f);
 			return;
 		}
+		turns = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.useDozeCredit(h, turns); //another sin's talents can shorten the nap
 		SlothRepose r = h.buff(SlothRepose.class);
 		if (r != null) {
 			//dozing doesn't count as moving

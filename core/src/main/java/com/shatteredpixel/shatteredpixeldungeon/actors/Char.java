@@ -592,6 +592,7 @@ public abstract class Char extends Actor {
 
 			//lust's dance: dodging charms the attacker
 			LustHooks.onDodge(this, enemy);
+			com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onDodge(this, enemy);
 
 			if (enemy.sprite != null){
 				if (hitMissIcon != -1){
@@ -856,6 +857,7 @@ public abstract class Char extends Actor {
 		dmg = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.modifyDamage(this, src, dmg);
 		dmg = com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.modifyDamage(this, src, dmg);
 		dmg = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.modifyDamage(this, src, dmg);
+		dmg = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.modifyDamage(this, src, dmg);
 		if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
 			dmg = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onHeroDamaged((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this, dmg); //Seven Sins: awakening
 		}
@@ -1011,6 +1013,7 @@ public abstract class Char extends Actor {
 		HP -= dmg;
 		WrathHooks.afterDamage(this, src, dmg + shielded);
 		PrideHooks.afterDamage(this, src, dmg + shielded);
+		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.afterDamage(this, src, dmg + shielded);
 		dmg += com.shatteredpixel.shatteredpixeldungeon.horsemen.HorsemenHooks.afterDamage(this);
 		//Seven Sins: awakening (wrath's monster's undying rage)
 		if (HP <= 0 && this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
@@ -1401,7 +1404,7 @@ public abstract class Char extends Actor {
 				result *= 0.5f;
 			}
 		}
-		return result * RingOfElements.resist(this, effect) * com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.resist(this, effect);
+		return result * RingOfElements.resist(this, effect) * com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.resist(this, effect) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.resist(this, effect);
 	}
 	
 	protected final HashSet<Class> immunities = new HashSet<>();
