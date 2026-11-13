@@ -22,15 +22,21 @@ public class RoseGlaive extends Glaive {
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
-			Hero hero = (Hero) attacker;
-			//every hit drinks a little; hits on the charmed don't shake the charm off
-			if (LustDesire.charmedByHero(defender)) {
-				Charm c = defender.buff(Charm.class);
-				if (c != null) c.ignoreNextHit = true;
-			}
-			Buff.affect(hero, LustDesire.class).drain(Math.min(damage, defender.HP + defender.shielding()), 0.15f);
+			damage = effect((Hero) attacker, this, defender, damage);
 		}
 		return super.proc(attacker, defender, damage);
+	}
+
+	/** the weapon's effect, also given by the sigil of sin on any melee weapon */
+	public static int effect(Hero hero, com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon w, Char defender, int damage) {
+		
+		//every hit drinks a little; hits on the charmed don't shake the charm off
+		if (LustDesire.charmedByHero(defender)) {
+			Charm c = defender.buff(Charm.class);
+			if (c != null) c.ignoreNextHit = true;
+		}
+		Buff.affect(hero, LustDesire.class).drain(Math.min(damage, defender.HP + defender.shielding()), 0.15f);
+		return damage;
 	}
 
 	@Override

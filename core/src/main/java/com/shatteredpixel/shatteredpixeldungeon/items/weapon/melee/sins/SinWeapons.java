@@ -25,7 +25,28 @@ public final class SinWeapons {
 	public static boolean wields(Hero hero, Class<? extends KindOfWeapon> cls, HeroClass owner) {
 		if (hero == null || hero.heroClass != owner) return false;
 		KindOfWeapon w = hero.belongings.weapon();
-		return w != null && cls.isInstance(w);
+		if (w == null) return false;
+		if (cls.isInstance(w)) return true;
+		//a weapon with the sigil of sin counts as the bearer's tier 5 sin weapon
+		return w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon
+				&& ((com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon) w).sinSigil && cls == tier5(owner);
+	}
+
+	/** the tier 5 effect for a hit with a weapon carrying the sigil of sin (the hero's own sin) */
+	public static int sigilProc(Hero hero, com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon w,
+	                            Char defender, int damage) {
+		Class<? extends MeleeWeapon> t5 = tier5(hero.heroClass);
+		if (t5 == null || t5.isInstance(w)) return damage;
+		switch (hero.heroClass) {
+			case GLUTTONY: return GluttonScythe.effect(hero, w, defender, damage);
+			case GREED:    return MidasAxe.effect(hero, w, defender, damage);
+			case WRATH:    return WrathGreatsword.effect(hero, w, defender, damage);
+			case PRIDE:    return damage; //passive only (ranged bonus, max dignity)
+			case LUST:     return RoseGlaive.effect(hero, w, defender, damage);
+			case ENVY:     return UsurpersGauntlets.effect(hero, w, defender, damage);
+			case SLOTH:    return DreamHammer.effect(hero, w, defender, damage);
+			default:       return damage;
+		}
 	}
 
 	/** approximate check for a hit that will kill (used before damage is applied) */

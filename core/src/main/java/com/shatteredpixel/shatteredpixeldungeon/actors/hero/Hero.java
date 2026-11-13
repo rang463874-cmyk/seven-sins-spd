@@ -648,6 +648,11 @@ public class Hero extends Char {
 		if (buff(RoundShield.GuardTracker.class) != null){
 			return INFINITE_EVASION;
 		}
+
+		//Seven Sins: the parrying sabre's stance
+		if (com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ParrySabre.tryParry(this, enemy)){
+			return INFINITE_EVASION;
+		}
 		
 		float evasion = defenseSkill;
 		
@@ -691,6 +696,9 @@ public class Hero extends Char {
 
 	@Override
 	public String defenseVerb() {
+		String sabre = com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ParrySabre.parryVerb(this);
+		if (sabre != null) return sabre;
+
 		Combo.ParryTracker parry = buff(Combo.ParryTracker.class);
 		if (parry != null){
 			parry.parried = true;

@@ -22,14 +22,20 @@ public class MidasAxe extends Greataxe {
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
-			Hero hero = (Hero) attacker;
-			GreedVault v = Buff.affect(hero, GreedVault.class);
-			damage += (int) Math.min(Math.max(0, Dungeon.gold) / 200, 10 + 2L * buffedLvl());
-			if (SinWeapons.lethal(defender, damage)) {
-				v.earnGold(hero, 5 + 2 * Dungeon.depth);
-			}
+			damage = effect((Hero) attacker, this, defender, damage);
 		}
 		return super.proc(attacker, defender, damage);
+	}
+
+	/** the weapon's effect, also given by the sigil of sin on any melee weapon */
+	public static int effect(Hero hero, com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon w, Char defender, int damage) {
+		
+		GreedVault v = Buff.affect(hero, GreedVault.class);
+		damage += (int) Math.min(Math.max(0, Dungeon.gold) / 200, 10 + 2L * w.buffedLvl());
+		if (SinWeapons.lethal(defender, damage)) {
+			v.earnGold(hero, 5 + 2 * Dungeon.depth);
+		}
+		return damage;
 	}
 
 	@Override

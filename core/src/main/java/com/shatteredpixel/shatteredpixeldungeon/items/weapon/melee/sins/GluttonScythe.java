@@ -22,12 +22,18 @@ public class GluttonScythe extends WarScythe {
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
-			Hero hero = (Hero) attacker;
-			if (SinWeapons.lethal(defender, damage)) {
-				Buff.affect(hero, PredatorStomach.class).addPoints(PredatorStomach.CAT_FOOD, 2f);
-			}
+			damage = effect((Hero) attacker, this, defender, damage);
 		}
 		return super.proc(attacker, defender, damage);
+	}
+
+	/** the weapon's effect, also given by the sigil of sin on any melee weapon */
+	public static int effect(Hero hero, com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon w, Char defender, int damage) {
+		
+		if (SinWeapons.lethal(defender, damage)) {
+			Buff.affect(hero, PredatorStomach.class).addPoints(PredatorStomach.CAT_FOOD, 2f);
+		}
+		return damage;
 	}
 
 	@Override

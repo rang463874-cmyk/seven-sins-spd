@@ -444,9 +444,11 @@ public class Generator {
 					Scimitar.class,
 					RoundShield.class,
 					Sai.class,
-					Whip.class
+					Whip.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Chakram.class,    //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ParrySabre.class  //Seven Sins
 			};
-			WEP_T3.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2 };
+			WEP_T3.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T3.probs = WEP_T3.defaultProbs.clone();
 			
 			WEP_T4.classes = new Class<?>[]{
@@ -456,9 +458,11 @@ public class Generator {
 					RunicBlade.class,
 					AssassinsBlade.class,
 					Crossbow.class,
-					Katana.class
+					Katana.class,
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShiftingHalberd.class, //Seven Sins
+					com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ThunderFlail.class     //Seven Sins
 			};
-			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T4.probs = WEP_T4.defaultProbs.clone();
 			
 			WEP_T5.classes = new Class<?>[]{

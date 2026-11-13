@@ -17,8 +17,21 @@ Done and pushed (see `git log`):
   charge per 3 levels and up to +60% recharge, Lust -30% HP costs, Greed +60% gauge, Gluttony -33% satiety
   costs and +50% consumable points), a permanent-growth buff,
   2 subclasses, 26 talents, 3 armor abilities, class armor, en/ko strings, placeholder art.
-- Tier 1 sin weapons (starting weapons) and tier 5 sin weapons (via the blacksmith's
-  Sigil of Sin, 2000 favor, keeps upgrades/enchantment). Effects only work for the owning sin.
+- Tier 1 sin weapons (starting weapons) and tier 5 sin weapons. Effects only work for the owning sin. The blacksmith's
+  Sigil of Sin (2000 favor, `items/SinSigil`) is an attachable item since Nov 13 2026 (owner): pressed into any melee
+  weapon except a tier 5 sin weapon (`Weapon.sinSigil`, saved, cleared by `reset`, copied by transmutation), it gives the
+  bearer's tier 5 effect (`SinWeapons.sigilProc` from `Weapon.proc` -> each tier 5 weapon's static `effect`) and counts as
+  that weapon for the sin passives (`SinWeapons.wields`); `MeleeWeapon` AC_DETACH_SIGIL gives a fresh sigil back. The tier 5
+  weapons still exist (old saves, dev tools) but are no longer handed out.
+- New weapons (Nov 13 2026, owner picked the mechanics; in the generator's tier decks, items.png row 38 +5..+9 by
+  `tools/sinsart/weapon_icons.py`, strings `tools/strings/newweapons_*`): `melee/ShiftingHalberd` (T4, free AC_SHIFT between
+  spear form: reach 2, x0.8 damage, x1.15 accuracy and axe form: reach 1, x1.2 damage, x0.9 accuracy; `axe` saved),
+  `melee/ThunderFlail` (T4, `Momentum` buff: hits within 3 turns stack 5 charges of +8%, the next hit is a thunderclap x1.5
+  with half arcing into adjacent enemies + 1 turn paralysis), `melee/Chakram` (T3, while wielded AC_HURL (default action):
+  flies up to 6 tiles, hits every enemy on the path at x0.8 via hero.attack, returns; costs an attack), `melee/ParrySabre`
+  (T3, AC_PARRY (default when wielded, 1 turn): `Stance` for 3 turns, the next adjacent melee attack is evaded via
+  `tryParry` in `Hero.defenseSkill` (+ `parryVerb` in `defenseVerb`) and a `Riposte` buff answers with a sure x1.5 hit).
+  None has a duelist technique.
 - Imp quest vault mirror gives `items/MirrorCase` (every class; originals get it alongside their usual
   reward): one use per run, sets `Belongings.extraSlot`, opening `Belongings.misc2`, a second shared
   artifact/ring slot (equip logic in `KindofMisc`, shown in `WndBag`; `InventoryPane` lists it first in

@@ -22,12 +22,18 @@ public class WrathGreatsword extends Greatsword {
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		if (SinWeapons.active(attacker, OWNER)) {
-			Hero hero = (Hero) attacker;
-			if (defender.isAlive() && !WrathGrudge.immune(defender) && !SinWeapons.lethal(defender, damage)) {
-				Buff.prolong(defender, Amok.class, 2f);
-			}
+			damage = effect((Hero) attacker, this, defender, damage);
 		}
 		return super.proc(attacker, defender, damage);
+	}
+
+	/** the weapon's effect, also given by the sigil of sin on any melee weapon */
+	public static int effect(Hero hero, com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon w, Char defender, int damage) {
+		
+		if (defender.isAlive() && !WrathGrudge.immune(defender) && !SinWeapons.lethal(defender, damage)) {
+			Buff.prolong(defender, Amok.class, 2f);
+		}
+		return damage;
 	}
 
 	@Override

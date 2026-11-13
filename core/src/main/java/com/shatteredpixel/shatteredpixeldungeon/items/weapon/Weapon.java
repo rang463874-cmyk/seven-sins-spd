@@ -138,6 +138,12 @@ abstract public class Weapon extends KindOfWeapon {
 	@Override
 	public int proc( Char attacker, Char defender, int damage ) {
 
+		//Seven Sins: a sigil of sin gives the bearer's tier 5 sin weapon effect
+		if (sinSigil && attacker instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
+			damage = com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.sins.SinWeapons.sigilProc(
+					(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) attacker, this, defender, damage);
+		}
+
 		if (attacker.buff(MagicImmune.class) == null) {
 			Enchantment trinityEnchant = null;
 			//only when it's the hero or a char that uses the hero's weapon
@@ -224,6 +230,8 @@ abstract public class Weapon extends KindOfWeapon {
 	private static final String CURSE_INFUSION_BONUS = "curse_infusion_bonus";
 	//Seven Sins: the sword of war fused onto this weapon (melee only), adds flat damage from its stacks
 	public com.shatteredpixel.shatteredpixeldungeon.items.WarEdge warEdge = null;
+	//Seven Sins: the blacksmith's sigil of sin pressed into this weapon (melee only): the bearer's tier 5 sin weapon effect
+	public boolean sinSigil = false;
 
 	private static final String MASTERY_POTION_BONUS = "mastery_potion_bonus";
 	private static final String AUGMENT	        = "augment";
@@ -238,6 +246,7 @@ abstract public class Weapon extends KindOfWeapon {
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
 		bundle.put( "sin_infusions", sinInfusions );
 		bundle.put( "war_edge", warEdge );
+		bundle.put( "sin_sigil", sinSigil );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( AUGMENT, augment );
 	}
@@ -252,6 +261,7 @@ abstract public class Weapon extends KindOfWeapon {
 		curseInfusionBonus = bundle.getBoolean( CURSE_INFUSION_BONUS );
 		sinInfusions = bundle.getInt( "sin_infusions" );
 		warEdge = (com.shatteredpixel.shatteredpixeldungeon.items.WarEdge) bundle.get( "war_edge" );
+		sinSigil = bundle.getBoolean( "sin_sigil" );
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
 
 		augment = bundle.getEnum(AUGMENT, Augment.class);
@@ -262,6 +272,7 @@ abstract public class Weapon extends KindOfWeapon {
 		super.reset();
 		//the sword of war never stays in bones
 		warEdge = null;
+		sinSigil = false;
 		usesLeftToID = usesToID();
 		availableUsesToID = usesToID()/2f;
 	}
