@@ -38,9 +38,12 @@ TIERS = 7
 TIER_CLOTHES = {
     "default": [None, (40, 0.18, 1.35), (28, 0.55, 0.95), (225, 0.10, 1.25), (8, 0.60, 1.15),
                 (250, 0.12, 1.55), None],
+    # pride wears white: the tiers darken it instead (a value multiplier above 1 would do nothing to white)
+    "pride": [None, (40, 0.22, 0.95), (28, 0.50, 0.78), (225, 0.14, 0.82), (8, 0.50, 0.85),
+              (250, 0.12, 0.62), None],
 }
 # pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
-NO_GRID = {"greed", "gluttony", "wrath"}
+NO_GRID = {"greed", "gluttony", "wrath", "pride"}
 NO_GRID_STEP = 12          # source px per intermediate px for those
 # drop islands smaller than this share of the biggest one (flying coins, motion swooshes, sparkles)
 ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
@@ -51,10 +54,13 @@ CLOTHES = {
     "default": dict(hue=(0.2, 0.48), smin=0.3, vmin=0.0, below=0.0),     # gluttony's green tunic
     "greed": dict(hue=(0.95, 0.02), smin=0.6, vmin=0.35, below=0.45),   # the red skirt (not the hood)
     "wrath": dict(hue=(0.84, 0.97), smin=0.35, vmin=0.0, below=0.0),    # the maroon uniform (hair is orange-red)
+    # the white uniform and cape: any hue, nearly no saturation (smax keeps the pale skin out), bright,
+    # below the crown and face
+    "pride": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.07, vmin=0.78, below=0.45),
 }
 
 # class armor colour where the sin's hue on the picture's dark clothes would look muddy
-TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7)}
+TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7), "pride": (265, 0.42, 0.92)}
 
 SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215}
 
@@ -381,12 +387,12 @@ def squash(a, rows):
 # (gluttony's attack swoosh); not for greed, whose crimson background is close to her skirt's shadows
 GLOBAL_BG = {"gluttony"}
 # run frames from the walk pose with mirrored legs; off where a long coat makes the mirrored bottom third look torn
-SWAP_LEGS = {"gluttony": False}
+SWAP_LEGS = {"gluttony": False, "pride": False}
 
 # per-pose size correction when Gemini drew a pose at a different zoom (matched by eye on the head/hood size)
 POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78}}
 # attack pictures are mirrored to face right when the weapon sticks out to the left; None = decide from the picture
-ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False}
+ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False}
 
 
 def build_frames(pics, name="default"):
@@ -463,7 +469,7 @@ def recolor_clothes(frame, spec, name="default"):
             if not p[3]:
                 continue
             h, s, v = hsv(p)
-            if in_hue(h, cl["hue"]) and s > cl["smin"] and v > cl["vmin"]:
+            if in_hue(h, cl["hue"]) and s > cl["smin"] and s <= cl.get("smax", 1.0) and v > cl["vmin"]:
                 r, g, b = colorsys.hsv_to_rgb(hue / 360, sat, min(1, v * vmul))
                 out[y, x, :3] = (int(r * 255), int(g * 255), int(b * 255))
     return out
