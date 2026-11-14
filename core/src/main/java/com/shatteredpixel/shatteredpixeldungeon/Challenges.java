@@ -37,8 +37,16 @@ public class Challenges {
 	public static final int CHAMPION_ENEMIES	= 128;
 	public static final int STRONGER_BOSSES 	= 256;
 
-	public static final int MAX_VALUE           = 511;
-	public static final int MAX_CHALS           = 9;
+	//Seven Sins: the mod's own challenges
+	public static final int SIN_PRICE			= 512;   //enemies grow with the hero's sin points
+	public static final int VIRTUE_JUDGMENT		= 1024;  //two champions per region, the nemesis in each, ascended archangel
+	public static final int DEMON_ARMY			= 2048;  //twice the Goetia demons, milestones need twice the kills
+	public static final int ABSTINENCE			= 4096;  //signature skills cost twice as much
+	public static final int FALLEN_ELITES		= 8192;  //sin elites on every floor
+	public static final int NO_ESSENCE			= 16384; //no sin or demon essences
+
+	public static final int MAX_VALUE           = 32767;
+	public static final int MAX_CHALS           = 15;
 
 	public static final String[] NAME_IDS = {
 			"champion_enemies",
@@ -49,11 +57,18 @@ public class Challenges {
 			"no_herbalism",
 			"swarm_intelligence",
 			"darkness",
-			"no_scrolls"
+			"no_scrolls",
+			"sin_price",
+			"virtue_judgment",
+			"demon_army",
+			"abstinence",
+			"fallen_elites",
+			"no_essence"
 	};
 
 	public static final int[] MASKS = {
-			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS
+			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS,
+			SIN_PRICE, VIRTUE_JUDGMENT, DEMON_ARMY, ABSTINENCE, FALLEN_ELITES, NO_ESSENCE
 	};
 
 	public static int activeChallenges(){

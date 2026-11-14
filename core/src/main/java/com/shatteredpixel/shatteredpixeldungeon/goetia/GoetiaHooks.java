@@ -66,8 +66,13 @@ public class GoetiaHooks {
 		return slain.size();
 	}
 
+	/** the demon army challenge: every milestone needs twice the kills */
+	public static int need(int milestone) {
+		return Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.DEMON_ARMY) ? milestone * 2 : milestone;
+	}
+
 	public static boolean has(int milestone) {
-		return count() >= milestone;
+		return count() >= need(milestone);
 	}
 
 	// ------------------------------------------------------------------ spawning
@@ -80,8 +85,12 @@ public class GoetiaHooks {
 		ArrayList<GoetiaDemon> pool = GoetiaDemon.ofRegion(region);
 		//owner (Nov 13 2026): more demons now that their essences have more uses; the sewers keep 2-3 (only 3 kinds live there)
 		int n = region == 0 ? 2 + (Random.Int(4) == 0 ? 1 : 0) : 3 + (Random.Int(2) == 0 ? 1 : 0);
+		//the demon army challenge: twice as many (kinds repeat once the region's list runs out)
+		if (Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.DEMON_ARMY)) n *= 2;
 		ArrayList<GoetiaDemon> chosen = new ArrayList<>();
-		for (int i = 0; i < n && !pool.isEmpty(); i++) {
+		for (int i = 0; i < n; i++) {
+			if (pool.isEmpty()) pool = GoetiaDemon.ofRegion(region);
+			if (pool.isEmpty()) break;
 			ArrayList<GoetiaDemon> unmet = new ArrayList<>();
 			for (GoetiaDemon d : pool) if (!slain(d)) unmet.add(d);
 			GoetiaDemon d = (!unmet.isEmpty() && Random.Int(4) != 0) ? Random.element(unmet) : Random.element(pool);
@@ -106,7 +115,7 @@ public class GoetiaHooks {
 	public static void onFiendKilled(GoetiaFiend f) {
 		Hero hero = Dungeon.hero;
 		int drops = has(15) ? 2 : 1;
-		Dungeon.level.drop(new DemonEssence().quantity(drops), f.pos).sprite.drop();
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.essences()) Dungeon.level.drop(new DemonEssence().quantity(drops), f.pos).sprite.drop();
 		record(f.demon);
 		if (hero != null) hero.updateHT(false);
 	}
@@ -117,7 +126,7 @@ public class GoetiaHooks {
 		slain.add(d.name());
 		GLog.p(Messages.get(GoetiaHooks.class, "recorded", d.rankName(), d.title(), count()));
 		for (int i = 0; i < MILESTONES.length; i++) {
-			if (before < MILESTONES[i] && count() >= MILESTONES[i]) {
+			if (before < need(MILESTONES[i]) && count() >= need(MILESTONES[i])) {
 				GLog.p(Messages.get(GoetiaHooks.class, "milestone", Messages.get(GoetiaHooks.class, "power_" + i)));
 			}
 		}
@@ -128,7 +137,7 @@ public class GoetiaHooks {
 		StringBuilder sb = new StringBuilder();
 		sb.append(Messages.get(GoetiaHooks.class, "codex_intro", count(), GoetiaDemon.values().length)).append("\n\n");
 		for (int i = 0; i < MILESTONES.length; i++) {
-			sb.append(has(MILESTONES[i]) ? "_" : "").append(MILESTONES[i]).append(": ")
+			sb.append(has(MILESTONES[i]) ? "_" : "").append(need(MILESTONES[i])).append(": ")
 					.append(Messages.get(GoetiaHooks.class, "power_" + i)).append(" - ")
 					.append(Messages.get(GoetiaHooks.class, "power_" + i + "_desc"))
 					.append(has(MILESTONES[i]) ? "_" : "").append("\n");

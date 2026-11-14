@@ -472,7 +472,14 @@ public class WndRanking extends WndTabbed {
 
 			float pos = 0;
 
+			//Seven Sins: with fifteen challenges the full list no longer fits, so only the active ones are listed
+			int active = Math.max(1, Challenges.activeChallenges());
+			float rowHeight = Math.max(8, Math.min(15, (float)Math.floor((HEIGHT - 2) / (float)active) - 1));
+			boolean any = false;
+
 			for (int i=0; i < Challenges.NAME_IDS.length; i++) {
+
+				if ((Dungeon.challenges & Challenges.MASKS[i]) == 0) continue;
 
 				final String challenge = Challenges.NAME_IDS[i];
 
@@ -480,10 +487,11 @@ public class WndRanking extends WndTabbed {
 				cb.checked( (Dungeon.challenges & Challenges.MASKS[i]) != 0 );
 				cb.active = false;
 
-				if (i > 0) {
+				if (any) {
 					pos += 1;
 				}
-				cb.setRect( 0, pos, WIDTH-16, 15 );
+				any = true;
+				cb.setRect( 0, pos, WIDTH-16, rowHeight );
 
 				add( cb );
 
@@ -496,7 +504,7 @@ public class WndRanking extends WndTabbed {
 						);
 					}
 				};
-				info.setRect(cb.right(), pos, 16, 15);
+				info.setRect(cb.right(), pos, 16, rowHeight);
 				add(info);
 
 				pos = cb.bottom();

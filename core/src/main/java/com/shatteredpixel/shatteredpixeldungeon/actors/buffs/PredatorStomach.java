@@ -414,7 +414,7 @@ public class PredatorStomach extends Buff {
 		}
 
 		// codex: a taste of sin, now and then
-		if (codex(CODEX_ESSENCE) && com.watabou.utils.Random.Float() < ESSENCE_CHANCE) {
+		if (codex(CODEX_ESSENCE) && com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.essences() && com.watabou.utils.Random.Float() < ESSENCE_CHANCE) {
 			com.shatteredpixel.shatteredpixeldungeon.items.SinEssence ess = new com.shatteredpixel.shatteredpixeldungeon.items.SinEssence();
 			if (!ess.collect(hero.belongings.backpack)) Dungeon.level.drop(ess, hero.pos).sprite.drop();
 			GLog.p(Messages.get(PredatorStomach.class, "essence_found"));

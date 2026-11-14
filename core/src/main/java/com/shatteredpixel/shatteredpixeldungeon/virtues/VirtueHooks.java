@@ -77,9 +77,19 @@ public class VirtueHooks {
 
 	// ------------------------------------------------------------------ spawning
 
-	private static Virtue pick(int region) {
+	/** the judgment challenge keeps its second champion of a region in these bits of regionsDone */
+	private static final int SECOND = 8;
+
+	private static boolean judged() {
+		return Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.VIRTUE_JUDGMENT);
+	}
+
+	private static Virtue pick(int region, boolean first) {
 		Virtue nem = Dungeon.hero == null ? null : nemesisOf(Dungeon.hero);
-		if (nem != null && (virtuesUsed & (1 << nem.ordinal())) == 0) {
+		if (judged()) {
+			//the judgment: the nemesis comes first in every region, another virtue after it
+			if (first && nem != null) return nem;
+		} else if (nem != null && (virtuesUsed & (1 << nem.ordinal())) == 0) {
 			if (nemesisRegion == 0) nemesisRegion = 1 + Random.Int(4);
 			if (region >= nemesisRegion) return nem;
 		}
@@ -89,6 +99,10 @@ public class VirtueHooks {
 			//keep the nemesis for its own region
 			if (v == nem) continue;
 			pool.add(v);
+		}
+		//eight champions, seven virtues: the judgment lets them come back
+		if (pool.isEmpty() && judged()) {
+			for (Virtue v : Virtue.values()) if (v != nem) pool.add(v);
 		}
 		return pool.isEmpty() ? null : Random.element(pool);
 	}
@@ -105,12 +119,19 @@ public class VirtueHooks {
 		pendingVirtue = null;
 		if (Dungeon.branch != 0 || Dungeon.bossLevel() || Dungeon.depth < 6 || Dungeon.depth > 24) return;
 		int region = (Dungeon.depth - 1) / 5;
-		if (region < 1 || (regionsDone & (1 << region)) != 0) return;
+		if (region < 1) return;
+		boolean first = (regionsDone & (1 << region)) == 0;
+		//the judgment challenge: a second champion follows on a later floor of the region
+		if (!first && !(judged() && (regionsDone & (1 << (region + SECOND))) == 0)) return;
 		int lastFloor = region * 5 + 4;
+		//the first of two comes a floor early, so there is always a floor left for the second
+		if (first && judged()) lastFloor--;
 		int floorsLeft = lastFloor - Dungeon.depth + 1;
+		//(if that floor had no room for a sanctum, the region's last floor still gets one)
+		if (floorsLeft < 1 && first && judged()) floorsLeft = 1;
 		if (floorsLeft < 1 || Random.Int(floorsLeft) != 0) return;
 
-		Virtue v = pick(region);
+		Virtue v = pick(region, first);
 		if (v == null) return;
 		rooms.add(new VirtueSanctumRoom());
 		pendingVirtue = v;
@@ -132,7 +153,7 @@ public class VirtueHooks {
 		c.home = c.pos;
 		level.mobs.add(c);
 		int region = (Dungeon.depth - 1) / 5;
-		regionsDone |= 1 << region;
+		regionsDone |= (regionsDone & (1 << region)) == 0 ? 1 << region : 1 << (region + SECOND);
 		virtuesUsed |= 1 << v.ordinal();
 	}
 
@@ -154,6 +175,7 @@ public class VirtueHooks {
 				new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ArchangelBoss();
 		a.virtue = angelFor(Dungeon.hero);
 		a.pos = amuletPos + 2 * level.width();
+		if (judged()) a.startAscended(); //the judgment challenge: it has already ascended once
 		level.mobs.add(a);
 		angelStage = 1;
 	}

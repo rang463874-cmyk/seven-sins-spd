@@ -61,6 +61,11 @@ public class WndChallenges extends Window {
 
 		boxes = new ArrayList<>();
 
+		//Seven Sins: fifteen challenges don't fit a phone screen at the usual row height
+		int count = Challenges.NAME_IDS.length;
+		float room = PixelScene.uiCamera.height - 24 - TTL_HEIGHT - GAP * (count - 1);
+		float rowHeight = Math.max(10, Math.min(BTN_HEIGHT, (float)Math.floor(room / count)));
+
 		float pos = TTL_HEIGHT;
 		for (int i=0; i < Challenges.NAME_IDS.length; i++) {
 
@@ -73,7 +78,7 @@ public class WndChallenges extends Window {
 			if (i > 0) {
 				pos += GAP;
 			}
-			cb.setRect( 0, pos, WIDTH-16, BTN_HEIGHT );
+			cb.setRect( 0, pos, WIDTH-16, rowHeight );
 
 			add( cb );
 			boxes.add( cb );
@@ -87,7 +92,7 @@ public class WndChallenges extends Window {
 					);
 				}
 			};
-			info.setRect(cb.right(), pos, 16, BTN_HEIGHT);
+			info.setRect(cb.right(), pos, 16, rowHeight);
 			add(info);
 			
 			pos = cb.bottom();
