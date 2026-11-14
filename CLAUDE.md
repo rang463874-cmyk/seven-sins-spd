@@ -572,7 +572,11 @@ Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid p
  in a maroon uniform, 76x79; `CLOTHES` = the maroon uniform, tier 6 bright red; her splash picture has a transparent background,
  which `splash` now puts on black), pride (Nov 14: crowned prince in a white
  uniform and cape, 88x107; `CLOTHES` picks the white by low saturation (`smax`) below the head and its own `TIER_CLOTHES`
- darken it, tier 6 violet; `SWAP_LEGS` False because of the cape; the thrown dagger and gloom lines are dropped as islands).
+ darken it, tier 6 violet; `SWAP_LEGS` False because of the cape; the thrown dagger and gloom lines are dropped as islands),
+ lust (Nov 14: girl in a pink cardigan swinging a bunny plush, 110x114; her four pictures have different art-pixel sizes,
+ so `PITCH` gives one sampling pitch per pose (12 source px, the smaller die canvas 9.2, matched on the head width) instead
+ of the detected one; `CLOTHES` = the bright, lightly saturated pink below the face, tier 6 crimson; attack mirrored; die =
+ sitting and crying; `SPLASH_FILL` gives the splash's side bars the picture's pink instead of black).
 Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
 screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
 chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,

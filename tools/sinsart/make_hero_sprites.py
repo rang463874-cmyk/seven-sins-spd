@@ -43,7 +43,7 @@ TIER_CLOTHES = {
               (250, 0.12, 0.62), None],
 }
 # pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
-NO_GRID = {"greed", "gluttony", "wrath", "pride"}
+NO_GRID = {"greed", "gluttony", "wrath", "pride", "lust"}
 NO_GRID_STEP = 12          # source px per intermediate px for those
 # drop islands smaller than this share of the biggest one (flying coins, motion swooshes, sparkles)
 ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
@@ -57,10 +57,14 @@ CLOTHES = {
     # the white uniform and cape: any hue, nearly no saturation (smax keeps the pale skin out), bright,
     # below the crown and face
     "pride": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.07, vmin=0.78, below=0.45),
+    # the pink cardigan: same hue as the maroon hair and skirt, so picked by being bright and only lightly
+    # saturated, below the face (the butterfly hairpin and blush stay)
+    "lust": dict(hue=(0.88, 0.97), smin=0.2, smax=0.45, vmin=0.75, below=0.45),
 }
 
 # class armor colour where the sin's hue on the picture's dark clothes would look muddy
-TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7), "pride": (265, 0.42, 0.92)}
+TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7), "pride": (265, 0.42, 0.92),
+         "lust": (345, 0.80, 0.78)}       # the sin hue is the cardigan pink already: class armor is crimson
 
 SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215}
 
@@ -98,7 +102,13 @@ def native(path):
     return out
 
 
-def native_pitch(path):
+# Gemini drew a sin's poses with different art-pixel sizes (lust: 12..20 source px for the same figure size): one
+# sampling pitch per pose (source px per sheet px) instead of the detected one, so the poses come out the same size.
+# The die picture is a smaller canvas, its pitch is matched on the head width.
+PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2}}
+
+
+def native_pitch(path, pitch=None):
     """No visible grid: find the art-pixel pitch from the autocorrelation of colour edges (both axes together),
     then the best offset per axis, and sample one colour per art pixel (median of the cell's middle)."""
     a = np.array(Image.open(path).convert("RGB").filter(ImageFilter.MedianFilter(5))).astype(float)
@@ -112,7 +122,7 @@ def native_pitch(path):
     score = [ac(profs[0], l) / max(1e-9, ac(profs[0], 1)) + ac(profs[1], l) / max(1e-9, ac(profs[1], 1)) for l in lags]
     p0 = lags[int(np.argmax(score))]
     best_p, offs = None, None
-    for pp in np.arange(p0 - 1.5, p0 + 1.51, 0.05):          # refine the pitch and find each axis' offset
+    for pp in ([pitch] if pitch else np.arange(p0 - 1.5, p0 + 1.51, 0.05)):          # refine the pitch and find each axis' offset
         tot, oo = 0, []
         for pr in profs:
             n = len(pr)
@@ -392,7 +402,7 @@ SWAP_LEGS = {"gluttony": False, "pride": False}
 # per-pose size correction when Gemini drew a pose at a different zoom (matched by eye on the head/hood size)
 POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78}}
 # attack pictures are mirrored to face right when the weapon sticks out to the left; None = decide from the picture
-ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False}
+ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False, "lust": True}
 
 
 def build_frames(pics, name="default"):
@@ -503,6 +513,8 @@ def avatar(front_n):
 SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
 # boxes (source px) painted with the background colour: the Gemini sparkle
 SPLASH_ERASE = {"gluttony": [(860, 870, 935, 945)]}
+# flat-coloured pictures narrower than the splash: the side bars take the picture's corner colour instead of black
+SPLASH_FILL = {"lust"}
 
 
 def splash(name, src):
@@ -519,7 +531,7 @@ def splash(name, src):
         im.paste(im.getpixel((5, 5)), box)
     s = 450 / im.height
     im = im.resize((round(im.width * s), 450), Image.LANCZOS)
-    out = Image.new("RGB", (800, 450), (0, 0, 0))
+    out = Image.new("RGB", (800, 450), im.getpixel((2, 2)) if name in SPLASH_FILL else (0, 0, 0))
     fx = SPLASH_FOCUS.get(name, SPLASH_FOCUS["default"]) * im.width
     out.paste(im, (int(400 - fx), 0))
     out.save(os.path.join(ASSETS, "splashes", name + ".jpg"), quality=92)
@@ -531,8 +543,11 @@ def main():
     avatars = Image.open(avatars_path).convert("RGBA")
     for name in names:
         d = os.path.join(ART, name)
-        load = native_pitch if name in NO_GRID else native
-        pics = {k: load(os.path.join(d, k + ".png")) for k in ("front", "walk", "attack", "die")}
+        if name in PITCH:
+            pics = {k: native_pitch(os.path.join(d, k + ".png"), PITCH[name][k]) for k in ("front", "walk", "attack", "die")}
+        else:
+            load = native_pitch if name in NO_GRID else native
+            pics = {k: load(os.path.join(d, k + ".png")) for k in ("front", "walk", "attack", "die")}
         frames, front_n, fw, fh = build_frames(pics, name)
         sheet = build_sheet(name, frames, fw, fh)
         sheet.save(os.path.join(ASSETS, "sprites", name + ".png"))
