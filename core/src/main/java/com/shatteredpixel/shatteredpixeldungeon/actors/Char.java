@@ -1016,6 +1016,7 @@ public abstract class Char extends Actor {
 		PrideHooks.afterDamage(this, src, dmg + shielded);
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.afterDamage(this, src, dmg + shielded);
 		dmg += com.shatteredpixel.shatteredpixeldungeon.horsemen.HorsemenHooks.afterDamage(this);
+		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.afterDamage(this); //Seven Sins: the Lesser Key's safety net
 		//Seven Sins: awakening (wrath's monster's undying rage)
 		if (HP <= 0 && this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
 			com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.wrathUndying((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this);
@@ -1411,6 +1412,7 @@ public abstract class Char extends Actor {
 	protected final HashSet<Class> immunities = new HashSet<>();
 	
 	public boolean isImmune(Class effect ){
+		if (com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.immune(this, effect)) return true; //Seven Sins: Solomon's authority
 		HashSet<Class> immunes = new HashSet<>(immunities);
 		for (Property p : properties()){
 			immunes.addAll(p.immunities());
