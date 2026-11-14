@@ -55,7 +55,7 @@ public class PredatorMaw extends SinArtifact {
 	public static final int BITE_FEED = 80;
 
 	public static int biteHpCost(Hero hero) {
-		return Math.max(1, Math.round(hero.HT * BITE_HP_COST));
+		return Math.max(1, Math.round(hero.HT * BITE_HP_COST * com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.skillCost()));
 	}
 	public static final int COST_DASH = 50;
 	public static final int COST_ACID = 80;

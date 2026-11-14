@@ -360,6 +360,19 @@ Done and pushed (see `git log`):
   `Mob.lootChance` multiplies by `SlothHooks.lootFactor` = `RESTFUL_LOOT` 0.5 for puppet kills, except base chance >= 1,
   bosses and minibosses; drops made outside the chance roll (mimic items, statue weapon, essences) are untouched.
   Not yet tried on a device.
+- Mod challenges (Nov 14 2026, owner picked six of seven ideas): `Challenges` masks 512..16384 (`MAX_VALUE` 32767,
+  `MAX_CHALS` 15), strings `challenges.<id>(_desc)` in messages/misc/misc*.properties (not synced). Stateless rules in
+  `sins/ChallengeHooks`. SIN_PRICE "죄의 대가": `sinProgress` = sin points / the points that cap the sin's unique stat
+  (gluttony 500, greed 50, wrath/pride/sloth 125, lust 100, envy 150); enemies deal x(1+f) to the hero and take /(1+f),
+  f = 0.5 x progress, max 1.5 (`modifyDamage` at the end of the Char.damage chain). VIRTUE_JUDGMENT "미덕의 심판":
+  `VirtueHooks.addSanctum/pick` give two champions per region (first forced a floor early, second tracked in `regionsDone`
+  bits region + 8; the first is always the nemesis, virtues may repeat) and `ArchangelBoss.startAscended` (starts at
+  ascension 1, thresholds shifted so both barriers still come). DEMON_ARMY "악마의 군세": `GoetiaHooks.onLevelMobs` n x2
+  (kinds repeat), `need(milestone)` doubles every milestone. ABSTINENCE "금욕": `ChallengeHooks.skillCost` 2 multiplied into
+  `MetaTalents.costMult` (all six cost sites, Pride's dignity time) and Bite's HP cost. FALLEN_ELITES "타락한 정예": 1-2 sin
+  elites on every floor 2-24. NO_ESSENCE "메마른 정수": the six places that hand out SinEssence/DemonEssence check
+  `ChallengeHooks.essences()`. `WndChallenges` shrinks its rows to fit the screen (min 10); `WndRanking`'s tab lists only
+  the active challenges. Not yet tried on a device.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

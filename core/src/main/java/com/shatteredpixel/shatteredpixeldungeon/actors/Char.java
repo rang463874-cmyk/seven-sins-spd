@@ -858,6 +858,7 @@ public abstract class Char extends Actor {
 		dmg = com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.modifyDamage(this, src, dmg);
 		dmg = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.modifyDamage(this, src, dmg);
 		dmg = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.modifyDamage(this, src, dmg);
+		dmg = com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.modifyDamage(this, src, dmg); //Seven Sins: challenges
 		if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
 			dmg = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onHeroDamaged((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this, dmg); //Seven Sins: awakening
 		}

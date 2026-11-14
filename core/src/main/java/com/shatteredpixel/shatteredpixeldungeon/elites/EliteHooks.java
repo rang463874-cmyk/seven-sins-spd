@@ -82,11 +82,15 @@ public class EliteHooks {
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.onLevelMobs(level);
 
 		//sin elite
-		if (Random.Float() < SIN_ELITE_CHANCE) {
+		//the fallen elites challenge: one or two on every floor
+		int sinElites = Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.FALLEN_ELITES)
+				? 1 + Random.Int(2) : (Random.Float() < SIN_ELITE_CHANCE ? 1 : 0);
+		if (sinElites > 0) {
 			ArrayList<Mob> pool = new ArrayList<>();
 			for (Mob m : level.mobs) if (eligible(m)) pool.add(m);
-			if (!pool.isEmpty()) {
+			for (int i = 0; i < sinElites && !pool.isEmpty(); i++) {
 				Mob m = Random.element(pool);
+				pool.remove(m);
 				@SuppressWarnings("unchecked")
 				Class<? extends Buff> cls = (Class<? extends Buff>) Random.element(SinElite.ALL);
 				Buff.affect(m, cls);
@@ -165,7 +169,7 @@ public class EliteHooks {
 	public static void onMobDeath(Mob mob, Object cause) {
 		SinElite e = sinElite(mob);
 		if (e == null || Dungeon.level == null) return;
-		Dungeon.level.drop(new SinEssence(), mob.pos).sprite.drop();
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.essences()) Dungeon.level.drop(new SinEssence(), mob.pos).sprite.drop();
 		if (e instanceof SinElite.Greedy) {
 			Dungeon.level.drop(((SinElite.Greedy) e).loot(), mob.pos).sprite.drop();
 		}
@@ -181,7 +185,7 @@ public class EliteHooks {
 		if (Dungeon.level == null) return;
 		SinEssence ess = new SinEssence();
 		ess.quantity(2);
-		Dungeon.level.drop(ess, pos).sprite.drop();
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.essences()) Dungeon.level.drop(ess, pos).sprite.drop();
 
 		Item it;
 		switch (Random.Int(3)) {

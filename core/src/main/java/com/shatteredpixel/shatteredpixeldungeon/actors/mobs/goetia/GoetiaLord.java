@@ -224,7 +224,7 @@ public class GoetiaLord extends RegionElite {
 		}
 		super.die(cause);
 		Dungeon.level.drop(new ScrollOfUpgrade(), pos).sprite.drop();
-		Dungeon.level.drop(new DemonEssence().quantity(2), pos).sprite.drop();
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.essences()) Dungeon.level.drop(new DemonEssence().quantity(2), pos).sprite.drop();
 		GoetiaHooks.onLordDefeated(this);
 		yell(Messages.get(this, "defeated"));
 	}

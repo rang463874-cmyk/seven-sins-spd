@@ -171,7 +171,7 @@ public class DemonHooks {
 		stage = DEFEATED;
 		SinEssence ess = new SinEssence();
 		ess.quantity(3);
-		Dungeon.level.drop(ess, pos).sprite.drop();
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.essences()) Dungeon.level.drop(ess, pos).sprite.drop();
 		GLog.p(Messages.get(DemonLordNPC.class, "empowered"));
 		if (Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.DemonArenaLevel) {
 			((com.shatteredpixel.shatteredpixeldungeon.levels.DemonArenaLevel) Dungeon.level).unlockPortal();

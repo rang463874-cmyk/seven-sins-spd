@@ -43,6 +43,13 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	private int ascensions = 0;
 
+	/** the judgment challenge: the fight starts one ascension ahead (bigger bloom at once, faster skills from 2/3 HP), and both barriers still come */
+	public void startAscended() {
+		ascensions = Math.max(ascensions, 1);
+		ascendedStart = true;
+	}
+	private boolean ascendedStart = false;
+
 	{
 		spriteClass = VirtueSprites.Michael.class;
 		HP = HT = 650;
@@ -304,7 +311,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 	public void damage(int dmg, Object src) {
 		super.damage(soften(dmg, softThreshold(HT)), src);
 		if (!isAlive()) return;
-		int want = HP < HT / 3 ? 2 : HP < HT * 2 / 3 ? 1 : 0;
+		int want = (HP < HT / 3 ? 2 : HP < HT * 2 / 3 ? 1 : 0) + (ascendedStart ? 1 : 0);
 		while (ascensions < want) {
 			ascensions++;
 			Buff.affect(this, Barrier.class).setShield(Math.round(HT * 0.15f));
@@ -342,6 +349,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		super.storeInBundle(bundle);
 		bundle.put("virtue", virtue.name());
 		bundle.put("ascensions", ascensions);
+		bundle.put("ascended_start", ascendedStart);
 	}
 
 	@Override
@@ -353,6 +361,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 			virtue = Virtue.HUMILITY;
 		}
 		ascensions = bundle.getInt("ascensions");
+		ascendedStart = bundle.getBoolean("ascended_start");
 		if (state != SLEEPING) BossHealthBar.assignBoss(this);
 	}
 }

@@ -220,7 +220,8 @@ public final class MetaTalents {
 		if (h == null) return 1f;
 		float cut = 0;
 		for (Talent t : RULE_D) cut += pick(m(h, t), 0.08f, 0.15f);
-		return Math.max(0.4f, 1f - cut);
+		//Seven Sins: the abstinence challenge doubles every sin's skill costs
+		return Math.max(0.4f, 1f - cut) * ChallengeHooks.skillCost();
 	}
 
 	/** rule E: multiplier on the hero's own resource maximum (+10% per point) */
