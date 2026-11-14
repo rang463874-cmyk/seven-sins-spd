@@ -5,7 +5,9 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import java.util.ArrayList;
 
 /**
- * Seven Sins: the 72 demons of the Ars Goetia, minus Asmoday (he is the demon lord Asmodeus here): 71.
+ * Seven Sins: the 72 demons of the Ars Goetia. Asmoday (32) was left out at first because the demon lord
+ * Asmodeus is the same figure; the owner wanted the full 72 (Nov 14 2026), so he roams the halls as a king
+ * under his Goetia name, apart from the demon lord.
  * Regular demons (region 0..4 = sewers..halls) roam floors 2-24 as rare strong monsters; the five
  * kings with a bossFloor wait behind a hidden sigil on that boss floor (5, 10, 15, 20, 25).
  * Order = the Goetia's numbering. Names/ranks: strings "goetia.goetiademon.NAME" / "rank_RANK".
@@ -43,6 +45,7 @@ public enum GoetiaDemon {
 	ASTAROTH(Rank.DUKE, 4, 0, Kind.CORRODE, 0x70A030),
 	FORNEUS(Rank.MARQUIS, 2, 0, Kind.FROST, 0x4080E0),
 	FORAS(Rank.PRESIDENT, 1, 0, Kind.HEAL, 0x50B070),
+	ASMODAY(Rank.KING, 4, 0, Kind.FIRE, 0xD03070),
 	GAAP(Rank.PRESIDENT, 3, 0, Kind.BLINK, 0x9070D0),
 	FURFUR(Rank.EARL, 3, 0, Kind.LIGHTNING, 0xE0E060),
 	MARCHOSIAS(Rank.MARQUIS, 2, 0, Kind.FIRE, 0xFF7040),
@@ -114,9 +117,9 @@ public enum GoetiaDemon {
 		return bossFloor > 0;
 	}
 
-	/** the Goetia's number (1..72; Asmoday's 32 is skipped) */
+	/** the Goetia's number (1..72) */
 	public int number() {
-		return ordinal() < 31 ? ordinal() + 1 : ordinal() + 2;
+		return ordinal() + 1;
 	}
 
 	public String title() {

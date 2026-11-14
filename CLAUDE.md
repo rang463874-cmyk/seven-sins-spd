@@ -283,9 +283,10 @@ Done and pushed (see `git log`):
     projectile: a fresh copy of `PredatorStomach.lastPotion` shatters at the target). Old gild/forge code and buffs stay for saves.
   - Wrath (later Nov 11): rage cools at `WrathGrudge.COOLING` 0.25/turn (x the awakening's simmer factor) and bosses/
     minibosses can be enraged (`WrathGrudge.immune` = only `isImmune(Amok)`).
-- Solomon's demons, the Ars Goetia (Nov 2026, owner's design): `goetia/GoetiaDemon` enum = the 72 minus Asmoday (he is
-  the demon lord Asmodeus) = 71, in Goetia order (`number()` skips 32), each with rank, region 0..4 (sewers..halls,
-  3/15/16/16/16 since Nov 13 2026: only Marbas, Leraje and Botis stay in the sewers, owner) or a `bossFloor`, a fighting `Kind` and a colour. `goetia/GoetiaHooks` (state in the quests bundle, per
+- Solomon's demons, the Ars Goetia (Nov 2026, owner's design): `goetia/GoetiaDemon` enum = all 72 in Goetia order
+  (`number()` = ordinal + 1; ASMODAY, 32, was added Nov 14 2026 at the owner's wish as a roaming king of the halls, FIRE kind,
+  shown as "아스모다이" apart from the demon lord Asmodeus; demons are saved by name, so old saves are fine), each with rank, region 0..4 (sewers..halls,
+  3/15/16/16/17: only Marbas, Leraje and Botis stay in the sewers, owner) or a `bossFloor`, a fighting `Kind` and a colour. `goetia/GoetiaHooks` (state in the quests bundle, per
   run): `onLevelMobs` (from `EliteHooks.onLevelMobs`) puts 2-3 regular demons on sewer floors and 3-4 elsewhere (owner, Nov 13 2026) (`actors/mobs/goetia/GoetiaFiend`, one class,
   stats from depth, kind effects in `applyKind`, ranged kinds bolt without a sprite zap, SUMMON uses `level.createMob`,
   dev/bestiary instances pick a random demon of the floor's region) on every regular floor 2-24, unmet ones first. Kills
