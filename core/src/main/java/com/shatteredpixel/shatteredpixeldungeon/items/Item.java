@@ -122,8 +122,13 @@ public class Item implements Bundlable {
 		return doPickUp( hero, hero.pos );
 	}
 
+	//Seven Sins: sloth's dream delivery. Set on what a puppet has already brought and on what the hero
+	//put down, so the puppets leave it alone; cleared when the hero takes it
+	public boolean dreamDelivered = false;
+
 	public boolean doPickUp(Hero hero, int pos) {
 		if (collect( hero.belongings.backpack )) {
+			dreamDelivered = false;
 			
 			GameScene.pickUp( this, pos );
 			Sample.INSTANCE.play( Assets.Sounds.ITEM );
@@ -141,7 +146,9 @@ public class Item implements Bundlable {
 		hero.autoPickUpSkip = hero.pos; //Seven Sins: don't auto-collect what was just put down
 		hero.spendAndNext(TIME_TO_DROP);
 		int pos = hero.pos;
-		Dungeon.level.drop(detachAll(hero.belongings.backpack), pos).sprite.drop(pos);
+		Item dropped = detachAll(hero.belongings.backpack);
+		dropped.dreamDelivered = true; //Seven Sins: the puppets don't bring back what was put down
+		Dungeon.level.drop(dropped, pos).sprite.drop(pos);
 	}
 
 	//resets an item's properties, to ensure consistency between runs
@@ -606,6 +613,7 @@ public class Item implements Bundlable {
 		}
 		bundle.put( KEPT_LOST, keptThoughLostInvent );
 		if (customNoteID != -1)     bundle.put(CUSTOM_NOTE_ID, customNoteID);
+		if (dreamDelivered)         bundle.put("dream_delivered", true);
 	}
 	
 	@Override
@@ -632,6 +640,7 @@ public class Item implements Bundlable {
 
 		keptThoughLostInvent = bundle.getBoolean( KEPT_LOST );
 		if (bundle.contains(CUSTOM_NOTE_ID))    customNoteID = bundle.getInt(CUSTOM_NOTE_ID);
+		dreamDelivered = bundle.getBoolean("dream_delivered");
 	}
 
 	public int targetingPos( Hero user, int dst ){

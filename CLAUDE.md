@@ -272,7 +272,7 @@ Done and pushed (see `git log`):
     the current effects.
   - Sloth: dream sight sightings don't interrupt rest (`SlothHooks.spotted` from `Hero.checkVisibleMobs`: an enemy only in
     `mindVisionEnemies` and seen by a puppet isn't "new"; seeing it with the hero's own eyes later still interrupts).
-    SLOTH_RESTFUL ("restful sleep") is now: puppet kills drop no loot (`SlothHooks.dropsLoot` in `Mob.die`) but each feeds
+    SLOTH_RESTFUL ("restful sleep") is now: puppet kills drop less loot (see the Nov 14 note; was no loot) but each feeds
     15/30 satiety and cures one/all harmful states (`restfulSleep`, `RESTFUL_CURES`); its old doze reduction is gone.
     Dream Forge has no once-per-floor limit (`forgedHere` always false, `forgedDepths` kept for saves).
   - Greed: gilding cost capped at `GoldenCard.GILD_MAX` 600.
@@ -347,6 +347,19 @@ Done and pushed (see `git log`):
   The pool still offers the hidden vanilla classes' talents. Same day: Envy's own "trophies" is +3/6/9 max HP per bestiary
   entry (owner's edit, was 2/4/6); Wrath gains a flat `WrathGrudge.HURT_RAGE` 5 per enemy attack that lands (plus the share
   by damage) and War Cry reaches `RALLY_RANGE` 12 (was 8).
+- Sloth talents reworked (Nov 14 2026, owner): SLOTH_COMFY is now "dream delivery" (꿈 배달; dream sight is gone for Sloth,
+  `SlothHooks.sharesSight/revealAroundPuppets` only pass through to MetaTalents, so other classes still get ally sight from
+  it). `DreamPuppet.deliver()` (from `Roaming.act`, only with no enemy in view): a puppet walks to the nearest plain heap in
+  its own field of view (`findHeap`, `SlothHooks.fetchable`: Type.HEAP only, not on a PEDESTAL (rituals), not within
+  `DELIVERY_RANGE` 2 of the hero, no lit bombs/candles/lost backpack, top item not `Item.dreamDelivered`), takes the top item
+  (+1) or the whole pile (+2) into `carried` (saved), walks to the hero and drops it on its own tile once adjacent
+  (marked delivered). `Item.dreamDelivered` (saved as `dream_delivered`) is also set by `Item.doDrop` and cleared by
+  `doPickUp`, so puppets never bring back what the hero put down or what they already brought. Carried items drop on death
+  and in `Mob.holdAllies` when the hero leaves the floor (`dropCarried`, not marked). Unreachable heaps are skipped after 3
+  failed steps. SLOTH_RESTFUL no longer removes loot: `Mob.die` sets `SlothHooks.lootKill` around `rollToDropLoot` and
+  `Mob.lootChance` multiplies by `SlothHooks.lootFactor` = `RESTFUL_LOOT` 0.5 for puppet kills, except base chance >= 1,
+  bosses and minibosses; drops made outside the chance roll (mimic items, statue weapon, essences) are untouched.
+  Not yet tried on a device.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -379,8 +392,7 @@ of 200 + 25/upgrade turns (max 300), then +1 to the equipped weapon or armor; an
 Sloth's own melee deals x0.7 (`SlothHooks.MELEE_PENALTY`, not for Sleepwalker auto-attacks). Puppets have no armor
 (`DreamPuppet.drRoll` = 0) and each non-nightmare puppet borrows 15% of Sloth's max HP (`SlothRepose.puppetDrain`,
 max 75%, applied in `SlothHooks.bonusHT`; `refreshDrain` re-runs `updateHT(false)` on summon and each turn when the count
-changes). Talents SLOTH_COMFY is now "dream sight" (+1 tiles within 2 of puppets, +2 puppets' full FOV, via
-`SlothHooks.revealAroundPuppets/sharesSight` in `Level.updateFieldOfView`) and SLOTH_SHOVE is "light dreams" (-25%/pt drain).
+changes). Talents SLOTH_COMFY was "dream sight" until Nov 14 2026 (now dream delivery, see above) and SLOTH_SHOVE is "light dreams" (-25%/pt drain).
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
 Gluttony (reworked Nov 2026, "eats anything"): no more equipment devouring (that moved to the conquest gun).
 `PredatorStomach.consume` runs from `PredatorHooks.onConsumed` for potions (`Potion.drink`), scrolls

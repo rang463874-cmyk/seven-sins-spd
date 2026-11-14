@@ -12,6 +12,10 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
+import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
+import com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.GhostSprite;
 import com.watabou.utils.Bundle;
@@ -212,6 +216,14 @@ public class DreamPuppet extends DirectableAlly {
 	public String description() {
 		String d = Messages.get(this, "desc");
 		if (nightmare) d += "\n\n" + Messages.get(this, "desc_nightmare", Math.max(0, Math.round(lifespan)));
+		if (!carried.isEmpty()) {
+			StringBuilder names = new StringBuilder();
+			for (Item item : carried) {
+				if (names.length() > 0) names.append(", ");
+				names.append(item.title());
+			}
+			d += "\n\n" + Messages.get(this, "desc_carrying", names);
+		}
 		return d;
 	}
 
@@ -220,6 +232,7 @@ public class DreamPuppet extends DirectableAlly {
 		super.storeInBundle(bundle);
 		bundle.put("nightmare", nightmare);
 		bundle.put("lifespan", lifespan);
+		if (!carried.isEmpty()) bundle.put("carried", carried);
 	}
 
 	@Override
@@ -227,6 +240,128 @@ public class DreamPuppet extends DirectableAlly {
 		super.restoreFromBundle(bundle);
 		nightmare = bundle.getBoolean("nightmare");
 		lifespan = bundle.getFloat("lifespan");
+		carried.clear();
+		if (bundle.contains("carried")) {
+			for (com.watabou.utils.Bundlable b : bundle.getCollection("carried")) {
+				if (b instanceof Item) carried.add((Item) b);
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------ dream delivery
+
+	/** what the puppet is bringing to the Sloth */
+	public ArrayList<Item> carried = new ArrayList<>();
+	/** the heap it is walking to, -1 = none */
+	private int fetchCell = -1;
+	/** heaps it couldn't reach; forgotten when it has nothing else to do for a while */
+	private final ArrayList<Integer> unreachable = new ArrayList<>();
+	private int stuck = 0;
+
+	/** puts everything it carries down where it stands */
+	public void dropCarried(Level level, boolean delivered) {
+		if (carried.isEmpty()) return;
+		for (Item item : carried) {
+			item.dreamDelivered = delivered;
+			Heap heap = level.drop(item, pos);
+			if (level == Dungeon.level && heap.sprite != null) heap.sprite.drop();
+		}
+		carried.clear();
+	}
+
+	@Override
+	public void die(Object cause) {
+		if (Dungeon.level != null) dropCarried(Dungeon.level, false);
+		super.die(cause);
+	}
+
+	/** the nearest heap in sight worth bringing, or -1 */
+	private int findHeap() {
+		if (fieldOfView == null) return -1;
+		int best = -1;
+		for (Heap heap : Dungeon.level.heaps.valueList()) {
+			if (heap.pos >= fieldOfView.length || !fieldOfView[heap.pos]) continue;
+			if (unreachable.contains(heap.pos) || !SlothHooks.fetchable(heap)) continue;
+			Char there = Actor.findChar(heap.pos);
+			if (there != null && there != this) continue;
+			if (claimed(heap.pos)) continue;
+			if (best == -1 || Dungeon.level.distance(pos, heap.pos) < Dungeon.level.distance(pos, best)) best = heap.pos;
+		}
+		return best;
+	}
+
+	/** another puppet is already on its way there */
+	private boolean claimed(int cell) {
+		for (DreamPuppet p : active()) if (p != this && p.fetchCell == cell) return true;
+		return false;
+	}
+
+	/**
+	 * One turn of delivery work while no enemy is around. Returns null when there is nothing to do
+	 * (the puppet roams as usual), otherwise the result of the turn.
+	 */
+	private Boolean deliver() {
+		int pts = SlothHooks.delivery();
+		Hero hero = Dungeon.hero;
+
+		if (!carried.isEmpty()) {
+			//hand over next to the Sloth; give up where it stands if the Sloth can't be reached
+			if (hero == null || !hero.isAlive() || Dungeon.level.adjacent(pos, hero.pos) || stuck >= 5) {
+				dropCarried(Dungeon.level, true);
+				stuck = 0;
+				spend(TICK);
+				return true;
+			}
+			return walk(hero.pos);
+		}
+
+		if (pts <= 0) {
+			fetchCell = -1;
+			return null;
+		}
+
+		if (fetchCell != -1 && (!SlothHooks.fetchable(Dungeon.level.heaps.get(fetchCell)) || unreachable.contains(fetchCell))) {
+			fetchCell = -1;
+		}
+		if (fetchCell == -1) {
+			fetchCell = findHeap();
+			stuck = 0;
+			if (fetchCell == -1) return null;
+		}
+
+		if (pos == fetchCell) {
+			Heap heap = Dungeon.level.heaps.get(fetchCell);
+			//+1 carries the top item, +2 the whole pile
+			do {
+				carried.add(heap.pickUp());
+			} while (pts >= 2 && !heap.isEmpty());
+			fetchCell = -1;
+			stuck = 0;
+			if (sprite != null && sprite.visible) sprite.emitter().burst(Speck.factory(Speck.NOTE), 1);
+			spend(TICK);
+			return true;
+		}
+		Boolean moved = walk(fetchCell);
+		if (stuck >= 3) {
+			unreachable.add(fetchCell);
+			if (unreachable.size() > 20) unreachable.remove(0);
+			fetchCell = -1;
+			stuck = 0;
+		}
+		return moved;
+	}
+
+	private Boolean walk(int to) {
+		int oldPos = pos;
+		target = to;
+		if (getCloser(to)) {
+			stuck = 0;
+			spend(1 / speed());
+			return moveSprite(oldPos, pos);
+		}
+		stuck++;
+		spend(TICK);
+		return true;
 	}
 
 	/** wanders between random spots on the level, switching to hunting as soon as it sees an enemy */
@@ -243,6 +378,9 @@ public class DreamPuppet extends DirectableAlly {
 				return true;
 			}
 			enemySeen = false;
+			//dream delivery: bring what it finds to the Sloth before roaming on
+			Boolean delivered = deliver();
+			if (delivered != null) return delivered;
 			if (target == -1 || target == pos || !Dungeon.level.passable[target]) {
 				target = Dungeon.level.randomDestination(DreamPuppet.this);
 			}

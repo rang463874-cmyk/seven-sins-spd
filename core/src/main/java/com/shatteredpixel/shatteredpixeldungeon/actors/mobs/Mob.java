@@ -1075,8 +1075,13 @@ public abstract class Mob extends Char {
 				Badges.validateHazardAssists();
 			}
 
-			//Seven Sins: sloth's restful sleep, puppet kills leave nothing behind
-			if (com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.dropsLoot(this, cause)) rollToDropLoot();
+			//Seven Sins: sloth's restful sleep, puppet kills roll their chance drops at a lower rate
+			com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.lootKill = cause;
+			try {
+				rollToDropLoot();
+			} finally {
+				com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.lootKill = null;
+			}
 
 			if (cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment){
 				if (Dungeon.hero.hasTalent(Talent.LETHAL_MOMENTUM)
@@ -1134,7 +1139,8 @@ public abstract class Mob extends Char {
 		dropBonus += ShardOfOblivion.lootChanceMultiplier()-1f;
 		dropBonus += com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.lootChance();
 
-		return lootChance * dropBonus;
+		//Seven Sins: sloth's restful sleep (chance drops only)
+		return lootChance * dropBonus * com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.lootFactor(this, this.lootChance);
 	}
 	
 	public void rollToDropLoot(){
@@ -1774,6 +1780,8 @@ public abstract class Mob extends Char {
 		for (Mob mob : level.mobs.toArray( new Mob[0] )) {
 			//the sloth's dream puppets don't follow it: the dream ends when the sloth leaves the floor
 			if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DreamPuppet) {
+				//what it was carrying stays behind on the floor
+				((com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DreamPuppet) mob).dropCarried( level, false );
 				level.mobs.remove( mob );
 				continue;
 			}

@@ -59,42 +59,18 @@ public final class SlothHooks {
 		return dmg;
 	}
 
-	/** dream sight (SLOTH_COMFY +2): the hero sees everything its puppets see */
+	/** the other classes' version of SLOTH_COMFY: the hero sees what its allies see */
 	public static boolean sharesSight(Mob m) {
-		if (com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.sharesSight(m)) return true; //the other classes: any ally
-		return m instanceof DreamPuppet && Dungeon.hero != null
-				&& Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) >= 2;
+		return com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.sharesSight(m);
 	}
 
-	/** dream sight +1: the hero sees the tiles within 2 of every puppet */
+	/** the other classes' version of SLOTH_COMFY +1: the tiles within 2 of every ally */
 	public static void revealAroundPuppets(boolean[] fov) {
-		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.revealAroundAllies(fov); //the other classes: any ally
-		if (Dungeon.hero == null || Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) != 1) return;
-		int w = Dungeon.level.width();
-		for (DreamPuppet p : DreamPuppet.active()) {
-			int px = p.pos % w, py = p.pos / w;
-			for (int y = py - 2; y <= py + 2; y++) {
-				for (int x = px - 2; x <= px + 2; x++) {
-					if (x < 0 || y < 0 || x >= w || y >= Dungeon.level.height()) continue;
-					fov[x + y * w] = true;
-				}
-			}
-		}
+		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.revealAroundAllies(fov);
 	}
 
-	/** true if a dream puppet shows this tile to the hero (dream sight) */
+	/** Sloth no longer sees through its puppets (dream sight became dream delivery) */
 	public static boolean puppetSees(int cell) {
-		Hero h = Dungeon.hero;
-		if (h == null) return false;
-		int pts = h.pointsInTalent(Talent.SLOTH_COMFY);
-		if (pts <= 0) return false;
-		for (DreamPuppet p : DreamPuppet.active()) {
-			if (pts >= 2) {
-				if (p.fieldOfView != null && cell < p.fieldOfView.length && p.fieldOfView[cell]) return true;
-			} else if (Dungeon.level.distance(p.pos, cell) <= 2) {
-				return true;
-			}
-		}
 		return false;
 	}
 
@@ -172,6 +148,38 @@ public final class SlothHooks {
 	}
 
 	/** Called from Mob.die. */
+	// ------------------------------------------------------------------ dream delivery (SLOTH_COMFY)
+
+	/** items left this close to the Sloth are where they should be */
+	public static final int DELIVERY_RANGE = 2;
+
+	/** points of dream delivery: the puppets bring the items they find to the Sloth */
+	public static int delivery() {
+		Hero h = Dungeon.hero;
+		if (h == null || !h.isAlive() || h.heroClass != com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.SLOTH) return 0;
+		return h.pointsInTalent(Talent.SLOTH_COMFY);
+	}
+
+	/** true if a puppet may take the top of this heap to the Sloth */
+	public static boolean fetchable(com.shatteredpixel.shatteredpixeldungeon.items.Heap heap) {
+		if (heap == null || heap.type != com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.HEAP || heap.isEmpty()) return false;
+		//offerings on altars and pedestals (rituals, displays) are not litter
+		if (Dungeon.level.map[heap.pos] == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.PEDESTAL) return false;
+		if (Dungeon.level.distance(heap.pos, Dungeon.hero.pos) <= DELIVERY_RANGE) return false;
+		for (com.shatteredpixel.shatteredpixeldungeon.items.Item i : heap.items) {
+			if (!carriable(i)) return false;
+		}
+		return !heap.peek().dreamDelivered;
+	}
+
+	private static boolean carriable(com.shatteredpixel.shatteredpixeldungeon.items.Item i) {
+		if (i instanceof com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb
+				&& ((com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb) i).fuse != null) return false;
+		return !(i instanceof com.shatteredpixel.shatteredpixeldungeon.items.quest.CeremonialCandle)
+				&& !(i instanceof com.shatteredpixel.shatteredpixeldungeon.items.LostBackpack)
+				&& !(i instanceof com.shatteredpixel.shatteredpixeldungeon.items.Honeypot.ShatteredPot);
+	}
+
 	public static void onMobDeath(Mob mob, Object cause) {
 		Hero hero = Dungeon.hero;
 		SlothRepose r = repose(hero);
@@ -225,10 +233,23 @@ public final class SlothHooks {
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Amok.class,
 	};
 
-	/** restful sleep: enemies killed by dream puppets drop no loot */
-	public static boolean dropsLoot(Mob mob, Object cause) {
+	/** restful sleep: chance drops of enemies killed by dream puppets are this likely */
+	public static final float RESTFUL_LOOT = 0.5f;
+
+	/** what is killing the mob whose loot is being rolled right now (set by Mob.die) */
+	public static Object lootKill = null;
+
+	/**
+	 * Mob.lootChance: restful sleep halves the chance drops of a puppet's kills. Guaranteed drops (base
+	 * chance 1), bosses and minibosses are untouched, and so is everything a monster drops outside its
+	 * loot roll (a mimic's items, a statue's weapon, essences, quest drops).
+	 */
+	public static float lootFactor(Mob mob, float baseChance) {
 		Hero hero = Dungeon.hero;
-		return !(cause instanceof DreamPuppet && hero != null && hero.pointsInTalent(Talent.SLOTH_RESTFUL) > 0);
+		if (!(lootKill instanceof DreamPuppet) || hero == null || hero.pointsInTalent(Talent.SLOTH_RESTFUL) <= 0) return 1f;
+		if (baseChance >= 1f) return 1f;
+		if (mob.properties().contains(Char.Property.BOSS) || mob.properties().contains(Char.Property.MINIBOSS)) return 1f;
+		return RESTFUL_LOOT;
 	}
 
 	/** restful sleep: each puppet kill feeds the sloth and cures one (+1) or every (+2) harmful state */
