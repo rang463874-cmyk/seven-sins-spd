@@ -301,7 +301,7 @@ Done and pushed (see `git log`):
   Hero); safety net (`afterDamage` in Char.damage: hero at <= 20% HP blasts enemies within 2 back and teleports 4-8 tiles,
   `SafetyNetCooldown` 300 turns); Solomon (charge x1.5 more, `immune` in Char.isImmune for `SlothHooks.HARMFUL_STATES` +
   paralysis/frost). The old +3 armor / +20% exp / +30 HP +10% accuracy powers are gone (`drBonus/bonusExp/accuracy` pass
-  through). The demon army challenge's `need` is capped at 72. The codex (`EssenceBag.showCodex`, `codexText`) opens from a "소열쇠" button in the essence
+  through). The demon army challenge's `need` is capped at 72. The codex (`EssenceBag.showCodex`, `codexText`) opens from a "레메게톤" button (was "소열쇠" until Nov 14 2026; English "the Lemegeton") in the essence
   bag window's title (`WndBag.placeTitle`; bags can't be tapped for actions) and from the demon essence's CODEX action. Boss floors: `onMobDeath` (Goo/Tengu/DM300/DwarfKing/Yog) sets `pendingSigil`; `tick` (from `Hero.act`)
   places a visible `levels/traps/GoetiaSigil` (never disarms; traps fire on the actor thread, so its window opens via
   `Game.runOnRenderThread` like NPC dialogs, or the game crashes) once the floor is unlocked; stepping on it offers to enter
