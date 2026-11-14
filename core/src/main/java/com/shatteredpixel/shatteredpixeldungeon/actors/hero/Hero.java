@@ -667,6 +667,7 @@ public class Hero extends Char {
 		evasion = EnvyHooks.evasion( this, evasion );
 		evasion = SlothHooks.evasion( this, evasion );
 		evasion = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.evasion( this, evasion );
+		evasion = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.evasion( this, evasion );
 		evasion = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.evasion( this, evasion );
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
@@ -835,6 +836,7 @@ public class Hero extends Char {
 
 		speed *= UniqueStats.moveSpeed(this) * HorsemenHooks.moveSpeed(this) * com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.moveSpeed();
 		speed *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.moveSpeed(this); //Seven Sins: awakening
+		speed *= com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.moveSpeed(this); //Seven Sins: the Lesser Key's slaughter combo
 		speed = AscensionChallenge.modifyHeroSpeed(speed);
 		
 		return speed;

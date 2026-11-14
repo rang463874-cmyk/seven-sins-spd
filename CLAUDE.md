@@ -291,9 +291,17 @@ Done and pushed (see `git log`):
   stats from depth, kind effects in `applyKind`, ranged kinds bolt without a sprite zap, SUMMON uses `level.createMob`,
   dev/bestiary instances pick a random demon of the floor's region) on every regular floor 2-24, unmet ones first. Kills
   -> `record` into the codex (`slain`), drop `items/DemonEssence` (1, 2 at milestone 15). Milestones `MILESTONES`
-  3/6/10/15/20/25/30/40 give run powers: +10 HP, demon sight (`revealDemons` in `Level.updateFieldOfView`), -20% damage
-  from demons, double essences, +10% damage dealt (`modifyDamage` in `Char.damage`), +3 armor (`drBonus`), +20% exp
-  (`bonusExp`), +30 HP and +10% accuracy. The codex (`EssenceBag.showCodex`, `codexText`) opens from a "소열쇠" button in the essence
+  3/6/10/15/20/25/30/35/40/50/60/72 (the owner's list, Nov 14 2026; index constants BRAND..SOLOMON, `power(i)`): +10 HP;
+  demon sight (`revealDemons`); labyrinth guidance (`guide` from `tick`, once per level object: maps the 3x3 around every
+  transition and the middle of every SecretRoom, marks chests seen); -20% damage from demons; double essences; merchant
+  (`shopPrice` x0.85 in Shopkeeper.sellPrice, `addShopStock` 2 mod consumables in ShopRoom.generateItems); +10% damage dealt;
+  charge x1.15 (`chargeMult` in RingOfEnergy.wand/artifactChargeMultiplier); purify (`purify` wraps Generator.random(Category)/
+  randomUsingDefaults(Category): 50% of curses lifted; `alchemyCost` -1 in AlchemyScene); slaughter combo
+  (`actors/buffs/DemonSlaughter`, any enemy death: 6 turns, 3 stacks of +20% speed / +15% evasion via `moveSpeed`/`evasion` in
+  Hero); safety net (`afterDamage` in Char.damage: hero at <= 20% HP blasts enemies within 2 back and teleports 4-8 tiles,
+  `SafetyNetCooldown` 300 turns); Solomon (charge x1.5 more, `immune` in Char.isImmune for `SlothHooks.HARMFUL_STATES` +
+  paralysis/frost). The old +3 armor / +20% exp / +30 HP +10% accuracy powers are gone (`drBonus/bonusExp/accuracy` pass
+  through). The demon army challenge's `need` is capped at 72. The codex (`EssenceBag.showCodex`, `codexText`) opens from a "소열쇠" button in the essence
   bag window's title (`WndBag.placeTitle`; bags can't be tapped for actions) and from the demon essence's CODEX action. Boss floors: `onMobDeath` (Goo/Tengu/DM300/DwarfKing/Yog) sets `pendingSigil`; `tick` (from `Hero.act`)
   places a visible `levels/traps/GoetiaSigil` (never disarms; traps fire on the actor thread, so its window opens via
   `Game.runOnRenderThread` like NPC dialogs, or the game crashes) once the floor is unlocked; stepping on it offers to enter

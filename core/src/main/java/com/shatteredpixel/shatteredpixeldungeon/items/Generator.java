@@ -714,7 +714,16 @@ public class Generator {
 		return randomUsingDefaults(Random.chances( defaultCatProbs ));
 	}
 	
+	//Seven Sins: the Lesser Key's purifying ward lifts some curses from freshly generated gear
 	public static Item random( Category cat ) {
+		return com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.purify(randomInner(cat));
+	}
+
+	public static Item randomUsingDefaults( Category cat ){
+		return com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.purify(randomUsingDefaultsInner(cat));
+	}
+
+	private static Item randomInner( Category cat ) {
 		switch (cat) {
 			case ARMOR:
 				return randomArmor();
@@ -726,7 +735,7 @@ public class Generator {
 				Item item = randomArtifact();
 				//if we're out of artifacts, return a ring instead.
 				//do not use decks for that ring, as the # of artifacts genned can vary by gameplay
-				return item != null ? item : randomUsingDefaults(Category.RING);
+				return item != null ? item : randomUsingDefaultsInner(Category.RING);
 			default:
 				if (cat.defaultProbs != null && cat.seed != null){
 					Random.pushGenerator(cat.seed);
@@ -762,13 +771,13 @@ public class Generator {
 
 	//overrides any deck systems and always uses default probs
 	// except for artifacts, which must always use a deck
-	public static Item randomUsingDefaults( Category cat ){
+	private static Item randomUsingDefaultsInner( Category cat ){
 		if (cat == Category.WEAPON){
 			return randomWeapon(true);
 		} else if (cat == Category.MISSILE){
 			return randomMissile(true);
 		} else if (cat.defaultProbs == null || cat == Category.ARTIFACT) {
-			return random(cat);
+			return randomInner(cat);
 		} else if (cat.defaultProbsTotal != null){
 			return ((Item) Reflection.newInstance(cat.classes[Random.chances(cat.defaultProbsTotal)])).random();
 		} else {

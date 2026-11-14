@@ -40,7 +40,14 @@ public class GoetiaHooks {
 
 	public static final int ARENA_BRANCH = 8;
 	/** codex milestones (demons slain this run) */
-	public static final int[] MILESTONES = {3, 6, 10, 15, 20, 25, 30, 40};
+	public static final int[] MILESTONES = {3, 6, 10, 15, 20, 25, 30, 35, 40, 50, 60, 72};
+	/** indexes into MILESTONES (the owner's list of Nov 14 2026) */
+	public static final int BRAND = 0, SIGHT = 1, GUIDE = 2, WARD = 3, HARVEST = 4, MERCHANT = 5, MIGHT = 6,
+			FOCUS = 7, PURIFY = 8, SLAUGHTER = 9, SAFETY = 10, SOLOMON = 11;
+
+	public static boolean power(int index) {
+		return has(MILESTONES[index]);
+	}
 	/** essences asked at the sigil of floor 5, 10, 15, 20, 25 */
 	public static final int[] OFFER = {3, 4, 5, 6, 7};
 
@@ -68,7 +75,8 @@ public class GoetiaHooks {
 
 	/** the demon army challenge: every milestone needs twice the kills */
 	public static int need(int milestone) {
-		return Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.DEMON_ARMY) ? milestone * 2 : milestone;
+		return Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.DEMON_ARMY)
+				? Math.min(GoetiaDemon.values().length, milestone * 2) : milestone;
 	}
 
 	public static boolean has(int milestone) {
@@ -114,7 +122,7 @@ public class GoetiaHooks {
 
 	public static void onFiendKilled(GoetiaFiend f) {
 		Hero hero = Dungeon.hero;
-		int drops = has(15) ? 2 : 1;
+		int drops = power(HARVEST) ? 2 : 1;
 		if (com.shatteredpixel.shatteredpixeldungeon.sins.ChallengeHooks.essences()) Dungeon.level.drop(new DemonEssence().quantity(drops), f.pos).sprite.drop();
 		record(f.demon);
 		if (hero != null) hero.updateHT(false);
@@ -159,50 +167,266 @@ public class GoetiaHooks {
 
 	// ------------------------------------------------------------------ milestone powers
 
-	/** 3: +10 max HP; 40: +30 more */
+	/** 3: +10 max HP */
 	public static int bonusHT(Hero hero, int ht) {
-		if (has(MILESTONES[0])) ht += 10;
-		if (has(MILESTONES[7])) ht += 30;
+		if (power(BRAND)) ht += 10;
 		return ht;
 	}
 
 	/** 6: demons on the floor are always sensed */
 	public static void revealDemons(boolean[] mindFov) {
-		if (!has(MILESTONES[1]) || Dungeon.level == null) return;
+		if (!power(SIGHT) || Dungeon.level == null) return;
 		for (Mob m : Dungeon.level.mobs) {
 			if ((m instanceof GoetiaFiend || m instanceof GoetiaLord) && m.pos >= 0 && m.pos < mindFov.length) mindFov[m.pos] = true;
 		}
 	}
 
-	/** Char.damage: 10: demons hurt the hero 20% less; 20: the hero deals 10% more */
+	/** Char.damage: 15: demons hurt the hero 20% less; 30: the hero deals 10% more */
 	public static int modifyDamage(Char target, Object src, int dmg) {
 		if (dmg <= 0) return dmg;
-		if (target == Dungeon.hero && has(MILESTONES[2]) && (src instanceof GoetiaFiend || src instanceof GoetiaLord)) {
+		if (target == Dungeon.hero && power(WARD) && (src instanceof GoetiaFiend || src instanceof GoetiaLord)) {
 			dmg = Math.round(dmg * 0.8f);
 		}
-		if (src == Dungeon.hero && target != Dungeon.hero && has(MILESTONES[4])) dmg = Math.round(dmg * 1.1f);
+		if (src == Dungeon.hero && target != Dungeon.hero && power(MIGHT)) dmg = Math.round(dmg * 1.1f);
 		return dmg;
 	}
 
-	/** 25: +3 armor */
+	/** (the old +3 armor, +20% experience and +10% accuracy powers are gone; the call sites stay) */
 	public static int drBonus(Hero hero, int dr) {
-		return has(MILESTONES[5]) ? dr + 3 : dr;
+		return dr;
 	}
 
-	/** 30: +20% experience */
 	public static int bonusExp(Hero hero, int exp) {
-		return has(MILESTONES[6]) ? Math.round(exp * 1.2f) : exp;
+		return exp;
 	}
 
-	/** 40: +10% accuracy */
 	public static float accuracy(Hero hero, float acc) {
-		return has(MILESTONES[7]) ? acc * 1.1f : acc;
+		return acc;
+	}
+
+	// ---- 10: the labyrinth's guidance
+
+	/** the level that was last looked over for the guidance */
+	private static Level guided = null;
+
+	/** from tick: stairs, chests and the rough place of hidden rooms show on the map of each floor entered */
+	private static void guide(Level level) {
+		if (level == guided) return;
+		if (!power(GUIDE)) return;
+		guided = level;
+		boolean found = false;
+		for (com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition t : level.transitions) {
+			found |= mapAround(level, t.cell());
+		}
+		for (com.shatteredpixel.shatteredpixeldungeon.items.Heap h : level.heaps.valueList()) {
+			if (h.type == com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.CHEST
+					|| h.type == com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.LOCKED_CHEST
+					|| h.type == com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.CRYSTAL_CHEST) {
+				if (!h.seen) found = true;
+				h.seen = true;
+				if (h.sprite != null) h.sprite.visible = true;
+				if (!level.mapped[h.pos] && !level.visited[h.pos]) {
+					level.mapped[h.pos] = true;
+					found = true;
+				}
+			}
+		}
+		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel) {
+			for (com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room room
+					: ((com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel) level).rooms()) {
+				if (room instanceof com.shatteredpixel.shatteredpixeldungeon.levels.rooms.secret.SecretRoom) {
+					//only the middle of the room: where it is, not how to get in
+					found |= mapAround(level, level.pointToCell(room.center()));
+				}
+			}
+		}
+		if (found) {
+			GameScene.updateFog();
+			GLog.i(Messages.get(GoetiaHooks.class, "guided"));
+		}
+	}
+
+	private static boolean mapAround(Level level, int cell) {
+		boolean found = false;
+		if (!level.insideMap(cell)) return false;
+		for (int n : com.watabou.utils.PathFinder.NEIGHBOURS9) {
+			int c = cell + n;
+			if (c < 0 || c >= level.length() || !level.discoverable[c]) continue;
+			if (!level.mapped[c] && !level.visited[c]) {
+				level.mapped[c] = true;
+				found = true;
+			}
+		}
+		return found;
+	}
+
+	// ---- 25: the merchant's blessing
+
+	public static final float SHOP_DISCOUNT = 0.85f;
+
+	/** Shopkeeper.sellPrice */
+	public static float shopPrice() {
+		return power(MERCHANT) ? SHOP_DISCOUNT : 1f;
+	}
+
+	/** ShopRoom.generateItems: two of the mod's consumables join the stock */
+	public static void addShopStock(ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.Item> stock) {
+		if (!power(MERCHANT)) return;
+		Class<?>[] pool = {
+				com.shatteredpixel.shatteredpixeldungeon.items.elite.ElixirOfSin.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.elite.Stimulant.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.elite.Bandage.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.elite.DecoyDoll.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.bombs.SinBomb.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.bombs.StickyBomb.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.bombs.CaltropBomb.class,
+		};
+		ArrayList<Class<?>> left = new ArrayList<>(java.util.Arrays.asList(pool));
+		for (int i = 0; i < 2 && !left.isEmpty(); i++) {
+			Class<?> c = left.remove(Random.Int(left.size()));
+			Object item = com.watabou.utils.Reflection.newInstance(c);
+			if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.Item) {
+				stock.add((com.shatteredpixel.shatteredpixeldungeon.items.Item) item);
+			}
+		}
+	}
+
+	// ---- 35 and 72: charge
+
+	public static final float FOCUS_CHARGE = 1.15f;
+	public static final float SOLOMON_CHARGE = 1.5f;
+
+	/** RingOfEnergy.wandChargeMultiplier / artifactChargeMultiplier */
+	public static float chargeMult(Char target) {
+		if (target != Dungeon.hero) return 1f;
+		float mult = 1f;
+		if (power(FOCUS)) mult *= FOCUS_CHARGE;
+		if (power(SOLOMON)) mult *= SOLOMON_CHARGE;
+		return mult;
+	}
+
+	// ---- 40: the purifying ward
+
+	/** Generator: half of the curses on freshly generated gear are lifted */
+	public static com.shatteredpixel.shatteredpixeldungeon.items.Item purify(com.shatteredpixel.shatteredpixeldungeon.items.Item item) {
+		if (item == null || !item.cursed || Dungeon.hero == null || !power(PURIFY) || Random.Int(2) != 0) return item;
+		item.cursed = false;
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon
+				&& ((com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon) item).hasCurseEnchant()) {
+			((com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon) item).enchant(null);
+		}
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor
+				&& ((com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor) item).hasCurseGlyph()) {
+			((com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor) item).inscribe(null);
+		}
+		return item;
+	}
+
+	/** AlchemyScene: recipes cost 1 energy less (never free) */
+	public static int alchemyCost(int cost) {
+		return cost > 1 && power(PURIFY) ? cost - 1 : cost;
+	}
+
+	// ---- 50: the slaughter combo
+
+	private static void slaughter(Mob mob) {
+		Hero hero = Dungeon.hero;
+		if (hero == null || !hero.isAlive() || mob.alignment != Char.Alignment.ENEMY || !power(SLAUGHTER)) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DemonSlaughter s = com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+				hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DemonSlaughter.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DemonSlaughter.DURATION);
+		s.kill();
+	}
+
+	private static int slaughterStacks(Hero hero) {
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DemonSlaughter s =
+				hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DemonSlaughter.class);
+		return s == null ? 0 : s.stacks;
+	}
+
+	/** Hero.speed */
+	public static float moveSpeed(Hero hero) {
+		return 1f + com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DemonSlaughter.SPEED * slaughterStacks(hero);
+	}
+
+	/** Hero.defenseSkill */
+	public static float evasion(Hero hero, float evasion) {
+		return evasion * (1f + com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DemonSlaughter.EVASION * slaughterStacks(hero));
+	}
+
+	// ---- 60: the safety net
+
+	public static final float SAFETY_HP = 0.20f;
+
+	/** Char.damage, after the HP is taken: at 20% or less the hero blasts its enemies back and blinks away */
+	public static void afterDamage(Char target) {
+		if (!(target instanceof Hero) || target != Dungeon.hero || Dungeon.level == null) return;
+		Hero hero = (Hero) target;
+		if (hero.HP <= 0 || hero.HP > hero.HT * SAFETY_HP || !power(SAFETY)) return;
+		if (hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SafetyNetCooldown.class) != null) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(hero,
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SafetyNetCooldown.class,
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SafetyNetCooldown.DURATION);
+		Level level = Dungeon.level;
+
+		//the blast
+		for (Mob m : level.mobs.toArray(new Mob[0])) {
+			if (m.alignment != Char.Alignment.ENEMY || !m.isAlive() || level.distance(m.pos, hero.pos) > 2) continue;
+			if (m.pos == hero.pos) continue;
+			//the line from the hero through the enemy, carried on past it
+			com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica line =
+					new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(hero.pos, m.pos,
+							com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.WONT_STOP);
+			int at = line.path.indexOf(m.pos);
+			if (at == -1 || at + 1 >= line.path.size()) continue;
+			com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica away =
+					new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(m.pos, line.path.get(at + 1),
+							com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.MAGIC_BOLT);
+			com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave.throwChar(m, away, 3, false, false, GoetiaHooks.class);
+		}
+
+		//the blink: somewhere 4-8 tiles off that can be walked to, away from every enemy
+		com.watabou.utils.PathFinder.buildDistanceMap(hero.pos,
+				com.watabou.utils.BArray.or(level.passable, level.avoid, null), 12);
+		ArrayList<Integer> cells = new ArrayList<>();
+		for (int i = 0; i < level.length(); i++) {
+			int d = com.watabou.utils.PathFinder.distance[i];
+			if (d == Integer.MAX_VALUE || d < 4 || d > 8 || !level.passable[i] || level.pit[i]
+					|| Actor.findChar(i) != null || level.traps.get(i) != null) continue;
+			boolean near = false;
+			for (Mob m : level.mobs) {
+				if (m.alignment == Char.Alignment.ENEMY && level.distance(m.pos, i) <= 2) { near = true; break; }
+			}
+			if (!near) cells.add(i);
+		}
+		if (!cells.isEmpty()) {
+			hero.interrupt();
+			com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportation.teleportToLocation(hero, Random.element(cells));
+		}
+		if (hero.sprite != null) {
+			hero.sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.POSITIVE,
+					Messages.get(GoetiaHooks.class, "safety_net"));
+		}
+		GLog.p(Messages.get(GoetiaHooks.class, "safety_net_log"));
+	}
+
+	// ---- 72: Solomon's authority
+
+	/** Char.isImmune: the one who bound all 72 shrugs off harmful states */
+	public static boolean immune(Char target, Class<?> effect) {
+		if (target != Dungeon.hero || effect == null || !power(SOLOMON)) return false;
+		for (Class<?> c : com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.HARMFUL_STATES) {
+			if (c == effect) return true;
+		}
+		return effect == com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class
+				|| effect == com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frost.class;
 	}
 
 	// ------------------------------------------------------------------ the hidden sigils
 
 	/** Mob.die: a floor boss fell, so its floor gets a hidden sigil once it is unlocked */
 	public static void onMobDeath(Mob mob, Object cause) {
+		slaughter(mob);
 		if (Dungeon.branch != 0) return;
 		int d = Dungeon.depth;
 		if (d % 5 != 0 || d > 25 || sigils.contains(d)) return;
@@ -217,6 +441,7 @@ public class GoetiaHooks {
 		if (Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.GoetiaArenaLevel) {
 			((com.shatteredpixel.shatteredpixeldungeon.levels.GoetiaArenaLevel) Dungeon.level).checkRitual();
 		}
+		if (Dungeon.level != null) guide(Dungeon.level);
 		if (Dungeon.branch != 0 || Dungeon.level == null || Dungeon.level.locked) return;
 		int depth = Dungeon.depth;
 		if (depth % 5 != 0 || depth > 25 || sigils.contains(depth)) return;

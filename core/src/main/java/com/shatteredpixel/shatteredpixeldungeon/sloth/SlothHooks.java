@@ -209,7 +209,7 @@ public final class SlothHooks {
 
 	/** the harmful states restful sleep can wash away */
 	@SuppressWarnings("unchecked")
-	private static final Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff>[] RESTFUL_CURES = new Class[]{
+	public static final Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff>[] HARMFUL_STATES = new Class[]{
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Poison.class,
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bleeding.class,
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning.class,
@@ -259,7 +259,7 @@ public final class SlothHooks {
 		Hunger hunger = hero.buff(Hunger.class);
 		if (hunger != null) hunger.satisfy(RESTFUL_FEED * pts);
 		ArrayList<com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff> found = new ArrayList<>();
-		for (Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff> c : RESTFUL_CURES) {
+		for (Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff> c : HARMFUL_STATES) {
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff b = hero.buff(c);
 			if (b != null) found.add(b);
 		}

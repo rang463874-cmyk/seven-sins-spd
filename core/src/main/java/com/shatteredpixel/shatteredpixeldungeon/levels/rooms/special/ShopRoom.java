@@ -290,6 +290,7 @@ public class ShopRoom extends SpecialRoom {
 
 		itemsToSpawn.add( new SmallRation() );
 		itemsToSpawn.add( new SmallRation() );
+		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.addShopStock( itemsToSpawn ); //Seven Sins: the merchant's blessing
 		
 		switch (Random.Int(4)){
 			case 0:
