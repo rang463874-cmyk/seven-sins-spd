@@ -586,7 +586,12 @@ Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid p
  on the hair width; her hair is the background's green, so the cut stays strict and `FRINGE` peels 2 layers of
  background-coloured pixels off the silhouette instead; walk drawn facing left (`WALK_MIRROR`), attack mirrored;
  `CLOTHES` = the dark, unsaturated dress (`vmax`), own `TIER_CLOTHES` brighten it, tier 6 deep teal; `SWAP_LEGS` False
- (cape); die = lying with the broken mask and mirror; splash = the mirror picture on its own green). Sloth is left.
+ (cape); die = lying with the broken mask and mirror; splash = the mirror picture on its own green),
+ sloth (Nov 15: girl in blue pyjamas and a nightcap with a pillow, 61x53; detected pitches; her attack is drawn finer, so
+ it is sampled at its own pitch and shrunk by `POSE_SCALE` 0.735 (a coarser `PITCH` broke the white pillow's outline and
+ the cut ate it); background blue = pyjama blue, so `FRINGE` 2 like envy; walk and attack mirrored; `CLOTHES` = the
+ pyjamas below the face (the cap stays), tier 6 violet; die = sitting asleep on the pillow; splash = hugging the pillow).
+ All seven sins have the owner's art now.
 Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
 screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
 chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,

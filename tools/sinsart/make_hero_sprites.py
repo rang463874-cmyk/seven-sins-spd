@@ -46,7 +46,7 @@ TIER_CLOTHES = {
              (250, 0.12, 3.5), None],
 }
 # pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
-NO_GRID = {"greed", "gluttony", "wrath", "pride", "lust"}
+NO_GRID = {"greed", "gluttony", "wrath", "pride", "lust", "sloth"}
 NO_GRID_STEP = 12          # source px per intermediate px for those
 # drop islands smaller than this share of the biggest one (flying coins, motion swooshes, sparkles)
 ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
@@ -66,12 +66,15 @@ CLOTHES = {
     # the charcoal dress and cape: any hue, dark but not the black outline, hardly saturated, below the mask
     # (the green hair, bow and trims stay)
     "envy": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.45, vmin=0.15, vmax=0.42, below=0.45),
+    # the light blue pyjamas, below the face (the nightcap is the same blue and stays; the hair is darker)
+    "sloth": dict(hue=(0.56, 0.68), smin=0.25, vmin=0.6, below=0.45),
 }
 
 # class armor colour where the sin's hue on the picture's dark clothes would look muddy
 TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7), "pride": (265, 0.42, 0.92),
          "lust": (345, 0.80, 0.78),
-         "envy": (165, 0.70, 2.1)}        # the sin hue is her hair's green already: class armor is deep teal       # the sin hue is the cardigan pink already: class armor is crimson
+         "envy": (165, 0.70, 2.1),
+         "sloth": (268, 0.50, 0.85)}      # the sin hue is the pyjamas' blue already: class armor is violet        # the sin hue is her hair's green already: class armor is deep teal       # the sin hue is the cardigan pink already: class armor is crimson
 
 SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215}
 
@@ -426,14 +429,18 @@ GLOBAL_BG = {"gluttony"}
 SWAP_LEGS = {"gluttony": False, "pride": False, "envy": False}
 # background-coloured fringe to peel off the silhouette (layers): envy's hair is the background's green, so the
 # cut can't be made looser instead
-FRINGE = {"envy": 2}
+FRINGE = {"envy": 2, "sloth": 2}
 # walk pictures drawn facing left
-WALK_MIRROR = {"envy"}
+WALK_MIRROR = {"envy", "sloth"}
 
 # per-pose size correction when Gemini drew a pose at a different zoom (matched by eye on the head/hood size)
-POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78}}
+POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78},
+              # sloth's attack is drawn finer (15.8 source px per art pixel, the others 20-24): shrunk so its nightcap
+              # is as wide as the walk pose's. A coarser sampling pitch instead broke the white pillow's thin outline
+              # and the background cut ate the pillow.
+              "sloth": {"attack": 0.735}}
 # attack pictures are mirrored to face right when the weapon sticks out to the left; None = decide from the picture
-ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False, "lust": True, "envy": True}
+ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False, "lust": True, "envy": True, "sloth": True}
 
 
 def build_frames(pics, name="default"):
@@ -547,7 +554,7 @@ SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
 # boxes (source px) painted with the background colour: the Gemini sparkle
 SPLASH_ERASE = {"gluttony": [(860, 870, 935, 945)]}
 # flat-coloured pictures narrower than the splash: the side bars take the picture's corner colour instead of black
-SPLASH_FILL = {"lust", "envy"}
+SPLASH_FILL = {"lust", "envy", "sloth"}
 
 
 def splash(name, src):
