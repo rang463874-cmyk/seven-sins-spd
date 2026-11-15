@@ -101,6 +101,13 @@ public abstract class ApocalypseWeapon extends ModMeleeWeapon {
 		return null;
 	}
 
+	/** can this item be the base of a tier 6 weapon (also what lets it into the alchemy pot) */
+	public static boolean canForge(Item item) {
+		if (!(item instanceof MeleeWeapon) || item instanceof ApocalypseWeapon) return false;
+		MeleeWeapon w = (MeleeWeapon) item;
+		return w.tier == 5 && w.isIdentified() && !w.cursed;
+	}
+
 	public static class Recipe extends com.shatteredpixel.shatteredpixeldungeon.items.Recipe {
 
 		private static MeleeWeapon weapon(ArrayList<Item> in) {
@@ -112,7 +119,7 @@ public abstract class ApocalypseWeapon extends ModMeleeWeapon {
 		@Override
 		public boolean testIngredients(ArrayList<Item> in) {
 			MeleeWeapon w = weapon(in);
-			if (w == null || w.tier != 5 || w instanceof ApocalypseWeapon || !w.isIdentified() || w.cursed) return false;
+			if (w == null || !canForge(w)) return false;
 			int ess = 0;
 			for (Item i : in) {
 				if (i instanceof DemonEssence) ess += i.quantity();

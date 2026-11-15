@@ -264,6 +264,21 @@ public class QuickRecipe extends Component {
 	//gets recipes for a particular alchemy guide page
 	//a null entry indicates a break in section
 	/** the seven sins mod's recipes, on their own page of the alchemy guide */
+	/** a "any item of this kind" ingredient; it needs a name and text, or tapping it crashes the item window */
+	private static Item namedHolder(int image, final String key){
+		return new WndBag.Placeholder(image){
+			@Override
+			public String name() {
+				return Messages.get(QuickRecipe.class, key);
+			}
+
+			@Override
+			public String info() {
+				return Messages.get(QuickRecipe.class, key + "_desc");
+			}
+		};
+	}
+
 	private static ArrayList<QuickRecipe> sevenSinsRecipes(){
 		ArrayList<QuickRecipe> result = new ArrayList<>();
 		Item essence2 = new com.shatteredpixel.shatteredpixeldungeon.items.SinEssence().quantity(2);
@@ -291,11 +306,11 @@ public class QuickRecipe extends Component {
 		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.elite.DryingPowder.Recipe()));
 		result.add(null);
 		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard.Recipe(),
-				new ArrayList<>(Arrays.asList(new WndBag.Placeholder(ItemSpriteSheet.ARTIFACT_HOLDER))),
+				new ArrayList<>(Arrays.asList(namedHolder(ItemSpriteSheet.ARTIFACT_HOLDER, "any_artifact"))),
 				new com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard()));
 		result.add(null);
 		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.Recipe(),
-				new ArrayList<>(Arrays.asList(new WndBag.Placeholder(ItemSpriteSheet.WEAPON_HOLDER),
+				new ArrayList<>(Arrays.asList(namedHolder(ItemSpriteSheet.WEAPON_HOLDER, "t5_weapon"),
 						new com.shatteredpixel.shatteredpixeldungeon.items.DemonEssence().quantity(
 								com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.RECIPE_ESSENCES))),
 				new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.DoomBlade()));

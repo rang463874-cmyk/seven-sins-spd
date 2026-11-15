@@ -52,6 +52,11 @@ Done and pushed (see `git log`):
   AC_SMITE (default action) = light beam up to 8 tiles, 2.5x a damage roll ignoring armor, x1.5 undead/demonic, blind 3),
   WorldsEnd (22-48, 50% to enemies within 2 of the target). Icons: items.png row 38 +10..15 and row 39 (TX_HEIGHT now 624),
   recoloured vanilla weapon icons + drawn sling/coin sack, by `tools/sinsart/weapon_icons.py`. Strings `tools/strings/modweapons_*`.
+  Fixed Nov 15 2026: the pot refused every melee weapon (`Recipe.usableInRecipe` only let thrown weapons in), so tier 6
+  could never be forged: `ApocalypseWeapon.canForge` (tier 5, identified, uncursed) is let in there, unequipped only (the pot
+  detaches from the backpack; same guard added for artifacts). The guide's "any weapon/artifact" ingredients were bare
+  `WndBag.Placeholder`s whose `name()` is null, which crashed `WndInfoItem` on tap: `QuickRecipe.namedHolder` gives them a
+  name and text (`ui.quickrecipe.*` at the end of messages/ui/ui*.properties, not synced).
 - Imp quest vault mirror gives `items/MirrorCase` (every class; originals get it alongside their usual
   reward): one use per run, sets `Belongings.extraSlot`, opening `Belongings.misc2`, a second shared
   artifact/ring slot (equip logic in `KindofMisc`, shown in `WndBag`; `InventoryPane` lists it first in

@@ -21,6 +21,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.Blandfruit;
@@ -283,7 +284,12 @@ public abstract class Recipe {
 		//only upgradeable thrown weapons and wands allowed among equipment items
 		if (item instanceof EquipableItem){
 			//Seven Sins: the game's own artifacts can be broken into artifact shards
-			if (ArtifactShard.canShatter(item)) return item.cursedKnown && !item.cursed;
+			//(an equipped item isn't in the backpack, so the pot couldn't take it out)
+			if (ArtifactShard.canShatter(item)) return item.cursedKnown && !item.cursed
+					&& (Dungeon.hero == null || !item.isEquipped(Dungeon.hero));
+			//Seven Sins: a tier 5 melee weapon is the base of a tier 6 weapon
+			if (com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.canForge(item))
+				return Dungeon.hero == null || !item.isEquipped(Dungeon.hero);
 			return item.cursedKnown && !item.cursed &&
 					item instanceof MissileWeapon && item.isUpgradable();
 		} else if (item instanceof Wand) {
