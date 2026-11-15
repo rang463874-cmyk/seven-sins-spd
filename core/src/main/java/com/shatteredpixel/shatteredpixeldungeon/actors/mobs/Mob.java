@@ -1075,8 +1075,14 @@ public abstract class Mob extends Char {
 				Badges.validateHazardAssists();
 			}
 
-			//Seven Sins: sloth's restful sleep, puppet kills leave nothing behind
-			if (com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.dropsLoot(this, cause)) rollToDropLoot();
+			//Seven Sins: sloth's restful sleep, puppet kills roll their loot at half the chance
+			com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.puppetKill =
+					!com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.dropsLoot(this, cause);
+			try {
+				rollToDropLoot();
+			} finally {
+				com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.puppetKill = false;
+			}
 
 			if (cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment){
 				if (Dungeon.hero.hasTalent(Talent.LETHAL_MOMENTUM)
@@ -1142,7 +1148,8 @@ public abstract class Mob extends Char {
 
 		MasterThievesArmband.StolenTracker stolen = buff(MasterThievesArmband.StolenTracker.class);
 		if (stolen == null || !stolen.itemWasStolen()) {
-			if (Random.Float() < lootChance()) {
+			//Seven Sins: restful sleep halves the roll, except for monsters that always drop (base chance 1)
+			if (Random.Float() < lootChance() * com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.lootFactor(this.lootChance)) {
 				Item loot = createLoot();
 				if (loot != null) {
 					Dungeon.level.drop(loot, pos).sprite.drop();

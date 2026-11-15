@@ -388,6 +388,15 @@ max 75%, applied in `SlothHooks.bonusHT`; `refreshDrain` re-runs `updateHT(false
 changes). Talents SLOTH_COMFY is now "dream sight" (+1 tiles within 2 of puppets, +2 puppets' full FOV, via
 `SlothHooks.revealAroundPuppets/sharesSight` in `Level.updateFieldOfView`) and SLOTH_SHOVE is "light dreams" (-25%/pt drain).
 Old sloth talent names are mapped in `Talent.renamedTalents`; old subclass saves fall back to none.
+Nov 15 2026 (owner): SLOTH_RESTFUL no longer removes puppet kills' loot, it halves the roll: `Mob.die` sets
+`SlothHooks.puppetKill` around `rollToDropLoot`, whose roll is x `SlothHooks.lootFactor(base lootChance)` = 0.5 unless the
+mob's base chance is 1 or more; what mimics/statues carry isn't rolled, so it always drops (before, a puppet-killed mimic
+dropped nothing). SLOTH_COMFY is now "dream delivery" (꿈 배달) instead of dream sight: `SlothHooks.fetchItems` (end of
+`DreamPuppet.act`) moves plain `Heap.Type.HEAP` heaps on the puppet's tile/adjacent tiles (+1) or seen within 2 (+2) to a
+free tile beside the hero (`deliveryCell`); skipped: puppet or heap within 2 of the hero, PEDESTAL tiles (room prizes, the
+Goetia ritual's offerings), tiles where the hero dropped something on this floor (`onHeroDropped` from `Item.doDrop`, not
+saved). Sloth's puppets share no sight any more (`puppetSees` false); the metamorphosed version for other classes still
+is the ally sight.
 Gluttony (reworked Nov 2026, "eats anything"): no more equipment devouring (that moved to the conquest gun).
 `PredatorStomach.consume` runs from `PredatorHooks.onConsumed` for potions (`Potion.drink`), scrolls
 (`Scroll.readAnimation` -> `onScrollRead`), food (`Food.execute` -> `onFoodEaten`), runestones

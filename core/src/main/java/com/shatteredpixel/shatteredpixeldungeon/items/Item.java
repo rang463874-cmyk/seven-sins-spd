@@ -139,6 +139,7 @@ public class Item implements Bundlable {
 	
 	public void doDrop( Hero hero ) {
 		hero.autoPickUpSkip = hero.pos; //Seven Sins: don't auto-collect what was just put down
+		com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.onHeroDropped(hero.pos); //nor have puppets bring it back
 		hero.spendAndNext(TIME_TO_DROP);
 		int pos = hero.pos;
 		Dungeon.level.drop(detachAll(hero.belongings.backpack), pos).sprite.drop(pos);

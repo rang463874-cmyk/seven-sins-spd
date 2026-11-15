@@ -59,43 +59,101 @@ public final class SlothHooks {
 		return dmg;
 	}
 
-	/** dream sight (SLOTH_COMFY +2): the hero sees everything its puppets see */
+	/** SLOTH_COMFY was "dream sight" until Nov 15 2026; only the other classes' version still shares sight */
 	public static boolean sharesSight(Mob m) {
-		if (com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.sharesSight(m)) return true; //the other classes: any ally
-		return m instanceof DreamPuppet && Dungeon.hero != null
-				&& Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) >= 2;
+		return com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.sharesSight(m); //the other classes: any ally
 	}
 
 	/** dream sight +1: the hero sees the tiles within 2 of every puppet */
 	public static void revealAroundPuppets(boolean[] fov) {
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.revealAroundAllies(fov); //the other classes: any ally
-		if (Dungeon.hero == null || Dungeon.hero.pointsInTalent(Talent.SLOTH_COMFY) != 1) return;
-		int w = Dungeon.level.width();
-		for (DreamPuppet p : DreamPuppet.active()) {
-			int px = p.pos % w, py = p.pos / w;
-			for (int y = py - 2; y <= py + 2; y++) {
-				for (int x = px - 2; x <= px + 2; x++) {
-					if (x < 0 || y < 0 || x >= w || y >= Dungeon.level.height()) continue;
-					fov[x + y * w] = true;
+	}
+
+	/** Sloth's puppets no longer show tiles to the hero (the talent became dream delivery) */
+	public static boolean puppetSees(int cell) {
+		return false;
+	}
+
+	// ------------------------------------------------------------------ dream delivery (SLOTH_COMFY)
+
+	/** tiles where the hero put something down on this floor: the puppets leave those alone */
+	private static final java.util.HashSet<Integer> noFetch = new java.util.HashSet<>();
+	private static int noFetchFloor = -1;
+
+	private static void syncFloor() {
+		int key = Dungeon.depth * 100 + Dungeon.branch;
+		if (key != noFetchFloor) {
+			noFetchFloor = key;
+			noFetch.clear();
+		}
+	}
+
+	/** Item.doDrop: what the hero drops on purpose stays where it is */
+	public static void onHeroDropped(int cell) {
+		syncFloor();
+		noFetch.add(cell);
+	}
+
+	/**
+	 * Dream delivery, from the end of DreamPuppet.act: loose items next to the puppet (+1: its own and the
+	 * adjacent tiles, +2: tiles it can see within 2) are carried to a tile beside the hero. Only plain heaps:
+	 * chests, shop goods and remains stay, and so does anything on a pedestal (room prizes, ritual offerings).
+	 */
+	public static void fetchItems(DreamPuppet p) {
+		Hero hero = Dungeon.hero;
+		if (hero == null || !hero.isAlive() || !p.isAlive()) return;
+		int pts = hero.pointsInTalent(Talent.SLOTH_COMFY);
+		if (pts <= 0) return;
+		com.shatteredpixel.shatteredpixeldungeon.levels.Level l = Dungeon.level;
+		if (l.distance(p.pos, hero.pos) <= 2) return;        //already beside the hero
+		syncFloor();
+		int w = l.width(), px = p.pos % w, py = p.pos / w;
+		for (int y = py - pts; y <= py + pts; y++) {
+			for (int x = px - pts; x <= px + pts; x++) {
+				if (x < 0 || y < 0 || x >= w || y >= l.height()) continue;
+				int cell = x + y * w;
+				com.shatteredpixel.shatteredpixeldungeon.items.Heap h = l.heaps.get(cell);
+				if (h == null || h.type != com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.HEAP || h.isEmpty()) continue;
+				if (noFetch.contains(cell) || l.distance(cell, hero.pos) <= 2) continue;
+				if (l.map[cell] == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.PEDESTAL) continue;
+				if (cell != p.pos && (p.fieldOfView == null || cell >= p.fieldOfView.length || !p.fieldOfView[cell])) continue;
+				int dest = deliveryCell(hero);
+				String first = h.peek().name();
+				int count = 0;
+				while (!h.isEmpty()) {
+					com.shatteredpixel.shatteredpixeldungeon.items.Item it = h.pickUp();
+					if (it == null) break;
+					l.drop(it, dest).sprite.drop();
+					count++;
+				}
+				if (count > 0) {
+					if (l.heroFOV[cell]) {
+						com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter.get(cell).burst(
+								com.shatteredpixel.shatteredpixeldungeon.effects.Speck.factory(
+										com.shatteredpixel.shatteredpixeldungeon.effects.Speck.NOTE), 2);
+					}
+					com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(count > 1
+							? com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(DreamPuppet.class, "fetch_many", first, count - 1)
+							: com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(DreamPuppet.class, "fetch", first));
 				}
 			}
 		}
 	}
 
-	/** true if a dream puppet shows this tile to the hero (dream sight) */
-	public static boolean puppetSees(int cell) {
-		Hero h = Dungeon.hero;
-		if (h == null) return false;
-		int pts = h.pointsInTalent(Talent.SLOTH_COMFY);
-		if (pts <= 0) return false;
-		for (DreamPuppet p : DreamPuppet.active()) {
-			if (pts >= 2) {
-				if (p.fieldOfView != null && cell < p.fieldOfView.length && p.fieldOfView[cell]) return true;
-			} else if (Dungeon.level.distance(p.pos, cell) <= 2) {
-				return true;
-			}
+	/** a free tile next to the hero for delivered items, else the hero's own tile */
+	private static int deliveryCell(Hero hero) {
+		com.shatteredpixel.shatteredpixeldungeon.levels.Level l = Dungeon.level;
+		ArrayList<Integer> free = new ArrayList<>();
+		for (int d : PathFinder.NEIGHBOURS8) {
+			int c = hero.pos + d;
+			if (c < 0 || c >= l.length() || !l.passable[c] || l.pit[c] || l.traps.get(c) != null) continue;
+			if (l.map[c] == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.PEDESTAL) continue;
+			com.shatteredpixel.shatteredpixeldungeon.items.Heap h = l.heaps.get(c);
+			if (h != null && h.type != com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.HEAP) continue;
+			if (Actor.findChar(c) != null) continue;
+			free.add(c);
 		}
-		return false;
+		return free.isEmpty() ? hero.pos : free.get(com.watabou.utils.Random.Int(free.size()));
 	}
 
 	/** enemies the hero only sees through the puppets: they don't stop resting or searching */
@@ -225,7 +283,16 @@ public final class SlothHooks {
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Amok.class,
 	};
 
-	/** restful sleep: enemies killed by dream puppets drop no loot */
+	/** set by Mob.die around rollToDropLoot when a puppet killed the mob under restful sleep */
+	public static boolean puppetKill = false;
+
+	/** restful sleep: a puppet's kill rolls its loot at half the chance; monsters that always drop
+	 *  (base chance 1 or more, and what mimics/statues carry, which isn't rolled) are untouched */
+	public static float lootFactor(float baseChance) {
+		return puppetKill && baseChance < 1f ? 0.5f : 1f;
+	}
+
+	/** restful sleep: false when a dream puppet killed the mob (its loot roll is halved) */
 	public static boolean dropsLoot(Mob mob, Object cause) {
 		Hero hero = Dungeon.hero;
 		return !(cause instanceof DreamPuppet && hero != null && hero.pointsInTalent(Talent.SLOTH_RESTFUL) > 0);

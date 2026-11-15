@@ -143,6 +143,8 @@ public class DreamPuppet extends DirectableAlly {
 		if ((pos == target || oldPos == pos) && sprite != null && sprite.looping()) {
 			sprite.idle();
 		}
+		//dream delivery: carry loose items nearby to the hero
+		if (isAlive()) com.shatteredpixel.shatteredpixeldungeon.sloth.SlothHooks.fetchItems(this);
 		return result;
 	}
 
