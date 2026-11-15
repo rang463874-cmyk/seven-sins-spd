@@ -153,7 +153,13 @@ public class WndDevMobs extends Window {
 			}
 			Mob m;
 			try {
-				m = Reflection.newInstance(cls);
+				if (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic.class.isAssignableFrom(cls)) {
+					//a bare "new Mimic()" has no level: 0 max HP, so it neither fights nor dies.
+					//spawnAt gives it the floor's stats and a prize, like a real one
+					m = com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic.spawnAt(cell, cls);
+				} else {
+					m = Reflection.newInstance(cls);
+				}
 			} catch (Throwable t) {
 				m = null;
 			}

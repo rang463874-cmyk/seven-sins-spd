@@ -8,7 +8,8 @@ The owner plays and tests on an Android phone and talks in Korean, so reply in K
 Done and pushed (see `git log`):
 - Developer tools (in-game menu, debug builds only): item spawner, sin stacks (`devtools/WndDevSins`:
   +10/+100/+1000 to the current sin's points, refill charges/gauge/HP), monster summon
-  (`devtools/WndDevMobs`: bestiary categories, tap a tile; bosses except Goo left out), level up, heal,
+  (`devtools/WndDevMobs`: bestiary categories, tap a tile; bosses except Goo left out; the four mimics go through
+  `Mimic.spawnAt`, because a bare `new Mimic()` has 0 max HP and neither fights nor dies), level up, heal,
   identify all.
 - Hero select shows only the seven sins (`HeroClass.selectable`, owner, Nov 13 2026); the six vanilla classes are hidden
   but kept in the code for old saves, rankings, disguises and metamorphosis.
