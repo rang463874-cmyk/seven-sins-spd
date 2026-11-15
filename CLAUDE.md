@@ -576,7 +576,12 @@ Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid p
  lust (Nov 14: girl in a pink cardigan swinging a bunny plush, 110x114; her four pictures have different art-pixel sizes,
  so `PITCH` gives one sampling pitch per pose (12 source px, the smaller die canvas 9.2, matched on the head width) instead
  of the detected one; `CLOTHES` = the bright, lightly saturated pink below the face, tier 6 crimson; attack mirrored; die =
- sitting and crying; `SPLASH_FILL` gives the splash's side bars the picture's pink instead of black).
+ sitting and crying; `SPLASH_FILL` gives the splash's side bars the picture's pink instead of black),
+ envy (Nov 15: masked girl with green hair, a charcoal dress and cape and a hand mirror, 60x65; per-pose `PITCH` matched
+ on the hair width; her hair is the background's green, so the cut stays strict and `FRINGE` peels 2 layers of
+ background-coloured pixels off the silhouette instead; walk drawn facing left (`WALK_MIRROR`), attack mirrored;
+ `CLOTHES` = the dark, unsaturated dress (`vmax`), own `TIER_CLOTHES` brighten it, tier 6 deep teal; `SWAP_LEGS` False
+ (cape); die = lying with the broken mask and mirror; splash = the mirror picture on its own green). Sloth is left.
 Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
 screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
 chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,

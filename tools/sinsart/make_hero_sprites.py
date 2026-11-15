@@ -41,6 +41,9 @@ TIER_CLOTHES = {
     # pride wears white: the tiers darken it instead (a value multiplier above 1 would do nothing to white)
     "pride": [None, (40, 0.22, 0.95), (28, 0.50, 0.78), (225, 0.14, 0.82), (8, 0.50, 0.85),
               (250, 0.12, 0.62), None],
+    # envy wears a near-black dress: the tiers have to brighten it a lot to show at all
+    "envy": [None, (40, 0.25, 2.7), (28, 0.55, 2.1), (225, 0.14, 2.9), (8, 0.60, 2.3),
+             (250, 0.12, 3.5), None],
 }
 # pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
 NO_GRID = {"greed", "gluttony", "wrath", "pride", "lust"}
@@ -60,11 +63,15 @@ CLOTHES = {
     # the pink cardigan: same hue as the maroon hair and skirt, so picked by being bright and only lightly
     # saturated, below the face (the butterfly hairpin and blush stay)
     "lust": dict(hue=(0.88, 0.97), smin=0.2, smax=0.45, vmin=0.75, below=0.45),
+    # the charcoal dress and cape: any hue, dark but not the black outline, hardly saturated, below the mask
+    # (the green hair, bow and trims stay)
+    "envy": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.45, vmin=0.15, vmax=0.42, below=0.45),
 }
 
 # class armor colour where the sin's hue on the picture's dark clothes would look muddy
 TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7), "pride": (265, 0.42, 0.92),
-         "lust": (345, 0.80, 0.78)}       # the sin hue is the cardigan pink already: class armor is crimson
+         "lust": (345, 0.80, 0.78),
+         "envy": (165, 0.70, 2.1)}        # the sin hue is her hair's green already: class armor is deep teal       # the sin hue is the cardigan pink already: class armor is crimson
 
 SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215}
 
@@ -105,7 +112,10 @@ def native(path):
 # Gemini drew a sin's poses with different art-pixel sizes (lust: 12..20 source px for the same figure size): one
 # sampling pitch per pose (source px per sheet px) instead of the detected one, so the poses come out the same size.
 # The die picture is a smaller canvas, its pitch is matched on the head width.
-PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2}}
+PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2},
+         # envy: front is its own pitch, the others are matched on the hair width (walk halfway: her head is
+         # drawn bigger there and the full correction would make the body too short)
+         "envy": {"front": 18.4, "walk": 21.0, "attack": 19.6, "die": 18.7}}
 
 
 def native_pitch(path, pitch=None):
@@ -163,7 +173,7 @@ def is_blood(c):
     return (h < 0.03 or h > 0.97) and s > 0.45 and 0.3 < v < 0.65
 
 
-def cut_background_(img, island=0.05, global_bg=False):
+def cut_background_(img, island=0.05, global_bg=False, fringe=0):
     """RGBA with the background, blood and stray marks cleared (flood fill from the border)."""
     rows, cols, _ = img.shape
     border = np.concatenate([img[0], img[-1], img[:, 0], img[:, -1]]).astype(int)
@@ -189,6 +199,22 @@ def cut_background_(img, island=0.05, global_bg=False):
     keep = ~seen
     if global_bg:                      # the background colour inside closed loops too
         keep &= np.abs(img.astype(int) - bg).sum(2) >= 60
+    # background-coloured pixels left outside the black outline (half-blended cells): peel `fringe` layers
+    bh = hsv(bg)[0]
+    for _ in range(fringe):
+        gone = []
+        for r in range(rows):
+            for c in range(cols):
+                if not keep[r, c] or is_black(img[r, c]):
+                    continue
+                h, s, v = hsv(img[r, c])
+                if abs(h - bh) > 0.07 or s < 0.25:
+                    continue
+                if any(not (0 <= r + dy < rows and 0 <= c + dx < cols) or not keep[r + dy, c + dx]
+                       for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                    gone.append((r, c))
+        for rc in gone:
+            keep[rc] = False
     # drop small islands (sparkle, specks)
     lab = np.zeros((rows, cols), int)
     sizes = {}
@@ -397,19 +423,26 @@ def squash(a, rows):
 # (gluttony's attack swoosh); not for greed, whose crimson background is close to her skirt's shadows
 GLOBAL_BG = {"gluttony"}
 # run frames from the walk pose with mirrored legs; off where a long coat makes the mirrored bottom third look torn
-SWAP_LEGS = {"gluttony": False, "pride": False}
+SWAP_LEGS = {"gluttony": False, "pride": False, "envy": False}
+# background-coloured fringe to peel off the silhouette (layers): envy's hair is the background's green, so the
+# cut can't be made looser instead
+FRINGE = {"envy": 2}
+# walk pictures drawn facing left
+WALK_MIRROR = {"envy"}
 
 # per-pose size correction when Gemini drew a pose at a different zoom (matched by eye on the head/hood size)
 POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78}}
 # attack pictures are mirrored to face right when the weapon sticks out to the left; None = decide from the picture
-ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False, "lust": True}
+ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False, "lust": True, "envy": True}
 
 
 def build_frames(pics, name="default"):
     """Frames at the pictures' own resolution (one art pixel = one sheet pixel, no resampling unless POSE_SCALE
     asks for it). Returns (frames, front art, frame width, frame height)."""
     isl = ISLAND_SHARE.get(name, ISLAND_SHARE["default"])
-    poses = {k: cut_background_(v, isl, name in GLOBAL_BG) for k, v in pics.items()}
+    poses = {k: cut_background_(v, isl, name in GLOBAL_BG, FRINGE.get(name, 0)) for k, v in pics.items()}
+    if name in WALK_MIRROR:
+        poses["walk"] = mirror(poses["walk"])
     mir = ATTACK_MIRROR.get(name)
     if mir is None:
         mir = faces_left(poses["attack"])
@@ -479,7 +512,7 @@ def recolor_clothes(frame, spec, name="default"):
             if not p[3]:
                 continue
             h, s, v = hsv(p)
-            if in_hue(h, cl["hue"]) and s > cl["smin"] and s <= cl.get("smax", 1.0) and v > cl["vmin"]:
+            if in_hue(h, cl["hue"]) and s > cl["smin"] and s <= cl.get("smax", 1.0) and cl["vmin"] < v <= cl.get("vmax", 1.0):
                 r, g, b = colorsys.hsv_to_rgb(hue / 360, sat, min(1, v * vmul))
                 out[y, x, :3] = (int(r * 255), int(g * 255), int(b * 255))
     return out
@@ -514,7 +547,7 @@ SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
 # boxes (source px) painted with the background colour: the Gemini sparkle
 SPLASH_ERASE = {"gluttony": [(860, 870, 935, 945)]}
 # flat-coloured pictures narrower than the splash: the side bars take the picture's corner colour instead of black
-SPLASH_FILL = {"lust"}
+SPLASH_FILL = {"lust", "envy"}
 
 
 def splash(name, src):
