@@ -33,6 +33,7 @@ public class ShiftingHalberd extends MeleeWeapon {
 	private void applyForm() {
 		image = axe ? ItemSpriteSheet.HALBERD_AXE : ItemSpriteSheet.HALBERD_SPEAR;
 		RCH = axe ? 1 : 2;
+		DLY = axe ? 1f : 1.5f; //spear form attacks like other spears (0.67x speed)
 		hitSound = axe ? Assets.Sounds.HIT_SLASH : Assets.Sounds.HIT_STAB;
 		hitSoundPitch = axe ? 0.9f : 1f;
 	}

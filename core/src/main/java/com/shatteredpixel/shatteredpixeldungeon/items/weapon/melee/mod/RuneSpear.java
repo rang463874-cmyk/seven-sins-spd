@@ -8,7 +8,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 public class RuneSpear extends ModMeleeWeapon {
 	{
 		image = ItemSpriteSheet.RUNE_SPEAR; hitSound = Assets.Sounds.HIT_STAB; hitSoundPitch = 1.1f;
-		tier = 4; baseMin = 8; baseMax = 21; maxScale = 6; RCH = 2;
+		tier = 4; baseMin = 8; baseMax = 21; maxScale = 6; RCH = 2; DLY = 1.5f;
 	}
 	@Override public float armorFactor(Char attacker, Char defender) { return 0f; }
 }

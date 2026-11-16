@@ -92,11 +92,15 @@ public abstract class ApocalypseWeapon extends ModMeleeWeapon {
 	public static final Class<? extends ApocalypseWeapon>[] ALL = new Class[]{
 			DoomBlade.class, VoidScythe.class, SunJudgment.class, WorldsEnd.class};
 
-	/** which tier 6 weapon a tier 5 weapon becomes (by kind), else a random one */
+	/** which tier 6 weapon a tier 5 weapon becomes (by kind; the sin weapons follow their base weapon), shown on the
+	 *  alchemy guide; anything else falls back to a fixed pick by class name */
 	public static Class<? extends ApocalypseWeapon> forgedFrom(MeleeWeapon w) {
-		if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatsword || w instanceof GiantSlayer) return DoomBlade.class;
-		if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarScythe || w instanceof AbyssScythe) return VoidScythe.class;
-		if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Glaive || w instanceof HeavenlySpear) return SunJudgment.class;
+		if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatsword || w instanceof GiantSlayer
+				|| w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greataxe) return DoomBlade.class;
+		if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarScythe || w instanceof AbyssScythe
+				|| w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gauntlet) return VoidScythe.class;
+		if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Glaive || w instanceof HeavenlySpear
+				|| w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatshield) return SunJudgment.class;
 		if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarHammer || w instanceof RuinHammer) return WorldsEnd.class;
 		return null;
 	}

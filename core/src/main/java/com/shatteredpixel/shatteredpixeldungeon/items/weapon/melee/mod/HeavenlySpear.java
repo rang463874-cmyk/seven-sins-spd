@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 public class HeavenlySpear extends ModMeleeWeapon {
 	{
 		image = ItemSpriteSheet.HEAVENLY_SPEAR; hitSound = Assets.Sounds.HIT_STAB; hitSoundPitch = 0.9f;
-		tier = 5; baseMin = 12; baseMax = 29; RCH = 2;
+		tier = 5; baseMin = 12; baseMax = 29; RCH = 2; DLY = 1.5f;
 	}
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {

@@ -27,7 +27,7 @@ Done and pushed (see `git log`):
   weapons still exist (old saves, dev tools) but are no longer handed out.
 - New weapons (Nov 13 2026, owner picked the mechanics; in the generator's tier decks, items.png row 38 +5..+9 by
   `tools/sinsart/weapon_icons.py`, strings `tools/strings/newweapons_*`): `melee/ShiftingHalberd` (T4, free AC_SHIFT between
-  spear form: reach 2, x0.8 damage, x1.15 accuracy and axe form: reach 1, x1.2 damage, x0.9 accuracy; `axe` saved),
+  spear form: reach 2, x0.8 damage, x1.15 accuracy, DLY 1.5 like the vanilla spears and axe form: reach 1, x1.2 damage, x0.9 accuracy; `axe` saved),
   `melee/ThunderFlail` (T4, `Momentum` buff: hits within 3 turns stack 5 charges of +8%, the next hit is a thunderclap x1.5
   with half arcing into adjacent enemies + 1 turn paralysis), `melee/Chakram` (T3, while wielded AC_HURL (default action):
   flies up to 6 tiles, hits every enemy on the path at x0.8 via hero.attack, returns; costs an attack), `melee/ParrySabre`
@@ -41,13 +41,16 @@ Done and pushed (see `git log`):
   +5%/lvl thrown damage while wielded via `Sling.thrownDamage` in `MissileWeapon.damageRoll`); T3 Flamberge (6-17, 50%
   bleed), WarPick (7-18, + a roll of the target's armor), CoinSack (5-15, kills drop 4+2xdepth gold), BattleScythe (7-17,
   50% to enemies adjacent to both); T4 ExecutionerSword (9-23, up to +80% by missing HP), CrescentAxe (10-24, 20% crit
-  x2.25), CrusaderMace (9-22, +60% vs UNDEAD and DEMONIC), RuneSpear (8-21, reach 2, ignores armor, +6 max/lvl like the runic blade);
+  x2.25), CrusaderMace (9-22, +60% vs UNDEAD and DEMONIC), RuneSpear (8-21, reach 2, ignores armor, +6 max/lvl like the runic blade; DLY 1.5 since Nov 16 2026, owner: spears attack in
+  1.5 turns like the vanilla ones);
   T5 GiantSlayer (12-30, +50% vs LARGE/MINIBOSS/BOSS), AbyssScythe (11-28, kills heal 8% HT + lvl), HeavenlySpear (12-29,
-  reach 2, the enemy behind the target takes the hit), RuinHammer (14-32, 40% to the target's neighbours).
+  reach 2, DLY 1.5, the enemy behind the target takes the hit), RuinHammer (14-32, 40% to the target's neighbours).
   Tier 6 (`ApocalypseWeapon`, not in the generator): forged in the alchemy pot from an identified uncursed tier 5 melee
   weapon + 2 demon essences, 10 energy (`ApocalypseWeapon.Recipe` in `Recipe.variableRecipes`, on the Seven_Sins guide
   page; greatsword/giantslayer -> DoomBlade, war scythe/abyss -> VoidScythe, glaive/heavenly -> SunJudgment, war hammer/
-  ruin -> WorldsEnd, others by class-name hash; keeps level/enchant/augment/war edge/sigil). `isUpgradable` false: AC_INFUSE
+  ruin -> WorldsEnd, since Nov 16 2026 also greataxe -> DoomBlade, gauntlet -> VoidScythe, greatshield -> SunJudgment (sin
+  weapons follow their base), anything else by class-name hash; the guide page shows one line per tier 6 weapon with a named
+  holder listing its bases (`ui.quickrecipe.t5_doom/void/sun/worlds`; before, it only showed DoomBlade); keeps level/enchant/augment/war edge/sigil). `isUpgradable` false: AC_INFUSE
   spends 2+level demon essences per level. DoomBlade (10-12 + `ruin`/15, ruin +1+0.25xlvl per hit, x5 on bosses, saved),
   VoidScythe (16-40, 4%+1%/lvl instant death on non-bosses via `die`), SunJudgment (20-44, `charge` +20+lvl per hit; at 100
   AC_SMITE (default action) = light beam up to 8 tiles, 2.5x a damage roll ignoring armor, x1.5 undead/demonic, blind 3),

@@ -309,11 +309,19 @@ public class QuickRecipe extends Component {
 				new ArrayList<>(Arrays.asList(namedHolder(ItemSpriteSheet.ARTIFACT_HOLDER, "any_artifact"))),
 				new com.shatteredpixel.shatteredpixeldungeon.items.ArtifactShard()));
 		result.add(null);
-		result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.Recipe(),
-				new ArrayList<>(Arrays.asList(namedHolder(ItemSpriteSheet.WEAPON_HOLDER, "t5_weapon"),
-						new com.shatteredpixel.shatteredpixeldungeon.items.DemonEssence().quantity(
-								com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.RECIPE_ESSENCES))),
-				new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.DoomBlade()));
+		//one line per tier 6 weapon, with the base weapons it is forged from (ApocalypseWeapon.forgedFrom)
+		Object[][] tier6 = {
+				{ItemSpriteSheet.GREATSWORD, "t5_doom", new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.DoomBlade()},
+				{ItemSpriteSheet.WAR_SCYTHE, "t5_void", new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.VoidScythe()},
+				{ItemSpriteSheet.GLAIVE, "t5_sun", new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.SunJudgment()},
+				{ItemSpriteSheet.WAR_HAMMER, "t5_worlds", new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.WorldsEnd()}};
+		for (Object[] t : tier6){
+			result.add(new QuickRecipe(new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.Recipe(),
+					new ArrayList<>(Arrays.asList(namedHolder((Integer) t[0], (String) t[1]),
+							new com.shatteredpixel.shatteredpixeldungeon.items.DemonEssence().quantity(
+									com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.mod.ApocalypseWeapon.RECIPE_ESSENCES))),
+					(Item) t[2]));
+		}
 		return result;
 	}
 
