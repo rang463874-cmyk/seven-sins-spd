@@ -111,6 +111,9 @@ public class HeavenLevel extends RegularLevel {
 
 	@Override
 	protected boolean build() {
+		//floor 30 can't be a chasm floor: a chasm floor fills the whole map with chasm instead of wall, and the
+		//chasms below are filled in, so the space outside the rooms became walkable floor with bare walls on it
+		if (Dungeon.depth >= LAST && feeling == Feeling.CHASM) feeling = Feeling.NONE;
 		if (!super.build()) return false;
 		if (Dungeon.depth >= LAST) {
 			//the stairs lead down to the holy giant; no falling into its arena

@@ -188,7 +188,8 @@ Done and pushed (see `git log`):
   above the amulet, + REGULAR_EXIT transition; re-applied in `LastLevel.restoreFromBundle` when `angelStage` >= 2).
   `Dungeon.newLevel` builds `levels/HeavenLevel` for 27-30 (RegularLevel, city tiles/music, `HeavenPainter` = CityPainter
   with a fixed wall-deco rate, 10-13 standard + 3-4 special rooms, mob limit 5-7 before groups; floor 30 fills chasms
-  and removes its exit). The four room chance tables (Standard/Connection/Entrance/ExitRoom) are 31 long with rows 27-30
+  and removes its exit; it never gets the chasm feeling (Nov 16 2026: that feeling fills the map with chasm instead of
+  wall, so the filled floor turned the space outside the rooms into open floor)). The four room chance tables (Standard/Connection/Entrance/ExitRoom) are 31 long with rows 27-30
   = the sum of the sewer/prison/caves/city rows; `SecretRoom.secretsForFloor` returns 2-3 past 25, TrapsRoom/WeakFloorRoom
   clamp their region index. Mobs (`actors/mobs/heaven/`, stats from `HeavenMobs.depth()` = max(26, scalingDepth), saved
   as `depth`): `Believer` (groups of 2-3: HeavenLevel adds 1-2 companions to each believer/priest at build and on
