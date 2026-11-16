@@ -56,7 +56,8 @@ ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
 CLOTHES = {
     "default": dict(hue=(0.2, 0.48), smin=0.3, vmin=0.0, below=0.0),     # gluttony's green tunic
     "greed": dict(hue=(0.95, 0.02), smin=0.6, vmin=0.35, below=0.45),   # the red skirt (not the hood)
-    "wrath": dict(hue=(0.84, 0.97), smin=0.35, vmin=0.0, below=0.0),    # the maroon uniform (hair is orange-red)
+    # the red greatcoat (second design, Nov 16 2026), below the shako and the red hair
+    "wrath": dict(hue=(0.93, 0.03), smin=0.5, vmin=0.3, below=0.42),
     # the white uniform and cape: any hue, nearly no saturation (smax keeps the pale skin out), bright,
     # below the crown and face
     "pride": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.07, vmin=0.78, below=0.45),
@@ -71,7 +72,7 @@ CLOTHES = {
 }
 
 # class armor colour where the sin's hue on the picture's dark clothes would look muddy
-TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (4, 0.85, 1.7), "pride": (265, 0.42, 0.92),
+TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (352, 0.85, 0.55), "pride": (265, 0.42, 0.92),
          "lust": (345, 0.80, 0.78),
          "envy": (165, 0.70, 2.1),
          "sloth": (268, 0.50, 0.85)}      # the sin hue is the pyjamas' blue already: class armor is violet        # the sin hue is her hair's green already: class armor is deep teal       # the sin hue is the cardigan pink already: class armor is crimson
@@ -118,6 +119,9 @@ def native(path):
 PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2},
          # envy: front is its own pitch, the others are matched on the hair width (walk halfway: her head is
          # drawn bigger there and the full correction would make the body too short)
+         # wrath (second design): Gemini drew every pose at the same zoom, but the detected pitch of the attack/die
+         # pictures came out finer (14/13 source px) and made them twice as big: all four at the front's pitch
+         "wrath": {"front": 22.3, "walk": 22.3, "attack": 22.3, "die": 22.3},
          "envy": {"front": 18.4, "walk": 21.0, "attack": 19.6, "die": 18.7}}
 
 
@@ -554,7 +558,7 @@ SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
 # boxes (source px) painted with the background colour: the Gemini sparkle
 SPLASH_ERASE = {"gluttony": [(860, 870, 935, 945)]}
 # flat-coloured pictures narrower than the splash: the side bars take the picture's corner colour instead of black
-SPLASH_FILL = {"lust", "envy", "sloth"}
+SPLASH_FILL = {"lust", "envy", "sloth", "wrath"}
 
 
 def splash(name, src):

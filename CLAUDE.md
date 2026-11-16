@@ -605,9 +605,10 @@ red skirt) to `TIER_CLOTHES`, tier 6 = the sin's hue or `TIER6`. Also writes the
 fitted to the height on black, character at `SPLASH_FOCUS`). `make_sin_assets.py` leaves the sheet/avatar/splash of a sin with
 pictures alone. `GLOBAL_BG` also clears the background colour inside closed loops (gluttony's attack swoosh), `SWAP_LEGS` False
 runs on the walk pose with bob only (long coats), `SPLASH_ERASE` paints boxes (the Gemini sparkle) out of a splash.
-Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid pictures sampled by `native_pitch` too), greed (65x54), wrath (Nov 13: drummer
- in a maroon uniform, 76x79; `CLOTHES` = the maroon uniform, tier 6 bright red; her splash picture has a transparent background,
- which `splash` now puts on black), pride (Nov 14: crowned prince in a white
+Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid pictures sampled by `native_pitch` too), greed (65x54), wrath (second design Nov 16: red-haired
+ drummer in a red greatcoat and shako, 53x61; Gemini drew all poses at one zoom but the attack/die pitches were detected
+ finer, so `PITCH` samples all four at the front's 22.3; `CLOTHES` = the red coat below the shako and hair (the drum in the
+ attack pose is recoloured with it), tier 6 dark crimson; splash on its own blue via `SPLASH_FILL`), pride (Nov 14: crowned prince in a white
  uniform and cape, 88x107; `CLOTHES` picks the white by low saturation (`smax`) below the head and its own `TIER_CLOTHES`
  darken it, tier 6 violet; `SWAP_LEGS` False because of the cape; the thrown dagger and gloom lines are dropped as islands),
  lust (Nov 14: girl in a pink cardigan swinging a bunny plush, 110x114; her four pictures have different art-pixel sizes,
