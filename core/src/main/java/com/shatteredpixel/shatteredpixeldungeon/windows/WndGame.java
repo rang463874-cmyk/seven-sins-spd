@@ -74,7 +74,7 @@ public class WndGame extends Window {
 			curBtn.icon(Icons.get(Icons.CHALLENGE_COLOR));
 		}
 
-		// Developer tools (debug builds only, see WndDevTools.enabled)
+		// Developer tools (debug builds only and the convenience setting, see WndDevTools.enabled)
 		RedButton devBtn = WndDevTools.menuButton(this);
 		if (devBtn != null) addButton(devBtn);
 

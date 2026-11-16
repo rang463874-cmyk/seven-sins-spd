@@ -30,9 +30,6 @@ import java.util.ArrayList;
  */
 public class EnvyMirror extends SinArtifact {
 
-	/** growth copy: jealousy cost (the base gauge) */
-	public static final int COPY_COST = 100;
-
 	public static final String AC_GAZE = "GAZE";
 	public static final String AC_CODEX = "CODEX";
 
@@ -120,9 +117,6 @@ public class EnvyMirror extends SinArtifact {
 				.descArgs(h -> new Object[]{covet(h).maxSlots()})
 				.onUse(EnvyMirror::chooseCategory));
 		//(the old "imitate growth" choice is gone: Envy imitates every sin's growth at once, see EnvyMimicry.growthEfficiency)
-		//growth copy: a perfect imitation (a full base gauge)
-		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, EnvyMirror.class, 5, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.JEALOUSY,
-				h -> COPY_COST, h -> covet(h).jealousy >= COPY_COST, h -> covet(h).useJealousy(COPY_COST), true);
 		return list;
 	}
 

@@ -29,11 +29,15 @@ public class WndDevTools extends Window {
 
 	/**
 	 * Whether the dev tools button appears in the in-game menu.
-	 * Default: only in debug builds (Android Studio "Run" / desktop debug, version ends in -INDEV).
-	 * Change to {@code true} to also show it in release builds.
+	 * Only in debug builds (every APK the workflow builds is one), and only while the convenience settings'
+	 * "developer menu" option is on.
 	 */
-	public static boolean enabled() {
+	public static boolean available() {
 		return DeviceCompat.isDebug();
+	}
+
+	public static boolean enabled() {
+		return available() && com.shatteredpixel.shatteredpixeldungeon.SPDSettings.devTools();
 	}
 
 	static final int WIDTH = 120;

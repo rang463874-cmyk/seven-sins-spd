@@ -6,7 +6,9 @@ The owner plays and tests on an Android phone and talks in Korean, so reply in K
 ## Current state
 
 Done and pushed (see `git log`):
-- Developer tools (in-game menu, debug builds only): item spawner, sin stacks (`devtools/WndDevSins`:
+- Developer tools (in-game menu, debug builds only, and since 1.1.0 only while the convenience settings' "개발자 메뉴" checkbox
+  is on: `SPDSettings.devTools`, default on; `WndDevTools.available` = debug build, `enabled` = available + the setting; the
+  checkbox only shows in debug builds): item spawner, sin stacks (`devtools/WndDevSins`:
   +10/+100/+1000 to the current sin's points, refill charges/gauge/HP), monster summon
   (`devtools/WndDevMobs`: bestiary categories, tap a tile; bosses except Goo left out; the four mimics go through
   `Mimic.spawnAt`, because a bare `new Mimic()` has 0 max HP and neither fights nor dies), level up, heal,
@@ -267,11 +269,9 @@ Done and pushed (see `git log`):
 - Stairs past depth 26: `Hero.handle` only allowed entrances at depth >= 26; REGULAR_EXIT is allowed too now (26's heaven
   stairs and the exits of 27-30).
 - Nov 11 2026 batch (owner's list):
-  - Growth copy (`skills/GrowthCopy`, every sin, skill id `replicate`, icons skill_icons.png row 9 = 72 + sin index):
-    pick an identified scroll of upgrade / potion of strength / scroll of enchantment, pay a full gauge, get another.
-    No use limit (owner: stronger monsters will balance it). Costs: gluttony `PredatorMaw.COPY_COST` 300 satiety, greed
-    the whole `maxCharge`, wrath 100 rage, pride 10 dignity, lust 50% max HP (`Perfume.COPY_SHARE`), envy 100 jealousy,
-    sloth `turnCost(150)` doze. Strings `skills.growthcopy.*` + `skill_replicate(_desc)` per item.
+  - Growth copy (every sin's `replicate` skill: pay a full gauge for another scroll of upgrade / potion of strength /
+    scroll of enchantment) was removed in 1.1.0 (Nov 16 2026, owner): `skills/GrowthCopy`, the `COPY_COST`/`COPY_SHARE`
+    constants and the `skill_replicate*`/`skills.growthcopy.*` strings are gone; skill_icons.png row 9 is unused.
   - Wrath: War Cry (`WarDrum.rally`, skill `rally`, icon 20): free, 30-turn `WarDrum.RallyCooldown`; enemies within 8 are
     beckoned and `SlothRepose.Taunted` to the hero for 10 turns, +5 rage each (max 30). Wrath's stat growth is back to the
     original rates (melee 0.10, HP 0.5, armor 0.06 per grudge point; the halvings no longer apply to Wrath).
@@ -659,7 +659,7 @@ their base weapon's ability text. Gluttony's strings predate the source copies; 
 
 - Normal PC: open in Android Studio, or `./gradlew android:assembleDebug`.
 - Phone testing: push to GitHub; `.github/workflows/build-apk.yml` builds and publishes the APK.
-- Versions (Nov 2026): the mod has its own version in `build.gradle` (`appVersionName` 1.0.0, `appVersionCode` 1000,
+- Versions (Nov 2026): the mod has its own version in `build.gradle` (`appVersionName` 1.1.0, `appVersionCode` 1001 since Nov 16 2026 (1.0.0/1000 before),
   `spdBaseVersion` 4.0.2; the title screen and menu show "Seven Sins v<version>"). To release: raise both (code +1 each
   time, never lower) and push to main: when no release `v<version>` exists yet the workflow creates the tag and publishes a
   "Seven Sins <version>" release with `SevenSins-<version>.apk` (same debug build: dev tools on, installs over test builds,

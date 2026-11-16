@@ -615,6 +615,7 @@ public class WndSettings extends WndTabbed {
 						RenderedTextBlock pickupDesc;
 						OptionSlider optAnimSpeed;
 						RenderedTextBlock speedDesc;
+						CheckBox chkDev;
 
 						{
 							head = PixelScene.renderTextBlock(Messages.get(WndSettings.UITab.this, "convenience"), 9);
@@ -659,6 +660,18 @@ public class WndSettings extends WndTabbed {
 							speedDesc.hardlight(0x888888);
 							add(speedDesc);
 
+							if (com.shatteredpixel.shatteredpixeldungeon.devtools.WndDevTools.available()) {
+								chkDev = new CheckBox(Messages.get(WndSettings.UITab.this, "dev_tools")){
+									@Override
+									protected void onClick() {
+										super.onClick();
+										SPDSettings.devTools(checked());
+									}
+								};
+								chkDev.checked(SPDSettings.devTools());
+								add(chkDev);
+							}
+
 							//layout
 							resize(WIDTH_P, 0);
 
@@ -676,7 +689,13 @@ public class WndSettings extends WndTabbed {
 							speedDesc.maxWidth(width);
 							speedDesc.setPos(0, optAnimSpeed.bottom() + 1);
 
-							resize(WIDTH_P, (int)Math.ceil(speedDesc.bottom()));
+							float bottom = speedDesc.bottom();
+							if (chkDev != null) {
+								chkDev.setRect(0, bottom + 2*GAP, width, BTN_HEIGHT);
+								bottom = chkDev.bottom();
+							}
+
+							resize(WIDTH_P, (int)Math.ceil(bottom));
 						}
 					});
 				}

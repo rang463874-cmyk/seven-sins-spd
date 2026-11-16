@@ -212,6 +212,7 @@ public class SPDSettings extends GameSettings {
 	public static final String KEY_AUTO_DEW    = "auto_pickup_dew";
 	public static final String KEY_AUTO_SEED   = "auto_pickup_seed";
 	public static final String KEY_ANIM_SPEED  = "anim_speed";
+	public static final String KEY_DEV_TOOLS   = "dev_tools";
 
 	public static final float[] ANIM_SPEEDS = { 1f, 1.5f, 2f, 3f, 4f };
 	private static int animSpeedCache = -1;
@@ -221,6 +222,10 @@ public class SPDSettings extends GameSettings {
 
 	public static void autoSeed(boolean value){ put(KEY_AUTO_SEED, value); }
 	public static boolean autoSeed(){ return getBoolean(KEY_AUTO_SEED, false); }
+
+	//developer menu in the in-game menu (debug builds only; on by default, as before the setting existed)
+	public static void devTools(boolean value){ put(KEY_DEV_TOOLS, value); }
+	public static boolean devTools(){ return getBoolean(KEY_DEV_TOOLS, true); }
 
 	//1..5, 1 = the normal speed
 	public static void animSpeed(int value){

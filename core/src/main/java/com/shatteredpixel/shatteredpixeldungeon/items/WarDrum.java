@@ -42,9 +42,6 @@ import java.util.ArrayList;
  */
 public class WarDrum extends SinArtifact {
 
-	/** growth copy: rage cost (the base gauge) */
-	public static final int COPY_COST = 100;
-
 	public static final String AC_BEAT = "BEAT";
 
 	public static final int COST_PROVOKE = 25;
@@ -129,11 +126,6 @@ public class WarDrum extends SinArtifact {
 				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_DASH))
 				.descArgs(h -> new Object[]{dashRange(h)})
 				.onUse(h -> GameScene.selectCell(dash)));
-		//growth copy: temper it in rage (a full gauge)
-		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, WarDrum.class, 2, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.RAGE,
-				h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COPY_COST),
-				h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COPY_COST),
-				h -> grudge(h).useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COPY_COST)), true);
 		return list;
 	}
 

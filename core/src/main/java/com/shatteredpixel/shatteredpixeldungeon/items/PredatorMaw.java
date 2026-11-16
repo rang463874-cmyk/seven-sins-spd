@@ -42,9 +42,6 @@ import java.util.ArrayList;
  */
 public class PredatorMaw extends SinArtifact {
 
-	/** growth copy: base satiety cost (a full stomach) */
-	public static final int COPY_COST = 300;
-
 	public static final String AC_FEED = "FEED";
 	public static final String AC_CODEX = "CODEX";
 
@@ -195,9 +192,6 @@ public class PredatorMaw extends SinArtifact {
 					return new Object[]{c == null ? Messages.get(PredatorMaw.class, "nothing") : Messages.get(c, "name")};
 				})
 				.onUse(h -> GameScene.selectCell(regurgitateSelector)));
-		//growth copy: regurgitate a growth item (a full stomach's worth of satiety)
-		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, PredatorMaw.class, 0, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.SATIETY,
-				h -> hungerCost(h, COPY_COST), h -> canAfford(h, COPY_COST), h -> pay(h, COPY_COST), true);
 		return list;
 	}
 
@@ -243,7 +237,7 @@ public class PredatorMaw extends SinArtifact {
 	/** satiety eaten by bringing back a growth item; whatever the stomach can't pay becomes hunger debt */
 	public static final int HEAVY_RUMINATE = 600;
 
-	/** the last potion or scroll, if it can be brought back up (growth items can't since Nov 2026: growth copy does that) */
+	/** the last potion or scroll, if it can be brought back up (not growth items) */
 	public static Class ruminable(Hero hero) {
 		PredatorStomach st = hero.buff(PredatorStomach.class);
 		if (st == null || st.lastUsed == null) return null;

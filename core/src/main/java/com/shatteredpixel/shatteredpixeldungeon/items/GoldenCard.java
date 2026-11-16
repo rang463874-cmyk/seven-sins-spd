@@ -222,15 +222,11 @@ public class GoldenCard extends SinArtifact {
 				.cost(h -> buyCost(h))
 				.usableIf(h -> vault(h).charge >= buyCost(h))
 				.onUse(GoldenCard::mailOrder));
-		//Treasure Map replaced Gilding in Nov 2026 (growth copy covers upgrades now); gilding code kept for reference
+		//Treasure Map replaced Gilding in Nov 2026; gilding code kept for reference
 		list.add(new BasicSkill(GoldenCard.class, "treasuremap", 15, SinSkill.CostType.GAUGE)
 				.cost(h -> discounted(h, COST_MAP))
 				.usableIf(h -> vault(h).charge >= discounted(h, COST_MAP))
 				.onUse(GoldenCard::treasureMap));
-		//growth copy: forgery (the whole payment gauge)
-		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, GoldenCard.class, 1, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.GAUGE,
-				h -> (int) vault(h).maxCharge(), h -> vault(h).chargeInt() >= (int) vault(h).maxCharge(),
-				h -> vault(h).spend((int) vault(h).maxCharge()), true);
 		return list;
 	}
 

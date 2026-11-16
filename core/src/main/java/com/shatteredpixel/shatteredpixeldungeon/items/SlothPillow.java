@@ -41,8 +41,6 @@ import java.util.ArrayList;
  */
 public class SlothPillow extends SinArtifact {
 
-	/** growth copy: base turns of dozing */
-	public static final int COPY_COST = 150;
 	/** Dream Patrol: base turns of dozing */
 	public static final int PATROL_TURNS = 40;
 
@@ -132,15 +130,11 @@ public class SlothPillow extends SinArtifact {
 				.descArgs(h -> new Object[]{Math.round(SlothRepose.DreamMark.DAMAGE_BONUS * 100),
 						Math.round(SlothRepose.DreamMark.DURATION)})
 				.onUse(h -> GameScene.selectCell(order)));
-		//Dream Patrol replaced Dream Forge in Nov 2026 (growth copy covers upgrades now); forge code kept for saves mid-forge
+		//Dream Patrol replaced Dream Forge in Nov 2026; forge code kept for saves mid-forge
 		list.add(new BasicSkill(SlothPillow.class, "patrol", 53, SinSkill.CostType.TURNS)
 				.cost(h -> SlothRepose.turnCost(h, PATROL_TURNS))
 				.usableIf(h -> !com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DreamPuppet.active().isEmpty())
 				.onUse(SlothPillow::patrol));
-		//growth copy: dream up another one (a long doze; dozing ends the turn itself)
-		com.shatteredpixel.shatteredpixeldungeon.skills.GrowthCopy.add(list, SlothPillow.class, 6, com.shatteredpixel.shatteredpixeldungeon.skills.SinSkill.CostType.TURNS,
-				h -> SlothRepose.turnCost(h, COPY_COST), h -> true,
-				h -> { SlothRepose.doze(h, SlothRepose.turnCost(h, COPY_COST)); return true; }, false);
 		return list;
 	}
 
