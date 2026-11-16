@@ -383,7 +383,6 @@ Not yet done / known gaps:
 - Never play-tested on a device until the first APK; expect UI/layout fixes.
 - Balance is untuned (Hibernator armor, Pride's Duel, Banker interest are on the strong side).
 - Sigil costs 2000 favor (lowered from 3000, the quest maximum, in Nov 2026).
-- Talent/hero icons for the sins are recolored cleric icons (placeholders).
 
 Design rule for every sin: progress is **permanent and unbounded** (stat bonuses scale with
 a points value that never decreases; accuracy/evasion are capped at 40%/30%).
@@ -605,7 +604,9 @@ red skirt) to `TIER_CLOTHES`, tier 6 = the sin's hue or `TIER6`. Also writes the
 fitted to the height on black, character at `SPLASH_FOCUS`). `make_sin_assets.py` leaves the sheet/avatar/splash of a sin with
 pictures alone. `GLOBAL_BG` also clears the background colour inside closed loops (gluttony's attack swoosh), `SWAP_LEGS` False
 runs on the walk pose with bob only (long coats), `SPLASH_ERASE` paints boxes (the Gemini sparkle) out of a splash.
-Done: gluttony (second design Nov 13: drumstick + beer mug, 60x60 frames, grid pictures sampled by `native_pitch` too), greed (65x54), wrath (second design Nov 16: red-haired
+Done: gluttony (third design Nov 16: farm girl in a straw hat and brown overalls with a drumstick, 82x70; per-pose `PITCH`
+ matched on the hat; `CLOTHES` = the dark brown overalls and boots below the hat band, tier 6 the sin's violet; `SWAP_LEGS` on
+ again (no coat); attack keeps the swoosh (`GLOBAL_BG` clears the yellow inside it); splash on its own orange), greed (65x54), wrath (second design Nov 16: red-haired
  drummer in a red greatcoat and shako, 53x61; Gemini drew all poses at one zoom but the attack/die pitches were detected
  finer, so `PITCH` samples all four at the front's 22.3; `CLOTHES` = the red coat below the shako and hair (the drum in the
  attack pose is recoloured with it), tier 6 dark crimson; splash on its own blue via `SPLASH_FILL`), pride (Nov 14: crowned prince in a white

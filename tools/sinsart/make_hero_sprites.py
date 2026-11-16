@@ -54,7 +54,9 @@ ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
 # which pixels are "clothes" for the tier recolour: hue range (0..1, may wrap), min saturation, min value,
 # and only rows at or below this share of the figure's height (keeps hoods/hair/eyes as drawn)
 CLOTHES = {
-    "default": dict(hue=(0.2, 0.48), smin=0.3, vmin=0.0, below=0.0),     # gluttony's green tunic
+    "default": dict(hue=(0.2, 0.48), smin=0.3, vmin=0.0, below=0.0),     # green clothes
+    # the brown overalls (third design, Nov 16 2026): dark, below the straw hat's brown band; the boots go too
+    "gluttony": dict(hue=(0.93, 0.08), smin=0.2, vmin=0.15, vmax=0.55, below=0.45),
     "greed": dict(hue=(0.95, 0.02), smin=0.6, vmin=0.35, below=0.45),   # the red skirt (not the hood)
     # the red greatcoat (second design, Nov 16 2026), below the shako and the red hair
     "wrath": dict(hue=(0.93, 0.03), smin=0.5, vmin=0.3, below=0.42),
@@ -119,10 +121,13 @@ def native(path):
 PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2},
          # envy: front is its own pitch, the others are matched on the hair width (walk halfway: her head is
          # drawn bigger there and the full correction would make the body too short)
+         "envy": {"front": 18.4, "walk": 21.0, "attack": 19.6, "die": 18.7},
          # wrath (second design): Gemini drew every pose at the same zoom, but the detected pitch of the attack/die
          # pictures came out finer (14/13 source px) and made them twice as big: all four at the front's pitch
          "wrath": {"front": 22.3, "walk": 22.3, "attack": 22.3, "die": 22.3},
-         "envy": {"front": 18.4, "walk": 21.0, "attack": 19.6, "die": 18.7}}
+         # gluttony (third design): the poses are drawn at different zooms, matched on the straw hat's width (attack:
+         # on the hat-to-boots height, its brim is foreshortened; the raised drumstick and swoosh tip still overflow)
+         "gluttony": {"front": 18.0, "walk": 18.7, "attack": 17.0, "die": 14.9}}
 
 
 def native_pitch(path, pitch=None):
@@ -430,7 +435,7 @@ def squash(a, rows):
 # (gluttony's attack swoosh); not for greed, whose crimson background is close to her skirt's shadows
 GLOBAL_BG = {"gluttony"}
 # run frames from the walk pose with mirrored legs; off where a long coat makes the mirrored bottom third look torn
-SWAP_LEGS = {"gluttony": False, "pride": False, "envy": False}
+SWAP_LEGS = {"pride": False, "envy": False}
 # background-coloured fringe to peel off the silhouette (layers): envy's hair is the background's green, so the
 # cut can't be made looser instead
 FRINGE = {"envy": 2, "sloth": 2}
@@ -556,9 +561,9 @@ def avatar(front_n):
 # where the character's body is in each splash picture (share of the width), centred in the 800x450 splash
 SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
 # boxes (source px) painted with the background colour: the Gemini sparkle
-SPLASH_ERASE = {"gluttony": [(860, 870, 935, 945)]}
+SPLASH_ERASE = {}
 # flat-coloured pictures narrower than the splash: the side bars take the picture's corner colour instead of black
-SPLASH_FILL = {"lust", "envy", "sloth", "wrath"}
+SPLASH_FILL = {"lust", "envy", "sloth", "wrath", "gluttony"}
 
 
 def splash(name, src):
