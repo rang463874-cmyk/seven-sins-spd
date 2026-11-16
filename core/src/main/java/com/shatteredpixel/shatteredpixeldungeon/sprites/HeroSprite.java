@@ -196,8 +196,17 @@ public class HeroSprite extends CharSprite {
 		if (!hiRes( tx )) {
 			return new TextureFilm( tiers(), tier, FRAME_WIDTH, FRAME_HEIGHT );
 		}
-		TextureFilm rows = new TextureFilm( tx, tx.width, frameH( tx ) );
-		return new TextureFilm( rows, Math.min( tier, TIERS - 1 ), frameW( tx ), frameH( tx ) );
+		//every frame of the sheet cut by integer sizes, then the tier's row copied into keys 0..FRAMES-1.
+		//(Not TextureFilm(atlas, row, ...): it measures the row's height back from float uv coordinates, and for the
+		//mail, scale and class armor rows that came out a hair under one frame, so the row had no frames at all and
+		//putting on class armor from the king's crown crashed the game.)
+		TextureFilm all = new TextureFilm( tx, frameW( tx ), frameH( tx ) );
+		TextureFilm film = new TextureFilm( tx );
+		int row = Math.max( 0, Math.min( tier, TIERS - 1 ) );
+		for (int i = 0; i < FRAMES; i++) {
+			film.add( i, all.get( row * FRAMES + i ) );
+		}
+		return film;
 	}
 
 	//scale (x HI_RES_ZOOM) + a shadow as wide as the figure's (hi-res frames are wider than the figure, for lying/attack poses)

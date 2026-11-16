@@ -338,6 +338,10 @@ Done and pushed (see `git log`):
   7,49). Floors of those two generated before this get the sigil on the open floor nearest the exit stairs instead. Hints:
   `goetia.goetiahooks.chamber_hint(_near)` / `sigil_hint`. Headless check: boss levels can be built with `Dungeon.daily`
   (skips bones), `Game.version` set and a `Game.instance` made by `Unsafe.allocateInstance` (Level.drop asks the scene).
+- Crash log (Nov 16 2026, owner): `utils/CrashLog` installs a default uncaught-exception handler first thing in
+  `ShatteredPixelDungeon.create` and writes the stack trace to the local file `crash_log.txt`; `TitleScene` shows it on the
+  next launch in `windows/WndCrashLog` (shortened for the font by `forDisplay`, Copy = full text to the clipboard, closing
+  deletes the file). Strings `windows.wndcrashlog.*` at the end of messages/windows/windows*.properties (not synced).
 - Convenience settings (Nov 13 2026, owner): settings window, UI tab, "편의 설정" button -> a window with auto-collect dew /
   auto-collect seeds (`SPDSettings.autoDew/autoSeed`, both off by default; `Hero.autoPickUp` at the top of `Hero.act` takes
   the top item of the heap under the hero through the normal `doPickUp` with `Item.autoPickingUp` making `pickupDelay` 0,
@@ -590,7 +594,10 @@ Adding a new class means touching all of the above; follow an existing sin as th
 mirror relics). Re-run after editing it: `python3 tools/sinsart/make_sin_assets.py`.
 Hero redesigns (Nov 13 2026, owner draws them in Gemini; owner: keep the pictures as unchanged as possible): **hi-res hero
 sheets**. `HeroSprite.hiRes(tex)`: a sheet exactly 21 frames wide and 7 tier rows high (vanilla sheets are 256x128) has frames of
-width/21 x height/7 and is drawn at `artScale` = 15 / frame height x `HI_RES_ZOOM` 1.2 (owner: a bit bigger than vanilla heroes; UI avatars stay 15 high); `film(tex, tier)` and
+width/21 x height/7 and is drawn at `artScale` = 15 / frame height x `HI_RES_ZOOM` 1.2 (owner: a bit bigger than vanilla heroes; UI avatars stay 15 high); `film(tex, tier)` (cuts the whole
+sheet with integer frame sizes and copies the tier's row into keys 0..20; until Nov 16 2026 it used the atlas form
+`TextureFilm(rows, tier, w, h)`, whose float row height came out under one frame for tiers 3, 4 and 6, so mail/scale
+armor and the king's crown class armor gave an empty animation and crashed the game) and
 `applyArtScale` (scale + a vanilla-width shadow, frames are wider than the figure) are used by `HeroSprite.updateArmor` and
 `MirrorSprite`; `avatar()` crops a square from the first frame and scales it (HeroSelectScene buttons and StartScene use it now;
 StatusPane lays the avatar out with width()/height()). Vanilla sheets are untouched.

@@ -322,6 +322,12 @@ public class TitleScene extends PixelScene {
 			add(new WndVictoryCongrats());
 		}
 
+		//Seven Sins: the stack trace of the last crash, if the game crashed last time
+		String crash = com.shatteredpixel.shatteredpixeldungeon.utils.CrashLog.pending();
+		if (crash != null) {
+			add(new com.shatteredpixel.shatteredpixeldungeon.windows.WndCrashLog(crash));
+		}
+
 		fadeIn();
 	}
 

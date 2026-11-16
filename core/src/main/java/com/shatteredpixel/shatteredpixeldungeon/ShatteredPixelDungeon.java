@@ -57,6 +57,7 @@ public class ShatteredPixelDungeon extends Game {
 	
 	@Override
 	public void create() {
+		com.shatteredpixel.shatteredpixeldungeon.utils.CrashLog.install(); //Seven Sins: keep the last crash for the title screen
 		super.create();
 
 		updateSystemUI();
