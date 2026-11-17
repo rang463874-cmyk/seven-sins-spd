@@ -614,15 +614,18 @@ red skirt) to `TIER_CLOTHES`, tier 6 = the sin's hue or `TIER6`. Also writes the
 `hero_art/<sin>/preview.png` (sheet x3). `hero_art/<sin>/splash_src.png` -> `splashes/<sin>.jpg` (800x450 like every splash:
 fitted to the height on black, character at `SPLASH_FOCUS`). `make_sin_assets.py` leaves the sheet/avatar/splash of a sin with
 pictures alone. `GLOBAL_BG` also clears the background colour inside closed loops (gluttony's attack swoosh), `SWAP_LEGS` False
-runs on the walk pose with bob only (long coats), `SPLASH_ERASE` paints boxes (the Gemini sparkle) out of a splash.
+runs on the walk pose with bob only (long coats); an optional `hero_art/<sin>/walk2.png` (the other stride, same direction,
+zoom and colours as walk; gets `WALK_MIRROR` and its own `PITCH` entry, defaulting to walk's) replaces both for run frames 5-7, `SPLASH_ERASE` paints boxes (the Gemini sparkle) out of a splash.
 Done: gluttony (third design Nov 16: farm girl in a straw hat and brown overalls with a drumstick, 82x70; per-pose `PITCH`
  matched on the hat; `CLOTHES` = the dark brown overalls and boots below the hat band, tier 6 the sin's violet; `SWAP_LEGS` on
  again (no coat); attack keeps the swoosh (`GLOBAL_BG` clears the yellow inside it); splash on its own orange), greed (65x54), wrath (second design Nov 16: red-haired
  drummer in a red greatcoat and shako, 53x61; Gemini drew all poses at one zoom but the attack/die pitches were detected
  finer, so `PITCH` samples all four at the front's 22.3; `CLOTHES` = the red coat below the shako and hair (the drum in the
- attack pose is recoloured with it), tier 6 dark crimson; splash on its own blue via `SPLASH_FILL`), pride (Nov 14: crowned prince in a white
- uniform and cape, 88x107; `CLOTHES` picks the white by low saturation (`smax`) below the head and its own `TIER_CLOTHES`
- darken it, tier 6 violet; `SWAP_LEGS` False because of the cape; the thrown dagger and gloom lines are dropped as islands),
+ attack pose is recoloured with it), tier 6 dark crimson; splash on its own blue via `SPLASH_FILL`), pride (second design Nov 17: chibi crowned prince
+ with a big head, white uniform and cape, throwing a dagger, 67x73; one `PITCH` 17.2 for all poses but the smaller-drawn attack
+ 15.8; the first sin with the owner's own second stride `walk2.png`, used for run frames 5-7; `CLOTHES` picks the white by low
+ saturation (`smax`) below 57% of the figure (the big head stays untinted) and its own `TIER_CLOTHES` darken it, tier 6 violet;
+ the thrown dagger is dropped as an island; the splash is still the first design's),
  lust (Nov 14: girl in a pink cardigan swinging a bunny plush, 110x114; her four pictures have different art-pixel sizes,
  so `PITCH` gives one sampling pitch per pose (12 source px, the smaller die canvas 9.2, matched on the head width) instead
  of the detected one; `CLOTHES` = the bright, lightly saturated pink below the face, tier 6 crimson; attack mirrored; die =

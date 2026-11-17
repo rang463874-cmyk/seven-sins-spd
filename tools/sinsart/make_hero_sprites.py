@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Hero sheets from the owner's pixel-art pictures (Gemini output).
 
-Input:  tools/sinsart/hero_art/<sin>/{front,walk,attack,die}.png
+Input:  tools/sinsart/hero_art/<sin>/{front,walk,attack,die}.png (+ optional walk2.png = the other stride, used
+        for run frames 5-7 instead of the walk pose with mirrored legs)
         Big pictures of pixel art drawn on a visible grid (each art pixel ~23px), on a flat background.
         front = idle (facing the viewer), walk = side view facing right, attack = side view (either way,
         mirrored to face right if the weapon is on the left), die = lying on the ground.
@@ -62,7 +63,7 @@ CLOTHES = {
     "wrath": dict(hue=(0.93, 0.03), smin=0.5, vmin=0.3, below=0.42),
     # the white uniform and cape: any hue, nearly no saturation (smax keeps the pale skin out), bright,
     # below the crown and face
-    "pride": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.07, vmin=0.78, below=0.45),
+    "pride": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.07, vmin=0.78, below=0.57),  # below the big chibi head (2nd design)
     # the pink cardigan: same hue as the maroon hair and skirt, so picked by being bright and only lightly
     # saturated, below the face (the butterfly hairpin and blush stay)
     "lust": dict(hue=(0.88, 0.97), smin=0.2, smax=0.45, vmin=0.75, below=0.45),
@@ -127,7 +128,10 @@ PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2},
          "wrath": {"front": 22.3, "walk": 22.3, "attack": 22.3, "die": 22.3},
          # gluttony (third design): the poses are drawn at different zooms, matched on the straw hat's width (attack:
          # on the hat-to-boots height, its brim is foreshortened; the raised drumstick and swoosh tip still overflow)
-         "gluttony": {"front": 18.0, "walk": 18.7, "attack": 17.0, "die": 14.9}}
+         "gluttony": {"front": 18.0, "walk": 18.7, "attack": 17.0, "die": 14.9},
+         # pride (second design, Nov 17 2026): one zoom (crown ~435 source px wide) except the attack, drawn a bit
+         # smaller (crown ~400), sampled finer to match
+         "pride": {"front": 17.2, "walk": 17.2, "walk2": 17.2, "attack": 15.8, "die": 17.2}}
 
 
 def native_pitch(path, pitch=None):
@@ -458,7 +462,9 @@ def build_frames(pics, name="default"):
     isl = ISLAND_SHARE.get(name, ISLAND_SHARE["default"])
     poses = {k: cut_background_(v, isl, name in GLOBAL_BG, FRINGE.get(name, 0)) for k, v in pics.items()}
     if name in WALK_MIRROR:
-        poses["walk"] = mirror(poses["walk"])
+        for wk in ("walk", "walk2"):
+            if wk in poses:
+                poses[wk] = mirror(poses[wk])
     mir = ATTACK_MIRROR.get(name)
     if mir is None:
         mir = faces_left(poses["attack"])
@@ -467,13 +473,14 @@ def build_frames(pics, name="default"):
     for k, f in POSE_SCALE.get(name, {}).items():
         poses[k] = shrink(poses[k], f)
     front, walk, attack, die = poses["front"], poses["walk"], poses["attack"], poses["die"]
+    walk_b = poses.get("walk2")                     # the owner's other stride, if drawn (walk2.png)
 
-    fh = max(front.shape[0], walk.shape[0]) + 1
+    fh = max(front.shape[0], walk.shape[0], walk_b.shape[0] if walk_b is not None else 0) + 1
     k = fh / 15.0                                   # sheet pixels per vanilla pixel
     def need(img, extra=0):                         # width a head-centred pose needs
         c = head_center(img)
         return 2 * max(c + 1, img.shape[1] - c) + 2 * extra + 2
-    req = max(need(front), need(walk), need(attack, 0) + 2 * max(1, int(round(k))), die.shape[1] + 2)
+    req = max(need(front), need(walk), need(walk_b) if walk_b is not None else 0, need(attack, 0) + 2 * max(1, int(round(k))), die.shape[1] + 2)
     fw = int(min(np.ceil(fh * 2.2), max(np.ceil(fh * 0.8), np.ceil(req))))
 
     def P(img, cx=None, dy=0):
@@ -484,7 +491,10 @@ def build_frames(pics, name="default"):
     fr = [None] * FRAMES
     fr[0] = P(front)
     fr[1] = P(squash(front, sq(1)))
-    walk2 = swap_legs(walk) if SWAP_LEGS.get(name, True) else walk
+    if walk_b is not None:
+        walk2 = walk_b
+    else:
+        walk2 = swap_legs(walk) if SWAP_LEGS.get(name, True) else walk
     for i, (img, dy) in enumerate([(walk, 0), (walk, bob), (walk, 0), (walk2, 0), (walk2, bob), (walk2, 0)]):
         fr[2 + i] = P(img, dy=dy)
     fr[8] = P(squash(front, sq(2)))
@@ -592,11 +602,14 @@ def main():
     avatars = Image.open(avatars_path).convert("RGBA")
     for name in names:
         d = os.path.join(ART, name)
+        poses = ["front", "walk", "attack", "die"]
+        if os.path.exists(os.path.join(d, "walk2.png")):
+            poses.append("walk2")                    # optional second stride, replaces the mirrored legs
         if name in PITCH:
-            pics = {k: native_pitch(os.path.join(d, k + ".png"), PITCH[name][k]) for k in ("front", "walk", "attack", "die")}
+            pics = {k: native_pitch(os.path.join(d, k + ".png"), PITCH[name].get(k, PITCH[name]["walk"])) for k in poses}
         else:
             load = native_pitch if name in NO_GRID else native
-            pics = {k: load(os.path.join(d, k + ".png")) for k in ("front", "walk", "attack", "die")}
+            pics = {k: load(os.path.join(d, k + ".png")) for k in poses}
         frames, front_n, fw, fh = build_frames(pics, name)
         sheet = build_sheet(name, frames, fw, fh)
         sheet.save(os.path.join(ASSETS, "sprites", name + ".png"))
