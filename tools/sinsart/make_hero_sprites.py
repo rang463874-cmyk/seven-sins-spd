@@ -128,7 +128,7 @@ PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2},
          "wrath": {"front": 22.3, "walk": 22.3, "attack": 22.3, "die": 22.3},
          # gluttony (third design): the poses are drawn at different zooms, matched on the straw hat's width (attack:
          # on the hat-to-boots height, its brim is foreshortened; the raised drumstick and swoosh tip still overflow)
-         "gluttony": {"front": 18.0, "walk": 18.7, "attack": 17.0, "die": 14.9},
+         "gluttony": {"front": 18.0, "walk": 18.7, "walk2": 14.4, "attack": 17.0, "die": 14.9},
          # pride (second design, Nov 17 2026): one zoom (crown ~435 source px wide) except the attack, drawn a bit
          # smaller (crown ~400), sampled finer to match
          "pride": {"front": 17.2, "walk": 17.2, "walk2": 17.2, "attack": 15.8, "die": 17.2}}
@@ -442,9 +442,11 @@ GLOBAL_BG = {"gluttony"}
 SWAP_LEGS = {"pride": False, "envy": False}
 # background-coloured fringe to peel off the silhouette (layers): envy's hair is the background's green, so the
 # cut can't be made looser instead
-FRINGE = {"envy": 2, "sloth": 2}
+FRINGE = {"envy": 2, "sloth": 2, "gluttony": 1}  # gluttony: walk2.png left a yellow rim
 # walk pictures drawn facing left
 WALK_MIRROR = {"envy", "sloth"}
+# walk2 pictures whose facing differs from walk's (default: mirrored like walk)
+WALK2_MIRROR = {"sloth": False}                 # sloth's second stride is drawn facing right
 
 # per-pose size correction when Gemini drew a pose at a different zoom (matched by eye on the head/hood size)
 POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78},
@@ -462,9 +464,9 @@ def build_frames(pics, name="default"):
     isl = ISLAND_SHARE.get(name, ISLAND_SHARE["default"])
     poses = {k: cut_background_(v, isl, name in GLOBAL_BG, FRINGE.get(name, 0)) for k, v in pics.items()}
     if name in WALK_MIRROR:
-        for wk in ("walk", "walk2"):
-            if wk in poses:
-                poses[wk] = mirror(poses[wk])
+        poses["walk"] = mirror(poses["walk"])
+    if "walk2" in poses and WALK2_MIRROR.get(name, name in WALK_MIRROR):
+        poses["walk2"] = mirror(poses["walk2"])
     mir = ATTACK_MIRROR.get(name)
     if mir is None:
         mir = faces_left(poses["attack"])

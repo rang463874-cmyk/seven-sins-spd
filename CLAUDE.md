@@ -617,7 +617,8 @@ red skirt) to `TIER_CLOTHES`, tier 6 = the sin's hue or `TIER6`. Also writes the
 fitted to the height on black, character at `SPLASH_FOCUS`). `make_sin_assets.py` leaves the sheet/avatar/splash of a sin with
 pictures alone. `GLOBAL_BG` also clears the background colour inside closed loops (gluttony's attack swoosh), `SWAP_LEGS` False
 runs on the walk pose with bob only (long coats); an optional `hero_art/<sin>/walk2.png` (the other stride, same direction,
-zoom and colours as walk; gets `WALK_MIRROR` and its own `PITCH` entry, defaulting to walk's) replaces both for run frames 5-7, `SPLASH_ERASE` paints boxes (the Gemini sparkle) out of a splash.
+zoom and colours as walk; gets `WALK_MIRROR` and its own `PITCH` entry, defaulting to walk's) replaces both for run frames 5-7 (`WALK2_MIRROR` overrides its facing when it differs from walk's: sloth's walk2 faces right; drawn
+second strides so far: pride, gluttony (pitch 14.4, `FRINGE` 1 for its yellow rim), sloth), `SPLASH_ERASE` paints boxes (the Gemini sparkle) out of a splash.
 Done: gluttony (third design Nov 16: farm girl in a straw hat and brown overalls with a drumstick, 82x70; per-pose `PITCH`
  matched on the hat; `CLOTHES` = the dark brown overalls and boots below the hat band, tier 6 the sin's violet; `SWAP_LEGS` on
  again (no coat); attack keeps the swoosh (`GLOBAL_BG` clears the yellow inside it); splash on its own orange), greed (65x54), wrath (second design Nov 16: red-haired
