@@ -59,7 +59,7 @@ import java.util.LinkedHashMap;
 /**
  * Seven Sins: a shard of a broken artifact. Made in the alchemy pot from one of the game's own
  * artifacts (not the mod's: sin artifacts, horsemen relics...), 1 + level/3 shards per artifact.
- * Using one gives a one-time version of that artifact's power. Shards of the same artifact stack.
+ * Using one opens WndArtifactShard: pick any of the SOURCES artifacts' powers for a one-time use. All shards stack.
  */
 public class ArtifactShard extends Item {
 
@@ -88,7 +88,11 @@ public class ArtifactShard extends Item {
 		return item != null && SOURCES.containsKey(item.getClass());
 	}
 
+	/** the power chosen for this use (Nov 17 2026, owner: one kind of shard, the power is picked when it is used;
+	 *  shards used to be tied to the artifact they came from) */
 	private Class<? extends Artifact> artifact = CloakOfShadows.class;
+
+	public static final int GLOW = 0xF0D8A0;
 
 	{
 		image = ItemSpriteSheet.ARTIFACT_SHARD;
@@ -99,33 +103,32 @@ public class ArtifactShard extends Item {
 	public ArtifactShard() {
 	}
 
-	public ArtifactShard(Class<? extends Artifact> artifact) {
-		this.artifact = artifact;
-	}
-
 	private String key() {
 		return artifact.getSimpleName().toLowerCase();
 	}
 
 	@Override
 	public boolean isSimilar(Item item) {
-		return item instanceof ArtifactShard && ((ArtifactShard) item).artifact == artifact;
+		return item instanceof ArtifactShard;
 	}
 
 	@Override
 	public String name() {
-		return Messages.get(this, "name", Messages.get(artifact, "name"));
+		return Messages.get(this, "name");
 	}
 
 	@Override
 	public String desc() {
-		return Messages.get(this, "desc") + "\n\n" + Messages.get(this, "effect_" + key());
+		return Messages.get(this, "desc"); //the powers are listed in WndArtifactShard
+	}
+
+	public static String effectText(Class<? extends Artifact> a) {
+		return Messages.get(ArtifactShard.class, "effect_" + a.getSimpleName().toLowerCase());
 	}
 
 	@Override
 	public ItemSprite.Glowing glowing() {
-		Integer c = SOURCES.get(artifact);
-		return new ItemSprite.Glowing(c == null ? 0xFFFFFF : c, 1.5f);
+		return new ItemSprite.Glowing(GLOW, 1.5f);
 	}
 
 	@Override
@@ -145,7 +148,13 @@ public class ArtifactShard extends Item {
 	public void execute(Hero hero, String action) {
 		super.execute(hero, action);
 		if (!action.equals(AC_USE)) return;
+		GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndArtifactShard(this));
+	}
 
+	/** called by WndArtifactShard once a power is picked */
+	public void usePower(Hero hero, Class<? extends Artifact> power) {
+		if (!SOURCES.containsKey(power) || quantity() <= 0 || !hero.belongings.contains(this)) return;
+		artifact = power;
 		if (artifact == EtherealChains.class || artifact == SkeletonKey.class) {
 			curUser = hero;
 			curItem = this;
@@ -420,15 +429,13 @@ public class ArtifactShard extends Item {
 	@Override
 	public void storeInBundle(Bundle bundle) {
 		super.storeInBundle(bundle);
-		bundle.put("artifact", artifact);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void restoreFromBundle(Bundle bundle) {
 		super.restoreFromBundle(bundle);
-		Class<?> c = bundle.getClass("artifact");
-		if (c != null && SOURCES.containsKey(c)) artifact = (Class<? extends Artifact>) c;
+		//shards from before Nov 17 2026 kept their source artifact ("artifact"); all shards are one kind now
 	}
 
 	@Override
@@ -468,11 +475,10 @@ public class ArtifactShard extends Item {
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
 		public Item sampleOutput(ArrayList<Item> ingredients) {
 			if (ingredients.isEmpty() || !canShatter(ingredients.get(0))) return new ArtifactShard();
 			Artifact a = (Artifact) ingredients.get(0);
-			return new ArtifactShard((Class<? extends Artifact>) a.getClass()).quantity(1 + a.visiblyUpgraded() / 3);
+			return new ArtifactShard().quantity(1 + a.visiblyUpgraded() / 3);
 		}
 	}
 }
