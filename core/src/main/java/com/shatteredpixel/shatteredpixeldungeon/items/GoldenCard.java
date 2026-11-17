@@ -446,6 +446,11 @@ public class GoldenCard extends SinArtifact {
 		return Shopkeeper.sellPrice(item);
 	}
 
+	/** payment-limit cost of one mail order: the shop price plus the order fee */
+	public static int orderCost(Hero hero, Item item) {
+		return buyPrice(item) + buyCost(hero);
+	}
+
 	private static void mailOrder(final Hero hero) {
 		final GreedVault v = vault(hero);
 		final ArrayList<Item> stock = v.catalog();
@@ -456,24 +461,20 @@ public class GoldenCard extends SinArtifact {
 		String[] labels = new String[stock.size()];
 		for (int i = 0; i < stock.size(); i++) {
 			Item it = stock.get(i);
-			labels[i] = Messages.titleCase(it.name()) + "  (" + buyPrice(it) + "g)";
+			labels[i] = Messages.titleCase(it.name()) + "  (" + orderCost(hero, it) + ")";
 		}
 		GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.GOLDEN_CARD),
 				Messages.get(GoldenCard.class, "shop_title"),
-				Messages.get(GoldenCard.class, "shop_msg", buyCost(hero), Dungeon.gold), labels) {
+				Messages.get(GoldenCard.class, "shop_msg", buyCost(hero), v.chargeInt()), labels) {
 			@Override
 			protected void onSelect(int index) {
 				Item it = stock.get(index);
-				int price = buyPrice(it);
-				if (Dungeon.gold < price) {
-					GLog.w(Messages.get(GoldenCard.class, "shop_no_gold"));
-					return;
-				}
-				if (!v.spend(buyCost(hero))) {
+				//Nov 17 2026 (owner): paid entirely from the payment limit, not from carried gold
+				int price = orderCost(hero, it);
+				if (!v.spend(price)) {
 					GLog.w(Messages.get(GoldenCard.class, "no_balance"));
 					return;
 				}
-				Dungeon.gold -= price;
 				stock.remove(index);
 				if (!it.doPickUp(hero)) {
 					Dungeon.level.drop(it, hero.pos).sprite.drop();

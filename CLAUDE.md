@@ -404,8 +404,9 @@ Melee/max HP/armor growth from sin points was halved again for all seven sins (W
 Exception (owner's call): Greed's stats follow the gold currently carried, so shopping lowers them.
 Greed's card has no deposit/withdraw; payment skills and Remote Sale (shop price, anywhere)
 spend a gauge filled 1:1 by gold pickups (`GreedHooks.selling` keeps sale proceeds from filling it).
-Greed also has Mail Order (`GreedVault.catalog`, 8 consumables restocked per floor, gold at shop price +
-gauge fee) and Gilding (+1 upgrade for 300 + 150 per previous use of gauge, `GreedVault.gilded`).
+Greed also has Mail Order (`GreedVault.catalog`, 8 consumables restocked per floor; since Nov 17 2026 (owner) paid
+wholly from the gauge: `GoldenCard.orderCost` = shop price + order fee, carried gold untouched; the gauge max
+`GreedVault.maxCharge` was doubled the same day to (200 + 100 x depth) x scales) and Gilding (+1 upgrade for 300 + 150 per previous use of gauge, `GreedVault.gilded`).
 Sloth (reworked Nov 2026, "auto-battle"): `actors/mobs/npcs/DreamPuppet` allies (DirectableAlly that roam the
 level on their own via a `Roaming` wandering state, `intelligentAlly = false`; they vanish when the hero changes floors (`Mob.holdAllies` drops them); max puppets +1 at pillow +3/+5/+10 (`SlothRepose.pillowPuppets`); `nightmare` = temporary 70% copy). Taunt = `SlothRepose.Taunted` on an enemy, read by
 `SlothHooks.tauntTarget` in `Mob.chooseEnemy`. Sleepwalker/Auto Hunt free attacks run in `SlothRepose.act`.
@@ -465,8 +466,10 @@ PRIDE_SWIFT_CROWN is now "royal retrieval": 25%/pt that a thrown weapon returns 
 called from `MissileWeapon.rangedHit/rangedMiss`). Pride starts with a magical holster (and the velvet pouch). Sloth pays in **time**: each pillow skill ends with `SlothRepose.doze(hero, turns)`
 (Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; a meal with SLOTH_PILLOW skips
 dozing). Cost types RAGE/DIGNITY/TURNS/JEALOUSY in `SinSkill.CostType`.
-Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: 12 copies of other
-sins' skills (unlocked by hero level 2,4..24) and 8 monster abilities (unlocked by bestiary traits); their own
+Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: copies of other
+sins' skills (16 since Nov 17 2026: + WARCRY, TREASURE, REPEL, PATROL; owner: Envy starts with 2 random ones from
+different sins and learns 1 more random one every 2 hero levels, `EnvyCovet.sinCopies` (saved; old saves keep the
+ones in `known`) via `learnSinCopies`/`copiesFor`, so a new SIN entry in the enum joins the pool by itself) and 8 monster abilities (unlocked by bestiary traits); their own
 implementations live there (not the other sins' code). The mirror holds `EnvyCovet.slots` (3 + Copycat +
 mirrored), chosen in `EnvyMirror.chooseMimic`; newly learned copies fill free slots (`refreshSlots`).
 Paid from `EnvyCovet.jealousy` (0..maxJealousy, ~3 turns per point, x2 with a rival in view). Since Nov 12 2026 Envy

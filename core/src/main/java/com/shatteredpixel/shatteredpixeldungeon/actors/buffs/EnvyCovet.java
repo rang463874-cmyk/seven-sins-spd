@@ -486,6 +486,7 @@ public class EnvyCovet extends Buff {
 	public void refreshSlots() {
 		Hero h = hero();
 		if (h == null) return;
+		learnSinCopies(h);
 		while (slots.size() > maxSlots()) slots.remove(slots.size() - 1);
 		for (EnvyMimicry.Mimic m : EnvyMimicry.Mimic.values()) {
 			if (slots.size() >= maxSlots()) break;
@@ -500,6 +501,48 @@ public class EnvyCovet extends Buff {
 		}
 	}
 
+	/** the other sins' skills the mirror has learned to copy (Nov 17 2026: 2 at the start, +1 every 2 levels) */
+	public final java.util.LinkedHashSet<EnvyMimicry.Mimic> sinCopies = new java.util.LinkedHashSet<>();
+	public static final int START_COPIES = 2;
+
+	public static int sinPoolSize() {
+		int n = 0;
+		for (EnvyMimicry.Mimic m : EnvyMimicry.Mimic.values()) if (m.kind == EnvyMimicry.Kind.SIN) n++;
+		return n;
+	}
+
+	/** how many sin copies a hero of this level knows */
+	public static int copiesFor(int lvl) {
+		return Math.min(sinPoolSize(), START_COPIES + Math.max(0, lvl) / 2);
+	}
+
+	/** hero level at which the next sin copy comes, or -1 if every one is learned */
+	public int nextCopyLevel() {
+		if (sinCopies.size() >= sinPoolSize()) return -1;
+		return Math.max(2, 2 * (sinCopies.size() - START_COPIES + 1));
+	}
+
+	/** learns random sin copies until the count matches the hero's level; the first ones come from different sins */
+	public boolean learnSinCopies(Hero h) {
+		boolean learned = false;
+		int want = copiesFor(h.lvl);
+		while (sinCopies.size() < want) {
+			ArrayList<EnvyMimicry.Mimic> pool = new ArrayList<>();
+			ArrayList<EnvyMimicry.Mimic> fresh = new ArrayList<>();
+			java.util.HashSet<com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass> seen = new java.util.HashSet<>();
+			for (EnvyMimicry.Mimic m : sinCopies) seen.add(m.sin);
+			for (EnvyMimicry.Mimic m : EnvyMimicry.Mimic.values()) {
+				if (m.kind != EnvyMimicry.Kind.SIN || sinCopies.contains(m)) continue;
+				pool.add(m);
+				if (!seen.contains(m.sin)) fresh.add(m);
+			}
+			if (pool.isEmpty()) break;
+			sinCopies.add(Random.element(fresh.isEmpty() ? pool : fresh));
+			learned = true;
+		}
+		return learned;
+	}
+
 	/** mimicries the hero has already been told about (so newly learned ones fill free slots once) */
 	public final java.util.HashSet<EnvyMimicry.Mimic> known = new java.util.HashSet<>();
 
@@ -508,7 +551,7 @@ public class EnvyCovet extends Buff {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
 			if (jealousy < maxJealousy()) addJealousy(jealousyRate() * TICK);
-			if (Random.Int(10) == 0) refreshSlots();
+			if (sinCopies.size() < copiesFor(h.lvl) || Random.Int(10) == 0) refreshSlots();
 			float regen = trait(Trait.ROT_HEART, 1f) + trait(Trait.FUNGAL_CORE, 1f);
 			if (regen > 0 && h.HP < h.HT) {
 				regenTurns += TICK * regen;
@@ -592,6 +635,9 @@ public class EnvyCovet extends Buff {
 		ArrayList<String> kn = new ArrayList<>();
 		for (EnvyMimicry.Mimic m : known) kn.add(m.name());
 		bundle.put("known", kn.toArray(new String[0]));
+		ArrayList<String> sc = new ArrayList<>();
+		for (EnvyMimicry.Mimic m : sinCopies) sc.add(m.name());
+		bundle.put("sin_copies", sc.toArray(new String[0]));
 		bundle.put("mirrored", mirrored);
 		bundle.put("regen", regenTurns);
 		ArrayList<String> names = new ArrayList<>();
@@ -625,6 +671,15 @@ public class EnvyCovet extends Buff {
 			for (String n : bundle.getStringArray("known")) {
 				try { known.add(EnvyMimicry.Mimic.valueOf(n)); } catch (IllegalArgumentException ignored) {}
 			}
+		}
+		sinCopies.clear();
+		if (bundle.contains("sin_copies")) {
+			for (String n : bundle.getStringArray("sin_copies")) {
+				try { sinCopies.add(EnvyMimicry.Mimic.valueOf(n)); } catch (IllegalArgumentException ignored) {}
+			}
+		} else {
+			//saves from before Nov 17 2026: keep the sin copies already learned by level
+			for (EnvyMimicry.Mimic m : known) if (m.kind == EnvyMimicry.Kind.SIN) sinCopies.add(m);
 		}
 		mirrored = bundle.getBoolean("mirrored");
 		regenTurns = bundle.getFloat("regen");

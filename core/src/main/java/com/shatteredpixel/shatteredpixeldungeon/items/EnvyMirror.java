@@ -157,13 +157,11 @@ public class EnvyMirror extends SinArtifact {
 		final EnvyCovet c = covet(hero);
 		final ArrayList<Mimic> options = new ArrayList<>();
 		ArrayList<String> labels = new ArrayList<>();
-		Mimic nextLocked = null;
 		int locked = 0;
 		for (Mimic m : Mimic.values()) {
 			if (m.kind != kind) continue;
 			if (!m.unlocked(hero, c)) {
 				locked++;
-				if (nextLocked == null && kind == Kind.SIN) nextLocked = m;
 				continue;
 			}
 			options.add(m);
@@ -171,8 +169,9 @@ public class EnvyMirror extends SinArtifact {
 		}
 		String msg;
 		if (kind == Kind.SIN) {
-			msg = nextLocked == null ? Messages.get(EnvyMirror.class, "copy_all_sins")
-					: Messages.get(EnvyMirror.class, "copy_next_sin", nextLocked.level, nextLocked.title());
+			int next = c.nextCopyLevel();
+			msg = next < 0 ? Messages.get(EnvyMirror.class, "copy_all_sins")
+					: Messages.get(EnvyMirror.class, "copy_next_sin", next, locked);
 		} else {
 			msg = Messages.get(EnvyMirror.class, "copy_monsters_msg", locked);
 		}

@@ -60,19 +60,25 @@ public final class EnvyMimicry {
 	public enum Kind { SIN, MONSTER }
 
 	public enum Mimic {
-		// ---- the other sins' skills, by unlock level
-		BITE(HeroClass.GLUTTONY, 2, 1, 20),
-		COIN(HeroClass.GREED, 4, 8, 15),
-		PROVOKE(HeroClass.WRATH, 6, 16, 20),
-		COMMAND(HeroClass.PRIDE, 8, 24, 25),
-		KISS(HeroClass.LUST, 10, 32, 25),
-		PUPPET(HeroClass.SLOTH, 12, 48, 35),
-		ACID(HeroClass.GLUTTONY, 14, 4, 30),
-		GUARD(HeroClass.GREED, 16, 9, 25),
-		CONTAGION(HeroClass.WRATH, 18, 18, 35),
-		PROCESSION(HeroClass.PRIDE, 20, 26, 20),
-		STEP(HeroClass.LUST, 22, 33, 20),
-		YAWN(HeroClass.SLOTH, 24, 51, 30),
+		// ---- the other sins' skills. Nov 17 2026 (owner): Envy starts with 2 random ones and learns another
+		// random one every 2 hero levels (EnvyCovet.learnSinCopies), so new entries here join the pool on their own
+		BITE(HeroClass.GLUTTONY, 1, 20),
+		COIN(HeroClass.GREED, 8, 15),
+		PROVOKE(HeroClass.WRATH, 16, 20),
+		COMMAND(HeroClass.PRIDE, 24, 25),
+		KISS(HeroClass.LUST, 32, 25),
+		PUPPET(HeroClass.SLOTH, 48, 35),
+		ACID(HeroClass.GLUTTONY, 4, 30),
+		GUARD(HeroClass.GREED, 9, 25),
+		CONTAGION(HeroClass.WRATH, 18, 35),
+		PROCESSION(HeroClass.PRIDE, 26, 20),
+		STEP(HeroClass.LUST, 33, 20),
+		YAWN(HeroClass.SLOTH, 51, 30),
+		//added Nov 17 2026: copies of skills the sins got in later patches
+		WARCRY(HeroClass.WRATH, 20, 20),
+		TREASURE(HeroClass.GREED, 15, 40),
+		REPEL(HeroClass.PRIDE, 30, 25),
+		PATROL(HeroClass.SLOTH, 53, 20),
 		// ---- monster abilities, by the bestiary entries that teach them
 		ROCK(56, 25, Trait.GNOLL_GEOMANCER, Trait.CRYSTAL_GUARDIAN, Trait.ARMORED_BRUTE, Trait.GNOLL_EXILE),
 		GAS(57, 30, Trait.DM300, Trait.CAUSTIC_SLIME, Trait.ACIDIC, Trait.FETID_RAT),
@@ -91,15 +97,13 @@ public final class EnvyMimicry {
 
 		public final Kind kind;
 		public final HeroClass sin;
-		public final int level;
 		public final int icon;
 		public final int baseCost;
 		public final Trait[] teachers;
 
-		Mimic(HeroClass sin, int level, int icon, int cost) {
+		Mimic(HeroClass sin, int icon, int cost) {
 			this.kind = Kind.SIN;
 			this.sin = sin;
-			this.level = level;
 			this.icon = icon;
 			this.baseCost = cost;
 			this.teachers = new Trait[0];
@@ -108,7 +112,6 @@ public final class EnvyMimicry {
 		Mimic(int icon, int cost, Trait... teachers) {
 			this.kind = Kind.MONSTER;
 			this.sin = null;
-			this.level = 0;
 			this.icon = icon;
 			this.baseCost = cost;
 			this.teachers = teachers;
@@ -123,14 +126,14 @@ public final class EnvyMimicry {
 		}
 
 		public boolean unlocked(Hero hero, EnvyCovet c) {
-			if (kind == Kind.SIN) return hero.lvl >= level;
+			if (kind == Kind.SIN) return c.sinCopies.contains(this);
 			for (Trait t : teachers) if (c.has(t)) return true;
 			return false;
 		}
 
 		/** where it comes from, for the selection window */
 		public String source() {
-			if (kind == Kind.SIN) return Messages.get(EnvyMimicry.class, "src_sin", sin.title(), level);
+			if (kind == Kind.SIN) return Messages.get(EnvyMimicry.class, "src_sin", sin.title());
 			StringBuilder sb = new StringBuilder();
 			for (Trait t : teachers) {
 				if (sb.length() > 0) sb.append(", ");
@@ -210,6 +213,8 @@ public final class EnvyMimicry {
 			case BOMBS: return new Object[]{Math.round((3 + lvl / 2) * p), Math.round((6 + lvl) * p)};
 			case SMITE: return new Object[]{Math.round((4 + lvl) * p), Math.round((8 + lvl * 1.5f) * p)};
 			case HELLFIRE: return new Object[]{Math.round((2 + lvl / 3) * p), Math.round((5 + lvl / 2) * p)};
+			case WARCRY: return new Object[]{com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.RALLY_RANGE, Math.round(com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.RALLY_TAUNT)};
+			case REPEL: return new Object[]{REPEL_RADIUS, REPEL_POWER};
 			default: return new Object[0];
 		}
 	}
@@ -254,6 +259,15 @@ public final class EnvyMimicry {
 				finish(hero, hero.pos);
 				return;
 			case YAWN: yawn(hero, m); return;
+			case WARCRY: warCry(hero, m); return;
+			case TREASURE: case PATROL:
+				if (!pay(hero, m)) return;
+				com.shatteredpixel.shatteredpixeldungeon.skills.MapReveal.reveal(m == Mimic.TREASURE);
+				GLog.i(Messages.get(EnvyMimicry.class, m == Mimic.TREASURE ? "treasure_done" : "patrol_done"));
+				Sample.INSTANCE.play(Assets.Sounds.READ);
+				finish(hero, hero.pos);
+				return;
+			case REPEL: repel(hero, m); return;
 			case OOZE: ooze(hero, m); return;
 			case HELLFIRE: hellfire(hero, m); return;
 			case SHELL:
@@ -269,6 +283,49 @@ public final class EnvyMimicry {
 				pending = m;
 				GameScene.selectCell(targeter);
 		}
+	}
+
+	// ------------------------------------------------------------------ later sin copies (Nov 17 2026)
+
+	public static final int REPEL_RADIUS = 2;
+	public static final int REPEL_POWER = 2;
+
+	/** Wrath's War Cry: enemies in range come for the mirror's bearer */
+	private static void warCry(Hero hero, Mimic m) {
+		if (!pay(hero, m)) return;
+		int n = 0;
+		for (Mob mob : Dungeon.level.mobs.toArray(new Mob[0])) {
+			if (mob.alignment != Char.Alignment.ENEMY || !mob.isAlive()) continue;
+			if (Dungeon.level.distance(hero.pos, mob.pos) > com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.RALLY_RANGE) continue;
+			mob.beckon(hero.pos);
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SlothRepose.Taunted.apply(mob, hero,
+					com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.RALLY_TAUNT);
+			n++;
+		}
+		hero.sprite.centerEmitter().start(Speck.factory(Speck.SCREAM), 0.3f, 3);
+		Sample.INSTANCE.play(Assets.Sounds.CHALLENGE);
+		GLog.w(Messages.get(EnvyMimicry.class, n > 0 ? "warcry_done" : "warcry_none", n));
+		finish(hero, hero.pos);
+	}
+
+	/** Pride's Kneel Back: visible enemies close by are thrown away and staggered */
+	private static void repel(Hero hero, Mimic m) {
+		if (!pay(hero, m)) return;
+		for (Mob mob : Dungeon.level.mobs.toArray(new Mob[0])) {
+			if (mob.alignment == Char.Alignment.ALLY || !mob.isAlive()) continue;
+			if (Dungeon.level.distance(hero.pos, mob.pos) > REPEL_RADIUS || !Dungeon.level.heroFOV[mob.pos]) continue;
+			if (Char.hasProp(mob, Char.Property.IMMOVABLE)) continue;
+			int dx = Integer.signum(Dungeon.level.cellToPoint(mob.pos).x - Dungeon.level.cellToPoint(hero.pos).x);
+			int dy = Integer.signum(Dungeon.level.cellToPoint(mob.pos).y - Dungeon.level.cellToPoint(hero.pos).y);
+			int far = mob.pos + (dx + dy * Dungeon.level.width()) * (REPEL_POWER + 1);
+			if (far < 0 || far >= Dungeon.level.length() || far == mob.pos) continue;
+			com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave.throwChar(mob,
+					new Ballistica(mob.pos, far, Ballistica.MAGIC_BOLT), REPEL_POWER, true, true, EnvyMimicry.class);
+			if (mob.isAlive()) Buff.prolong(mob, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo.class, 2f);
+		}
+		com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave.BlastWave.blast(hero.pos);
+		Sample.INSTANCE.play(Assets.Sounds.BLAST, 0.8f, 1.2f);
+		finish(hero, hero.pos);
 	}
 
 	private static boolean pay(Hero hero, Mimic m) {

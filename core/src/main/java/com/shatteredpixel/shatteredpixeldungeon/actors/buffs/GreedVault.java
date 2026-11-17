@@ -125,7 +125,8 @@ public class GreedVault extends Buff {
 
 	public float maxCharge() {
 		Hero h = hero();
-		return (100 + 50 * Math.max(1, Dungeon.depth)) * SinArtifact.gaugeScale(h) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.maxMult(h);
+		//doubled Nov 17 2026 (owner)
+		return (200 + 100 * Math.max(1, Dungeon.depth)) * SinArtifact.gaugeScale(h) * com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.maxMult(h);
 	}
 
 	public void addCharge(float amount) {
