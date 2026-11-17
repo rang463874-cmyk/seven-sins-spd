@@ -60,8 +60,8 @@ public final class EnvyMimicry {
 	public enum Kind { SIN, MONSTER }
 
 	public enum Mimic {
-		// ---- the other sins' skills. Nov 17 2026 (owner): Envy starts with 2 random ones and learns another
-		// random one every 2 hero levels (EnvyCovet.learnSinCopies), so new entries here join the pool on their own
+		// ---- the other sins' skills. Nov 17 2026 (owner): Envy starts with 2 random ones and every 2 hero levels
+		// picks another from 3 offered (EnvyCovet.learnSinCopies/offer), so new entries here join the pool on their own
 		BITE(HeroClass.GLUTTONY, 1, 20),
 		COIN(HeroClass.GREED, 8, 15),
 		PROVOKE(HeroClass.WRATH, 16, 20),
@@ -74,11 +74,10 @@ public final class EnvyMimicry {
 		PROCESSION(HeroClass.PRIDE, 26, 20),
 		STEP(HeroClass.LUST, 33, 20),
 		YAWN(HeroClass.SLOTH, 51, 30),
-		//added Nov 17 2026: copies of skills the sins got in later patches
+		//added Nov 17 2026: copies of skills the sins got in later patches (Dream Patrol left out: overlaps the map)
 		WARCRY(HeroClass.WRATH, 20, 20),
 		TREASURE(HeroClass.GREED, 15, 40),
 		REPEL(HeroClass.PRIDE, 30, 25),
-		PATROL(HeroClass.SLOTH, 53, 20),
 		// ---- monster abilities, by the bestiary entries that teach them
 		ROCK(56, 25, Trait.GNOLL_GEOMANCER, Trait.CRYSTAL_GUARDIAN, Trait.ARMORED_BRUTE, Trait.GNOLL_EXILE),
 		GAS(57, 30, Trait.DM300, Trait.CAUSTIC_SLIME, Trait.ACIDIC, Trait.FETID_RAT),
@@ -260,10 +259,10 @@ public final class EnvyMimicry {
 				return;
 			case YAWN: yawn(hero, m); return;
 			case WARCRY: warCry(hero, m); return;
-			case TREASURE: case PATROL:
+			case TREASURE:
 				if (!pay(hero, m)) return;
-				com.shatteredpixel.shatteredpixeldungeon.skills.MapReveal.reveal(m == Mimic.TREASURE);
-				GLog.i(Messages.get(EnvyMimicry.class, m == Mimic.TREASURE ? "treasure_done" : "patrol_done"));
+				com.shatteredpixel.shatteredpixeldungeon.skills.MapReveal.reveal(true);
+				GLog.i(Messages.get(EnvyMimicry.class, "treasure_done"));
 				Sample.INSTANCE.play(Assets.Sounds.READ);
 				finish(hero, hero.pos);
 				return;

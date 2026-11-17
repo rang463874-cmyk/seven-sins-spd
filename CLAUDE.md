@@ -385,6 +385,18 @@ Done and pushed (see `git log`):
   elites on every floor 2-24. NO_ESSENCE "메마른 정수": the six places that hand out SinEssence/DemonEssence check
   `ChallengeHooks.essences()`. `WndChallenges` shrinks its rows to fit the screen (min 10); `WndRanking`'s tab lists only
   the active challenges. Not yet tried on a device.
+- Ultimates (Nov 17 2026, owner: each sin gets 6, pick 1 of 3 at level 10 and 1 of 3 at level 20; designs were Claude's
+  proposal, open to the owner's changes): `sins/Ultimate` enum (sin, tier, icon = 88 + 8k + slot, targeting, cooldown in turns;
+  no resource cost), `actors/buffs/UltimateBook` (invisible, revivePersists: `first`/`second`, cooldowns, notices;
+  `UltimateBook.Effect` = a timed ultimate on the hero and `Mark` = one on an enemy, both appended with a `kind`),
+  `sins/UltimateSkills` (book given in `tick` from `Hero.act`; skill bar extra row via `SkillBar.extraSkills`: the learned
+  ultimates + a "learn" button (icon 144) while a choice is open, which opens the 3-option window; effects in
+  `instant`/`targeted`; hooks: Char.damage `modifyDamage`, Hero.attackProc `onAttack`, attackSkill `sureHit`, defenseSkill
+  `evasionMult`, Mob.die `onMobDeath`, PrideGlory.shatter `keepsDignity`, GoldenCard.discounted `freePayments`).
+  Icons rows 11-18 of skill_icons.png (gold rim) from `make_skill_icons.py` `ULTIMATES`. Strings `tools/strings/ultimates_items_*`
+  (`sins.ultimate.<id>`, `_desc` (descs with args use %%), `_buff` for Effect/Mark kinds).
+  Envy, same day: the copies after the first two are picked from an offer of 3 (`EnvyCovet.offer`, saved; the mirror's copy
+  skill turns into "copy a new skill" while one is open); Dream Patrol was dropped from the copies (overlaps Treasure Map).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -467,8 +479,8 @@ called from `MissileWeapon.rangedHit/rangedMiss`). Pride starts with a magical h
 (Doze buff + spendAndNext; `turnCost` scales with level and SLOTH_RESTFUL; a meal with SLOTH_PILLOW skips
 dozing). Cost types RAGE/DIGNITY/TURNS/JEALOUSY in `SinSkill.CostType`.
 Envy (reworked Nov 2026, "copycat"): no skills of its own. `envy/EnvyMimicry` lists `Mimic`s: copies of other
-sins' skills (16 since Nov 17 2026: + WARCRY, TREASURE, REPEL, PATROL; owner: Envy starts with 2 random ones from
-different sins and learns 1 more random one every 2 hero levels, `EnvyCovet.sinCopies` (saved; old saves keep the
+sins' skills (15 since Nov 17 2026: + WARCRY, TREASURE, REPEL; owner: Envy starts with 2 random ones from
+different sins and picks 1 more of 3 offered every 2 hero levels, `EnvyCovet.sinCopies` (saved; old saves keep the
 ones in `known`) via `learnSinCopies`/`copiesFor`, so a new SIN entry in the enum joins the pool by itself) and 8 monster abilities (unlocked by bestiary traits); their own
 implementations live there (not the other sins' code). The mirror holds `EnvyCovet.slots` (3 + Copycat +
 mirrored), chosen in `EnvyMirror.chooseMimic`; newly learned copies fill free slots (`refreshSlots`).

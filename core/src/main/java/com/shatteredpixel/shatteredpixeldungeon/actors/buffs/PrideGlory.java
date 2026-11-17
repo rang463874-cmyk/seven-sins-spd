@@ -136,6 +136,7 @@ public class PrideGlory extends Buff {
 		calmTurns = 0;
 		if (dignity <= 0) return;
 		if (com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.prideKeepsPoise(h)) return; //Seven Sins: awakening
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.keepsDignity(h)) return; //Seven Sins: ultimates
 		int grace = h == null ? 0 : h.pointsInTalent(Talent.PRIDE_GRACE);
 		int kept = Math.round(dignity * 0.25f * grace);
 		if (h != null && h.sprite != null && kept < dignity) {

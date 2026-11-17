@@ -79,6 +79,7 @@ public class GoldenCard extends SinArtifact {
 	// ------------------------------------------------------------------ costs
 
 	private static int discounted(Hero hero, int cost) {
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.freePayments(hero)) return 0; //Seven Sins: ultimates
 		float mult = 1f - 0.15f * hero.pointsInTalent(Talent.GREED_DISCOUNT);
 		GreedVault v = hero.buff(GreedVault.class);
 		if (v != null && v.mirrored) mult *= 0.75f;

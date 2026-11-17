@@ -114,8 +114,12 @@ public class EnvyMirror extends SinArtifact {
 					.onUse(h -> EnvyMimicry.use(h, m)));
 		}
 		list.add(new BasicSkill(EnvyMirror.class, "copy", 40, SinSkill.CostType.NONE)
+				.nameFrom(h -> covet(h).offer.isEmpty() ? "copy" : "copy_pick")
 				.descArgs(h -> new Object[]{covet(h).maxSlots()})
-				.onUse(EnvyMirror::chooseCategory));
+				.onUse(h -> {
+					if (!covet(h).offer.isEmpty()) chooseNewCopy(h);
+					else chooseCategory(h);
+				}));
 		//(the old "imitate growth" choice is gone: Envy imitates every sin's growth at once, see EnvyMimicry.growthEfficiency)
 		return list;
 	}
@@ -139,6 +143,45 @@ public class EnvyMirror extends SinArtifact {
 	}
 
 	// ------------------------------------------------------------------ choosing what to copy
+
+	/** level-up pick: one of the offered sin copies (Nov 17 2026, owner) */
+	private static void chooseNewCopy(final Hero hero) {
+		final EnvyCovet c = covet(hero);
+		final ArrayList<Mimic> options = new ArrayList<>(c.offer);
+		if (options.isEmpty()) {
+			chooseCategory(hero);
+			return;
+		}
+		String[] labels = new String[options.size()];
+		for (int i = 0; i < labels.length; i++) labels[i] = options.get(i).title();
+		GameScene.show(new WndOptions(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR),
+				Messages.get(EnvyMirror.class, "pick_title"),
+				Messages.get(EnvyMirror.class, "pick_msg", c.pendingPicks(hero)), labels) {
+			@Override
+			protected void onSelect(int index) {
+				Mimic m = options.get(index);
+				c.pick(m);
+				GLog.p(Messages.get(EnvyMimicry.class, "learned", m.title()));
+				BuffIndicator.refreshHero();
+				Item.updateQuickslot();
+				if (!c.offer.isEmpty()) chooseNewCopy(hero);
+			}
+
+			@Override
+			protected boolean hasInfo(int index) {
+				return true;
+			}
+
+			@Override
+			protected void onInfo(int index) {
+				Mimic m = options.get(index);
+				GameScene.show(new WndTitledMessage(new ItemSprite(ItemSpriteSheet.ENVY_MIRROR), m.title(),
+						Messages.get(EnvyMirror.class, "skill_" + m.id() + "_desc", EnvyMimicry.descArgs(hero, m))
+								+ "\n\n" + m.source()
+								+ "\n" + Messages.get(EnvyMirror.class, "copy_cost", EnvyMimicry.cost(hero, m))));
+			}
+		});
+	}
 
 	private static void chooseCategory(final Hero hero) {
 		covet(hero).refreshSlots();

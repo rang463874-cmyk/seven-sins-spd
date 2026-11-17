@@ -64,6 +64,7 @@ public class SkillBar extends Component {
 		ArrayList<SinSkill> out = new ArrayList<>();
 		SinSkill demon = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.skill(hero);
 		if (demon != null) out.add(demon);
+		out.addAll(com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.skills(hero)); //Seven Sins: ultimates
 		return out;
 	}
 

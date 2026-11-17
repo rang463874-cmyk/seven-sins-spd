@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, "core", "src", "main", "assets", "interfaces", "skill_i
 
 SIZE = 16
 COLS = 8
-ROWS = 11
+ROWS = 19
 
 SIN_COLORS = [
     (150, 50, 180),   # gluttony
@@ -637,15 +637,32 @@ ICONS = {
     56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
 
+# ultimates (Nov 17 2026, sins/Ultimate): row 11 + sin index, slots 0-2 tier 1 and 3-5 tier 2, gold rim;
+# 144 = the "learn an ultimate" button
+ULTIMATES = [
+    ["JAW", "SPLASH", "SHIELD", "JAW", "DHEART", "BURST"],          # gluttony
+    ["COIN", "TARGET", "SHIELD", "STAR", "BAG", "CROWN"],           # greed
+    ["BURST", "EXCLAIM", "TARGET", "SWORDS", "FLAME", "RALLY"],     # wrath
+    ["STAR", "CROWN", "SHIELD", "ARROW", "CROWN", "EYE"],           # pride
+    ["HEART", "DHEART", "WAVE", "HEART", "DROP", "DHEART"],         # lust
+    ["MASK", "GHOST", "EYE", "HAND", "SWAP", "BOLT"],               # envy
+    ["ZZZ", "GHOST", "Z", "ZZZ", "MASK", "STAR"],                   # sloth
+]
+for _k, _row in enumerate(ULTIMATES):
+    for _i, _g in enumerate(_row):
+        ICONS[88 + 8 * _k + _i] = _g
+ICONS[144] = "UP"
+GOLD = (235, 190, 60)
+
 
 # the demon lords' skills take their lord's colour (DemonLord order)
 LORD_COLORS = {64: (200, 170, 60), 65: (190, 130, 20), 66: (200, 60, 130), 67: (40, 110, 200),
                68: (100, 140, 40), 69: (200, 40, 30), 70: (110, 80, 180)}
 
 
-def tile(color):
+def tile(color, rim=None):
     t = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
-    dark = tuple(int(c * 0.45) for c in color) + (255,)
+    dark = (tuple(rim) if rim else tuple(int(c * 0.45) for c in color)) + (255,)
     fill = tuple(color) + (255,)
     for y in range(SIZE):
         for x in range(SIZE):
@@ -661,8 +678,13 @@ def main():
     sheet = Image.new("RGBA", (SIZE * COLS, SIZE * ROWS), (0, 0, 0, 0))
     for index, glyph in ICONS.items():
         row, col = divmod(index, COLS)
-        color = SIN_COLORS[index - 72] if 72 <= index < 79 else SIN_COLORS[row]
-        ic = tile(LORD_COLORS.get(index, color))
+        if 88 <= index < 144:
+            ic = tile(tuple(int(c * 0.8) for c in SIN_COLORS[(index - 88) // 8]), GOLD)
+        elif index == 144:
+            ic = tile((170, 120, 30), (255, 230, 120))
+        else:
+            color = SIN_COLORS[index - 72] if 72 <= index < 79 else SIN_COLORS[row]
+            ic = tile(LORD_COLORS.get(index, color))
         pattern = G[glyph]
         assert len(pattern) == 12 and all(len(r) == 12 for r in pattern), glyph
         for y, line in enumerate(pattern):

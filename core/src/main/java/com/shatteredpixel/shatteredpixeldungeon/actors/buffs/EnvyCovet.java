@@ -522,25 +522,55 @@ public class EnvyCovet extends Buff {
 		return Math.max(2, 2 * (sinCopies.size() - START_COPIES + 1));
 	}
 
-	/** learns random sin copies until the count matches the hero's level; the first ones come from different sins */
+	/** the sin copies offered for the next pick (rolled once, saved, so reopening can't reroll them) */
+	public final ArrayList<EnvyMimicry.Mimic> offer = new ArrayList<>();
+	public static final int OFFER_SIZE = 3;
+
+	/** sin copies the hero may still pick at its level */
+	public int pendingPicks(Hero h) {
+		return Math.max(0, copiesFor(h.lvl) - sinCopies.size());
+	}
+
+	/** the first START_COPIES are learned at random from different sins; later ones are picked from an offer */
 	public boolean learnSinCopies(Hero h) {
 		boolean learned = false;
-		int want = copiesFor(h.lvl);
+		int want = Math.min(copiesFor(h.lvl), START_COPIES);
 		while (sinCopies.size() < want) {
-			ArrayList<EnvyMimicry.Mimic> pool = new ArrayList<>();
+			ArrayList<EnvyMimicry.Mimic> pool = unlearned();
 			ArrayList<EnvyMimicry.Mimic> fresh = new ArrayList<>();
 			java.util.HashSet<com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass> seen = new java.util.HashSet<>();
 			for (EnvyMimicry.Mimic m : sinCopies) seen.add(m.sin);
-			for (EnvyMimicry.Mimic m : EnvyMimicry.Mimic.values()) {
-				if (m.kind != EnvyMimicry.Kind.SIN || sinCopies.contains(m)) continue;
-				pool.add(m);
-				if (!seen.contains(m.sin)) fresh.add(m);
-			}
+			for (EnvyMimicry.Mimic m : pool) if (!seen.contains(m.sin)) fresh.add(m);
 			if (pool.isEmpty()) break;
 			sinCopies.add(Random.element(fresh.isEmpty() ? pool : fresh));
 			learned = true;
 		}
+		offer.removeAll(sinCopies);
+		if (pendingPicks(h) > 0 && offer.isEmpty()) {
+			ArrayList<EnvyMimicry.Mimic> pool = unlearned();
+			java.util.Collections.shuffle(pool, new java.util.Random(Random.Long()));
+			for (int i = 0; i < Math.min(OFFER_SIZE, pool.size()); i++) offer.add(pool.get(i));
+			if (!offer.isEmpty()) GLog.p(Messages.get(EnvyMimicry.class, "pick_ready"));
+		} else if (pendingPicks(h) == 0) {
+			offer.clear();
+		}
 		return learned;
+	}
+
+	private ArrayList<EnvyMimicry.Mimic> unlearned() {
+		ArrayList<EnvyMimicry.Mimic> pool = new ArrayList<>();
+		for (EnvyMimicry.Mimic m : EnvyMimicry.Mimic.values()) {
+			if (m.kind == EnvyMimicry.Kind.SIN && !sinCopies.contains(m)) pool.add(m);
+		}
+		return pool;
+	}
+
+	/** learns one of the offered copies */
+	public void pick(EnvyMimicry.Mimic m) {
+		if (!offer.contains(m)) return;
+		sinCopies.add(m);
+		offer.clear();
+		refreshSlots();
 	}
 
 	/** mimicries the hero has already been told about (so newly learned ones fill free slots once) */
@@ -551,7 +581,7 @@ public class EnvyCovet extends Buff {
 		Hero h = hero();
 		if (h != null && h.isAlive()) {
 			if (jealousy < maxJealousy()) addJealousy(jealousyRate() * TICK);
-			if (sinCopies.size() < copiesFor(h.lvl) || Random.Int(10) == 0) refreshSlots();
+			if ((pendingPicks(h) > 0 && offer.isEmpty()) || sinCopies.size() < Math.min(START_COPIES, copiesFor(h.lvl)) || Random.Int(10) == 0) refreshSlots();
 			float regen = trait(Trait.ROT_HEART, 1f) + trait(Trait.FUNGAL_CORE, 1f);
 			if (regen > 0 && h.HP < h.HT) {
 				regenTurns += TICK * regen;
@@ -638,6 +668,9 @@ public class EnvyCovet extends Buff {
 		ArrayList<String> sc = new ArrayList<>();
 		for (EnvyMimicry.Mimic m : sinCopies) sc.add(m.name());
 		bundle.put("sin_copies", sc.toArray(new String[0]));
+		ArrayList<String> of = new ArrayList<>();
+		for (EnvyMimicry.Mimic m : offer) of.add(m.name());
+		bundle.put("copy_offer", of.toArray(new String[0]));
 		bundle.put("mirrored", mirrored);
 		bundle.put("regen", regenTurns);
 		ArrayList<String> names = new ArrayList<>();
@@ -680,6 +713,12 @@ public class EnvyCovet extends Buff {
 		} else {
 			//saves from before Nov 17 2026: keep the sin copies already learned by level
 			for (EnvyMimicry.Mimic m : known) if (m.kind == EnvyMimicry.Kind.SIN) sinCopies.add(m);
+		}
+		offer.clear();
+		if (bundle.contains("copy_offer")) {
+			for (String n : bundle.getStringArray("copy_offer")) {
+				try { offer.add(EnvyMimicry.Mimic.valueOf(n)); } catch (IllegalArgumentException ignored) {}
+			}
 		}
 		mirrored = bundle.getBoolean("mirrored");
 		regenTurns = bundle.getFloat("regen");

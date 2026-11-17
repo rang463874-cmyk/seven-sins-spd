@@ -573,6 +573,7 @@ public class Hero extends Char {
 		KindOfWeapon wep = belongings.attackingWeapon();
 		//Seven Sins: awakening (pride's monster never misses its first thrown attacks on a foe)
 		if (com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.divineEye(this, target)) return INFINITE_ACCURACY;
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.sureHit(this)) return INFINITE_ACCURACY; //Seven Sins: ultimates
 		
 		float accuracy = 1;
 		accuracy *= RingOfAccuracy.accuracyMultiplier( this );
@@ -695,7 +696,7 @@ public class Hero extends Char {
 			}
 		}
 
-		return Math.max(1, Math.round(evasion));
+		return Math.max(1, Math.round(evasion * com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.evasionMult(this))); //Seven Sins: ultimates
 	}
 
 	@Override
@@ -985,6 +986,7 @@ public class Hero extends Char {
 		//calls to dungeon.observe will also update hero's local FOV.
 		fieldOfView = Dungeon.level.heroFOV;
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.tick(this); //Seven Sins: a boss floor's hidden sigil
+		com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.tick(this); //Seven Sins: ultimates
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.tick(this); //Seven Sins: metamorphosed sin talents
 
 		if (buff(Endure.EndureTracker.class) != null){
@@ -1698,6 +1700,7 @@ public class Hero extends Char {
 		damage = LustHooks.onAttack( this, enemy, damage );
 		damage = EnvyHooks.onAttack( this, enemy, damage );
 		damage = SlothHooks.onAttack( this, enemy, damage );
+		damage = com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.onAttack( this, enemy, damage ); //Seven Sins: ultimates
 		damage = HorsemenHooks.onAttack( this, enemy, damage );
 		damage = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onAttack( this, enemy, damage );
 		damage = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onAttack( this, enemy, damage );
