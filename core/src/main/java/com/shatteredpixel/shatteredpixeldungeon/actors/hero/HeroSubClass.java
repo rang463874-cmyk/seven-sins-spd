@@ -76,7 +76,11 @@ public enum HeroSubClass {
 
 	//Sloth
 	DREAM_LORD(HeroIcon.DREAM_LORD),
-	SLEEPWALKER(HeroIcon.SLEEPWALKER);
+	SLEEPWALKER(HeroIcon.SLEEPWALKER),
+
+	//Solomon
+	ARCH_MAGUS(HeroIcon.ARCH_MAGUS),
+	DEMON_MASTER(HeroIcon.DEMON_MASTER);
 
 	int icon;
 

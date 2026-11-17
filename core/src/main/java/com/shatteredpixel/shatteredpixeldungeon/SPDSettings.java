@@ -213,6 +213,8 @@ public class SPDSettings extends GameSettings {
 	public static final String KEY_AUTO_SEED   = "auto_pickup_seed";
 	public static final String KEY_ANIM_SPEED  = "anim_speed";
 	public static final String KEY_DEV_TOOLS   = "dev_tools";
+	//Seven Sins: Solomon is unlocked by recording all 72 demons in one run
+	public static final String KEY_SOLOMON     = "solomon_unlocked";
 
 	public static final float[] ANIM_SPEEDS = { 1f, 1.5f, 2f, 3f, 4f };
 	private static int animSpeedCache = -1;
@@ -226,6 +228,8 @@ public class SPDSettings extends GameSettings {
 	//developer menu in the in-game menu (debug builds only; on by default, as before the setting existed)
 	public static void devTools(boolean value){ put(KEY_DEV_TOOLS, value); }
 	public static boolean devTools(){ return getBoolean(KEY_DEV_TOOLS, true); }
+	public static void solomonUnlocked(boolean value){ put(KEY_SOLOMON, value); }
+	public static boolean solomonUnlocked(){ return getBoolean(KEY_SOLOMON, false); }
 
 	//1..5, 1 = the normal speed
 	public static void animSpeed(int value){

@@ -139,7 +139,10 @@ public enum HeroClass {
 	PRIDE( HeroSubClass.MONARCH, HeroSubClass.PARAGON ),
 	LUST( HeroSubClass.NIGHT_DANCER, HeroSubClass.CRIMSON_NOBLE ),
 	ENVY( HeroSubClass.USURPER, HeroSubClass.COPYCAT ),
-	SLOTH( HeroSubClass.DREAM_LORD, HeroSubClass.SLEEPWALKER );
+	SLOTH( HeroSubClass.DREAM_LORD, HeroSubClass.SLEEPWALKER ),
+
+	//Seven Sins: the hidden eighth class, unlocked by completing the Lemegeton (solomon/SolomonHooks)
+	SOLOMON( HeroSubClass.ARCH_MAGUS, HeroSubClass.DEMON_MASTER );
 
 	private HeroSubClass[] subClasses;
 
@@ -173,7 +176,7 @@ public enum HeroClass {
 				new com.shatteredpixel.shatteredpixeldungeon.items.bags.PotionBandolier().collect();
 				Dungeon.LimitedDrops.POTION_BANDOLIER.drop();
 				break;
-			case GREED: case WRATH: case ENVY:
+			case GREED: case WRATH: case ENVY: case SOLOMON:
 				new com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder().collect();
 				Dungeon.LimitedDrops.SCROLL_HOLDER.drop();
 				break;
@@ -244,6 +247,10 @@ public enum HeroClass {
 
 			case SLOTH:
 				initSloth( hero );
+				break;
+
+			case SOLOMON:
+				initSolomon( hero );
 				break;
 		}
 
@@ -466,6 +473,22 @@ public enum HeroClass {
 		new ScrollOfTransmutation().identify();
 	}
 
+	private static void initSolomon( Hero hero ) {
+
+		(hero.belongings.weapon = new Cudgel()).identify();
+		hero.belongings.weapon.activate(hero);
+
+		com.shatteredpixel.shatteredpixeldungeon.items.SolomonRing ring = new com.shatteredpixel.shatteredpixeldungeon.items.SolomonRing();
+		(hero.belongings.artifact = ring).identify();
+		hero.belongings.artifact.activate( hero );
+		Dungeon.quickslot.setSlot(0, ring);
+
+		Buff.affect(hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.class).mana = 15;
+
+		new PotionOfHealing().identify();
+		new ScrollOfRecharging().identify();
+	}
+
 	private static void initSloth( Hero hero ) {
 
 		(hero.belongings.weapon = new PillowMace()).identify();
@@ -526,6 +549,9 @@ public enum HeroClass {
 				return new ArmorAbility[]{new Plunder(), new Transference(), new Downfall()};
 			case SLOTH:
 				return new ArmorAbility[]{new NightmareLegion(), new AutoHunt(), new Proxy()};
+			//Seven Sins: Solomon's own abilities come in phase 2; until then the mage's
+			case SOLOMON:
+				return new ArmorAbility[]{new ElementalBlast(), new WildMagic(), new WarpBeacon()};
 		}
 	}
 
@@ -557,6 +583,8 @@ public enum HeroClass {
 				return Assets.Sprites.ENVY;
 			case SLOTH:
 				return Assets.Sprites.SLOTH;
+			case SOLOMON:
+				return Assets.Sprites.SOLOMON;
 		}
 	}
 
@@ -588,6 +616,8 @@ public enum HeroClass {
 				return Assets.Splashes.ENVY;
 			case SLOTH:
 				return Assets.Splashes.SLOTH;
+			case SOLOMON:
+				return Assets.Splashes.SOLOMON;
 		}
 	}
 	
@@ -617,6 +647,8 @@ public enum HeroClass {
 			case ENVY:
 			case SLOTH:
 				return true;
+			case SOLOMON:
+				return com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.unlocked();
 		}
 	}
 	

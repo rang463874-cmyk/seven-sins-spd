@@ -133,6 +133,8 @@ public class GoetiaHooks {
 		int before = count();
 		slain.add(d.name());
 		GLog.p(Messages.get(GoetiaHooks.class, "recorded", d.rankName(), d.title(), count()));
+		com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.onRecorded(Dungeon.hero); //Seven Sins: Solomon
+		if (count() >= GoetiaDemon.values().length) com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.unlock();
 		for (int i = 0; i < MILESTONES.length; i++) {
 			if (before < need(MILESTONES[i]) && count() >= need(MILESTONES[i])) {
 				GLog.p(Messages.get(GoetiaHooks.class, "milestone", Messages.get(GoetiaHooks.class, "power_" + i)));

@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, "core", "src", "main", "assets", "interfaces", "skill_i
 
 SIZE = 16
 COLS = 8
-ROWS = 19
+ROWS = 20
 
 SIN_COLORS = [
     (150, 50, 180),   # gluttony
@@ -654,6 +654,57 @@ for _k, _row in enumerate(ULTIMATES):
 ICONS[144] = "UP"
 GOLD = (235, 190, 60)
 
+# Solomon (row 19): the four alchemical element triangles, Cast and Summon
+G["TRI_UP"] = [
+    "............",
+    ".....XX.....",
+    ".....XX.....",
+    "....X..X....",
+    "....X..X....",
+    "...X....X...",
+    "...X....X...",
+    "..X......X..",
+    "..X......X..",
+    ".XXXXXXXXXX.",
+    ".XXXXXXXXXX.",
+    "............",
+]
+G["TRI_DOWN"] = [r for r in reversed(G["TRI_UP"])]
+G["TRI_UP_BAR"] = [r if i not in (6,) else "..XXXXXXXX.." for i, r in enumerate(G["TRI_UP"])]
+G["TRI_DOWN_BAR"] = [r if i not in (5,) else "..XXXXXXXX.." for i, r in enumerate(G["TRI_DOWN"])]
+G["HEXAGRAM"] = [
+    "............",
+    ".....XX.....",
+    "....X..X....",
+    ".XXXXXXXXXX.",
+    "..X.X..X.X..",
+    "...X....X...",
+    "...X....X...",
+    "..X.X..X.X..",
+    ".XXXXXXXXXX.",
+    "....X..X....",
+    ".....XX.....",
+    "............",
+]
+G["HORNS"] = [
+    "............",
+    ".X........X.",
+    ".X........X.",
+    ".XX......XX.",
+    "..XXXXXXXX..",
+    "..XXXXXXXX..",
+    "..X.XXXX.X..",
+    "..XXXXXXXX..",
+    "...XX..XX...",
+    "...XXXXXX...",
+    "....XXXX....",
+    "............",
+]
+ICONS.update({152: "TRI_UP", 153: "TRI_DOWN", 154: "TRI_UP_BAR", 155: "TRI_DOWN_BAR", 156: "HEXAGRAM", 157: "HORNS"})
+SOLOMON_COLORS = {152: (200, 60, 30), 153: (40, 100, 200), 154: (190, 170, 60), 155: (90, 120, 50),
+                  156: (120, 60, 190), 157: (130, 25, 40)}
+
+
 
 # the demon lords' skills take their lord's colour (DemonLord order)
 LORD_COLORS = {64: (200, 170, 60), 65: (190, 130, 20), 66: (200, 60, 130), 67: (40, 110, 200),
@@ -680,6 +731,8 @@ def main():
         row, col = divmod(index, COLS)
         if 88 <= index < 144:
             ic = tile(tuple(int(c * 0.8) for c in SIN_COLORS[(index - 88) // 8]), GOLD)
+        elif index in SOLOMON_COLORS:
+            ic = tile(SOLOMON_COLORS[index], (235, 190, 60))
         elif index == 144:
             ic = tile((170, 120, 30), (255, 230, 120))
         else:

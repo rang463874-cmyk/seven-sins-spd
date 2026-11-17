@@ -150,6 +150,9 @@ public class HeroIcon extends Image {
 	public static final int NIGHTMARE_LEGION= 178;
 	public static final int AUTO_HUNT       = 179;
 	public static final int PROXY           = 180;
+	//Solomon (row 23)
+	public static final int ARCH_MAGUS      = 184;
+	public static final int DEMON_MASTER    = 185;
 
 	public HeroIcon(HeroSubClass subCls){
 		super( Assets.Interfaces.HERO_ICONS );

@@ -836,6 +836,8 @@ public class ItemSpriteSheet {
 	public static final int ARMOR_ENVY      = SINS+11;
 	public static final int SLOTH_PILLOW    = SINS+12;
 	public static final int ARMOR_SLOTH     = SINS+13;
+	public static final int SOLOMON_RING    = SINS+14;
+	public static final int ARMOR_SOLOMON   = SINS+15;
 	static{
 		assignItemRect(PREDATOR_MAW,    16, 15);
 		assignItemRect(ARMOR_PREDATOR,  13, 14);
@@ -851,6 +853,8 @@ public class ItemSpriteSheet {
 		assignItemRect(ARMOR_ENVY,      13, 14);
 		assignItemRect(SLOTH_PILLOW,    15, 11);
 		assignItemRect(ARMOR_SLOTH,     13, 14);
+		assignItemRect(SOLOMON_RING,    10, 10);
+		assignItemRect(ARMOR_SOLOMON,   13, 14);
 	}
 
 	//Seven Sins weapons: tier 1 and tier 5 per sin, recolored from their base weapons

@@ -157,6 +157,12 @@ public class WndDevSins extends Window {
 			refillLabel = "체력 가득";
 			refill = () -> h.HP = h.HT;
 		}
+		final com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana sa = h.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.class);
+		if (sa != null) {
+			rows.add(new Row("솔로몬 · 지혜", () -> sa.wisdom, v -> sa.wisdom += v));
+			refillLabel = "마나 가득";
+			refill = () -> sa.mana = sa.maxMana();
+		}
 	}
 
 	private void changed() {

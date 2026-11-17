@@ -397,6 +397,21 @@ Done and pushed (see `git log`):
   (`sins.ultimate.<id>`, `_desc` (descs with args use %%), `_buff` for Effect/Mark kinds).
   Envy, same day: the copies after the first two are picked from an offer of 3 (`EnvyCovet.offer`, saved; the mirror's copy
   skill turns into "copy a new skill" while one is open); Dream Patrol was dropped from the copies (overlaps Treasure Map).
+- Solomon, the hidden eighth class, phase 1 (Nov 17 2026, owner: a demon-summoning mage who combines alchemical symbols;
+  unlocked for good by recording all 72 demons in one run; placeholder art; built in phases, phase 2 = talents, armor
+  abilities, ultimates). `HeroClass.SOLOMON` (ordinal 13, after SLOTH; "isSin" checks stop at SLOTH: SinAwakening,
+  UltimateSkills), `isUnlocked` = `solomon/SolomonHooks.unlocked()` = `SPDSettings.solomonUnlocked` (set by
+  `GoetiaHooks.record` when `count()` reaches 72; debug builds are always unlocked). Start: cudgel, `items/SolomonRing`
+  (SinArtifact; items.png row 33 +14, class armor `SolomonArmor` +15), scroll holder, `actors/buffs/SolomonArcana`
+  (mana 15 + lvl + wisdom/5 (+3 per 3 ring levels), 1 per 2 turns x rechargeScale; `circle` of up to 2 drawn symbols;
+  wisdom = 1/4 of mana spent + 3 per demon recorded (`SolomonHooks.onRecorded`), unbounded: spell power +2%/pt, HP
+  +0.15/pt (`bonusHT`), evasion up to +30% (`evasion`)). `solomon/SolomonSpells`: skills = 4 element symbols (free, no
+  turn; icons skill_icons row 19 = 152..155), Cast (156: the `Spell` of the circle, 4 single + 10 pairs, mana 3..8,
+  targeting per spell; damage = (2+lvl/2 .. 6+lvl) x spell mult x power) and Summon (157: 12 mana, picks one of the 6
+  strongest demons in this run's Lemegeton -> `GoetiaFiend` with `minion` (no codex/essence) + `SummonPact` (AllyBuff,
+  30 turns)). Subclasses ARCH_MAGUS (spells x1.25, mana 25% faster) and DEMON_MASTER (2 summons, pacts x1.5), hero_icons
+  row 23 (184/185). Armor abilities are the mage's until phase 2; no talents yet. Art by `tools/sinsart/make_solomon_assets.py`
+  (recoloured cleric, avatar frame 13). Strings `tools/strings/solomon_*`. Dev tools: wisdom row + mana refill.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

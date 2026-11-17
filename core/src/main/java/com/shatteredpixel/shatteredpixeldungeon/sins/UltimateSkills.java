@@ -64,7 +64,8 @@ public final class UltimateSkills {
 	private UltimateSkills() {}
 
 	public static boolean isSin(Hero hero) {
-		return hero != null && hero.heroClass.ordinal() >= HeroClass.GLUTTONY.ordinal();
+		return hero != null && hero.heroClass.ordinal() >= HeroClass.GLUTTONY.ordinal()
+				&& hero.heroClass.ordinal() <= HeroClass.SLOTH.ordinal();
 	}
 
 	public static UltimateBook book(Hero hero) {

@@ -292,6 +292,7 @@ public class Hero extends Char {
 		HT = LustHooks.bonusHT(this, HT);
 		HT = EnvyHooks.bonusHT(this, HT);
 		HT = SlothHooks.bonusHT(this, HT);
+		HT = com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.bonusHT(this, HT); //Seven Sins: Solomon
 		HT = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.bonusHT(this, HT);
 		HT = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.bonusHT(this, HT);
 		HT = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.bonusHT(this, HT); //Seven Sins: metamorphosed sin talents
@@ -667,6 +668,7 @@ public class Hero extends Char {
 		evasion = LustHooks.evasion( this, evasion );
 		evasion = EnvyHooks.evasion( this, evasion );
 		evasion = SlothHooks.evasion( this, evasion );
+		evasion = com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.evasion( this, evasion ); //Seven Sins: Solomon
 		evasion = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.evasion( this, evasion );
 		evasion = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.evasion( this, evasion );
 		evasion = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.evasion( this, evasion );
