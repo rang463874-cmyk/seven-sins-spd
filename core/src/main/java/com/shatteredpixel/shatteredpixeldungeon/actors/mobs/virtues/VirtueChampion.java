@@ -111,12 +111,11 @@ public abstract class VirtueChampion extends RegionElite implements com.shattere
 	protected boolean act() {
 		if (!announced && Dungeon.hero != null && Dungeon.level != null) {
 			announced = true;
+			GLog.n(announceLine(home == -1));
 			if (home == -1) {
-				GLog.n(Messages.get(VirtueChampion.class, nemesis() ? "arrives_nemesis" : "arrives", name()));
 				//it came for the hero: it already knows where to look
 				beckon(Dungeon.hero.pos);
 			} else {
-				GLog.n(Messages.get(VirtueChampion.class, nemesis() ? "awaits_nemesis" : "awaits", name()));
 				state = WANDERING;
 			}
 		}
@@ -137,6 +136,20 @@ public abstract class VirtueChampion extends RegionElite implements com.shattere
 			}
 		}
 		return super.act();
+	}
+
+	/** the log line when it first acts: it came for the hero (hunting) or it waits in its sanctum */
+	protected String announceLine(boolean hunting) {
+		return Messages.get(VirtueChampion.class, hunting ? (nemesis() ? "arrives_nemesis" : "arrives")
+				: (nemesis() ? "awaits_nemesis" : "awaits"), name());
+	}
+
+	protected String sealLine() {
+		return Messages.get(VirtueChampion.class, "sealed");
+	}
+
+	protected String unsealLine() {
+		return Messages.get(VirtueChampion.class, "unsealed");
 	}
 
 	// ------------------------------------------------------------------ the sanctum
@@ -180,7 +193,7 @@ public abstract class VirtueChampion extends RegionElite implements com.shattere
 		}
 		Dungeon.observe();
 		Sample.INSTANCE.play(Assets.Sounds.ROCKS);
-		GLog.w(Messages.get(VirtueChampion.class, "sealed"));
+		GLog.w(sealLine());
 	}
 
 	private void unsealArena() {
@@ -193,7 +206,7 @@ public abstract class VirtueChampion extends RegionElite implements com.shattere
 		sealedDoors = new int[0];
 		Dungeon.observe();
 		Sample.INSTANCE.play(Assets.Sounds.ROCKS);
-		GLog.i(Messages.get(VirtueChampion.class, "unsealed"));
+		GLog.i(unsealLine());
 	}
 
 	@Override
@@ -240,6 +253,11 @@ public abstract class VirtueChampion extends RegionElite implements com.shattere
 	public void die(Object cause) {
 		super.die(cause);
 		unsealArena();
+		onSlain();
+	}
+
+	/** what its death gives: the region reward, and more for a nemesis */
+	protected void onSlain() {
 		yell(line("death"));
 		EliteHooks.regionReward(pos);
 		if (nemesis() && Dungeon.hero != null && Dungeon.hero.isAlive()) {

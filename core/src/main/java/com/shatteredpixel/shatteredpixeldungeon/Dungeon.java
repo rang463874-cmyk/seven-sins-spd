@@ -282,6 +282,7 @@ public class Dungeon {
 		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.reset();
+		com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.reset();
 
 		hero = new Hero();
@@ -691,6 +692,7 @@ public class Dungeon {
 			com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.storeInBundle( quests );
 			com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.storeInBundle( quests );
 			com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.storeInBundle( quests );
+			com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.storeInBundle( quests );
 			com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.storeInBundle( quests );
 			bundle.put( QUESTS, quests );
 			
@@ -802,6 +804,7 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.restoreFromBundle( quests );
 				com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.restoreFromBundle( quests );
 				com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.restoreFromBundle( quests );
+				com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.restoreFromBundle( quests );
 				com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.restoreFromBundle( quests );
 			} else {
 				Ghost.Quest.reset();
@@ -812,6 +815,7 @@ public class Dungeon {
 		com.shatteredpixel.shatteredpixeldungeon.elites.EliteHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.reset();
+		com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.reset();
 			}
 			

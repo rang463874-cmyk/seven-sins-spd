@@ -29,6 +29,12 @@ public interface SkillHolder {
 		for (SinSkill s : holder.skills(hero)) {
 			if (s.visible(hero)) out.add(s);
 		}
+		//Seven Sins: the trial of sin's skill, once the signature item has awakened
+		if (holder instanceof com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact
+				&& ((com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SinArtifact) holder).awakened) {
+			SinSkill t = com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.skill(hero);
+			if (t != null) out.add(t);
+		}
 		return out;
 	}
 }

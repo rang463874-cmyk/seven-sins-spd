@@ -108,6 +108,7 @@ public abstract class RegularLevel extends Level {
 		
 		ArrayList<Room> initRooms = initRooms();
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.addSanctum(initRooms);
+		com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.addSanctum(initRooms); //Seven Sins: the trial of sin
 		Random.shuffle(initRooms);
 		
 		do {

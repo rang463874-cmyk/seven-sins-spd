@@ -632,7 +632,8 @@ ICONS = {
     40: "MASK", 41: "SWAP", 42: "SWAP", 43: "MASK",
     48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ", 52: "TARGET", 53: "MAP",
     64: "STAR", 65: "COIN", 66: "HEART", 67: "WAVE", 68: "FLY", 69: "FLAME", 70: "ZZZ",
-    72: "COPY", 73: "COPY", 74: "COPY", 75: "COPY", 76: "COPY", 77: "COPY", 78: "COPY",
+    # row 9: the trial of sin's skills (sins/TrialHooks, Nov 18 2026), violet rim; 79 = Solomon
+    72: "JAW", 73: "HAND", 74: "BURST", 75: "CROWN", 76: "DHEART", 77: "GHOST", 78: "ZZZ", 79: "HEXAGRAM",
     80: "PUSH", 81: "LOOP", 82: "BURST", 83: "STAR", 84: "FLAME",
     56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
@@ -775,7 +776,10 @@ def main():
     sheet = Image.new("RGBA", (SIZE * COLS, SIZE * ROWS), (0, 0, 0, 0))
     for index, glyph in ICONS.items():
         row, col = divmod(index, COLS)
-        if 88 <= index < 144:
+        if 72 <= index < 80:
+            base = SIN_COLORS[index - 72] if index < 79 else (110, 60, 160)
+            ic = tile(tuple(int(c * 0.8) for c in base), (200, 120, 255))
+        elif 88 <= index < 144:
             ic = tile(tuple(int(c * 0.8) for c in SIN_COLORS[(index - 88) // 8]), GOLD)
         elif index in SOLOMON_COLORS:
             ic = tile(SOLOMON_COLORS[index], (235, 190, 60))

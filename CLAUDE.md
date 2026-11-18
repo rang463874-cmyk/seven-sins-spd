@@ -462,6 +462,21 @@ Done and pushed (see `git log`):
 - Solomon's ring ascends at +10 too (Nov 18 2026, owner): `MirrorRelics.SealOfSolomon` (extends SolomonRing, items.png row 35 +7 =
   `MIRROR_SOLOMON`, the ring tinted gold with a violet gleam by make_solomon_assets.py) via `rewardFor`/`markMirrored` ->
   `SolomonArcana.mirrored` (saved): max mana x1.2, spell power x1.15, `SolomonHooks.drawTime` x0.5.
+- Trial of sin (Nov 18 2026, owner picked it from four quest ideas; region 4 = city): `sins/TrialHooks` (stage 0/1/2 saved
+  with the quests in `Dungeon`, node "sevenSinsTrial") adds `levels/rooms/quest/TrialSanctumRoom` (a dark VirtueSanctumRoom,
+  so `VirtueChampion`'s arena rules apply; `VirtueHooks.onLevelMobs` now matches its own room by exact class) on one of floors
+  16-19 (1/floors left, forced on 19) for classes with a signature item (`MirrorRelics.rewardFor` != null) and puts
+  `actors/mobs/SinShadow` on the pedestal: a VirtueChampion subclass (hooks `announceLine/sealLine/unsealLine/onSlain` were
+  added to VirtueChampion for it), MINIBOSS + DEMONIC, HT 40+14d, skills x1.2, two telegraphed skills per class (`kind()`,
+  vanilla classes borrow wrath's), drawn by `sprites/ShadowSprite` (the hero's sheet tinted black/violet). Its death gives
+  the region reward and `TrialHooks.awaken`: an item below +10 is set to +10 and ascends first, then `SinArtifact.awaken()`
+  (`awakened` saved as "trial_awakened", `levelCap` 20 = `AWAKENED_CAP`, name "awakened %s"). Ascension now happens at
+  `ASCEND_LEVEL` 10 instead of at levelCap; the scaling effects use `effLevel` (levels past 10 count half). The class's trial
+  skill is appended by `SkillHolder.visibleSkills` from `TrialHooks.skill` (40-turn `TrialHooks.Cooldown`; icons
+  skill_icons.png row 9 = 72..79, violet rim): Feast (150 satiety), Midas Touch (gauge 40+8d, targeted), Cataclysm (all rage,
+  min 50), Royal Decree (3 dignity), Fatal Attraction (15% HP), Doppelganger (60 jealousy, 3 mirror images), Eternal Slumber
+  (6 turns of dozing), Binding Seal (20 mana, targeted: Corruption on non-bosses). Strings `tools/strings/trial_*`. SinShadow
+  is in the bestiary's QUEST group; dev tools "죄의 시련: 유물 2차 각성" calls `awaken`.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

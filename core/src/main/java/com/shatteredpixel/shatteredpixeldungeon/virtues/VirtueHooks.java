@@ -144,7 +144,7 @@ public class VirtueHooks {
 		if (v == null) return;
 		VirtueSanctumRoom sanctum = null;
 		for (Room r : rooms) {
-			if (r instanceof VirtueSanctumRoom) sanctum = (VirtueSanctumRoom) r;
+			if (r.getClass() == VirtueSanctumRoom.class) sanctum = (VirtueSanctumRoom) r;
 		}
 		if (sanctum == null) return;
 		VirtueChampion c = Reflection.newInstance(v.champion);

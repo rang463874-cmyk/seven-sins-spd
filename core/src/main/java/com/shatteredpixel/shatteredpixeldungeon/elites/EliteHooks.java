@@ -78,6 +78,7 @@ public class EliteHooks {
 
 		//the virtues' champions hunt the hero from the prison on
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.onLevelMobs(level, rooms, entrance);
+		com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.onLevelMobs(level, rooms);
 		//Solomon's demons
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.onLevelMobs(level);
 

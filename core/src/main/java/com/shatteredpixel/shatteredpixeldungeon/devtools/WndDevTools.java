@@ -156,6 +156,13 @@ public class WndDevTools extends Window {
 				com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.devAdvance(Dungeon.hero);
 			}
 		});
+		addBtn(new RedButton("죄의 시련: 유물 2차 각성") {
+			@Override
+			protected void onClick() {
+				hide();
+				com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.awaken(Dungeon.hero);
+			}
+		});
 		resize(WIDTH, pos - GAP);
 	}
 

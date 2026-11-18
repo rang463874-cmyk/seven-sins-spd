@@ -27,6 +27,29 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 	/** fractional exp carried between uses */
 	private float partialExp = 0;
 
+	/** the level the mirror form (ascension) comes at */
+	public static final int ASCEND_LEVEL = 10;
+	/** the cap after the trial of sin (Nov 18 2026, owner) */
+	public static final int AWAKENED_CAP = 20;
+
+	/**
+	 * Seven Sins: the trial of sin's second awakening (sins/TrialHooks). Raises the level cap to 20 and adds the
+	 * class's trial skill (SkillHolder.visibleSkills). Carried over by ascend through the bundle.
+	 */
+	public boolean awakened = false;
+
+	public void awaken() {
+		awakened = true;
+		levelCap = AWAKENED_CAP;
+		updateQuickslot();
+	}
+
+	@Override
+	public String name() {
+		String n = super.name();
+		return awakened ? Messages.get(SinArtifact.class, "awakened_name", n) : n;
+	}
+
 	/** resource spent until the next level: grows by one each level (75 in total to reach +10) */
 	public int expToLevel() {
 		return 3 + level();
@@ -44,7 +67,7 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 				GLog.p(Messages.get(SinArtifact.class, "levelup", name(), level()));
 			}
 		}
-		if (level() >= levelCap) ascend(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero);
+		if (level() >= ASCEND_LEVEL) ascend(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero);
 		if (level() >= levelCap) partialExp = 0;
 		updateQuickslot();
 	}
@@ -70,7 +93,7 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 		if (a != null && a.isEquipped(hero)) {
 			a.gainExp(exp);
 			//artifacts that reached +10 before this rule came in ascend on their next use
-			if (a.level() >= a.levelCap) a.ascend(hero);
+			if (a.level() >= ASCEND_LEVEL) a.ascend(hero);
 		}
 	}
 
@@ -133,29 +156,35 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 		return level(hero) / 3;
 	}
 
-	/** multiply turns-per-charge by this: up to 60% faster recharge at +10 */
+	/** the level the scaling effects use: levels past +10 (after the trial) count half */
+	public static float effLevel(Hero hero) {
+		int l = level(hero);
+		return l <= ASCEND_LEVEL ? l : ASCEND_LEVEL + (l - ASCEND_LEVEL) * 0.5f;
+	}
+
+	/** multiply turns-per-charge by this: up to 60% faster recharge at +10, 90% at +20 */
 	public static float rechargeScale(Hero hero) {
-		return 1f / (1f + 0.06f * level(hero));
+		return 1f / (1f + 0.06f * effLevel(hero));
 	}
 
-	/** Lust: HP costs, up to 30% cheaper at +10 */
+	/** Lust: HP costs, up to 30% cheaper at +10, 45% at +20 */
 	public static float costScale(Hero hero) {
-		return 1f - 0.03f * level(hero);
+		return 1f - 0.03f * effLevel(hero);
 	}
 
-	/** Greed: payment limit size and how much it fills from gold, up to +60% at +10 */
+	/** Greed: payment limit size and how much it fills from gold, up to +60% at +10, +90% at +20 */
 	public static float gaugeScale(Hero hero) {
-		return 1f + 0.06f * level(hero);
+		return 1f + 0.06f * effLevel(hero);
 	}
 
-	/** Gluttony: satiety costs, down to -33% at +10 */
+	/** Gluttony: satiety costs, down to -33% at +10, -50% at +20 */
 	public static float satietyScale(Hero hero) {
-		return 1f - level(hero) / 30f;
+		return 1f - effLevel(hero) / 30f;
 	}
 
-	/** Gluttony: consumable points, up to +50% at +10 */
+	/** Gluttony: consumable points, up to +50% at +10, +75% at +20 */
 	public static float devourScale(Hero hero) {
-		return 1f + 0.05f * level(hero);
+		return 1f + 0.05f * effLevel(hero);
 	}
 
 	/** what the current level does for this item; charge-based sins by default */
@@ -173,6 +202,8 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 				? Messages.get(SinArtifact.class, "level_max", level(), levelCap)
 				: Messages.get(SinArtifact.class, "level_line", level(), levelCap, Math.max(0, expToLevel() - exp)));
 		if (of(hero) == this) s += "\n" + levelEffects(hero);
+		if (awakened) s += "\n\n" + Messages.get(SinArtifact.class, "awakened_info");
+		else if (isMirrorForm()) s += "\n\n" + Messages.get(SinArtifact.class, "trial_hint");
 		return s;
 	}
 
@@ -180,12 +211,15 @@ public abstract class SinArtifact extends Artifact implements SkillHolder {
 	public void storeInBundle(com.watabou.utils.Bundle bundle) {
 		super.storeInBundle(bundle);
 		bundle.put("partial_exp", partialExp);
+		bundle.put("trial_awakened", awakened);
 	}
 
 	@Override
 	public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
 		super.restoreFromBundle(bundle);
 		partialExp = bundle.getFloat("partial_exp");
+		awakened = bundle.getBoolean("trial_awakened");
+		if (awakened) levelCap = AWAKENED_CAP;
 	}
 
 	/** call at the start of execute(): false (and a message) if a skill is used while not worn */
