@@ -593,6 +593,7 @@ public abstract class Char extends Actor {
 			//lust's dance: dodging charms the attacker
 			LustHooks.onDodge(this, enemy);
 			com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onDodge(this, enemy);
+			com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.onDodge(this, enemy); //Seven Sins: Solomon
 
 			if (enemy.sprite != null){
 				if (hitMissIcon != -1){
@@ -643,6 +644,11 @@ public abstract class Char extends Actor {
 
 		if (defender.buff(MonkEnergy.MonkAbility.Focus.FocusBuff.class) != null){
 			defStat = INFINITE_EVASION;
+		}
+
+		//Seven Sins: the Judgment of Solomon leaves nowhere to hide
+		if (defender.buff(com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.SolomonJudgment.Exposed.class) != null){
+			defStat = 0;
 		}
 
 		//if accuracy or evasion are large enough, treat them as infinite.

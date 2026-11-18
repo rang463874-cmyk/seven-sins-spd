@@ -153,6 +153,9 @@ public class HeroIcon extends Image {
 	//Solomon (row 23)
 	public static final int ARCH_MAGUS      = 184;
 	public static final int DEMON_MASTER    = 185;
+	public static final int FORESIGHT       = 186;
+	public static final int SOLOMON_JUDGMENT= 187;
+	public static final int ELEMENTAL_FUSION= 188;
 
 	public HeroIcon(HeroSubClass subCls){
 		super( Assets.Interfaces.HERO_ICONS );

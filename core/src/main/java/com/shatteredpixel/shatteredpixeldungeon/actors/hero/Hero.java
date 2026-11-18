@@ -642,6 +642,9 @@ public class Hero extends Char {
 	@Override
 	public int defenseSkill( Char enemy ) {
 
+		//Seven Sins: Solomon's foresight
+		if (buff(com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.Foresight.Vision.class) != null) return INFINITE_EVASION;
+
 		if (buff(Combo.ParryTracker.class) != null){
 			if (canAttack(enemy) && !isCharmedBy(enemy)){
 				Buff.affect(this, Combo.RiposteTracker.class).enemy = enemy;

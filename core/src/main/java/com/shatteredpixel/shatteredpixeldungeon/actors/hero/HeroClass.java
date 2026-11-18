@@ -549,9 +549,10 @@ public enum HeroClass {
 				return new ArmorAbility[]{new Plunder(), new Transference(), new Downfall()};
 			case SLOTH:
 				return new ArmorAbility[]{new NightmareLegion(), new AutoHunt(), new Proxy()};
-			//Seven Sins: Solomon's own abilities come in phase 2; until then the mage's
 			case SOLOMON:
-				return new ArmorAbility[]{new ElementalBlast(), new WildMagic(), new WarpBeacon()};
+				return new ArmorAbility[]{new com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.Foresight(),
+						new com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.SolomonJudgment(),
+						new com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.ElementalFusion()};
 		}
 	}
 

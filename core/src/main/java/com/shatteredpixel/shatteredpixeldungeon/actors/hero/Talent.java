@@ -327,6 +327,12 @@ public enum Talent {
 	MAGUS_OVERLOAD(491, 3), MAGUS_CIRCLE(492, 3), MAGUS_SIPHON(493, 3),
 	//Master of Demons T3
 	MASTER_BRAND(494, 3), MASTER_OFFERING(495, 3), MASTER_KINGS(496, 3),
+	//Foresight T4
+	SIGHT_LENGTH(497, 4), SIGHT_ECHO(498, 4), SIGHT_PROPHECY(499, 4),
+	//Judgment of Solomon T4
+	JUDGE_TRUTH(500, 4), JUDGE_SECRETS(501, 4), JUDGE_SENTENCE(502, 4),
+	//Elemental Fusion T4
+	FUSION_POWER(503, 4), FUSION_RADIUS(504, 4), FUSION_RESONANCE(505, 4),
 
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one

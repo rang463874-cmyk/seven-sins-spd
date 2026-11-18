@@ -429,7 +429,14 @@ Done and pushed (see `git log`):
   talent_icons row 15 = 480..496, heroic energy 506): effects in `SolomonHooks` (drawTime, adjustCost, singleMult, summonCost,
   summonChoices, afterCast = pay + Ward/Echo/Twin Circle, onMobDeath = Siphon/Offering, onFoodEaten via SinMeals) and in
   `SolomonArcana` (Insight max mana, Focus regen, Overload power) and `SolomonSpells` (Pact turns/HP, Kings max summons).
-  Solomon is left out of the metamorphosis pool (`ScrollOfMetamorphosis.WndMetamorphReplace`). Armor abilities still the mage's. Art by `tools/sinsart/make_solomon_assets.py`
+  Solomon is left out of the metamorphosis pool (`ScrollOfMetamorphosis.WndMetamorphReplace`).
+  Armor abilities (Nov 18 2026, owner's themes; `actors/hero/abilities/solomon/`, hero_icons 186..188, T4 talents 497..505):
+  `Foresight` (50 charge, 3 + SIGHT_LENGTH turns of `Foresight.Vision` = INFINITE_EVASION at the top of Hero.defenseSkill;
+  SIGHT_ECHO mana per dodge via `SolomonHooks.onDodge` from Char.attack's miss branch; SIGHT_PROPHECY mind vision),
+  `SolomonJudgment` (35: mind vision 3, unmasks hidden mimics/invisible foes in sight, `Exposed` 10 + 3/JUDGE_TRUTH turns:
+  defStat 0 in Char.hit and +25% +10%/JUDGE_SENTENCE damage in SolomonHooks.modifyDamage; JUDGE_SECRETS finds secrets
+  within 2 + 2/pt) and `ElementalFusion` (50, targeted: fuses the circle's symbols, +50% each and their effects, an empty
+  circle = the four elements; radius 2 + FUSION_RADIUS/2, FUSION_POWER +15%/pt, FUSION_RESONANCE 2 mana/pt per symbol). Art by `tools/sinsart/make_solomon_assets.py`
   (recoloured cleric, avatar frame 13). Strings `tools/strings/solomon_*`. Dev tools: wisdom row + mana refill.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).

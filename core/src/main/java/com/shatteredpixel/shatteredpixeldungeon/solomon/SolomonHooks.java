@@ -119,6 +119,9 @@ public final class SolomonHooks {
 		if (target instanceof Hero && target.buff(SolomonPrinciples.Immutable.class) != null) {
 			dmg = Math.round(dmg * 0.4f);
 		}
+		if (target.buff(com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.SolomonJudgment.Exposed.class) != null) {
+			dmg = Math.round(dmg * (1f + com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.SolomonJudgment.exposedBonus(Dungeon.hero)));
+		}
 		if (src instanceof Mob && ((Mob) src).buff(SolomonSpells.SummonPact.class) != null) {
 			int brand = pts(Dungeon.hero, Talent.MASTER_BRAND);
 			if (brand > 0) dmg = Math.round(dmg * (1f + 0.15f * brand));
@@ -147,6 +150,16 @@ public final class SolomonHooks {
 				a.addMana(2 * offer);
 			}
 		}
+	}
+
+	/** from Char.attack's miss branch: a blow dodged during Foresight feeds mana (SIGHT_ECHO) */
+	public static void onDodge(Char attacker, Char defender) {
+		if (!(defender instanceof Hero)) return;
+		Hero hero = (Hero) defender;
+		if (hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.solomon.Foresight.Vision.class) == null) return;
+		int echo = pts(hero, Talent.SIGHT_ECHO);
+		SolomonArcana a = SolomonSpells.arcana(hero);
+		if (echo > 0 && a != null) a.addMana(echo);
 	}
 
 	/** from SinMeals: Meditative Meal refills mana */
