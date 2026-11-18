@@ -301,7 +301,9 @@ Done and pushed (see `git log`):
   3/15/16/16/17: only Marbas, Leraje and Botis stay in the sewers, owner) or a `bossFloor`, a fighting `Kind` and a colour. `goetia/GoetiaHooks` (state in the quests bundle, per
   run): `onLevelMobs` (from `EliteHooks.onLevelMobs`) puts 2-3 regular demons on sewer floors and 3-4 elsewhere (owner, Nov 13 2026) (`actors/mobs/goetia/GoetiaFiend`, one class,
   stats from depth, kind effects in `applyKind`, ranged kinds bolt without a sprite zap, SUMMON uses `level.createMob`,
-  dev/bestiary instances pick a random demon of the floor's region) on every regular floor 2-24, unmet ones first. Kills
+  dev/bestiary instances pick a random demon of the floor's region) on every regular floor 2-24; since Nov 18 2026 (owner: every
+  demon must show up) the unrecorded ones of the region always come first and n is raised to ceil(unrecorded / regular floors left
+  in the region), so the region's last regular floor (4, 9, 14, 19, 24) holds all still missing; all 67 regional + 5 ritual kings = 72. Kills
   -> `record` into the codex (`slain`), drop `items/DemonEssence` (1, 2 at milestone 15). Milestones `MILESTONES`
   3/6/10/15/20/25/30/35/40/50/60/72 (the owner's list, Nov 14 2026; index constants BRAND..SOLOMON, `power(i)`): +10 HP;
   demon sight (`revealDemons`); labyrinth guidance (`guide` from `tick`, once per level object: maps the 3x3 around every

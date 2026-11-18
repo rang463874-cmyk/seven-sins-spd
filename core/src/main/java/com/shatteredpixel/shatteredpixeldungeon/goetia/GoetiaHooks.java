@@ -29,7 +29,8 @@ import java.util.HashSet;
 
 /**
  * Seven Sins: Solomon's demons (Nov 2026). Per run:
- * - 2-3 regular demons on every sewer floor 2-4, 3-4 on every regular floor 5-24, drawn from the floor's region (unmet ones first);
+ * - 2-3 regular demons on every sewer floor 2-4, 3-4 on every regular floor 5-24, drawn from the floor's region; the
+ *   unrecorded ones come first, spread so that every kind of the region appears before its last regular floor ends;
  * - each one killed goes into the codex ("the Lesser Key"); every milestone in {@link #MILESTONES} gives a
  *   lasting power for the run; each drops demon essences;
  * - after a floor boss (5..25) falls, a hidden sigil appears somewhere on its floor; offering essences
@@ -93,16 +94,28 @@ public class GoetiaHooks {
 		ArrayList<GoetiaDemon> pool = GoetiaDemon.ofRegion(region);
 		//owner (Nov 13 2026): more demons now that their essences have more uses; the sewers keep 2-3 (only 3 kinds live there)
 		int n = region == 0 ? 2 + (Random.Int(4) == 0 ? 1 : 0) : 3 + (Random.Int(2) == 0 ? 1 : 0);
+		//owner (Nov 18 2026): every demon of the region must show up before the region ends. The demons not yet recorded
+		//come first and are spread over the region's regular floors left (this one included), so the last regular floor
+		//of a region holds all that are still missing (the halls have 17 kinds for 4 floors)
+		ArrayList<GoetiaDemon> unmet = new ArrayList<>();
+		for (GoetiaDemon d : pool) if (!slain(d)) unmet.add(d);
+		int floorsLeft = Math.max(1, (region * 5 + 4) - depth + 1);
+		n = Math.max(n, (unmet.size() + floorsLeft - 1) / floorsLeft);
 		//the demon army challenge: twice as many (kinds repeat once the region's list runs out)
 		if (Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.DEMON_ARMY)) n *= 2;
 		ArrayList<GoetiaDemon> chosen = new ArrayList<>();
+		java.util.Collections.shuffle(unmet, new java.util.Random(Random.Long()));
 		for (int i = 0; i < n; i++) {
-			if (pool.isEmpty()) pool = GoetiaDemon.ofRegion(region);
-			if (pool.isEmpty()) break;
-			ArrayList<GoetiaDemon> unmet = new ArrayList<>();
-			for (GoetiaDemon d : pool) if (!slain(d)) unmet.add(d);
-			GoetiaDemon d = (!unmet.isEmpty() && Random.Int(4) != 0) ? Random.element(unmet) : Random.element(pool);
-			pool.remove(d);
+			GoetiaDemon d;
+			if (!unmet.isEmpty()) {
+				d = unmet.remove(0);
+				pool.remove(d);
+			} else {
+				if (pool.isEmpty()) pool = GoetiaDemon.ofRegion(region);
+				if (pool.isEmpty()) break;
+				d = Random.element(pool);
+				pool.remove(d);
+			}
 			chosen.add(d);
 		}
 		for (GoetiaDemon d : chosen) {
@@ -111,6 +124,11 @@ public class GoetiaHooks {
 			for (int t = 0; t < 40 && cell == -1; t++) {
 				int c = level.randomRespawnCell(f);
 				if (c != -1 && level.distance(c, level.entrance()) > 7 && level.findMob(c) == null) cell = c;
+			}
+			//a missing demon must not be lost for want of a far cell: take any free respawn cell then
+			for (int t = 0; t < 40 && cell == -1; t++) {
+				int c = level.randomRespawnCell(f);
+				if (c != -1 && level.findMob(c) == null) cell = c;
 			}
 			if (cell == -1) continue;
 			f.pos = cell;
