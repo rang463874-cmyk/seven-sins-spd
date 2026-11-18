@@ -295,6 +295,7 @@ public abstract class Wand extends Item {
 		String desc = super.info();
 
 		desc += "\n\n" + statsDesc();
+		desc += com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.wandNote(this); //Seven Sins: Solomon
 		if (sinInfusions > 0) desc += "\n\n" + com.shatteredpixel.shatteredpixeldungeon.items.elite.SinInfusion.infoLine(sinInfusions);
 
 		if (resinBonus == 1){
@@ -425,6 +426,8 @@ public abstract class Wand extends Item {
 				}
 			}
 
+			lvl += com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.wandBonus(charger.target); //Seven Sins: Solomon
+
 			WandOfMagicMissile.MagicCharge buff = charger.target.buff(WandOfMagicMissile.MagicCharge.class);
 			if (buff != null && buff.level() > lvl){
 				return buff.level();
@@ -464,6 +467,7 @@ public abstract class Wand extends Item {
 	}
 
 	public void wandUsed() {
+		com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.onWandUsed(this); //Seven Sins: Solomon
 		if (!isIdentified()) {
 			float uses = Math.min( availableUsesToID, Talent.itemIDSpeedFactor(Dungeon.hero, this) );
 			availableUsesToID -= uses;

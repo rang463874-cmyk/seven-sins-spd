@@ -162,6 +162,64 @@ public final class SolomonHooks {
 		if (echo > 0 && a != null) a.addMana(echo);
 	}
 
+	// ------------------------------------------------------------------ wands (Nov 18 2026, owner: Solomon should profit from wands)
+
+	/** wisdom per extra wand level beyond the first */
+	public static final int WISDOM_PER_WAND_LEVEL = 150;
+	public static final float WAND_CHARGE = 1.2f;
+	public static final int WAND_MANA = 1;
+
+	/** from Wand.buffedLvl: +1 level, +1 more per 150 wisdom */
+	public static int wandBonus(Char target) {
+		if (!(target instanceof Hero) || !is((Hero) target)) return 0;
+		SolomonArcana a = target.buff(SolomonArcana.class);
+		return 1 + (a == null ? 0 : (int) (a.wisdom / WISDOM_PER_WAND_LEVEL));
+	}
+
+	/** from RingOfEnergy.wandChargeMultiplier: wands recharge 20% faster */
+	public static float wandChargeMult(Char target) {
+		return target instanceof Hero && is((Hero) target) ? WAND_CHARGE : 1f;
+	}
+
+	/** the element a wand's magic belongs to, or null */
+	public static SolomonSpells.Element wandElement(com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand w) {
+		switch (w.getClass().getSimpleName()) {
+			case "WandOfFireblast": case "WandOfPrismaticLight": case "WandOfDisintegration":
+				return SolomonSpells.Element.FIRE;
+			case "WandOfFrost": case "WandOfCorrosion": case "WandOfTransfusion":
+				return SolomonSpells.Element.WATER;
+			case "WandOfLightning": case "WandOfBlastWave": case "WandOfMagicMissile":
+				return SolomonSpells.Element.AIR;
+			case "WandOfLivingEarth": case "WandOfRegrowth": case "WandOfWarding":
+				return SolomonSpells.Element.EARTH;
+			default:
+				return null;
+		}
+	}
+
+	/** from Wand.wandUsed: each zap gives 1 mana and draws the wand's element into the circle for free */
+	public static void onWandUsed(com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand w) {
+		Hero hero = Dungeon.hero;
+		if (!is(hero) || w.cursed) return;
+		SolomonArcana a = SolomonSpells.arcana(hero);
+		if (a == null) return;
+		a.addMana(WAND_MANA);
+		SolomonSpells.Element e = wandElement(w);
+		if (e != null) {
+			a.draw(e);
+			hero.sprite.showStatus(0xCC99FF, e.title());
+		}
+	}
+
+	/** from Wand.info: what the wand does for Solomon */
+	public static String wandNote(com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand w) {
+		Hero hero = Dungeon.hero;
+		if (!is(hero)) return "";
+		SolomonSpells.Element e = wandElement(w);
+		return "\n\n" + Messages.get(SolomonHooks.class, e == null ? "wand_note_plain" : "wand_note",
+				wandBonus(hero), e == null ? "" : e.title());
+	}
+
 	/** from SinMeals: Meditative Meal refills mana */
 	public static void onFoodEaten(Hero hero) {
 		int p = pts(hero, Talent.SOL_MEDITATION);

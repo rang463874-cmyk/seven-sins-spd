@@ -437,7 +437,11 @@ Done and pushed (see `git log`):
   defStat 0 in Char.hit and +25% +10%/JUDGE_SENTENCE damage in SolomonHooks.modifyDamage; JUDGE_SECRETS finds secrets
   within 2 + 2/pt) and `ElementalFusion` (50, targeted: fuses the circle's symbols, +50% each and their effects, an empty
   circle = the four elements; radius 2 + FUSION_RADIUS/2, FUSION_POWER +15%/pt, FUSION_RESONANCE 2 mana/pt per symbol). Art by `tools/sinsart/make_solomon_assets.py`
-  (recoloured cleric, avatar frame 13; the ring icon is the owner's picture `tools/sinsart/solomon_art/ring.png`, Nov 18 2026,
+  Wands (Nov 18 2026, owner: an edge with wands): `SolomonHooks.wandBonus` +1 level (+1 per 150 wisdom) in Wand.buffedLvl,
+  `wandChargeMult` x1.2 in RingOfEnergy.wandChargeMultiplier, `onWandUsed` (top of Wand.wandUsed) +1 mana and draws the
+  wand's element (`wandElement`: fire = fireblast/prismatic/disintegration, water = frost/corrosion/transfusion, air =
+  lightning/blast wave/magic missile, earth = living earth/regrowth/warding, corruption none) into the circle for free;
+  `wandNote` appended to Wand.info. (recoloured cleric, avatar frame 13; the ring icon is the owner's picture `tools/sinsart/solomon_art/ring.png`, Nov 18 2026,
   shrunk to 16x13 by `ring_icon`: flood-filled background, premultiplied box downscale, black rim, contrast x1.7; rect 16x13). Strings `tools/strings/solomon_*`. Dev tools: wisdom row + mana refill.
 - Scrolling descriptions (Nov 18 2026, owner: long texts ran off the screen): `windows/ScrollText.place` adds a window's text,
   or a `ScrollText.Pane` (a ScrollPane that re-lays itself out every frame, so it follows the window's later resize) when the

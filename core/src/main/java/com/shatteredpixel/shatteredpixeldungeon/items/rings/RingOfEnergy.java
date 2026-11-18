@@ -68,7 +68,8 @@ public class RingOfEnergy extends Ring {
 			bonus *= 1f + (0.2f * ((Hero) target).pointsInTalent(Talent.LIGHT_READING)/3f);
 		}
 
-		return bonus * com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.chargeMult(target); //Seven Sins: the Lesser Key
+		return bonus * com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.chargeMult(target) //Seven Sins: the Lesser Key
+				* com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.wandChargeMult(target); //Seven Sins: Solomon
 	}
 
 	public static float artifactChargeMultiplier( Char target ){
