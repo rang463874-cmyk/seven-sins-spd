@@ -123,9 +123,9 @@ public class WndInfoItem extends Window {
 		}
 		add( title );
 
-		info.setPos(title.left(), title.bottom() + GAP);
-		add( info );
+		//Seven Sins: long descriptions scroll (WndUseItem keeps room for its buttons)
+		float bottom = ScrollText.place( this, info, title.bottom() + GAP, width, this instanceof WndUseItem ? 70 : 0 );
 
-		resize( width, (int)(info.bottom() + 2) );
+		resize( width, (int)(bottom + 2) );
 	}
 }

@@ -60,9 +60,6 @@ public class WndInfoTalent extends Window {
 
 		RenderedTextBlock txtInfo = PixelScene.renderTextBlock(talent.desc(metaDesc), 6);
 		txtInfo.maxWidth(width);
-		txtInfo.setPos(titlebar.left(), titlebar.bottom() + 2*GAP);
-		add( txtInfo );
-
 		while (PixelScene.landscape()
 				&& txtInfo.height() > 120
 				&& width < WIDTH_MAX){
@@ -70,7 +67,9 @@ public class WndInfoTalent extends Window {
 			txtInfo.maxWidth(width);
 		}
 		titlebar.setRect( 0, 0, width, 0 );
-		resize( width, (int)(txtInfo.bottom() + GAP) );
+		//Seven Sins: long descriptions scroll
+		float bottom = ScrollText.place( this, txtInfo, titlebar.bottom() + 2*GAP, width, buttonCallback != null ? 24 : 0 );
+		resize( width, (int)(bottom + GAP) );
 
 		if (buttonCallback != null) {
 			RedButton button = new RedButton( buttonCallback.prompt() ) {
@@ -82,7 +81,7 @@ public class WndInfoTalent extends Window {
 				}
 			};
 			button.icon(Icons.get(Icons.TALENT));
-			button.setRect(0, txtInfo.bottom() + 2*GAP, width, 18);
+			button.setRect(0, bottom + 2*GAP, width, 18);
 			add(button);
 			resize( width, (int)button.bottom()+1 );
 		}

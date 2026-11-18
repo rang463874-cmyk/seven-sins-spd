@@ -49,9 +49,9 @@ public class WndInfoBuff extends Window {
 
 		RenderedTextBlock txtInfo = PixelScene.renderTextBlock(buff.desc(), 6);
 		txtInfo.maxWidth(WIDTH);
-		txtInfo.setPos(titlebar.left(), titlebar.bottom() + 2*GAP);
-		add( txtInfo );
+		//Seven Sins: long descriptions scroll
+		float bottom = ScrollText.place( this, txtInfo, titlebar.bottom() + 2*GAP, WIDTH, 0 );
 
-		resize( WIDTH, (int)txtInfo.bottom() + 2 );
+		resize( WIDTH, (int)bottom + 2 );
 	}
 }

@@ -438,6 +438,12 @@ Done and pushed (see `git log`):
   within 2 + 2/pt) and `ElementalFusion` (50, targeted: fuses the circle's symbols, +50% each and their effects, an empty
   circle = the four elements; radius 2 + FUSION_RADIUS/2, FUSION_POWER +15%/pt, FUSION_RESONANCE 2 mana/pt per symbol). Art by `tools/sinsart/make_solomon_assets.py`
   (recoloured cleric, avatar frame 13). Strings `tools/strings/solomon_*`. Dev tools: wisdom row + mana refill.
+- Scrolling descriptions (Nov 18 2026, owner: long texts ran off the screen): `windows/ScrollText.place` adds a window's text,
+  or a `ScrollText.Pane` (a ScrollPane that re-lays itself out every frame, so it follows the window's later resize) when the
+  window would pass 85% of the screen height (minus room reserved for buttons below). Used by WndTitledMessage (and all its
+  subclasses: skill long-press info, mob/plant/trap info, ...), WndInfoItem (WndUseItem reserves 70 for its action buttons),
+  WndInfoBuff and WndInfoTalent (reserves 24 for its button). WndSkills puts its whole list in a Pane; taps on the skill
+  buttons are dispatched by hand in `onClick(x, y)` (buttons inside a ScrollPane get no touches of their own).
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

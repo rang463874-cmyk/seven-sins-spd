@@ -65,7 +65,10 @@ public class WndTitledMessage extends Window {
 
 		bringToFront(titlebar);
 
-		resize( width, (int)text.bottom() + 2 );
+		//Seven Sins: long texts scroll instead of running off the screen
+		remove( text );
+		float bottom = ScrollText.place( this, text, titlebar.bottom() + 2*GAP, width, 0 );
+		resize( width, (int)bottom + 2 );
 	}
 
 	protected boolean useHighlighting(){
