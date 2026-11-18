@@ -219,6 +219,8 @@ def preview(bimg, shoulders, frames, points):
             targets[0] = ((gx - 8 + 0.5) * T, (LEDGE + 9 + 0.5) * T)
             fr[0] = 1
         for side in (0, 1):
+            if pose == "rest" or side == 1:
+                continue    # at rest only the body shows; an arm comes out to slam
             place_arm(c, frames[fr[side]], points[fr[side]], sh[side], targets[side])
         c.alpha_composite(bimg.resize((bw, bh), Image.NEAREST), (int(bx), int(by)))
         out.append(c)

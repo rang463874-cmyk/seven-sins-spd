@@ -13,10 +13,10 @@ import com.watabou.utils.PointF;
 /**
  * Seven Sins (Nov 18 2026, owner's second design): the holy giant towering over the void that fills the upper half of
  * floor 31. The armless body (sprites/heaven_giant_body.png, x GiantArt.BODY_ZOOM) stands on the ledge cell and rises
- * through the void; the two arms (sprites/heaven_giant_arms.png: the lightning arm on the left, the gold bracelet arm
- * on the right) are separate pictures drawn behind it, turned and scaled from the shoulder to wherever the hand is:
- * resting on the ledge, raised over the tile it is about to slam (open hand), or lying on the floor as a fist while
- * the {@link GiantFist} is down. Everything is read from the {@link HolyGiant} each frame.
+ * through the void; the two arms (sprites/heaven_giant_arms.png: the gold bracelet arm on the left, the lightning arm
+ * on the right) are separate pictures drawn behind it, turned and scaled from the shoulder to wherever the hand is.
+ * At rest only the body shows; an arm comes out for a slam: raised over the tile it is about to hit (open hand), then
+ * lying on the floor as a fist while the {@link GiantFist} is down. Everything is read from the {@link HolyGiant} each frame.
  */
 public class HolyGiantSprite extends MobSprite {
 
@@ -26,6 +26,7 @@ public class HolyGiantSprite extends MobSprite {
 	private final PointF[] hand = new PointF[2];
 	private final int[] lastHP = {-1, -1};
 	private final float[] flash = {0, 0};
+	private final boolean[] out = {false, false};
 	private TextureFilm armFilm;
 	private float time = 0;
 
@@ -144,9 +145,16 @@ public class HolyGiantSprite extends MobSprite {
 				want = new PointF(sh.x + (t.x - sh.x) * 0.6f, sh.y + (t.y - sh.y) * 0.6f);
 				pulse = 1.2f + 0.2f * (float) Math.sin(time * 12);
 			} else {
-				frame = s * 2;
-				want = idlePoint(s, g.pos);
-				want.y += (float) Math.sin(time * 1.6f + s) * 1.5f;
+				//at rest only the body shows (owner, Nov 18 2026): the arms come out for the attacks
+				a.visible = false;
+				out[s] = false;
+				continue;
+			}
+			if (!out[s]) {
+				//it bursts out of the void beside the shoulder
+				out[s] = true;
+				PointF sh = shoulder(s, g.pos);
+				hand[s] = new PointF(sh.x + (want.x - sh.x) * 0.25f, sh.y + (want.y - sh.y) * 0.25f);
 			}
 			//the fist comes down fast, everything else drifts
 			float k = Math.min(1f, Game.elapsed * (f != null ? 20f : 8f));
