@@ -115,21 +115,21 @@ public class SolomonRing extends SinArtifact {
 			super(SolomonRing.class, "cast", 156);
 		}
 
-		private SolomonSpells.Spell spell(Hero hero) {
-			return SolomonSpells.current(hero.buff(SolomonArcana.class));
+		private static SolomonArcana arc(Hero hero) {
+			return hero == null ? null : hero.buff(SolomonArcana.class);
 		}
 
 		@Override
 		public String name(Hero hero) {
-			SolomonSpells.Spell s = spell(hero);
-			return s == null ? Messages.get(SolomonRing.class, "skill_cast") : s.title();
+			String t = SolomonSpells.castTitle(arc(hero));
+			return t == null ? Messages.get(SolomonRing.class, "skill_cast") : t;
 		}
 
 		@Override
 		public String desc(Hero hero) {
-			SolomonSpells.Spell s = spell(hero);
+			String d = SolomonSpells.castDesc(arc(hero));
 			String list = Messages.get(SolomonRing.class, "skill_cast_desc");
-			return s == null ? list : s.desc() + "\n\n" + list;
+			return d == null ? list : d + "\n\n" + list;
 		}
 
 		@Override
@@ -139,32 +139,25 @@ public class SolomonRing extends SinArtifact {
 
 		@Override
 		public String costShort(Hero hero) {
-			SolomonSpells.Spell s = spell(hero);
-			return s == null ? "" : Integer.toString(SolomonSpells.cost(hero, s));
+			int c = SolomonSpells.castCost(hero, arc(hero));
+			return c < 0 ? "" : Integer.toString(c);
 		}
 
 		@Override
 		public String costLabel(Hero hero) {
-			SolomonSpells.Spell s = spell(hero);
-			return Messages.get(SolomonRing.class, "cost_mana", s == null ? 0 : SolomonSpells.cost(hero, s));
+			return Messages.get(SolomonRing.class, "cost_mana", Math.max(0, SolomonSpells.castCost(hero, arc(hero))));
 		}
 
 		@Override
 		public boolean usable(Hero hero) {
-			SolomonSpells.Spell s = spell(hero);
-			SolomonArcana a = hero.buff(SolomonArcana.class);
-			return s != null && a != null && a.mana >= SolomonSpells.cost(hero, s);
+			SolomonArcana a = arc(hero);
+			int c = SolomonSpells.castCost(hero, a);
+			return a != null && c >= 0 && a.mana >= c;
 		}
 
 		@Override
 		public int targeting() {
-			SolomonSpells.Spell s = Dungeon_hero_spell();
-			return s == null ? TARGET_NONE : s.targeting;
-		}
-
-		private static SolomonSpells.Spell Dungeon_hero_spell() {
-			Hero h = com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
-			return h == null ? null : SolomonSpells.current(h.buff(SolomonArcana.class));
+			return SolomonSpells.castTargeting(arc(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero));
 		}
 
 		@Override

@@ -28,7 +28,7 @@ public class SolomonArcana extends Buff {
 	private float regen = 0;
 	/** symbols drawn in the circle (oldest first), at most MAX_SYMBOLS */
 	public final ArrayList<SolomonSpells.Element> circle = new ArrayList<>();
-	public static final int MAX_SYMBOLS = 2;
+	public static final int MAX_SYMBOLS = 3;
 
 	private Hero hero() {
 		return target instanceof Hero ? (Hero) target : null;

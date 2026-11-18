@@ -53,7 +53,7 @@ public class StoneDust extends TerrainCharm {
 		}
 	}
 
-	private static boolean canRaise(Level level, int c) {
+	public static boolean canRaise(Level level, int c) {
 		if (c < 0 || c >= level.length() || onBorder(level, c)) return false;
 		if (!level.passable[c] || level.pit[c] || level.solid[c]) return false;
 		if (Actor.findChar(c) != null || level.heaps.get(c) != null) return false;
@@ -66,8 +66,13 @@ public class StoneDust extends TerrainCharm {
 	}
 
 	private static boolean raise(Level level, int c) {
+		return raise(level, c, DURATION);
+	}
+
+	/** also used by Solomon's earth spells (solomon/SolomonTriads) */
+	public static boolean raise(Level level, int c, int turns) {
 		if (!canRaise(level, c)) return false;
-		RisenWall blob = Blob.seed(c, DURATION, RisenWall.class, level);
+		RisenWall blob = Blob.seed(c, turns, RisenWall.class, level);
 		blob.original.put(c, level.map[c]);
 		Level.set(c, Terrain.WALL);
 		GameScene.updateMap(c);

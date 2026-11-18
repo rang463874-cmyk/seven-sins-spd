@@ -114,6 +114,9 @@ public final class SolomonSpells {
 		}
 	}
 
+	/** turns spent drawing one symbol */
+	public static final float DRAW_TIME = 0.5f;
+
 	public static final int SUMMON_COST = 12;
 	public static final float SUMMON_TURNS = 30f;
 	public static final int SUMMON_CHOICES = 6;
@@ -124,7 +127,7 @@ public final class SolomonSpells {
 
 	/** the spell of the drawn symbols, or null */
 	public static Spell current(SolomonArcana a) {
-		if (a == null || a.circle.isEmpty()) return null;
+		if (a == null || a.circle.isEmpty() || a.circle.size() > 2) return null;
 		Element x = a.circle.get(0);
 		Element y = a.circle.size() > 1 ? a.circle.get(1) : null;
 		for (Spell s : Spell.values()) {
@@ -144,9 +147,52 @@ public final class SolomonSpells {
 			if (sb.length() > 0) sb.append(" + ");
 			sb.append(e.title());
 		}
-		Spell s = current(a);
-		if (s != null) sb.append(" = ").append(s.title());
+		String t = castTitle(a);
+		if (t != null) sb.append(" = ").append(t);
 		return sb.toString();
+	}
+
+	// ------------------------------------------------------------------ what Cast would do (1, 2 or 3 symbols)
+
+	public static String castTitle(SolomonArcana a) {
+		if (a == null) return null;
+		if (a.circle.size() >= 3) {
+			SolomonTriads.Triad t = SolomonTriads.current(a);
+			return t == null ? null : t.title();
+		}
+		Spell s = current(a);
+		return s == null ? null : s.title();
+	}
+
+	public static String castDesc(SolomonArcana a) {
+		if (a == null) return null;
+		if (a.circle.size() >= 3) {
+			SolomonTriads.Triad t = SolomonTriads.current(a);
+			return t == null ? null : t.desc();
+		}
+		Spell s = current(a);
+		return s == null ? null : s.desc();
+	}
+
+	/** mana cost of the drawn spell, -1 if nothing is drawn */
+	public static int castCost(Hero hero, SolomonArcana a) {
+		if (a == null) return -1;
+		if (a.circle.size() >= 3) {
+			SolomonTriads.Triad t = SolomonTriads.current(a);
+			return t == null ? -1 : t.cost();
+		}
+		Spell s = current(a);
+		return s == null ? -1 : cost(hero, s);
+	}
+
+	public static int castTargeting(SolomonArcana a) {
+		if (a == null) return SinSkill.TARGET_NONE;
+		if (a.circle.size() >= 3) {
+			SolomonTriads.Triad t = SolomonTriads.current(a);
+			return t == null ? SinSkill.TARGET_NONE : t.targeting();
+		}
+		Spell s = current(a);
+		return s == null ? SinSkill.TARGET_NONE : s.targeting;
 	}
 
 	public static int cost(Hero hero, Spell s) {
@@ -159,15 +205,22 @@ public final class SolomonSpells {
 		SolomonArcana a = arcana(hero);
 		if (a == null) return;
 		a.draw(e);
-		Spell s = current(a);
-		hero.sprite.showStatus(0xCC99FF, s == null ? e.title() : s.title());
+		String t = castTitle(a);
+		hero.sprite.showStatus(0xCC99FF, t == null ? e.title() : t);
 		Sample.INSTANCE.play(Assets.Sounds.CHARGEUP, 0.5f, 1.3f + 0.1f * e.ordinal());
+		//owner (Nov 18 2026): drawing a symbol takes time
+		hero.sprite.operate(hero.pos);
+		hero.spendAndNext(DRAW_TIME);
 	}
 
 	private static Spell pending;
 
 	public static void cast(Hero hero) {
 		SolomonArcana a = arcana(hero);
+		if (a != null && a.circle.size() >= 3) {
+			SolomonTriads.cast(hero);
+			return;
+		}
 		Spell s = current(a);
 		if (s == null) {
 			GLog.w(Messages.get(SolomonSpells.class, "no_spell"));
@@ -193,7 +246,7 @@ public final class SolomonSpells {
 			if (cell == null || s == null) return;
 			Hero hero = Dungeon.hero;
 			SolomonArcana a = arcana(hero);
-			if (a == null || current(a) != s || a.mana < cost(hero, s)) return;
+			if (a == null || a.circle.size() >= 3 || current(a) != s || a.mana < cost(hero, s)) return;
 			if (cell == hero.pos) return;
 			aimed(hero, s, cell);
 		}

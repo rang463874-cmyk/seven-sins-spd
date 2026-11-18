@@ -412,7 +412,14 @@ Done and pushed (see `git log`):
   targeting per spell; damage = (2+lvl/2 .. 6+lvl) x spell mult x power) and Summon (157: 12 mana, picks one of the 6
   strongest demons in this run's Lemegeton -> `GoetiaFiend` with `minion` (no codex/essence) + `SummonPact` (AllyBuff,
   30 turns)). Subclasses ARCH_MAGUS (spells x1.25, mana 25% faster) and DEMON_MASTER (2 summons, pacts x1.5), hero_icons
-  row 23 (184/185). Armor abilities are the mage's until phase 2; no talents yet. Art by `tools/sinsart/make_solomon_assets.py`
+  row 23 (184/185). Armor abilities are the mage's until phase 2; no talents yet.
+  Nov 18 2026 (owner): drawing a symbol takes `SolomonSpells.DRAW_TIME` 0.5 turns, the circle holds 3 (`MAX_SYMBOLS`), and
+  three symbols make an ordered `solomon/SolomonTriads` spell: the LAST symbol is the family (fire = blasts/melting damage,
+  air = projectiles/spread/mobility, earth = terrain/walls/control, water = status/cleansing/wide control), the MIDDLE one
+  picks the `Core` (16), the FIRST one the form (fire amplified x1.4 +3 mana, air spread +1 radius/target/range, earth
+  lasting x1.5 durations, water cleansing: hit enemies vulnerable 5 + the caster cleansed) = 64 spells; walls via
+  `StoneDust.raise(level, cell, turns)` (RisenWall). The ring's Cast skill reads `SolomonSpells.castTitle/castDesc/castCost/
+  castTargeting`, which cover 1, 2 and 3 symbols. Strings `solomon.solomontriads.*` (c_<core>, f_<form>). Art by `tools/sinsart/make_solomon_assets.py`
   (recoloured cleric, avatar frame 13). Strings `tools/strings/solomon_*`. Dev tools: wisdom row + mana refill.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
