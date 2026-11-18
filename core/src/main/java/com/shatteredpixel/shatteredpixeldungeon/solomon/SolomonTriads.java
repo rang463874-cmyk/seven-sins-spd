@@ -353,6 +353,7 @@ public final class SolomonTriads {
 							hit(hero, t, ch, 2.0f);
 							if (ch.isAlive()) Buff.affect(ch, Burning.class).reignite(ch);
 						}
+						SolomonSpells.igniteArea(end, 1 + t.rad());
 						PixelScene.shake(2, 0.4f);
 						Sample.INSTANCE.play(Assets.Sounds.BLAST);
 						hero.sprite.showStatus(0xCC99FF, t.title());
@@ -371,6 +372,7 @@ public final class SolomonTriads {
 					Buff.prolong(ch, Weakness.class, 6f * t.dur());
 				}
 				CellEmitter.get(ch.pos).burst(FlameParticle.FACTORY, 10);
+				SolomonSpells.ignite(ch.pos);
 				Sample.INSTANCE.play(Assets.Sounds.BURNING);
 				finish(hero, t, ch.pos);
 				return;
@@ -385,6 +387,7 @@ public final class SolomonTriads {
 					int n = 4 + t.rad();
 					for (int i = 0; i < n && !spots.isEmpty(); i++) {
 						int at = i == 0 ? cell : Random.element(spots);
+						SolomonSpells.igniteArea(at, 1);
 						for (int c : area(at, 1)) {
 							CellEmitter.get(c).burst(FlameParticle.FACTORY, 4);
 							Char ch = Actor.findChar(c);
@@ -405,6 +408,7 @@ public final class SolomonTriads {
 						Buff.affect(ch, Burning.class).reignite(ch);
 						Buff.prolong(ch, Cripple.class, 4f * t.dur());
 					}
+					SolomonSpells.igniteArea(cell, 2 + t.rad());
 					PixelScene.shake(2, 0.5f);
 					Sample.INSTANCE.play(Assets.Sounds.BURNING);
 				} else {
@@ -427,6 +431,7 @@ public final class SolomonTriads {
 				int max = Math.min(line.dist, 8 + 2 * t.rad());
 				for (int c : line.subPath(1, max)) {
 					CellEmitter.get(c).burst(FlameParticle.FACTORY, 5);
+					SolomonSpells.ignite(c);
 					Char ch = Actor.findChar(c);
 					if (!foe(ch)) continue;
 					hit(hero, t, ch, 1.6f);
@@ -461,6 +466,7 @@ public final class SolomonTriads {
 				if (ch == null) return;
 				hit(hero, t, ch, 1.0f);
 				if (ch.isAlive()) Buff.affect(ch, Burning.class).reignite(ch);
+				SolomonSpells.ignite(ch.pos);
 				int raised = 0;
 				for (int n : PathFinder.NEIGHBOURS8) {
 					int c = ch.pos + n;

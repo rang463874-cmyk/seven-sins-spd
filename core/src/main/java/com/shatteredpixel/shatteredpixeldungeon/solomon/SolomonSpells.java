@@ -298,6 +298,31 @@ public final class SolomonSpells {
 		return Math.max(1, Math.round(Random.NormalIntRange(2 + lvl / 2, 6 + lvl) * mult * power(hero)));
 	}
 
+	/**
+	 * Seven Sins (Nov 18 2026, owner): fire spells set barricades, grass, doors and bookshelves alight.
+	 * Only flammable tiles catch (plain floor doesn't), never the caster's own tile.
+	 */
+	public static void ignite(int c) {
+		com.shatteredpixel.shatteredpixeldungeon.levels.Level l = Dungeon.level;
+		if (l == null || !l.insideMap(c) || !l.flamable[c]) return;
+		if (Dungeon.hero != null && c == Dungeon.hero.pos) return;
+		GameScene.add(com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob.seed(c, 4,
+				com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Fire.class));
+	}
+
+	/** ignites every flammable tile in the square of the given radius, walls included (barricades are solid) */
+	public static void igniteArea(int center, int radius) {
+		com.shatteredpixel.shatteredpixeldungeon.levels.Level l = Dungeon.level;
+		if (l == null) return;
+		int w = l.width(), cx = center % w, cy = center / w;
+		for (int y = cy - radius; y <= cy + radius; y++) {
+			for (int x = cx - radius; x <= cx + radius; x++) {
+				if (x < 0 || y < 0 || x >= w || y >= l.height()) continue;
+				ignite(x + y * w);
+			}
+		}
+	}
+
 	private static boolean foe(Char ch) {
 		return ch != null && ch != Dungeon.hero && ch.alignment != Char.Alignment.ALLY && ch.isAlive();
 	}
@@ -436,6 +461,7 @@ public final class SolomonSpells {
 						if (ch.isAlive()) Buff.affect(ch, Burning.class).reignite(ch);
 					}
 					CellEmitter.get(c).burst(FlameParticle.FACTORY, 4);
+					ignite(c);
 				}
 				Sample.INSTANCE.play(Assets.Sounds.BURNING);
 				finish(hero, s, line.path.get(Math.max(1, max)));
@@ -503,6 +529,7 @@ public final class SolomonSpells {
 					ch.damage(roll(hero, SolomonHooks.singleMult(hero)), SolomonSpells.class);
 					if (ch.isAlive() && Random.Int(2) == 0) Buff.affect(ch, Burning.class).reignite(ch);
 				}
+				ignite(end);
 				return;
 			}
 			case WATER_LASH: {
@@ -517,7 +544,10 @@ public final class SolomonSpells {
 				for (int n : PathFinder.NEIGHBOURS9) {
 					int c = end + n;
 					if (!Dungeon.level.insideMap(c)) continue;
-					if (s == Spell.FIREBALL) CellEmitter.get(c).burst(FlameParticle.FACTORY, 5);
+					if (s == Spell.FIREBALL) {
+						CellEmitter.get(c).burst(FlameParticle.FACTORY, 5);
+						ignite(c);
+					}
 					else CellEmitter.get(c).burst(Speck.factory(Speck.STEAM), 3);
 					Char ch = Actor.findChar(c);
 					if (!foe(ch)) continue;

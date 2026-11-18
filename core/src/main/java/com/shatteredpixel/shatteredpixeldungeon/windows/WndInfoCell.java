@@ -172,6 +172,14 @@ public class WndInfoCell extends Window {
 		RenderedTextBlock info = PixelScene.renderTextBlock(6);
 		add(info);
 
+		//Seven Sins: walls raised by alchemy tell how long they stand
+		com.shatteredpixel.shatteredpixeldungeon.items.elite.StoneDust.RisenWall risen =
+				(com.shatteredpixel.shatteredpixeldungeon.items.elite.StoneDust.RisenWall) Dungeon.level.blobs.get(com.shatteredpixel.shatteredpixeldungeon.items.elite.StoneDust.RisenWall.class);
+		if (risen != null && risen.volume > 0 && risen.cur[cell] > 0 && Dungeon.level.map[cell] == Terrain.WALL) {
+			if (desc.length() > 0) desc += "\n\n";
+			desc += risen.tileDesc(cell);
+		}
+
 		for (Blob blob : Dungeon.level.blobs.values()) {
 			if ((Dungeon.level.heroFOV[cell] || blob.alwaysVisible)
 					&& blob.volume > 0 && blob.cur[cell] > 0 && blob.tileDesc() != null) {

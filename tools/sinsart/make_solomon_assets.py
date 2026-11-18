@@ -107,6 +107,11 @@ def main():
     if os.path.exists(ring_src):
         icon = ring_icon(ring_src)
         items.paste(icon, m.cell(512 + 14, 16)[:2])
+        # Solomon's remains (row 36 +13): a faded, chipped copy of the ring
+        sig = m.Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+        sig.paste(icon, (0, 0))
+        items.paste(m.Image.new("RGBA", (16, 16), (0, 0, 0, 0)), m.cell(560 + 13, 16)[:2])
+        items.paste(m.remains_icon(sig, 40), m.cell(560 + 13, 16)[:2])
         print("ring icon %dx%d (set assignItemRect(SOLOMON_RING) to match)" % icon.size)
     else:
         items.paste(m.draw(RING, RING_PAL), m.cell(512 + 14, 16)[:2])

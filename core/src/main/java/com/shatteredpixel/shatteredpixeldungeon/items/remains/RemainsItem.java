@@ -106,6 +106,8 @@ public abstract class RemainsItem extends Item {
 				return new MirrorShard();
 			case SLOTH:
 				return new PillowStuffing();
+			case SOLOMON:
+				return new BrokenSignet();
 		}
 	}
 

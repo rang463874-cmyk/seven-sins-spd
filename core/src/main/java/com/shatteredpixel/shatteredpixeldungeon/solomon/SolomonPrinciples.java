@@ -450,6 +450,7 @@ public final class SolomonPrinciples {
 								if (foe(ch)) strike(ch, roll(hero, 1.6f));
 							}
 						}
+						SolomonSpells.igniteArea(end, 2);
 						PixelScene.shake(2, 0.4f);
 						Sample.INSTANCE.play(Assets.Sounds.BLAST);
 						hero.sprite.showStatus(0xCC99FF, s.title());
@@ -472,6 +473,7 @@ public final class SolomonPrinciples {
 			case SOULFIRE: {
 				strike(ch, roll(hero, 2.2f));
 				CellEmitter.get(ch.pos).burst(FlameParticle.FACTORY, 10);
+				SolomonSpells.ignite(ch.pos);
 				if (ch.isAlive()) {
 					Buff.affect(ch, Burning.class).reignite(ch);
 				} else {
@@ -498,6 +500,7 @@ public final class SolomonPrinciples {
 						Buff.prolong(t, Roots.class, 2f);
 					}
 				}
+				SolomonSpells.igniteArea(cell, 2);
 				Sample.INSTANCE.play(Assets.Sounds.BURNING);
 				break;
 			}
@@ -539,6 +542,7 @@ public final class SolomonPrinciples {
 				}
 				CellEmitter.get(ch.pos).burst(Speck.factory(Speck.LIGHT), 10);
 				CellEmitter.get(ch.pos).burst(FlameParticle.FACTORY, 10);
+				SolomonSpells.ignite(ch.pos);
 				Sample.INSTANCE.play(Assets.Sounds.BLAST);
 				break;
 			}

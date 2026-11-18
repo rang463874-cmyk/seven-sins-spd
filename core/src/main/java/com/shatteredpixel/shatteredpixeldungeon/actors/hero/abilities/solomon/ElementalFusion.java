@@ -112,6 +112,7 @@ public class ElementalFusion extends ArmorAbility {
 				hit.add(ch);
 			}
 		}
+		if (els.contains(SolomonSpells.Element.FIRE)) SolomonSpells.igniteArea(center, r);
 		for (Char ch : hit) {
 			float m = mult;
 			if (els.contains(SolomonSpells.Element.SALT)

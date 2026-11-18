@@ -142,7 +142,12 @@ public class StoneDust extends TerrainCharm {
 
 		@Override
 		public String tileDesc() {
-			return Messages.get(this, "desc");
+			return null;
+		}
+
+		/** Seven Sins (Nov 18 2026, owner): the tile info says when the wall crumbles; shown by WndInfoCell */
+		public String tileDesc(int cell) {
+			return Messages.get(this, "desc", Math.max(1, cur[cell]));
 		}
 	}
 

@@ -44,7 +44,15 @@ public class SkillBar extends Component {
 
 	/** height the bar takes up above the toolbar (0 when hidden) */
 	public float barHeight() {
-		return rows() * (BTN_SIZE + GAP);
+		return rows() * (BTN_SIZE + GAP) + (circle != null ? CircleStrip.HEIGHT + GAP : 0);
+	}
+
+	/** Seven Sins (Nov 18 2026, owner): Solomon sees the symbols drawn in his circle above the element buttons */
+	private CircleStrip circle = null;
+
+	private static boolean showsCircle(Hero hero, Item item) {
+		return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.SolomonRing
+				&& hero != null && hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.class) != null;
 	}
 
 	private int rows() {
@@ -84,6 +92,7 @@ public class SkillBar extends Component {
 		if (key.equals(shownKey)) {
 			for (SkillButton b : buttons) b.updateState();
 			for (SkillButton b : extras) b.updateState();
+			if (circle != null) circle.sync(hero);
 			return;
 		}
 		shownKey = key;
@@ -97,6 +106,16 @@ public class SkillBar extends Component {
 			b.destroy();
 		}
 		extras.clear();
+		if (circle != null) {
+			remove(circle);
+			circle.destroy();
+			circle = null;
+		}
+		if (!skills.isEmpty() && showsCircle(hero, item)) {
+			circle = new CircleStrip();
+			add(circle);
+			circle.sync(hero);
+		}
 		for (SinSkill s : skills) {
 			SkillButton b = new SkillButton(s);
 			add(b);
@@ -127,6 +146,10 @@ public class SkillBar extends Component {
 			rowY += BTN_SIZE + GAP;
 		}
 		float x = this.x + width - rowWidth(buttons);
+		if (circle != null) {
+			circle.setPos(x, rowY);
+			rowY += CircleStrip.HEIGHT + GAP;
+		}
 		for (SkillButton b : buttons) {
 			b.setRect(x, rowY, BTN_SIZE, BTN_SIZE);
 			x += BTN_SIZE + GAP;
@@ -227,6 +250,68 @@ public class SkillBar extends Component {
 				aimTarget.sprite.parent.addToFront(aimMark);
 			}
 			aimMark.point(aimTarget.sprite.center(aimMark));
+		}
+	}
+
+	/** three small slots showing the circle's symbols in drawing order (first = form, middle = core, last = family) */
+	public static class CircleStrip extends Component {
+
+		public static final int SLOT = 9;
+		public static final int HEIGHT = SLOT + 2;
+		private static com.watabou.noosa.TextureFilm film;
+
+		private NinePatch bg;
+		private final Image[] icons = new Image[com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.MAX_SYMBOLS];
+		private final com.watabou.noosa.ColorBlock[] empty = new com.watabou.noosa.ColorBlock[icons.length];
+		private String shown = null;
+
+		@Override
+		protected void createChildren() {
+			super.createChildren();
+			bg = Chrome.get(Chrome.Type.TOAST_TR);
+			add(bg);
+			for (int i = 0; i < icons.length; i++) {
+				empty[i] = new com.watabou.noosa.ColorBlock(3, 3, 0x66CC99FF);
+				add(empty[i]);
+				icons[i] = new Image(com.shatteredpixel.shatteredpixeldungeon.Assets.Interfaces.SKILL_ICONS);
+				if (film == null) film = new com.watabou.noosa.TextureFilm(icons[i].texture, SinSkill.ICON_SIZE, SinSkill.ICON_SIZE);
+				icons[i].scale.set(0.5f);
+				icons[i].visible = false;
+				add(icons[i]);
+			}
+			width = icons.length * SLOT + 2;
+			height = HEIGHT;
+		}
+
+		void sync(Hero hero) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana a =
+					hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.class);
+			String key = a == null ? "" : a.circle.toString();
+			if (key.equals(shown)) return;
+			shown = key;
+			for (int i = 0; i < icons.length; i++) {
+				boolean on = a != null && i < a.circle.size();
+				icons[i].visible = on;
+				empty[i].visible = !on;
+				if (on) icons[i].frame(film.get(a.circle.get(i).icon()));
+			}
+			layout();
+		}
+
+		@Override
+		protected void layout() {
+			bg.x = x;
+			bg.y = y;
+			bg.size(width, height);
+			for (int i = 0; i < icons.length; i++) {
+				float sx = x + 1 + i * SLOT;
+				icons[i].x = sx + (SLOT - icons[i].width()) / 2f;
+				icons[i].y = y + (height - icons[i].height()) / 2f;
+				PixelScene.align(icons[i]);
+				empty[i].x = sx + (SLOT - 3) / 2f;
+				empty[i].y = y + (height - 3) / 2f;
+				PixelScene.align(empty[i]);
+			}
 		}
 	}
 

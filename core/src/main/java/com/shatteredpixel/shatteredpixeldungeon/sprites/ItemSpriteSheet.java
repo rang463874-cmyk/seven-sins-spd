@@ -928,11 +928,13 @@ public class ItemSpriteSheet {
 	public static final int REMAINS_SLOTH     = HORSEMEN+11;
 	//the vault mirror's slot-expanding case
 	public static final int MIRROR_CASE       = HORSEMEN+12;
+	//Solomon's remains (tools/sinsart/make_solomon_assets.py)
+	public static final int REMAINS_SOLOMON   = HORSEMEN+13;
 	static{
 		int[][] remains = {
 				{REMAINS_GLUTTONY, PREDATOR_MAW}, {REMAINS_GREED, GOLDEN_CARD}, {REMAINS_WRATH, WAR_DRUM},
 				{REMAINS_PRIDE, PRIDE_CROWN},     {REMAINS_LUST, PERFUME},      {REMAINS_ENVY, ENVY_MIRROR},
-				{REMAINS_SLOTH, SLOTH_PILLOW},
+				{REMAINS_SLOTH, SLOTH_PILLOW},    {REMAINS_SOLOMON, SOLOMON_RING},
 		};
 		assignItemRect(MIRROR_CASE, 12, 12);
 		for (int[] p : remains){

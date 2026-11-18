@@ -449,6 +449,16 @@ Done and pushed (see `git log`):
   subclasses: skill long-press info, mob/plant/trap info, ...), WndInfoItem (WndUseItem reserves 70 for its action buttons),
   WndInfoBuff and WndInfoTalent (reserves 24 for its button). WndSkills puts its whole list in a Pane; taps on the skill
   buttons are dispatched by hand in `onClick(x, y)` (buttons inside a ScrollPane get no touches of their own).
+- Nov 18 2026 fixes (owner): the all-class badges ("Taste of Revenge" = first boss with every class, "Versatile" = third boss
+  with every subclass, "Jack of all trades" = victory with every class) only counted the hidden vanilla classes. `Badges` now has
+  hidden per-class entries for the sins and Solomon (BOSS_SLAIN_1_/VICTORY_<class>, BOSS_SLAIN_3_<subclass>) and
+  `required/requiredSub` keep only `HeroClass.selectable` classes in the checks. Solomon's remains is `items/remains/BrokenSignet`
+  (full mana + 10 turns of Recharging; items.png row 36 +13 by make_solomon_assets.py). Solomon's fire spells set flammable tiles
+  alight (grass, barricades, doors, bookshelves): `SolomonSpells.ignite/igniteArea` (Fire blob, never the hero's tile) from fire
+  bolt/fireball/magma, Inferno/Meltdown/Meteor/Volcano/Phoenix/Obsidian, Soulfire/Brimstone/Volatile/Great Work and Elemental
+  Fusion with fire. Walls of StoneDust/Obsidian/Great Wall/Salt Fortress show their turns left in the tile info
+  (`RisenWall.tileDesc(cell)`, called from WndInfoCell). `SkillBar.CircleStrip` shows the drawn symbols (half-size icons, 3
+  slots) in a strip above Solomon's element buttons.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
