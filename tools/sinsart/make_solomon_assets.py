@@ -4,7 +4,7 @@
 
   sprites/solomon.png, splashes/solomon.jpg   recoloured cleric sheet / splash (skipped once hero_art/solomon exists)
   sprites/avatars.png                          frame 13 (HeroClass ordinal)
-  sprites/items.png                            row 33 +14 ring of Solomon, +15 class armor
+  sprites/items.png                            row 33 +14 ring of Solomon (the owner's solomon_art/ring.png), +15 class armor
   interfaces/hero_icons.png                    row 23 (184..188): subclasses, then armor abilities
   interfaces/talent_icons.png                  row 15 (480..505 + heroic energy 506)
 Run: python3 tools/sinsart/make_solomon_assets.py
@@ -40,6 +40,45 @@ RING_PAL = {"R": (120, 40, 170, 255), "W": (220, 170, 255, 255), "G": (220, 175,
             "H": (255, 235, 150, 255), "D": (150, 105, 30, 255)}
 
 
+def ring_icon(path, width=16):
+    """the owner's ring picture (Nov 18 2026) -> a 16 px icon: background flood-filled away, premultiplied box
+    downscale, alpha cut, black rim, contrast stretched back up (averaging flattens the shading)"""
+    from PIL import ImageDraw
+    import numpy as np
+    im = m.Image.open(path).convert("RGB")
+    w, h = im.size
+    ff = im.copy()
+    for c in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
+        ImageDraw.floodfill(ff, c, (255, 0, 255), thresh=30)
+    a = np.array(ff)
+    bgm = (a[..., 0] == 255) & (a[..., 1] == 0) & (a[..., 2] == 255)
+    rgba = np.dstack([np.array(im), np.where(bgm, 0, 255).astype("uint8")])
+    ys, xs = np.where(~bgm)
+    img = m.Image.fromarray(rgba).crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
+    W, H = width, round(img.height * width / img.width)
+    arr = np.array(img).astype(float)
+    al = arr[..., 3:4] / 255
+    pm = m.Image.fromarray(np.dstack([arr[..., :3] * al, arr[..., 3:4]]).astype("uint8"))
+    sm = np.array(pm.resize((W, H), m.Image.BOX)).astype(float)
+    alpha = sm[..., 3]
+    rgb = np.where(alpha[..., None] > 0, sm[..., :3] / np.maximum(alpha[..., None], 1) * 255, 0)
+    opaque = alpha > 100
+    out = np.zeros((H, W, 4))
+    out[..., :3] = np.clip(rgb, 0, 255)
+    out[..., 3] = np.where(opaque, 255, 0)
+    rim = np.zeros((H, W), bool)
+    for y in range(H):
+        for x in range(W):
+            if opaque[y, x] and any(not (0 <= y + dy < H and 0 <= x + dx < W and opaque[y + dy, x + dx])
+                                    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                rim[y, x] = True
+    inner = opaque & ~rim
+    mean = out[..., :3][inner].mean()
+    out[..., :3] = np.where(inner[..., None], np.clip((out[..., :3] - mean) * 1.7 + mean + 8, 25, 255), out[..., :3])
+    out[rim, :3] = 0
+    return m.Image.fromarray(out.astype("uint8"))
+
+
 def main():
     p = lambda rel: os.path.join(m.A, rel)
     here = os.path.dirname(os.path.abspath(__file__))
@@ -62,7 +101,13 @@ def main():
     items = m.Image.open(p("sprites/items.png")).convert("RGBA")
     blank = m.Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     items.paste(blank, m.cell(512 + 14, 16)[:2])
-    items.paste(m.draw(RING, RING_PAL), m.cell(512 + 14, 16)[:2])
+    ring_src = os.path.join(here, "solomon_art", "ring.png")
+    if os.path.exists(ring_src):
+        icon = ring_icon(ring_src)
+        items.paste(icon, m.cell(512 + 14, 16)[:2])
+        print("ring icon %dx%d (set assignItemRect(SOLOMON_RING) to match)" % icon.size)
+    else:
+        items.paste(m.draw(RING, RING_PAL), m.cell(512 + 14, 16)[:2])
     items.paste(m.recolor(items.crop(m.cell(m.ITEM_ARMOR_CLERIC, 16)), px), m.cell(512 + 15, 16)[:2])
     items.save(p("sprites/items.png"))
 

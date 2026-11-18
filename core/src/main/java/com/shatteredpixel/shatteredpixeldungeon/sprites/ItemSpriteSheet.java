@@ -853,7 +853,7 @@ public class ItemSpriteSheet {
 		assignItemRect(ARMOR_ENVY,      13, 14);
 		assignItemRect(SLOTH_PILLOW,    15, 11);
 		assignItemRect(ARMOR_SLOTH,     13, 14);
-		assignItemRect(SOLOMON_RING,    10, 10);
+		assignItemRect(SOLOMON_RING,    16, 13);
 		assignItemRect(ARMOR_SOLOMON,   13, 14);
 	}
 
