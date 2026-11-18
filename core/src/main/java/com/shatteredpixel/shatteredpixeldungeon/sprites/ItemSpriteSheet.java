@@ -900,11 +900,12 @@ public class ItemSpriteSheet {
 	public static final int MIRROR_LUST     = SINS3+4;
 	public static final int MIRROR_ENVY     = SINS3+5;
 	public static final int MIRROR_SLOTH    = SINS3+6;
+	public static final int MIRROR_SOLOMON  = SINS3+7;
 	static{
 		int[][] pairs = {
 				{MIRROR_GLUTTONY, PREDATOR_MAW}, {MIRROR_GREED, GOLDEN_CARD}, {MIRROR_WRATH, WAR_DRUM},
 				{MIRROR_PRIDE, PRIDE_CROWN},     {MIRROR_LUST, PERFUME},      {MIRROR_ENVY, ENVY_MIRROR},
-				{MIRROR_SLOTH, SLOTH_PILLOW},
+				{MIRROR_SLOTH, SLOTH_PILLOW},     {MIRROR_SOLOMON, SOLOMON_RING},
 		};
 		for (int[] p : pairs){
 			assignItemRect(p[0], (int)film.width(p[1]), (int)film.height(p[1]));

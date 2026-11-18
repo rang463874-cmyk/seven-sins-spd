@@ -112,6 +112,20 @@ def main():
         sig.paste(icon, (0, 0))
         items.paste(m.Image.new("RGBA", (16, 16), (0, 0, 0, 0)), m.cell(560 + 13, 16)[:2])
         items.paste(m.remains_icon(sig, 40), m.cell(560 + 13, 16)[:2])
+        # the ascended ring, the Seal of Solomon (row 35 +7, next to the sins' reflections): gold with a violet gleam
+        def gold(px):
+            if px[3] == 0:
+                return px
+            h, sat, v, a = m.hsv(px)
+            if v < 0.2:
+                return px
+            return m.rgb(44, min(1, 0.6 + sat * 0.4), min(1, v * 1.05), a)
+        seal = m.recolor(sig, gold)
+        for x, y in [(11, 2), (12, 1), (12, 3), (13, 2)]:
+            if 0 <= x < seal.width and 0 <= y < seal.height:
+                seal.putpixel((x, y), (235, 200, 255, 255))
+        items.paste(m.Image.new("RGBA", (16, 16), (0, 0, 0, 0)), m.cell(544 + 7, 16)[:2])
+        items.paste(seal, m.cell(544 + 7, 16)[:2])
         print("ring icon %dx%d (set assignItemRect(SOLOMON_RING) to match)" % icon.size)
     else:
         items.paste(m.draw(RING, RING_PAL), m.cell(512 + 14, 16)[:2])

@@ -459,6 +459,9 @@ Done and pushed (see `git log`):
   Fusion with fire. Walls of StoneDust/Obsidian/Great Wall/Salt Fortress show their turns left in the tile info
   (`RisenWall.tileDesc(cell)`, called from WndInfoCell). `SkillBar.CircleStrip` shows the drawn symbols (half-size icons, 3
   slots) in a strip above Solomon's element buttons.
+- Solomon's ring ascends at +10 too (Nov 18 2026, owner): `MirrorRelics.SealOfSolomon` (extends SolomonRing, items.png row 35 +7 =
+  `MIRROR_SOLOMON`, the ring tinted gold with a violet gleam by make_solomon_assets.py) via `rewardFor`/`markMirrored` ->
+  `SolomonArcana.mirrored` (saved): max mana x1.2, spell power x1.15, `SolomonHooks.drawTime` x0.5.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

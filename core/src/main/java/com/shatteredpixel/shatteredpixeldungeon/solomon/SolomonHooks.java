@@ -69,7 +69,9 @@ public final class SolomonHooks {
 
 	/** time to draw a symbol: 0.5 turns, -0.1 per point of Deft Hands */
 	public static float drawTime(Hero hero) {
-		return Math.max(0.2f, SolomonSpells.DRAW_TIME - 0.1f * pts(hero, Talent.SOL_DEFTNESS));
+		float t = Math.max(0.2f, SolomonSpells.DRAW_TIME - 0.1f * pts(hero, Talent.SOL_DEFTNESS));
+		SolomonArcana a = hero == null ? null : hero.buff(SolomonArcana.class);
+		return a != null && a.mirrored ? t * 0.5f : t;
 	}
 
 	/** mana cost after the Triad talent (three-symbol spells) and Panacea */

@@ -33,6 +33,7 @@ public final class MirrorRelics {
 			case LUST:     return new ForbiddenPerfume();
 			case ENVY:     return new ShatteredMirror();
 			case SLOTH:    return new EternalPillow();
+			case SOLOMON:  return new SealOfSolomon();
 			default:       return null;
 		}
 	}
@@ -47,6 +48,7 @@ public final class MirrorRelics {
 			case LUST:     Buff.affect(hero, LustDesire.class).mirrored = true; break;
 			case ENVY:     Buff.affect(hero, EnvyCovet.class).mirrored = true; break;
 			case SLOTH:    Buff.affect(hero, SlothRepose.class).mirrored = true; break;
+			case SOLOMON:  Buff.affect(hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.class).mirrored = true; break;
 			default: break;
 		}
 	}
@@ -188,6 +190,18 @@ public final class MirrorRelics {
 			replaceOld(hero, this, SlothPillow.class);
 			Buff.affect(hero, SlothRepose.class).mirrored = true;
 			return super.doPickUp(hero, pos);
+		}
+
+		@Override
+		public String desc() {
+			return super.desc() + "\n\n" + Messages.get(this, "bonus");
+		}
+	}
+
+	/** Solomon's ring at +10 (Nov 18 2026, owner): there is no vault-mirror version, it only comes from ascending */
+	public static class SealOfSolomon extends SolomonRing {
+		{
+			image = ItemSpriteSheet.MIRROR_SOLOMON;
 		}
 
 		@Override

@@ -33,6 +33,9 @@ public class SolomonArcana extends Buff {
 	public final ArrayList<SolomonSpells.Element> principles = new ArrayList<>();
 	/** how many principle choices have been announced */
 	public int toldPrinciples = 0;
+	/** the ring ascended at +10 into the Seal of Solomon (MirrorRelics.markMirrored): +20% max mana, +15% spell power,
+	 *  symbols drawn in half the time */
+	public boolean mirrored = false;
 
 	private Hero hero() {
 		return target instanceof Hero ? (Hero) target : null;
@@ -42,7 +45,8 @@ public class SolomonArcana extends Buff {
 		Hero h = hero();
 		int lvl = h == null ? 1 : h.lvl;
 		int insight = h == null ? 0 : h.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.SOL_INSIGHT);
-		return 15 + lvl + wisdom * 0.2f + 3 * SinArtifact.bonusCharges(h) + 3 * insight;
+		float m = 15 + lvl + wisdom * 0.2f + 3 * SinArtifact.bonusCharges(h) + 3 * insight;
+		return mirrored ? m * 1.2f : m;
 	}
 
 	public float turnsPerMana() {
@@ -61,6 +65,7 @@ public class SolomonArcana extends Buff {
 		//the Arch Magus's spells are 25% stronger
 		if (h != null && h.subClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass.ARCH_MAGUS) p *= 1.25f;
 		if (h != null) p *= 1f + 0.08f * h.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.MAGUS_OVERLOAD);
+		if (mirrored) p *= 1.15f;
 		return p;
 	}
 
@@ -170,6 +175,7 @@ public class SolomonArcana extends Buff {
 		for (SolomonSpells.Element e : principles) pr.add(e.name());
 		bundle.put("principles", pr.toArray(new String[0]));
 		bundle.put("told_principles", toldPrinciples);
+		bundle.put("mirrored", mirrored);
 	}
 
 	@Override
@@ -191,5 +197,6 @@ public class SolomonArcana extends Buff {
 			}
 		}
 		toldPrinciples = bundle.getInt("told_principles");
+		mirrored = bundle.getBoolean("mirrored");
 	}
 }
