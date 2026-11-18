@@ -481,6 +481,13 @@ Done and pushed (see `git log`):
   vulnerable 10), Nightmare (6 turns of dozing; magical sleep, bosses slow 8 + paralysis 1), Binding Seal (20 mana:
   Corruption on non-bosses, else x1.4 x spell power, roots 4, hex 8). Strings `tools/strings/trial_*`. SinShadow
   is in the bestiary's QUEST group; dev tools "죄의 시련: 유물 2차 각성" calls `awaken`.
+- Floor 26 / the amulet (Nov 18 2026, owner): `LastLevel.createItems` no longer drops the Amulet of Yendor; `HolyGiant.vanquish` ->
+  `dropAmulet` puts it next to the hero on floor 31 (skipped when `Statistics.amuletObtained` or already carried; old saves keep
+  the one already on 26). The archangel's hall is 12x17 (`LastLevel.ARENA_LEFT..RIGHT` 2..13, `ARENA_TOP..BOTTOM` 4..20, rows 3
+  and 21 one tile narrower, four STATUE pillars `PILLARS`), `CustomFloor` covers the whole hall, view distance 6 (was 4). The
+  archangel's fifth skill SERAPH = id 4 (`seraphSpot`: a 2x2 spot 2-4 tiles from it, not within 1 of the hero, one seraph alive
+  at a time, `MAX_SERAPHS` 3 per fight, saved as "seraphs_called", cooldown 14; the seraph keeps to the hall's bounds) and its
+  death takes the called seraphs with it.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

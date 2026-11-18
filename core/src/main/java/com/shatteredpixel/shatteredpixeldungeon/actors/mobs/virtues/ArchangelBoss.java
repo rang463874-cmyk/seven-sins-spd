@@ -39,7 +39,11 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	public Virtue virtue = Virtue.HUMILITY;
 
-	private static final int JUDGMENT = 0, LANCE = 1, SIGNATURE = 2, BLOOM = 3;
+	private static final int JUDGMENT = 0, LANCE = 1, SIGNATURE = 2, BLOOM = 3, SERAPH = 4;
+
+	/** seven sins mod (Nov 18 2026, owner): it calls seraphs down, one alive at a time, MAX_SERAPHS per fight */
+	public static final int MAX_SERAPHS = 3;
+	private int seraphsCalled = 0;
 
 	private int ascensions = 0;
 
@@ -117,7 +121,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	// ------------------------------------------------------------------ skills
 
-	@Override protected int skillCount() { return 4; }
+	@Override protected int skillCount() { return 5; }
 
 	/** Radiant bloom: light blooms from the hero's tile and grows one tile a turn, like the spire's crystals */
 	@Override
@@ -129,6 +133,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 
 	@Override
 	protected int cooldown(int s) {
+		if (s == SERAPH) return 14;
 		int cd = s == JUDGMENT ? 4 : s == LANCE ? 5 : s == BLOOM ? 7 : 6;
 		return ascensions >= 2 ? Math.max(2, cd - 2) : cd;
 	}
@@ -138,6 +143,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		if (s == JUDGMENT) return "judgment";
 		if (s == LANCE) return "lance";
 		if (s == BLOOM) return "bloom";
+		if (s == SERAPH) return "seraph";
 		return virtue.name().toLowerCase();
 	}
 
@@ -175,6 +181,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		int d = dist(t);
 		if (s == JUDGMENT) return d <= 7 ? crossLines(t.pos, 5) : null;
 		if (s == LANCE) return d >= 2 && d <= 9 ? line(t, 9) : null;
+		if (s == SERAPH) return seraphSpot(t);
 		switch (virtue) {
 			case HUMILITY: case TEMPERANCE: return d <= 7 ? plus(t.pos) : null;
 			case CHARITY: return d <= 7 ? scatter(t.pos, 3, 7) : null;
@@ -182,6 +189,70 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 			case CHASTITY: case PATIENCE: return d <= 2 ? around(2) : null;
 			case DILIGENCE: default: return d >= 2 && d <= 7 ? line(t, 8) : null;
 		}
+	}
+
+	// ------------------------------------------------------------------ calling seraphs
+
+	private boolean seraphAlive() {
+		for (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m : Dungeon.level.mobs) {
+			if (m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph && m.isAlive()) return true;
+		}
+		return false;
+	}
+
+	/** the hall a called seraph keeps to: the archangel's hall on floor 26, else the whole floor */
+	private int[] seraphBounds() {
+		if (Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel) {
+			return new int[]{com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel.ARENA_LEFT,
+					com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel.ARENA_TOP,
+					com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel.ARENA_RIGHT,
+					com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel.ARENA_BOTTOM};
+		}
+		return new int[]{1, 1, Dungeon.level.width() - 2, Dungeon.level.height() - 2};
+	}
+
+	private com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph newSeraph() {
+		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph sr = new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph();
+		int[] b = seraphBounds();
+		sr.left = b[0]; sr.top = b[1]; sr.right = b[2]; sr.bottom = b[3];
+		return sr;
+	}
+
+	/** the 2x2 block (top-left first) where a seraph would land: near the archangel, not on the hero */
+	private int[] seraphSpot(Char t) {
+		if (seraphsCalled >= MAX_SERAPHS || seraphAlive() || dist(t) > 8) return null;
+		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph probe = newSeraph();
+		int w = Dungeon.level.width();
+		ArrayList<Integer> spots = new ArrayList<>();
+		for (int c = 0; c < Dungeon.level.length(); c++) {
+			int d = Dungeon.level.distance(pos, c);
+			if (d < 2 || d > 4) continue;
+			if (!probe.fits(Dungeon.level, c)) continue;
+			boolean nearHero = false;
+			for (int b : new int[]{c, c + 1, c + w, c + w + 1}) if (Dungeon.level.distance(b, t.pos) < 2) nearHero = true;
+			if (!nearHero) spots.add(c);
+		}
+		if (spots.isEmpty()) return null;
+		int c = Random.element(spots);
+		return new int[]{c, c + 1, c + w, c + w + 1};
+	}
+
+	private void callSeraph(int[] cells) {
+		if (cells.length < 4) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph sr = newSeraph();
+		if (!sr.fits(Dungeon.level, cells[0])) return;
+		seraphsCalled++;
+		sr.pos = cells[0];
+		sr.state = sr.HUNTING;
+		GameScene.add(sr);
+		if (Dungeon.hero != null) {
+			sr.aggro(Dungeon.hero);
+			sr.beckon(Dungeon.hero.pos);
+		}
+		for (int c : cells) CellEmitter.center(c).burst(Speck.factory(Speck.LIGHT), 4);
+		GameScene.flash(0x40FFFFE0);
+		GLog.w(Messages.get(this, "seraph_called"));
+		Sample.INSTANCE.play(Assets.Sounds.CHARGEUP);
 	}
 
 	private void heal(int amount) {
@@ -209,6 +280,10 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 				strike(c, 20, 34);
 			}
 			Sample.INSTANCE.play(Assets.Sounds.RAY, 0.8f);
+			return;
+		}
+		if (s == SERAPH) {
+			callSeraph(cells);
 			return;
 		}
 		if (s == LANCE) {
@@ -332,6 +407,10 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		super.die(cause);
 		yell(line("death"));
 		GameScene.bossSlain();
+		//the seraphs it called go back with it
+		for (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m : Dungeon.level.mobs.toArray(new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob[0])) {
+			if (m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Seraph && m.isAlive()) m.die(null);
+		}
 		VirtueHooks.angelStage = 2;
 		if (nemesis() && Dungeon.hero != null && Dungeon.hero.isAlive()) SinRewards.grant(Dungeon.hero, 100);
 		GLog.p(Messages.get(this, "amulet_free"));
@@ -350,6 +429,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		bundle.put("virtue", virtue.name());
 		bundle.put("ascensions", ascensions);
 		bundle.put("ascended_start", ascendedStart);
+		bundle.put("seraphs_called", seraphsCalled);
 	}
 
 	@Override
@@ -362,6 +442,7 @@ public class ArchangelBoss extends RegionElite implements VirtueFoe {
 		}
 		ascensions = bundle.getInt("ascensions");
 		ascendedStart = bundle.getBoolean("ascended_start");
+		seraphsCalled = bundle.getInt("seraphs_called");
 		if (state != SLEEPING) BossHealthBar.assignBoss(this);
 	}
 }

@@ -48,7 +48,7 @@ public class LastLevel extends Level {
 		color1 = 0x801500;
 		color2 = 0xa68521;
 
-		viewDistance = Math.min(4, viewDistance);
+		viewDistance = Math.min(6, viewDistance); //seven sins mod: 4 in vanilla; the archangel's hall is big now
 	}
 
 	@Override
@@ -115,6 +115,9 @@ public class LastLevel extends Level {
 	}
 
 	private static final int ROOM_TOP = 10;
+	/** seven sins mod: the archangel's hall (inclusive bounds; rows ARENA_TOP-1 and ARENA_BOTTOM+1 are a bit narrower) */
+	public static final int ARENA_LEFT = 2, ARENA_RIGHT = 13, ARENA_TOP = 4, ARENA_BOTTOM = 20;
+	private static final int[][] PILLARS = {{4, 7}, {11, 7}, {4, 17}, {11, 17}};
 	private static final int WIDTH = 16;
 	private static final int MID = WIDTH/2;
 	public static int AMULET_POS = 12*WIDTH + MID;
@@ -172,14 +175,17 @@ public class LastLevel extends Level {
 			}
 		}
 
-		Painter.fill( this, MID - 2, 9, 5, 7, Terrain.EMPTY);
-		Painter.fill( this, MID - 3, 10, 7, 5, Terrain.EMPTY);
+		//seven sins mod (Nov 18 2026, owner): the archangel's hall is 12x17 instead of 7x7, with four pillars for cover
+		Painter.fill( this, ARENA_LEFT, ARENA_TOP, ARENA_RIGHT - ARENA_LEFT + 1, ARENA_BOTTOM - ARENA_TOP + 1, Terrain.EMPTY);
+		Painter.fill( this, ARENA_LEFT + 1, ARENA_TOP - 1, ARENA_RIGHT - ARENA_LEFT - 1, 1, Terrain.EMPTY);
+		Painter.fill( this, ARENA_LEFT + 1, ARENA_BOTTOM + 1, ARENA_RIGHT - ARENA_LEFT - 1, 1, Terrain.EMPTY);
+		for (int[] p : PILLARS) map[p[0] + p[1] * width] = Terrain.STATUE;
 
 		feeling = Feeling.NONE;
-		viewDistance = 4;
+		viewDistance = 6;
 
 		CustomTilemap vis = new CustomFloor();
-		vis.setRect( 5, 0, 7, height - ROOM_TOP);
+		vis.setRect( ARENA_LEFT, 0, ARENA_RIGHT - ARENA_LEFT + 1, height - ROOM_TOP);
 		customTiles.add(vis);
 
 		vis = new CenterPieceVisuals();
@@ -210,7 +216,7 @@ public class LastLevel extends Level {
 
 	@Override
 	protected void createItems() {
-		drop( new Amulet(), AMULET_POS );
+		//seven sins mod (Nov 18 2026, owner): the amulet is no longer here; the holy giant leaves it (floor 31)
 	}
 
 	@Override

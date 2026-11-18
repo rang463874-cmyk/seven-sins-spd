@@ -418,6 +418,22 @@ public class HolyGiant extends RegionElite {
 		yell(Messages.get(this, "death"));
 		GameScene.bossSlain();
 		super.die(null);
+		dropAmulet();
+	}
+
+	/** seven sins mod (Nov 18 2026, owner): the Amulet of Yendor waits here now instead of on floor 26 */
+	private void dropAmulet() {
+		if (com.shatteredpixel.shatteredpixeldungeon.Statistics.amuletObtained || Dungeon.hero == null) return;
+		if (Dungeon.hero.belongings.getItem(com.shatteredpixel.shatteredpixeldungeon.items.Amulet.class) != null) return;
+		int at = -1;
+		for (int n : com.watabou.utils.PathFinder.NEIGHBOURS8) {
+			int c = Dungeon.hero.pos + n;
+			if (Dungeon.level.passable[c] && !Dungeon.level.solid[c] && Dungeon.level.heaps.get(c) == null) { at = c; break; }
+		}
+		if (at == -1) at = Dungeon.hero.pos;
+		Dungeon.level.drop(new com.shatteredpixel.shatteredpixeldungeon.items.Amulet(), at).sprite.drop();
+		CellEmitter.get(at).burst(Speck.factory(Speck.LIGHT), 12);
+		GLog.p(Messages.get(HolyGiant.class, "amulet"));
 	}
 
 	@Override
