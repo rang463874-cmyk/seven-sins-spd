@@ -706,6 +706,11 @@ Done: gluttony (third design Nov 16: farm girl in a straw hat and brown overalls
  the cut ate it); background blue = pyjama blue, so `FRINGE` 2 like envy; walk and attack mirrored; `CLOTHES` = the
  pyjamas below the face (the cap stays), tier 6 violet; die = sitting asleep on the pillow; splash = hugging the pillow).
  All seven sins have the owner's art now.
+ Solomon too (Nov 18 2026: crowned king in a violet robe and fur-trimmed cape, 68x51; `SINS` has "solomon" at index 7 =
+ ordinal 13; detected pitches; walk/walk2/attack drawn facing left (`WALK_MIRROR`, attack mirrored); `CLOTHES` = the violet
+ robe and cape below the head (hue 0.66..0.82, smin 0.18), tier 6 royal crimson; `FRINGE` 2 (violet robe on a violet
+ background); the attack keeps its magic crescent; splash = the picture with the staff on its own dark violet).
+ `make_solomon_assets.py` leaves the sheet, splash and avatar alone once `hero_art/solomon` exists.
 Title screen (Nov 13 2026): the owner's Gemini mock-up `tools/sinsart/title_art/title_mockup.png` (drawn over a phone
 screenshot) -> `interfaces/title_art.jpg` (`Assets.Interfaces.TITLE_ART`) by `tools/sinsart/make_title_art.py` (buttons, version,
 chevron and sparkle inpainted out, lower half darkened). `TitleScene` draws it cover-fit from the top with linear filtering,

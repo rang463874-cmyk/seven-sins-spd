@@ -92,11 +92,13 @@ def main():
         splash = m.Image.open(p("splashes/cleric.jpg")).convert("RGBA")
         m.recolor(splash, m.splash_px(HUE, ACCENT)).convert("RGB").save(p("splashes/solomon.jpg"), quality=92)
 
-    avatars = m.Image.open(p("sprites/avatars.png")).convert("RGBA")
-    avatars = m.grow(avatars, 24 * (ORDINAL + 1), 32)
-    cleric_avatar = avatars.crop(m.cell(m.CLERIC_ORDINAL, 1000, 24, 32))
-    avatars.paste(m.recolor(cleric_avatar, px), m.cell(ORDINAL, 1000, 24, 32)[:2])
-    avatars.save(p("sprites/avatars.png"))
+    if not os.path.isdir(os.path.join(here, "hero_art", "solomon")):
+        #with the owner's pictures, make_hero_sprites.py makes the avatar too
+        avatars = m.Image.open(p("sprites/avatars.png")).convert("RGBA")
+        avatars = m.grow(avatars, 24 * (ORDINAL + 1), 32)
+        cleric_avatar = avatars.crop(m.cell(m.CLERIC_ORDINAL, 1000, 24, 32))
+        avatars.paste(m.recolor(cleric_avatar, px), m.cell(ORDINAL, 1000, 24, 32)[:2])
+        avatars.save(p("sprites/avatars.png"))
 
     items = m.Image.open(p("sprites/items.png")).convert("RGBA")
     blank = m.Image.new("RGBA", (16, 16), (0, 0, 0, 0))

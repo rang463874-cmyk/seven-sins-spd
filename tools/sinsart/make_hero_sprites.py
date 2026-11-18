@@ -29,7 +29,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 ART = os.path.join(ROOT, "hero_art")
 ASSETS = os.path.join(ROOT, "..", "..", "core", "src", "main", "assets")
 
-SINS = ["gluttony", "greed", "wrath", "pride", "lust", "envy", "sloth"]
+SINS = ["gluttony", "greed", "wrath", "pride", "lust", "envy", "sloth", "solomon"]  # solomon = ordinal 13, after the sins
 FIRST_SIN_ORDINAL = 6
 FRAMES = 21
 TIERS = 7
@@ -47,7 +47,7 @@ TIER_CLOTHES = {
              (250, 0.12, 3.5), None],
 }
 # pictures without a visible grid (soft Gemini "pixel art"): shrunk straight from the picture instead of sampled per cell
-NO_GRID = {"greed", "gluttony", "wrath", "pride", "lust", "sloth"}
+NO_GRID = {"greed", "gluttony", "wrath", "pride", "lust", "sloth", "solomon"}
 NO_GRID_STEP = 12          # source px per intermediate px for those
 # drop islands smaller than this share of the biggest one (flying coins, motion swooshes, sparkles)
 ISLAND_SHARE = {"default": 0.05, "greed": 0.15}
@@ -72,15 +72,18 @@ CLOTHES = {
     "envy": dict(hue=(0.0, 1.0), smin=-1.0, smax=0.45, vmin=0.15, vmax=0.42, below=0.45),
     # the light blue pyjamas, below the face (the nightcap is the same blue and stays; the hair is darker)
     "sloth": dict(hue=(0.56, 0.68), smin=0.25, vmin=0.6, below=0.45),
+    # Solomon (Nov 18 2026): the violet robe and cape below the crown and face (the gold trim and white fur stay)
+    "solomon": dict(hue=(0.66, 0.82), smin=0.18, vmin=0.2, below=0.47),
 }
 
 # class armor colour where the sin's hue on the picture's dark clothes would look muddy
 TIER6 = {"greed": (44, 0.75, 1.7), "wrath": (352, 0.85, 0.55), "pride": (265, 0.42, 0.92),
          "lust": (345, 0.80, 0.78),
          "envy": (165, 0.70, 2.1),
-         "sloth": (268, 0.50, 0.85)}      # the sin hue is the pyjamas' blue already: class armor is violet        # the sin hue is her hair's green already: class armor is deep teal       # the sin hue is the cardigan pink already: class armor is crimson
+         "sloth": (268, 0.50, 0.85),
+         "solomon": (340, 0.65, 0.95)}  # the robe is violet already: class armor is royal crimson      # the sin hue is the pyjamas' blue already: class armor is violet        # the sin hue is her hair's green already: class armor is deep teal       # the sin hue is the cardigan pink already: class armor is crimson
 
-SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215}
+SIN_HUE = {"gluttony": 285, "greed": 46, "wrath": 4, "pride": 265, "lust": 332, "envy": 125, "sloth": 215, "solomon": 272}
 
 
 # ------------------------------------------------------------------ picture -> native pixel art
@@ -442,9 +445,9 @@ GLOBAL_BG = {"gluttony"}
 SWAP_LEGS = {"pride": False, "envy": False}
 # background-coloured fringe to peel off the silhouette (layers): envy's hair is the background's green, so the
 # cut can't be made looser instead
-FRINGE = {"envy": 2, "sloth": 2, "gluttony": 1}  # gluttony: walk2.png left a yellow rim
+FRINGE = {"envy": 2, "sloth": 2, "gluttony": 1, "solomon": 2}  # solomon: violet robe on a violet background  # gluttony: walk2.png left a yellow rim
 # walk pictures drawn facing left
-WALK_MIRROR = {"envy", "sloth"}
+WALK_MIRROR = {"envy", "sloth", "solomon"}
 # walk2 pictures whose facing differs from walk's (default: mirrored like walk)
 WALK2_MIRROR = {"sloth": False}                 # sloth's second stride is drawn facing right
 
@@ -455,7 +458,7 @@ POSE_SCALE = {"greed": {"attack": 0.78, "die": 0.78},
               # and the background cut ate the pillow.
               "sloth": {"attack": 0.735}}
 # attack pictures are mirrored to face right when the weapon sticks out to the left; None = decide from the picture
-ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False, "lust": True, "envy": True, "sloth": True}
+ATTACK_MIRROR = {"greed": False, "gluttony": False, "wrath": False, "pride": False, "lust": True, "envy": True, "sloth": True, "solomon": True}
 
 
 def build_frames(pics, name="default"):
@@ -575,7 +578,7 @@ SPLASH_FOCUS = {"default": 0.5, "greed": 0.52}
 # boxes (source px) painted with the background colour: the Gemini sparkle
 SPLASH_ERASE = {}
 # flat-coloured pictures narrower than the splash: the side bars take the picture's corner colour instead of black
-SPLASH_FILL = {"lust", "envy", "sloth", "wrath", "gluttony"}
+SPLASH_FILL = {"lust", "envy", "sloth", "wrath", "gluttony", "solomon"}
 
 
 def splash(name, src):
