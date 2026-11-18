@@ -473,9 +473,13 @@ Done and pushed (see `git log`):
   (`awakened` saved as "trial_awakened", `levelCap` 20 = `AWAKENED_CAP`, name "awakened %s"). Ascension now happens at
   `ASCEND_LEVEL` 10 instead of at levelCap; the scaling effects use `effLevel` (levels past 10 count half). The class's trial
   skill is appended by `SkillHolder.visibleSkills` from `TrialHooks.skill` (40-turn `TrialHooks.Cooldown`; icons
-  skill_icons.png row 9 = 72..79, violet rim): Feast (150 satiety), Midas Touch (gauge 40+8d, targeted), Cataclysm (all rage,
-  min 50), Royal Decree (3 dignity), Fatal Attraction (15% HP), Doppelganger (60 jealousy, 3 mirror images), Eternal Slumber
-  (6 turns of dozing), Binding Seal (20 mana, targeted: Corruption on non-bosses). Strings `tools/strings/trial_*`. SinShadow
+  skill_icons.png row 9 = 72..79, violet rim). Owner, same day: all are single-target attack/control skills for boss fights
+  (one `TARGET` selector, `pay` then `use`; `ctrl` shortens controls on bosses/minibosses; damage `roll` = 2lvl..4lvl+15 x mult):
+  Devour (150 satiety, x1.6, heal half, weakness), Midas Touch (gauge 40+8d, paralysis 6/boss 2, vulnerable 10, gold), Wrathful
+  Blow (all rage min 50: rage + 2lvl, cripple, paralysis 2/1), Execution Order (3 dignity, up to x2 by missing HP, paralysis
+  4/1, weakness), Fatal Kiss (15% HP, heal all, charm 6/2), Covetous Curse (60 jealousy, + 12% of current HP, hex/weak/
+  vulnerable 10), Nightmare (6 turns of dozing; magical sleep, bosses slow 8 + paralysis 1), Binding Seal (20 mana:
+  Corruption on non-bosses, else x1.4 x spell power, roots 4, hex 8). Strings `tools/strings/trial_*`. SinShadow
   is in the bestiary's QUEST group; dev tools "죄의 시련: 유물 2차 각성" calls `awaken`.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).

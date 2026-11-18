@@ -18,6 +18,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LustDesire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicalSleep;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Roots;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PrideGlory;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Slow;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SlothRepose;
@@ -204,64 +205,67 @@ public final class TrialHooks {
 		return Math.max(1, Math.round(c));
 	}
 
-	/** the class's trial skill, or null */
+	/**
+	 * The class's trial skill, or null. Nov 18 2026 (owner): every one is a single-target attack / control skill meant
+	 * for boss fights; bosses get shorter controls, the rest the full effect.
+	 */
 	public static SinSkill skill(Hero hero) {
 		if (hero == null) return null;
+		BasicSkill s;
 		switch (hero.heroClass) {
 			case GLUTTONY:
-				return new BasicSkill(TrialHooks.class, id(hero), 72, SinSkill.CostType.SATIETY)
+				s = new BasicSkill(TrialHooks.class, id(hero), 72, SinSkill.CostType.SATIETY)
 						.cost(h -> PredatorMaw.hungerCost(h, GLUTTONY_SATIETY))
-						.usableIf(h -> ready(h) && PredatorMaw.canAfford(h, GLUTTONY_SATIETY))
-						.onUse(TrialHooks::feast);
+						.usableIf(h -> ready(h) && PredatorMaw.canAfford(h, GLUTTONY_SATIETY));
+				break;
 			case GREED:
-				return new BasicSkill(TrialHooks.class, id(hero), 73, SinSkill.CostType.GAUGE).targetsEnemy()
+				s = new BasicSkill(TrialHooks.class, id(hero), 73, SinSkill.CostType.GAUGE)
 						.cost(TrialHooks::greedCost)
-						.usableIf(h -> ready(h) && h.buff(GreedVault.class) != null && h.buff(GreedVault.class).charge >= greedCost(h))
-						.onUse(h -> GameScene.selectCell(midas));
+						.usableIf(h -> ready(h) && h.buff(GreedVault.class) != null && h.buff(GreedVault.class).charge >= greedCost(h));
+				break;
 			case WRATH:
-				return new BasicSkill(TrialHooks.class, id(hero), 74, SinSkill.CostType.RAGE)
+				s = new BasicSkill(TrialHooks.class, id(hero), 74, SinSkill.CostType.RAGE)
 						.cost(h -> h.buff(WrathGrudge.class) == null ? WRATH_MIN_RAGE : Math.max(WRATH_MIN_RAGE, (int) h.buff(WrathGrudge.class).rage))
-						.usableIf(h -> ready(h) && h.buff(WrathGrudge.class) != null && h.buff(WrathGrudge.class).rage >= WRATH_MIN_RAGE)
-						.onUse(TrialHooks::cataclysm);
+						.usableIf(h -> ready(h) && h.buff(WrathGrudge.class) != null && h.buff(WrathGrudge.class).rage >= WRATH_MIN_RAGE);
+				break;
 			case PRIDE:
-				return new BasicSkill(TrialHooks.class, id(hero), 75, SinSkill.CostType.DIGNITY)
+				s = new BasicSkill(TrialHooks.class, id(hero), 75, SinSkill.CostType.DIGNITY)
 						.cost(h -> PRIDE_DIGNITY)
-						.usableIf(h -> ready(h) && h.buff(PrideGlory.class) != null && h.buff(PrideGlory.class).dignity >= PRIDE_DIGNITY)
-						.onUse(TrialHooks::decree);
+						.usableIf(h -> ready(h) && h.buff(PrideGlory.class) != null && h.buff(PrideGlory.class).dignity >= PRIDE_DIGNITY);
+				break;
 			case LUST:
-				return new BasicSkill(TrialHooks.class, id(hero), 76, SinSkill.CostType.HP)
+				s = new BasicSkill(TrialHooks.class, id(hero), 76, SinSkill.CostType.HP)
 						.cost(h -> h.buff(LustDesire.class) == null ? 0 : h.buff(LustDesire.class).hpCost(LUST_HP))
 						.usableIf(h -> ready(h) && h.buff(LustDesire.class) != null
-								&& h.buff(LustDesire.class).canPay(h.buff(LustDesire.class).hpCost(LUST_HP)))
-						.onUse(TrialHooks::attraction);
+								&& h.buff(LustDesire.class).canPay(h.buff(LustDesire.class).hpCost(LUST_HP)));
+				break;
 			case ENVY:
-				return new BasicSkill(TrialHooks.class, id(hero), 77, SinSkill.CostType.JEALOUSY)
+				s = new BasicSkill(TrialHooks.class, id(hero), 77, SinSkill.CostType.JEALOUSY)
 						.cost(h -> ENVY_JEALOUSY)
-						.usableIf(h -> ready(h) && h.buff(EnvyCovet.class) != null && h.buff(EnvyCovet.class).jealousy >= ENVY_JEALOUSY)
-						.onUse(TrialHooks::doppelganger);
+						.usableIf(h -> ready(h) && h.buff(EnvyCovet.class) != null && h.buff(EnvyCovet.class).jealousy >= ENVY_JEALOUSY);
+				break;
 			case SLOTH:
-				return new BasicSkill(TrialHooks.class, id(hero), 78, SinSkill.CostType.TURNS)
+				s = new BasicSkill(TrialHooks.class, id(hero), 78, SinSkill.CostType.TURNS)
 						.cost(h -> SlothRepose.turnCost(h, SLOTH_TURNS))
-						.usableIf(TrialHooks::ready)
-						.onUse(TrialHooks::slumber);
+						.usableIf(TrialHooks::ready);
+				break;
 			case SOLOMON:
-				return new BasicSkill(TrialHooks.class, id(hero), 79, SinSkill.CostType.VARIES) {
-							@Override
-							public String costShort(Hero h) {
-								return Integer.toString(SOLOMON_MANA);
-							}
+				s = new BasicSkill(TrialHooks.class, id(hero), 79, SinSkill.CostType.VARIES) {
+					@Override
+					public String costShort(Hero h) {
+						return Integer.toString(SOLOMON_MANA);
+					}
 
-							@Override
-							public String costLabel(Hero h) {
-								return Messages.get(com.shatteredpixel.shatteredpixeldungeon.items.SolomonRing.class, "cost_mana", SOLOMON_MANA);
-							}
-						}.targetsEnemy()
-						.cost(h -> SOLOMON_MANA)
-						.usableIf(h -> ready(h) && h.buff(SolomonArcana.class) != null && h.buff(SolomonArcana.class).mana >= SOLOMON_MANA)
-						.onUse(h -> GameScene.selectCell(bind));
+					@Override
+					public String costLabel(Hero h) {
+						return Messages.get(com.shatteredpixel.shatteredpixeldungeon.items.SolomonRing.class, "cost_mana", SOLOMON_MANA);
+					}
+				}.usableIf(h -> ready(h) && h.buff(SolomonArcana.class) != null && h.buff(SolomonArcana.class).mana >= SOLOMON_MANA);
+				break;
 			default:
 				return null;
 		}
+		return s.targetsEnemy().onUse(h -> GameScene.selectCell(TARGET));
 	}
 
 	// ------------------------------------------------------------------ helpers
@@ -270,15 +274,23 @@ public final class TrialHooks {
 		return Char.hasProp(ch, Char.Property.BOSS) || Char.hasProp(ch, Char.Property.MINIBOSS);
 	}
 
-	private static ArrayList<Mob> foes(Hero h, int range) {
-		ArrayList<Mob> out = new ArrayList<>();
-		for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])) {
-			if (m.alignment != Char.Alignment.ENEMY || !m.isAlive()) continue;
-			if (!Dungeon.level.heroFOV[m.pos]) continue;
-			if (range > 0 && Dungeon.level.distance(h.pos, m.pos) > range) continue;
-			out.add(m);
-		}
-		return out;
+	/** a control's turns: full on regular enemies, this share on bosses/minibosses */
+	private static float ctrl(Char ch, float turns, float bossShare) {
+		return boss(ch) ? Math.max(1f, turns * bossShare) : turns;
+	}
+
+	/** the base damage roll of the trial skills */
+	private static int roll(Hero h, float mult) {
+		int lvl = Math.max(1, h.lvl);
+		return Math.max(1, Math.round(Random.NormalIntRange(2 * lvl, 4 * lvl + 15) * mult));
+	}
+
+	/** deals the damage, returns what was actually taken off */
+	private static int hit(Hero h, Char ch, int dmg) {
+		int before = ch.HP + ch.shielding();
+		ch.damage(dmg, h);
+		if (ch.sprite != null) ch.sprite.flash();
+		return Math.max(0, before - Math.max(0, ch.HP) - ch.shielding());
 	}
 
 	private static void heal(Hero h, int amount) {
@@ -288,61 +300,73 @@ public final class TrialHooks {
 		h.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(amount), FloatingText.HEALING);
 	}
 
-	private static void finish(Hero h, boolean spendTurn) {
+	private static void finish(Hero h, int target, boolean spendTurn) {
 		Buff.affect(h, Cooldown.class, COOLDOWN);
 		Invisibility.dispel();
-		h.sprite.operate(h.pos);
+		h.sprite.zap(target);
 		h.sprite.showStatus(0xCC88FF, Messages.get(TrialHooks.class, "skill_" + id(h)));
 		BuffIndicator.refreshHero();
 		Item.updateQuickslot();
 		if (spendTurn) h.spendAndNext(1f);
 	}
 
+	/** pays the class's cost; false (nothing spent) if it can't */
+	private static boolean pay(Hero h) {
+		switch (h.heroClass) {
+			case GLUTTONY:
+				if (!PredatorMaw.canAfford(h, GLUTTONY_SATIETY)) return false;
+				h.buff(Hunger.class).affectHunger(-PredatorMaw.hungerCost(h, GLUTTONY_SATIETY));
+				SinArtifact.onSpent(h, 3);
+				return true;
+			case GREED: {
+				GreedVault v = h.buff(GreedVault.class);
+				return v != null && v.spend(greedCost(h));
+			}
+			case WRATH: {
+				WrathGrudge g = h.buff(WrathGrudge.class);
+				if (g == null || g.rage < WRATH_MIN_RAGE) return false;
+				spentRage = (int) g.rage;
+				return g.useRage(spentRage);
+			}
+			case PRIDE: {
+				PrideGlory g = h.buff(PrideGlory.class);
+				return g != null && g.useDignity(PRIDE_DIGNITY);
+			}
+			case LUST: {
+				LustDesire d = h.buff(LustDesire.class);
+				return d != null && d.pay(d.hpCost(LUST_HP));
+			}
+			case ENVY: {
+				EnvyCovet c = h.buff(EnvyCovet.class);
+				return c != null && c.useJealousy(ENVY_JEALOUSY);
+			}
+			case SLOTH:
+				return true; //pays by dozing afterwards
+			case SOLOMON: {
+				SolomonArcana a = h.buff(SolomonArcana.class);
+				return a != null && a.useMana(SOLOMON_MANA);
+			}
+			default:
+				return false;
+		}
+	}
+
+	private static int spentRage = 0;
+
 	// ------------------------------------------------------------------ effects
 
-	/** Gluttony, Feast: bites everything within 2, heals half of it; the weak are swallowed whole */
-	private static void feast(Hero h) {
-		if (!PredatorMaw.canAfford(h, GLUTTONY_SATIETY)) return;
-		h.buff(Hunger.class).affectHunger(-PredatorMaw.hungerCost(h, GLUTTONY_SATIETY));
-		SinArtifact.onSpent(h, 3);
-		int total = 0;
-		for (Mob m : foes(h, 2)) {
-			int dmg = Random.NormalIntRange(h.lvl, 2 * h.lvl + 10);
-			int before = m.HP;
-			if (!boss(m) && m.HP - dmg <= m.HT / 4) dmg = m.HP;
-			m.damage(dmg, h);
-			total += Math.max(0, before - Math.max(0, m.HP));
-			CellEmitter.get(m.pos).burst(Speck.factory(Speck.BONE), 4);
-			if (!m.isAlive()) h.buff(Hunger.class).affectHunger(30);
-		}
-		heal(h, total / 2);
-		Sample.INSTANCE.play(Assets.Sounds.EAT);
-		finish(h, true);
-	}
-
-	/** Greed, Midas Touch: the target turns to gold for a while and sheds coins */
-	private static final CellSelector.Listener midas = new CellSelector.Listener() {
+	private static final CellSelector.Listener TARGET = new CellSelector.Listener() {
 		@Override
 		public void onSelect(Integer cell) {
 			Hero h = Dungeon.hero;
-			if (cell == null) return;
+			if (cell == null || h == null) return;
 			Char ch = Actor.findChar(cell);
 			if (!(ch instanceof Mob) || ch.alignment != Char.Alignment.ENEMY || !Dungeon.level.heroFOV[cell]) {
 				GLog.w(Messages.get(TrialHooks.class, "no_target"));
 				return;
 			}
-			GreedVault v = h.buff(GreedVault.class);
-			if (v == null || !v.spend(greedCost(h))) return;
-			if (boss(ch)) {
-				Buff.prolong(ch, Slow.class, 4f);
-			} else {
-				Buff.prolong(ch, Paralysis.class, 8f);
-			}
-			Buff.prolong(ch, Vulnerable.class, 8f);
-			Dungeon.level.drop(new Gold(5 * Dungeon.depth), ch.pos).sprite.drop();
-			CellEmitter.get(ch.pos).burst(Speck.factory(Speck.COIN), 12);
-			Sample.INSTANCE.play(Assets.Sounds.GOLD);
-			finish(h, true);
+			if (!pay(h)) return;
+			use(h, (Mob) ch);
 		}
 
 		@Override
@@ -351,107 +375,113 @@ public final class TrialHooks {
 		}
 	};
 
-	/** Wrath, Cataclysm: all the rage at once into everything within 3 */
-	private static void cataclysm(Hero h) {
-		WrathGrudge g = h.buff(WrathGrudge.class);
-		if (g == null || g.rage < WRATH_MIN_RAGE) return;
-		int rage = (int) g.rage;
-		g.useRage(rage);
-		for (Mob m : foes(h, 3)) {
-			m.damage(Math.round(rage * 0.5f) + h.lvl, h);
-			if (m.isAlive()) Buff.prolong(m, Cripple.class, 5f);
-			CellEmitter.get(m.pos).burst(Speck.factory(Speck.ROCK), 4);
-		}
-		PixelScene.shake(3, 0.5f);
-		Sample.INSTANCE.play(Assets.Sounds.BLAST);
-		finish(h, true);
-	}
-
-	/** Pride, Royal Decree: every enemy in sight kneels */
-	private static void decree(Hero h) {
-		PrideGlory g = h.buff(PrideGlory.class);
-		if (g == null || !g.useDignity(PRIDE_DIGNITY)) return;
-		for (Mob m : foes(h, 0)) {
-			if (boss(m)) {
-				Buff.prolong(m, Weakness.class, 6f);
-				Buff.prolong(m, Vulnerable.class, 6f);
-			} else {
-				Buff.prolong(m, Paralysis.class, 4f);
+	private static void use(Hero h, Mob m) {
+		boolean doze = false;
+		switch (h.heroClass) {
+			case GLUTTONY: {
+				//Devour: a huge bite that heals half of it and saps the target's strength
+				int dealt = hit(h, m, roll(h, 1.6f));
+				heal(h, dealt / 2);
+				if (m.isAlive()) Buff.prolong(m, Weakness.class, 8f);
+				CellEmitter.get(m.pos).burst(Speck.factory(Speck.BONE), 6);
+				Sample.INSTANCE.play(Assets.Sounds.EAT);
+				break;
 			}
-			m.sprite.emitter().burst(Speck.factory(Speck.LIGHT), 4);
-		}
-		Sample.INSTANCE.play(Assets.Sounds.CHALLENGE);
-		finish(h, true);
-	}
-
-	/** Lust, Fatal Attraction: everything within 4 is charmed and drained */
-	private static void attraction(Hero h) {
-		LustDesire d = h.buff(LustDesire.class);
-		if (d == null || !d.pay(d.hpCost(LUST_HP))) return;
-		int total = 0;
-		for (Mob m : foes(h, 4)) {
-			if (!LustDesire.charmImmune(m)) Buff.affect(m, Charm.class, 8f).object = h.id();
-			int before = m.HP;
-			m.damage(h.lvl / 2 + 3, h);
-			total += Math.max(0, before - Math.max(0, m.HP));
-			m.sprite.centerEmitter().burst(Speck.factory(Speck.HEART), 4);
-		}
-		heal(h, total);
-		Sample.INSTANCE.play(Assets.Sounds.CHARMS);
-		finish(h, true);
-	}
-
-	/** Envy, Doppelganger: three copies of yourself */
-	private static void doppelganger(Hero h) {
-		EnvyCovet c = h.buff(EnvyCovet.class);
-		if (c == null || !c.useJealousy(ENVY_JEALOUSY)) return;
-		ScrollOfMirrorImage.spawnImages(h, 3);
-		Sample.INSTANCE.play(Assets.Sounds.READ);
-		finish(h, true);
-	}
-
-	/** Sloth, Eternal Slumber: every enemy in sight falls asleep; the sloth dozes too */
-	private static void slumber(Hero h) {
-		for (Mob m : foes(h, 0)) {
-			if (boss(m)) Buff.prolong(m, Slow.class, 5f);
-			else Buff.affect(m, MagicalSleep.class);
-		}
-		Sample.INSTANCE.play(Assets.Sounds.LULLABY);
-		finish(h, false);
-		SlothRepose.doze(h, SlothRepose.turnCost(h, SLOTH_TURNS));
-	}
-
-	/** Solomon, Binding Seal: a lesser foe swears itself to Solomon for good; the great ones are scorched */
-	private static final CellSelector.Listener bind = new CellSelector.Listener() {
-		@Override
-		public void onSelect(Integer cell) {
-			Hero h = Dungeon.hero;
-			if (cell == null) return;
-			Char ch = Actor.findChar(cell);
-			if (!(ch instanceof Mob) || ch.alignment != Char.Alignment.ENEMY || !Dungeon.level.heroFOV[cell]) {
-				GLog.w(Messages.get(TrialHooks.class, "no_target"));
-				return;
+			case GREED: {
+				//Midas Touch: turned to gold for a moment, and it stays brittle
+				hit(h, m, roll(h, 1.0f));
+				if (m.isAlive()) {
+					Buff.prolong(m, Paralysis.class, ctrl(m, 6f, 0.34f));
+					Buff.prolong(m, Vulnerable.class, 10f);
+				}
+				Dungeon.level.drop(new Gold(5 * Dungeon.depth), m.pos).sprite.drop();
+				CellEmitter.get(m.pos).burst(Speck.factory(Speck.COIN), 12);
+				Sample.INSTANCE.play(Assets.Sounds.GOLD);
+				break;
 			}
-			SolomonArcana a = h.buff(SolomonArcana.class);
-			if (a == null || !a.useMana(SOLOMON_MANA)) return;
-			Mob m = (Mob) ch;
-			if (!boss(m) && !m.isImmune(Corruption.class)) {
-				AllyBuff.affectAndLoot(m, h, Corruption.class);
-				m.sprite.emitter().burst(ShadowParticle.UP, 10);
-				GLog.p(Messages.get(TrialHooks.class, "bound", m.name()));
-			} else {
-				int lvl = Math.max(1, h.lvl);
-				m.damage(Math.round(Random.NormalIntRange(2 * lvl, 4 * lvl + 10) * a.spellPower()), h);
-				if (m.isAlive()) Buff.prolong(m, Hex.class, 8f);
+			case WRATH: {
+				//Cataclysm: all the rage in one blow
+				hit(h, m, spentRage + 2 * h.lvl);
+				if (m.isAlive()) {
+					Buff.prolong(m, Cripple.class, 6f);
+					Buff.prolong(m, Paralysis.class, ctrl(m, 2f, 0.5f));
+				}
+				CellEmitter.get(m.pos).burst(Speck.factory(Speck.ROCK), 8);
+				PixelScene.shake(3, 0.5f);
+				Sample.INSTANCE.play(Assets.Sounds.BLAST);
+				break;
+			}
+			case PRIDE: {
+				//Royal Decree: an execution order, the deadlier the lower it has fallen
+				float missing = 1f - m.HP / (float) Math.max(1, m.HT);
+				hit(h, m, roll(h, 1.2f * (1f + missing)));
+				if (m.isAlive()) {
+					Buff.prolong(m, Paralysis.class, ctrl(m, 4f, 0.25f));
+					Buff.prolong(m, Weakness.class, 8f);
+				}
+				m.sprite.emitter().burst(Speck.factory(Speck.LIGHT), 8);
+				Sample.INSTANCE.play(Assets.Sounds.CHALLENGE);
+				break;
+			}
+			case LUST: {
+				//Fatal Kiss: drains its life whole and leaves it smitten
+				int dealt = hit(h, m, roll(h, 1.2f));
+				heal(h, dealt);
+				if (m.isAlive() && !LustDesire.charmImmune(m)) Buff.affect(m, Charm.class, ctrl(m, 6f, 0.34f)).object = h.id();
+				m.sprite.centerEmitter().burst(Speck.factory(Speck.HEART), 8);
+				Sample.INSTANCE.play(Assets.Sounds.CHARMS);
+				break;
+			}
+			case ENVY: {
+				//Covetous Curse: takes a share of what it has, and leaves it hexed, weak and exposed
+				int share = Math.min(Math.round(m.HP * 0.12f), 4 * h.lvl + 20);
+				hit(h, m, roll(h, 0.8f) + share);
+				if (m.isAlive()) {
+					Buff.prolong(m, Hex.class, 10f);
+					Buff.prolong(m, Weakness.class, 10f);
+					Buff.prolong(m, Vulnerable.class, 10f);
+				}
 				m.sprite.emitter().burst(ShadowParticle.CURSE, 10);
+				Sample.INSTANCE.play(Assets.Sounds.CURSED);
+				break;
 			}
-			Sample.INSTANCE.play(Assets.Sounds.CURSED);
-			finish(h, true);
+			case SLOTH: {
+				//Nightmare: a dream that hurts; lesser foes don't wake from it, bosses crawl
+				hit(h, m, roll(h, 1.0f));
+				if (m.isAlive()) {
+					if (boss(m)) {
+						Buff.prolong(m, Slow.class, 8f);
+						Buff.prolong(m, Paralysis.class, 1f);
+					} else {
+						Buff.affect(m, MagicalSleep.class);
+					}
+				}
+				m.sprite.emitter().burst(Speck.factory(Speck.NOTE), 6);
+				Sample.INSTANCE.play(Assets.Sounds.LULLABY);
+				doze = true;
+				break;
+			}
+			case SOLOMON: {
+				//Binding Seal: a lesser foe swears itself to Solomon for good; the great ones are bound and scorched
+				if (!boss(m) && !m.isImmune(Corruption.class)) {
+					AllyBuff.affectAndLoot(m, h, Corruption.class);
+					GLog.p(Messages.get(TrialHooks.class, "bound", m.name()));
+				} else {
+					SolomonArcana a = h.buff(SolomonArcana.class);
+					hit(h, m, roll(h, 1.4f * (a == null ? 1f : a.spellPower())));
+					if (m.isAlive()) {
+						Buff.prolong(m, Roots.class, 4f);
+						Buff.prolong(m, Hex.class, 8f);
+					}
+				}
+				m.sprite.emitter().burst(ShadowParticle.UP, 10);
+				Sample.INSTANCE.play(Assets.Sounds.CURSED);
+				break;
+			}
+			default:
+				break;
 		}
-
-		@Override
-		public String prompt() {
-			return Messages.get(TrialHooks.class, "prompt");
-		}
-	};
+		finish(h, m.pos, !doze);
+		if (doze) SlothRepose.doze(h, SlothRepose.turnCost(h, SLOTH_TURNS));
+	}
 }

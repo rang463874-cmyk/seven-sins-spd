@@ -633,7 +633,7 @@ ICONS = {
     48: "GHOST", 49: "Z", 50: "SWAP", 51: "ZZZ", 52: "TARGET", 53: "MAP",
     64: "STAR", 65: "COIN", 66: "HEART", 67: "WAVE", 68: "FLY", 69: "FLAME", 70: "ZZZ",
     # row 9: the trial of sin's skills (sins/TrialHooks, Nov 18 2026), violet rim; 79 = Solomon
-    72: "JAW", 73: "HAND", 74: "BURST", 75: "CROWN", 76: "DHEART", 77: "GHOST", 78: "ZZZ", 79: "HEXAGRAM",
+    72: "JAW", 73: "HAND", 74: "BURST", 75: "CROWN", 76: "DHEART", 77: "EYE", 78: "ZZZ", 79: "HEXAGRAM",
     80: "PUSH", 81: "LOOP", 82: "BURST", 83: "STAR", 84: "FLAME",
     56: "ROCK", 57: "CLOUD", 58: "ARROW", 59: "DHEART", 60: "FLAME", 61: "BLOB", 62: "SHIELD", 63: "EYE",
 }
