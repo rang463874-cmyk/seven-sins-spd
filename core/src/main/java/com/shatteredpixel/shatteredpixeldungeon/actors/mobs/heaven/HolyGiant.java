@@ -46,18 +46,19 @@ public class HolyGiant extends RegionElite {
 	public static final int ARM_HT = 300;
 	public static final int SLAM = 0, BOLT = 1;
 	public static final int FIST_TURNS = 3;
-	public static final int JUDGMENT_CHARGE = 3;
+	/** turns the hero gets to reach cover (Nov 18 2026, owner: one turn, the struck tiles marked with "!") */
+	public static final int JUDGMENT_CHARGE = 1;
 	public static final int SWARM = 14;
-	/** the slammed arm: 3 wide, 8 long from the ledge down */
-	public static final int ARM_LEN = 8;
+	/** the arm reaches this many rows down from the ledge (Nov 18 2026: from the shoulder to the hero, 3 wide) */
+	public static final int ARM_REACH = 10;
 
 	/** HP left on the left / right arm; 0 = destroyed */
 	public int[] armHP = {ARM_HT, ARM_HT};
 	/** actor ids of the fists lying on the floor, -1 = arm raised */
 	public int[] fists = {-1, -1};
 	private int pendingSide = 0;
-	/** the slam's middle column, the bolt's left column and mirroring */
-	private int pendingCol = 0;
+	/** the slam's end cell (where the fist lands), the bolt's left column and mirroring */
+	private int pendingTarget = -1;
 	private int boltX = 0;
 	private boolean boltMirror = false;
 	private int judgment = 0;
@@ -67,7 +68,7 @@ public class HolyGiant extends RegionElite {
 	private boolean started = false;
 
 	{
-		spriteClass = HeavenSprites.HolyGiant.class;
+		spriteClass = com.shatteredpixel.shatteredpixeldungeon.sprites.HolyGiantSprite.class;
 		HP = HT = 2 * ARM_HT;
 		defenseSkill = 0;
 		EXP = 0;
@@ -97,6 +98,19 @@ public class HolyGiant extends RegionElite {
 	}
 
 	// ------------------------------------------------------------------ the arms
+
+	/** the side of an arm being raised for a slam, -1 if none (for the sprite) */
+	public int telegraphSide() {
+		return skill == SLAM ? pendingSide : -1;
+	}
+
+	public int telegraphCell() {
+		return pendingTarget;
+	}
+
+	public boolean charging() {
+		return judgment > 0;
+	}
 
 	public GiantFist fist(int side) {
 		Actor a = Actor.findById(fists[side]);
@@ -143,13 +157,30 @@ public class HolyGiant extends RegionElite {
 	}
 
 	private void startJudgment() {
-		judgment = JUDGMENT_CHARGE;
+		//it counts down on each of its turns: one more than the hero's turns to hide
+		judgment = JUDGMENT_CHARGE + 1;
 		skill = NONE;
 		marked = new int[0];
+		com.shatteredpixel.shatteredpixeldungeon.effects.AlertCell.show(exposedCells());
 		yell(Messages.get(this, "judgment_start"));
 		GLog.w(Messages.get(this, "judgment_warn"));
 		Sample.INSTANCE.play(Assets.Sounds.CHARGEUP);
-		if (sprite != null) sprite.showStatus(CharSprite.WARNING, Messages.get(this, "judgment_count", judgment));
+		if (sprite != null) sprite.showStatus(CharSprite.WARNING, Messages.get(this, "judgment_count", JUDGMENT_CHARGE));
+	}
+
+	/** every floor tile its judgment reaches: in its line of sight (wall blocks cast safe shadows) */
+	private int[] exposedCells() {
+		ArrayList<Integer> out = new ArrayList<>();
+		int w = Dungeon.level.width();
+		for (int y = HolyGiantLevel.LEDGE; y <= HolyGiantLevel.BOTTOM; y++) {
+			for (int x = HolyGiantLevel.LEFT; x <= HolyGiantLevel.RIGHT; x++) {
+				int c = x + y * w;
+				if (c == pos || !Dungeon.level.passable[c]) continue;
+				Ballistica line = new Ballistica(pos, c, Ballistica.STOP_TARGET | Ballistica.STOP_SOLID);
+				if (line.collisionPos == c) out.add(c);
+			}
+		}
+		return toArray(out);
 	}
 
 	// ------------------------------------------------------------------ turns
@@ -177,10 +208,14 @@ public class HolyGiant extends RegionElite {
 		if (judgment > 0) {
 			judgment--;
 			if (judgment > 0) {
+				if (!com.shatteredpixel.shatteredpixeldungeon.effects.AlertCell.showing()) {
+					com.shatteredpixel.shatteredpixeldungeon.effects.AlertCell.show(exposedCells());
+				}
 				if (sprite != null) sprite.showStatus(CharSprite.WARNING, Messages.get(this, "judgment_count", judgment));
 				spend(TICK);
 				return true;
 			}
+			com.shatteredpixel.shatteredpixeldungeon.effects.AlertCell.clear();
 			releaseJudgment();
 			spend(TICK);
 			return true;
@@ -242,20 +277,16 @@ public class HolyGiant extends RegionElite {
 		int gx = pos % w;
 		if (s == SLAM) {
 			int tx = target.pos % w, ty = target.pos / w;
-			//the arm reaches 8 rows down from the ledge
-			if (ty > HolyGiantLevel.LEDGE + ARM_LEN - 1) return null;
+			//the arm reaches ARM_REACH rows down from the ledge
+			if (ty < HolyGiantLevel.LEDGE || ty > HolyGiantLevel.LEDGE + ARM_REACH - 1) return null;
 			int side = tx < gx ? 0 : 1;
+			if (!armReady(side)) side = 1 - side;
 			if (!armReady(side)) return null;
+			int[] path = armPath(side, target.pos);
+			if (path.length == 0) return null;
 			pendingSide = side;
-			pendingCol = Math.max(HolyGiantLevel.LEFT + 1, Math.min(HolyGiantLevel.RIGHT - 1, tx));
-			ArrayList<Integer> cells = new ArrayList<>();
-			for (int y = HolyGiantLevel.LEDGE; y < HolyGiantLevel.LEDGE + ARM_LEN; y++) {
-				for (int x = pendingCol - 1; x <= pendingCol + 1; x++) {
-					int c = x + y * w;
-					if (c != pos && Dungeon.level.passable[c]) addIfOpen(cells, c);
-				}
-			}
-			return cells.isEmpty() ? null : toArray(cells);
+			pendingTarget = path[path.length - 1];
+			return armCells(side, path);
 		}
 		//lightning: the owner's branching bolt from the giant across the arena
 		boltMirror = Random.Int(2) == 0;
@@ -277,6 +308,45 @@ public class HolyGiant extends RegionElite {
 		return cells.isEmpty() ? null : toArray(cells);
 	}
 
+	/** the cell under this arm's shoulder (in the void) */
+	private int shoulderCell(int side) {
+		com.watabou.utils.PointF p = com.shatteredpixel.shatteredpixeldungeon.sprites.HolyGiantSprite.shoulder(side, pos);
+		int w = Dungeon.level.width();
+		int x = Math.max(1, Math.min(w - 2, (int) (p.x / 16)));
+		int y = Math.max(1, Math.min(HolyGiantLevel.VOID_BOTTOM, (int) (p.y / 16)));
+		return x + y * w;
+	}
+
+	/** the floor tiles the arm lies across, from the ledge to the fist: a straight line from its shoulder; walls stop it */
+	private int[] armPath(int side, int to) {
+		ArrayList<Integer> out = new ArrayList<>();
+		//no terrain stop: the line starts in the void, which a terrain-stopping ballistica treats as a wall
+		Ballistica b = new Ballistica(shoulderCell(side), to, Ballistica.STOP_TARGET);
+		int w = Dungeon.level.width();
+		for (int c : b.subPath(1, b.dist)) {
+			if (c / w < HolyGiantLevel.LEDGE) continue;
+			if (Dungeon.level.solid[c]) break;
+			if (c == pos || !Dungeon.level.passable[c]) continue;
+			out.add(c);
+		}
+		return toArray(out);
+	}
+
+	/** the slam's area: the arm's line, 3 tiles wide across it */
+	private int[] armCells(int side, int[] path) {
+		int w = Dungeon.level.width();
+		int sc = shoulderCell(side), end = path[path.length - 1];
+		boolean flat = Math.abs(end % w - sc % w) > Math.abs(end / w - sc / w);
+		int step = flat ? w : 1;
+		ArrayList<Integer> cells = new ArrayList<>();
+		for (int c : path) {
+			for (int c2 : new int[]{c, c - step, c + step}) {
+				if (c2 != pos && c2 / w >= HolyGiantLevel.LEDGE && Dungeon.level.passable[c2]) addIfOpen(cells, c2);
+			}
+		}
+		return toArray(cells);
+	}
+
 	private boolean armReady(int side) {
 		return armHP[side] > 0 && fist(side) == null;
 	}
@@ -295,20 +365,11 @@ public class HolyGiant extends RegionElite {
 			PixelScene.shake(4, 0.6f);
 			Sample.INSTANCE.play(Assets.Sounds.ROCKS);
 			Sample.INSTANCE.play(Assets.Sounds.BLAST, 0.7f);
-			//the fist lands at the far end of the strip (the nearest free tile of its last rows)
-			int bottom = HolyGiantLevel.LEDGE + ARM_LEN - 1;
-			int[] tries = {
-					pendingCol + bottom * w, pendingCol + (bottom - 1) * w,
-					pendingCol - 1 + bottom * w, pendingCol + 1 + bottom * w,
-					pendingCol - 1 + (bottom - 1) * w, pendingCol + 1 + (bottom - 1) * w};
-			int spot = -1;
-			for (int c : tries) {
-				if (Dungeon.level.passable[c] && Actor.findChar(c) == null) { spot = c; break; }
-			}
-			if (spot == -1) {
-				for (int i = cells.length - 1; i >= 0; i--) {
-					if (Actor.findChar(cells[i]) == null && Dungeon.level.passable[cells[i]]) { spot = cells[i]; break; }
-				}
+			//the fist lands at the end of the arm's line (the last free tile of it), the arm lies along the rest
+			int[] path = pendingTarget >= 0 ? armPath(pendingSide, pendingTarget) : new int[0];
+			int spot = -1, at = -1;
+			for (int i = path.length - 1; i >= 0; i--) {
+				if (Actor.findChar(path[i]) == null) { spot = path[i]; at = i; break; }
 			}
 			if (spot != -1) {
 				GiantFist f = new GiantFist();
@@ -320,10 +381,10 @@ public class HolyGiant extends RegionElite {
 				f.pos = spot;
 				GameScene.add(f);
 				fists[pendingSide] = f.id();
-				//the rest of the arm lies up the fist's column to the ledge
 				ArrayList<Integer> partIds = new ArrayList<>();
-				for (int c = spot - w; c / w >= HolyGiantLevel.LEDGE; c -= w) {
-					if (!Dungeon.level.passable[c] || Actor.findChar(c) != null) continue;
+				for (int i = 0; i < at; i++) {
+					int c = path[i];
+					if (Actor.findChar(c) != null) continue;
 					GiantArmPart p = new GiantArmPart();
 					p.owner = f.id();
 					p.pos = c;
@@ -332,6 +393,7 @@ public class HolyGiant extends RegionElite {
 				}
 				f.parts = toArray(partIds);
 			}
+			pendingTarget = -1;
 			return;
 		}
 		//the branching lightning
@@ -374,6 +436,7 @@ public class HolyGiant extends RegionElite {
 	/** both arms are gone: it slumps over, the gem appears and the heavens send their host */
 	private void collapse() {
 		fallen = true;
+		com.shatteredpixel.shatteredpixeldungeon.effects.AlertCell.clear();
 		HP = 1;
 		skill = NONE;
 		marked = new int[0];
@@ -469,7 +532,7 @@ public class HolyGiant extends RegionElite {
 		bundle.put("fallen", fallen);
 		bundle.put("started", started);
 		bundle.put("pending_side", pendingSide);
-		bundle.put("pending_col", pendingCol);
+		bundle.put("pending_target", pendingTarget);
 		bundle.put("bolt_x", boltX);
 		bundle.put("bolt_mirror", boltMirror);
 	}
@@ -486,7 +549,7 @@ public class HolyGiant extends RegionElite {
 		fallen = bundle.getBoolean("fallen");
 		started = bundle.getBoolean("started");
 		pendingSide = bundle.getInt("pending_side");
-		pendingCol = bundle.getInt("pending_col");
+		pendingTarget = bundle.contains("pending_target") ? bundle.getInt("pending_target") : -1;
 		boltX = bundle.getInt("bolt_x");
 		boltMirror = bundle.getBoolean("bolt_mirror");
 		if (started && !fallen) BossHealthBar.assignBoss(this);

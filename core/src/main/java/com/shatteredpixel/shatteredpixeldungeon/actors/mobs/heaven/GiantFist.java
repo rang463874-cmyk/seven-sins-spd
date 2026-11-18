@@ -33,7 +33,7 @@ public class GiantFist extends Mob {
 	}
 
 	{
-		spriteClass = HeavenSprites.GiantArm.class;
+		spriteClass = HeavenSprites.Blank.class; //the giant's sprite draws the arm (Nov 18 2026)
 		HP = HT = HolyGiant.ARM_HT;
 		defenseSkill = 0;
 		EXP = 0;

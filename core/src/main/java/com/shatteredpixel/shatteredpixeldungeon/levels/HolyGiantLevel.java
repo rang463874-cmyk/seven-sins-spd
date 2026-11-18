@@ -17,17 +17,18 @@ import com.watabou.utils.Random;
  */
 public class HolyGiantLevel extends Level {
 
-	public static final int W = 29, H = 25;
-	/** floor: x 2..26, y VOID_BOTTOM+1 .. 22 */
-	public static final int LEFT = 2, RIGHT = 26, BOTTOM = 22;
-	/** the void: rows 1..5 */
-	public static final int VOID_TOP = 1, VOID_BOTTOM = 5;
+	/** Nov 18 2026 (owner): the void is 17 rows tall now, the giant towers over the upper half of the floor */
+	public static final int W = 29, H = 37;
+	/** floor: x 2..26, y VOID_BOTTOM+1 .. 34 */
+	public static final int LEFT = 2, RIGHT = 26, BOTTOM = 34;
+	/** the void: rows 1..17 */
+	public static final int VOID_TOP = 1, VOID_BOTTOM = 17;
 	public static final int LEDGE = VOID_BOTTOM + 1;
 
 	{
 		color1 = 0x2a3a66;
 		color2 = 0x9fd8ff;
-		viewDistance = 9;
+		viewDistance = 20;
 	}
 
 	public static int giantCell() {
@@ -74,11 +75,12 @@ public class HolyGiantLevel extends Level {
 		}
 		//cover: 2x2 wall blocks in two staggered rows, plus single pillars
 		int[][] blocks = {
-				{5, 10}, {10, 10}, {17, 10}, {22, 10},
-				{8, 14}, {19, 14},
-				{4, 18}, {11, 18}, {16, 18}, {23, 18}
+				{5, 4}, {10, 4}, {17, 4}, {22, 4},
+				{8, 8}, {19, 8},
+				{4, 12}, {11, 12}, {16, 12}, {23, 12}
 		};
 		for (int[] b : blocks) {
+			b = new int[]{b[0], b[1] + LEDGE};
 			for (int dx = 0; dx < 2; dx++) {
 				for (int dy = 0; dy < 2; dy++) {
 					map[(b[1] + dy) * W + b[0] + dx] = dy == 0 ? Terrain.WALL_DECO : Terrain.WALL;
@@ -114,6 +116,19 @@ public class HolyGiantLevel extends Level {
 	public void updateCellFlags(int cell) {
 		super.updateCellFlags(cell);
 		voidCell(cell);
+	}
+
+	/** the level's visuals group (under the mobs, over the floor): the giant's arms are drawn there, behind its body */
+	public com.watabou.noosa.Group visualLayer() {
+		return visuals;
+	}
+
+	/** the giant and the void it rises from are always in the hero's sight, whatever blocks the view */
+	@Override
+	public void updateFieldOfView(Char c, boolean[] fieldOfView) {
+		super.updateFieldOfView(c, fieldOfView);
+		if (c != com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero) return;
+		for (int i = 0; i < (LEDGE + 1) * width(); i++) fieldOfView[i] = true;
 	}
 
 	/** the void can be seen across but never entered or fallen into */

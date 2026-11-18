@@ -488,6 +488,23 @@ Done and pushed (see `git log`):
   archangel's fifth skill SERAPH = id 4 (`seraphSpot`: a 2x2 spot 2-4 tiles from it, not within 1 of the hero, one seraph alive
   at a time, `MAX_SERAPHS` 3 per fight, saved as "seraphs_called", cooldown 14; the seraph keeps to the hall's bounds) and its
   death takes the called seraphs with it.
+- Holy giant, second design (Nov 18 2026, owner's five pictures `tools/sinsart/giant_art/v2/`: armless body, lightning arm
+  open/fist = left, gold bracelet arm open/fist = right) by `tools/sinsart/make_giant_v2.py` (per-picture pitch sampling, blue
+  backdrop cut also inside lightning loops, body's lower 22% fades into the void; writes `sprites/heaven_giant_body.png`,
+  `sprites/heaven_giant_arms.png` (4 frames), the generated `sprites/GiantArt.java` (sizes, shoulders, each arm's shoulder end
+  and hand) and `giant_art/v2/preview.png`). `HolyGiantLevel` is 29x37 now: void rows 1..17, `LEDGE` 18, hall to `BOTTOM` 34
+  (cover blocks shifted with it), view distance 20, and `updateFieldOfView` keeps rows 0..LEDGE in the hero's sight.
+  `sprites/HolyGiantSprite` draws the body x`BODY_ZOOM` 4 up from the ledge cell (origin 0,0, `turnTo` ignored, glows while
+  `charging()`), and the two arm Images in the level's visuals group (`HolyGiantLevel.visualLayer`: under the mobs, so the body
+  hides the arms' cut ends): each turned and scaled (2.2..3.8) from `shoulder(side)` so its hand sits on: the ledge at rest
+  (`idlePoint`), 60% of the way to the slam target with an open, pulsing hand while telegraphing (`telegraphSide/Cell`), the
+  fist's tile as a fist while a `GiantFist` is down (fists now use the invisible `HeavenSprites.Blank`; a hit flashes the
+  arm). Slam = `armPath`: a straight line from the shoulder's void cell to the hero (rows LEDGE..LEDGE+`ARM_REACH` 10; walls
+  stop it; the other arm takes over if this side's is busy), 3 wide across it (`armCells`), the fist on the last free tile
+  of the line, `GiantArmPart`s on the rest. Judgment: `JUDGMENT_CHARGE` 1 (counter starts at 2: one hero turn to hide) and
+  every exposed hall tile (`exposedCells`, line of sight from the giant) shows a pulsing "!" (`effects/AlertCell`, made on the
+  render thread, cleared on release/collapse, re-shown after a reload). Old floor-31 saves keep the 29x25 map and won't line
+  up with the new constants.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
