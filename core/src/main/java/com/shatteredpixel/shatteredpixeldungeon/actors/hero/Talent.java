@@ -317,6 +317,17 @@ public enum Talent {
 	//Proxy T4
 	PROXY_DURATION(471, 4), PROXY_MEND(472, 4), PROXY_SHIELD(473, 4),
 
+	//Solomon T1 (row 15 = 480; Nov 18 2026)
+	SOL_INSIGHT(480), SOL_DEFTNESS(481), SOL_LORE(482), SOL_WARD(483),
+	//Solomon T2
+	SOL_MEDITATION(484), SOL_FOCUS(485), SOL_PACT(486), SOL_ECHO(487), SOL_ELEMENTAL(488),
+	//Solomon T3
+	SOL_TRIAD(489, 3), SOL_LEGION(490, 3),
+	//Arch Magus T3
+	MAGUS_OVERLOAD(491, 3), MAGUS_CIRCLE(492, 3), MAGUS_SIPHON(493, 3),
+	//Master of Demons T3
+	MASTER_BRAND(494, 3), MASTER_OFFERING(495, 3), MASTER_KINGS(496, 3),
+
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
@@ -597,6 +608,8 @@ public enum Talent {
 					return 442;
 				case SLOTH:
 					return 474;
+				case SOLOMON:
+					return 506;
 			}
 		} else {
 			return icon;
@@ -1158,6 +1171,9 @@ public enum Talent {
 			case SLOTH:
 				Collections.addAll(tierTalents, SLOTH_IDLE, SLOTH_COMFY, SLOTH_SNORE, SLOTH_LINGER);
 				break;
+			case SOLOMON:
+				Collections.addAll(tierTalents, SOL_INSIGHT, SOL_DEFTNESS, SOL_LORE, SOL_WARD);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1208,6 +1224,9 @@ public enum Talent {
 			case SLOTH:
 				Collections.addAll(tierTalents, SLOTH_PILLOW, SLOTH_RESTFUL, SLOTH_ROLL, SLOTH_YAWN, SLOTH_SHOVE);
 				break;
+			case SOLOMON:
+				Collections.addAll(tierTalents, SOL_MEDITATION, SOL_FOCUS, SOL_PACT, SOL_ECHO, SOL_ELEMENTAL);
+				break;
 		}
 		for (Talent talent : tierTalents){
 			if (replacements.containsKey(talent)){
@@ -1257,6 +1276,9 @@ public enum Talent {
 				break;
 			case SLOTH:
 				Collections.addAll(tierTalents, SLOTH_APATHY, SLOTH_SNOOZE);
+				break;
+			case SOLOMON:
+				Collections.addAll(tierTalents, SOL_TRIAD, SOL_LEGION);
 				break;
 		}
 		for (Talent talent : tierTalents){
@@ -1363,6 +1385,12 @@ public enum Talent {
 				break;
 			case SLEEPWALKER:
 				Collections.addAll(tierTalents, WALK_REFLEX, WALK_DEEP, WALK_BRAWL);
+				break;
+			case ARCH_MAGUS:
+				Collections.addAll(tierTalents, MAGUS_OVERLOAD, MAGUS_CIRCLE, MAGUS_SIPHON);
+				break;
+			case DEMON_MASTER:
+				Collections.addAll(tierTalents, MASTER_BRAND, MASTER_OFFERING, MASTER_KINGS);
 				break;
 		}
 		for (Talent talent : tierTalents){

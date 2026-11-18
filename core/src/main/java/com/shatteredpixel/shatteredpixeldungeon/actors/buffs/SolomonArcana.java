@@ -29,6 +29,10 @@ public class SolomonArcana extends Buff {
 	/** symbols drawn in the circle (oldest first), at most MAX_SYMBOLS */
 	public final ArrayList<SolomonSpells.Element> circle = new ArrayList<>();
 	public static final int MAX_SYMBOLS = 3;
+	/** the principles learned at levels 10 and 20 (solomon/SolomonPrinciples) */
+	public final ArrayList<SolomonSpells.Element> principles = new ArrayList<>();
+	/** how many principle choices have been announced */
+	public int toldPrinciples = 0;
 
 	private Hero hero() {
 		return target instanceof Hero ? (Hero) target : null;
@@ -37,7 +41,8 @@ public class SolomonArcana extends Buff {
 	public float maxMana() {
 		Hero h = hero();
 		int lvl = h == null ? 1 : h.lvl;
-		return 15 + lvl + wisdom * 0.2f + 3 * SinArtifact.bonusCharges(h);
+		int insight = h == null ? 0 : h.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.SOL_INSIGHT);
+		return 15 + lvl + wisdom * 0.2f + 3 * SinArtifact.bonusCharges(h) + 3 * insight;
 	}
 
 	public float turnsPerMana() {
@@ -45,6 +50,7 @@ public class SolomonArcana extends Buff {
 		float t = 2f * SinArtifact.rechargeScale(h);
 		//the Arch Magus draws mana 25% faster
 		if (h != null && h.subClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass.ARCH_MAGUS) t /= 1.25f;
+		if (h != null) t /= 1f + 0.15f * h.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.SOL_FOCUS);
 		return t;
 	}
 
@@ -54,6 +60,7 @@ public class SolomonArcana extends Buff {
 		float p = 1f + 0.02f * wisdom;
 		//the Arch Magus's spells are 25% stronger
 		if (h != null && h.subClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass.ARCH_MAGUS) p *= 1.25f;
+		if (h != null) p *= 1f + 0.08f * h.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.MAGUS_OVERLOAD);
 		return p;
 	}
 
@@ -100,6 +107,17 @@ public class SolomonArcana extends Buff {
 	@Override
 	public boolean act() {
 		Hero h = hero();
+		if (h != null && h.isAlive() && toldPrinciples < com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.allowed(h)
+				&& principles.size() < com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.allowed(h)) {
+			toldPrinciples = com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.allowed(h);
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(Messages.get(com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.class, "can_learn"));
+			com.watabou.noosa.Game.runOnRenderThread(new com.watabou.utils.Callback() {
+				@Override
+				public void call() {
+					com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.syncSkillBarPos();
+				}
+			});
+		}
 		if (h != null && h.isAlive() && mana < maxMana()) {
 			regen += TICK;
 			float per = turnsPerMana();
@@ -148,6 +166,10 @@ public class SolomonArcana extends Buff {
 		ArrayList<String> c = new ArrayList<>();
 		for (SolomonSpells.Element e : circle) c.add(e.name());
 		bundle.put("circle", c.toArray(new String[0]));
+		ArrayList<String> pr = new ArrayList<>();
+		for (SolomonSpells.Element e : principles) pr.add(e.name());
+		bundle.put("principles", pr.toArray(new String[0]));
+		bundle.put("told_principles", toldPrinciples);
 	}
 
 	@Override
@@ -162,5 +184,12 @@ public class SolomonArcana extends Buff {
 				try { circle.add(SolomonSpells.Element.valueOf(n)); } catch (IllegalArgumentException ignored) {}
 			}
 		}
+		principles.clear();
+		if (bundle.contains("principles")) {
+			for (String n : bundle.getStringArray("principles")) {
+				try { principles.add(SolomonSpells.Element.valueOf(n)); } catch (IllegalArgumentException ignored) {}
+			}
+		}
+		toldPrinciples = bundle.getInt("told_principles");
 	}
 }

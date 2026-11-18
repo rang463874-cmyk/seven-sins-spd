@@ -16,7 +16,7 @@ OUT = os.path.join(ROOT, "core", "src", "main", "assets", "interfaces", "skill_i
 
 SIZE = 16
 COLS = 8
-ROWS = 20
+ROWS = 21
 
 SIN_COLORS = [
     (150, 50, 180),   # gluttony
@@ -703,6 +703,52 @@ G["HORNS"] = [
 ICONS.update({152: "TRI_UP", 153: "TRI_DOWN", 154: "TRI_UP_BAR", 155: "TRI_DOWN_BAR", 156: "HEXAGRAM", 157: "HORNS"})
 SOLOMON_COLORS = {152: (200, 60, 30), 153: (40, 100, 200), 154: (190, 170, 60), 155: (90, 120, 50),
                   156: (120, 60, 190), 157: (130, 25, 40)}
+
+# the three principles (Nov 18 2026): sulfur, mercury, salt (Element.icon 158..160)
+G["SULFUR"] = [
+    "............",
+    ".....XX.....",
+    "....X..X....",
+    "...X....X...",
+    "..XXXXXXXX..",
+    ".....XX.....",
+    ".....XX.....",
+    "..XXXXXXXX..",
+    ".....XX.....",
+    ".....XX.....",
+    ".....XX.....",
+    "............",
+]
+G["MERCURY"] = [
+    "..X......X..",
+    "...XXXXXX...",
+    "....XXXX....",
+    "...X....X...",
+    "...X....X...",
+    "...X....X...",
+    "....XXXX....",
+    ".....XX.....",
+    "...XXXXXX...",
+    ".....XX.....",
+    ".....XX.....",
+    "............",
+]
+G["SALT"] = [
+    "............",
+    "....XXXX....",
+    "..XX....XX..",
+    ".X........X.",
+    ".X........X.",
+    ".XXXXXXXXXX.",
+    ".XXXXXXXXXX.",
+    ".X........X.",
+    ".X........X.",
+    "..XX....XX..",
+    "....XXXX....",
+    "............",
+]
+ICONS.update({158: "SULFUR", 159: "MERCURY", 160: "SALT"})
+SOLOMON_COLORS.update({158: (200, 170, 20), 159: (150, 155, 170), 160: (215, 210, 200)})
 
 
 

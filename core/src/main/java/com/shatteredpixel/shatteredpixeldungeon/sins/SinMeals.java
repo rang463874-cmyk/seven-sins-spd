@@ -24,7 +24,7 @@ public final class SinMeals {
 
 	public static final Talent[] MEAL_TALENTS = {
 			Talent.PREDATOR_GLUTTONY, Talent.GREED_HOARD, Talent.WRATH_DRUMMER, Talent.PRIDE_REGALIA,
-			Talent.LUST_BOTTLE, Talent.ENVY_MIRROR, Talent.SLOTH_PILLOW
+			Talent.LUST_BOTTLE, Talent.ENVY_MIRROR, Talent.SLOTH_PILLOW, Talent.SOL_MEDITATION
 	};
 
 	/** Food.eatingTime: true if eating takes 1 turn */
@@ -69,6 +69,7 @@ public final class SinMeals {
 		if ((p = hero.pointsInTalent(Talent.SLOTH_PILLOW)) > 0 && hero.heroClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass.SLOTH) {
 			Buff.affect(hero, SlothRepose.Refreshed.class).skills = p;
 		}
+		com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.onFoodEaten(hero); //Seven Sins: Solomon
 		//another sin's meal talent (metamorphosis) refills the hero's own resource instead
 		MetaTalents.restore(hero, MetaTalents.mealShare(hero));
 		if (quickEater(hero)) hero.sprite.emitter().burst(Speck.factory(Speck.STAR), 3);

@@ -211,6 +211,8 @@ public class ScrollOfMetamorphosis extends ExoticScroll {
 			Set<Talent> curTalentsAtTier = Dungeon.hero.talents.get(tier-1).keySet();
 
 			for (HeroClass cls : HeroClass.values()){
+				//Seven Sins: Solomon's talents only work with his arcana
+				if (cls == HeroClass.SOLOMON) continue;
 
 				ArrayList<LinkedHashMap<Talent, Integer>> clsTalents = new ArrayList<>();
 				Talent.initClassTalents(cls, clsTalents);

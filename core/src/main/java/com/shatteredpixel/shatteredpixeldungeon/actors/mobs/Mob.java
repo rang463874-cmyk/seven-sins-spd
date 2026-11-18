@@ -1062,6 +1062,7 @@ public abstract class Mob extends Char {
 		com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onMobDeath( this, cause ); //Seven Sins: awakening
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.onMobDeath( this, cause );
 		com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.onMobDeath( this ); //Seven Sins: ultimates
+		com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.onMobDeath( this, cause ); //Seven Sins: Solomon
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onMobDeath( this, cause );
 
 		if (cause == Chasm.class){

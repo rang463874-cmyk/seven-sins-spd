@@ -67,11 +67,14 @@ public class SolomonRing extends SinArtifact {
 	@Override
 	public ArrayList<SinSkill> skills(final Hero hero) {
 		ArrayList<SinSkill> list = new ArrayList<>();
+		SolomonArcana a = arcana(hero);
 		for (final SolomonSpells.Element e : SolomonSpells.Element.values()) {
+			if (com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.isPrinciple(e) && !a.principles.contains(e)) continue;
 			list.add(new SymbolSkill(e));
 		}
 		list.add(new CastSkill());
 		list.add(new SummonSkill());
+		if (com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.pending(hero)) list.add(new LearnSkill());
 		return list;
 	}
 
@@ -91,6 +94,10 @@ public class SolomonRing extends SinArtifact {
 
 		@Override
 		public String desc(Hero hero) {
+			if (com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.isPrinciple(e)) {
+				return Messages.get(SolomonRing.class, "principle_desc", e.title())
+						+ "\n\n" + Messages.get(com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.class, "pr_" + e.name().toLowerCase() + "_desc");
+			}
 			return Messages.get(SolomonRing.class, "symbol_desc", e.title());
 		}
 
@@ -166,6 +173,33 @@ public class SolomonRing extends SinArtifact {
 		}
 	}
 
+	/** open while a principle may be learned (levels 10 and 20) */
+	public static class LearnSkill extends SinSkill {
+		LearnSkill() {
+			super(SolomonRing.class, "learn", 144);
+		}
+
+		@Override
+		public String desc(Hero hero) {
+			return Messages.get(SolomonRing.class, "skill_learn_desc");
+		}
+
+		@Override
+		public CostType costType() {
+			return CostType.NONE;
+		}
+
+		@Override
+		public boolean usable(Hero hero) {
+			return com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.pending(hero);
+		}
+
+		@Override
+		public void use(Hero hero) {
+			com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.choose(hero);
+		}
+	}
+
 	public static class SummonSkill extends SinSkill {
 		SummonSkill() {
 			super(SolomonRing.class, "summon", 157);
@@ -173,7 +207,7 @@ public class SolomonRing extends SinArtifact {
 
 		@Override
 		public String desc(Hero hero) {
-			return Messages.get(SolomonRing.class, "skill_summon_desc", SolomonSpells.SUMMON_COST,
+			return Messages.get(SolomonRing.class, "skill_summon_desc", SolomonSpells.summonCost(hero),
 					Math.round(SolomonSpells.summonTurns(hero)), SolomonSpells.maxSummons(hero));
 		}
 
@@ -184,18 +218,18 @@ public class SolomonRing extends SinArtifact {
 
 		@Override
 		public String costShort(Hero hero) {
-			return Integer.toString(SolomonSpells.SUMMON_COST);
+			return Integer.toString(SolomonSpells.summonCost(hero));
 		}
 
 		@Override
 		public String costLabel(Hero hero) {
-			return Messages.get(SolomonRing.class, "cost_mana", SolomonSpells.SUMMON_COST);
+			return Messages.get(SolomonRing.class, "cost_mana", SolomonSpells.summonCost(hero));
 		}
 
 		@Override
 		public boolean usable(Hero hero) {
 			SolomonArcana a = hero.buff(SolomonArcana.class);
-			return a != null && a.mana >= SolomonSpells.SUMMON_COST;
+			return a != null && a.mana >= SolomonSpells.summonCost(hero);
 		}
 
 		@Override

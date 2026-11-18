@@ -6,6 +6,7 @@
   sprites/avatars.png                          frame 13 (HeroClass ordinal)
   sprites/items.png                            row 33 +14 ring of Solomon, +15 class armor
   interfaces/hero_icons.png                    row 23 (184..188): subclasses, then armor abilities
+  interfaces/talent_icons.png                  row 15 (480..496 + heroic energy 506)
 Run: python3 tools/sinsart/make_solomon_assets.py
 """
 import os
@@ -70,6 +71,14 @@ def main():
     for i, src in enumerate(m.CLERIC_SUBCLASS_ICONS + m.CLERIC_ABILITY_ICONS):
         icons.paste(m.rotate_to(icons.crop(m.cell(src, 8)), HUE), m.cell(184 + i, 8)[:2])
     icons.save(p("interfaces/hero_icons.png"))
+
+    # talents (Nov 18 2026): row 15 = 480 + i, heroic energy at +26, recoloured cleric talents
+    talents = m.Image.open(p("interfaces/talent_icons.png")).convert("RGBA")
+    talents = m.grow(talents, 512, 16 * 16)
+    for i in range(17):
+        talents.paste(m.rotate_to(talents.crop(m.cell(m.CLERIC_TALENT_ROW + i, 32)), HUE), m.cell(480 + i, 32)[:2])
+    talents.paste(m.rotate_to(talents.crop(m.cell(m.CLERIC_TALENT_ROW + 26, 32)), HUE), m.cell(480 + 26, 32)[:2])
+    talents.save(p("interfaces/talent_icons.png"))
     print("solomon art done")
 
 

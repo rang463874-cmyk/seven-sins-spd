@@ -61,11 +61,13 @@ public final class SolomonSpells {
 	private SolomonSpells() {}
 
 	public enum Element {
-		FIRE, WATER, AIR, EARTH;
+		FIRE, WATER, AIR, EARTH,
+		//the three principles, learned at levels 10 and 20 (solomon/SolomonPrinciples); two-symbol pairs only
+		SULFUR, MERCURY, SALT;
 
 		/** skill_icons.png row 19 */
 		public int icon() {
-			return 152 + ordinal();
+			return ordinal() < 4 ? 152 + ordinal() : 158 + ordinal() - 4;
 		}
 
 		public String title() {
@@ -156,6 +158,9 @@ public final class SolomonSpells {
 
 	public static String castTitle(SolomonArcana a) {
 		if (a == null) return null;
+		SolomonPrinciples.PSpell p = SolomonPrinciples.current(a);
+		if (p != null) return p.title();
+		if (SolomonPrinciples.hasPrinciple(a)) return null;
 		if (a.circle.size() >= 3) {
 			SolomonTriads.Triad t = SolomonTriads.current(a);
 			return t == null ? null : t.title();
@@ -166,6 +171,9 @@ public final class SolomonSpells {
 
 	public static String castDesc(SolomonArcana a) {
 		if (a == null) return null;
+		SolomonPrinciples.PSpell p = SolomonPrinciples.current(a);
+		if (p != null) return p.desc();
+		if (SolomonPrinciples.hasPrinciple(a)) return null;
 		if (a.circle.size() >= 3) {
 			SolomonTriads.Triad t = SolomonTriads.current(a);
 			return t == null ? null : t.desc();
@@ -177,6 +185,9 @@ public final class SolomonSpells {
 	/** mana cost of the drawn spell, -1 if nothing is drawn */
 	public static int castCost(Hero hero, SolomonArcana a) {
 		if (a == null) return -1;
+		SolomonPrinciples.PSpell p = SolomonPrinciples.current(a);
+		if (p != null) return p.cost(hero);
+		if (SolomonPrinciples.hasPrinciple(a)) return -1;
 		if (a.circle.size() >= 3) {
 			SolomonTriads.Triad t = SolomonTriads.current(a);
 			return t == null ? -1 : t.cost();
@@ -187,6 +198,9 @@ public final class SolomonSpells {
 
 	public static int castTargeting(SolomonArcana a) {
 		if (a == null) return SinSkill.TARGET_NONE;
+		SolomonPrinciples.PSpell p = SolomonPrinciples.current(a);
+		if (p != null) return p.targeting;
+		if (SolomonPrinciples.hasPrinciple(a)) return SinSkill.TARGET_NONE;
 		if (a.circle.size() >= 3) {
 			SolomonTriads.Triad t = SolomonTriads.current(a);
 			return t == null ? SinSkill.TARGET_NONE : t.targeting();
@@ -196,7 +210,7 @@ public final class SolomonSpells {
 	}
 
 	public static int cost(Hero hero, Spell s) {
-		return s == null ? 0 : s.cost;
+		return s == null ? 0 : SolomonHooks.adjustCost(hero, s.cost, false);
 	}
 
 	// ------------------------------------------------------------------ drawing and casting
@@ -210,13 +224,21 @@ public final class SolomonSpells {
 		Sample.INSTANCE.play(Assets.Sounds.CHARGEUP, 0.5f, 1.3f + 0.1f * e.ordinal());
 		//owner (Nov 18 2026): drawing a symbol takes time
 		hero.sprite.operate(hero.pos);
-		hero.spendAndNext(DRAW_TIME);
+		hero.spendAndNext(SolomonHooks.drawTime(hero));
 	}
 
 	private static Spell pending;
 
 	public static void cast(Hero hero) {
 		SolomonArcana a = arcana(hero);
+		if (SolomonPrinciples.current(a) != null) {
+			SolomonPrinciples.cast(hero);
+			return;
+		}
+		if (SolomonPrinciples.hasPrinciple(a)) {
+			GLog.w(Messages.get(SolomonPrinciples.class, "pairs_only"));
+			return;
+		}
 		if (a != null && a.circle.size() >= 3) {
 			SolomonTriads.cast(hero);
 			return;
@@ -258,11 +280,7 @@ public final class SolomonSpells {
 	};
 
 	private static void finish(Hero hero, Spell s, int pos) {
-		SolomonArcana a = arcana(hero);
-		if (a != null) {
-			a.useMana(cost(hero, s));
-			a.circle.clear();
-		}
+		SolomonHooks.afterCast(hero, cost(hero, s));
 		if (pos != hero.pos) hero.sprite.zap(pos);
 		else hero.sprite.operate(hero.pos);
 		Invisibility.dispel();
@@ -313,7 +331,7 @@ public final class SolomonSpells {
 	private static boolean instant(Hero hero, Spell s) {
 		switch (s) {
 			case STONE_SKIN: {
-				int sh = Math.round((4 + hero.lvl) * power(hero));
+				int sh = Math.round((4 + hero.lvl) * power(hero) * SolomonHooks.singleMult(hero));
 				Buff.affect(hero, Barrier.class).incShield(sh);
 				hero.sprite.showStatus(CharSprite.POSITIVE, Integer.toString(sh));
 				CellEmitter.get(hero.pos).burst(Speck.factory(Speck.ROCK), 6);
@@ -382,9 +400,7 @@ public final class SolomonSpells {
 				final Ballistica path = new Ballistica(hero.pos, cell, Ballistica.MAGIC_BOLT);
 				final int end = path.collisionPos;
 				int type = s == Spell.WATER_LASH ? MagicMissile.FROST : s == Spell.STEAM ? MagicMissile.MAGIC_MISSILE : MagicMissile.FIRE;
-				SolomonArcana a = arcana(hero);
-				a.useMana(cost(hero, s));
-				a.circle.clear();
+				SolomonHooks.afterCast(hero, cost(hero, s));
 				hero.sprite.zap(end);
 				hero.busy();
 				MagicMissile.boltFromChar(hero.sprite.parent, type, hero.sprite, end, new Callback() {
@@ -403,7 +419,7 @@ public final class SolomonSpells {
 				int max = Math.min(line.dist, 6);
 				for (int c : line.subPath(1, max)) {
 					Char ch = Actor.findChar(c);
-					if (foe(ch)) ch.damage(roll(hero, 0.7f), SolomonSpells.class);
+					if (foe(ch)) ch.damage(roll(hero, 0.7f * SolomonHooks.singleMult(hero)), SolomonSpells.class);
 					CellEmitter.get(c).burst(Speck.factory(Speck.JET), 1);
 				}
 				Sample.INSTANCE.play(Assets.Sounds.MISS, 1f, 0.8f);
@@ -484,7 +500,7 @@ public final class SolomonSpells {
 			case FIRE_BOLT: {
 				Char ch = Actor.findChar(end);
 				if (foe(ch)) {
-					ch.damage(roll(hero, 1f), SolomonSpells.class);
+					ch.damage(roll(hero, SolomonHooks.singleMult(hero)), SolomonSpells.class);
 					if (ch.isAlive() && Random.Int(2) == 0) Buff.affect(ch, Burning.class).reignite(ch);
 				}
 				return;
@@ -492,7 +508,7 @@ public final class SolomonSpells {
 			case WATER_LASH: {
 				Char ch = Actor.findChar(end);
 				if (foe(ch)) {
-					ch.damage(roll(hero, 0.8f), SolomonSpells.class);
+					ch.damage(roll(hero, 0.8f * SolomonHooks.singleMult(hero)), SolomonSpells.class);
 					if (ch.isAlive()) Buff.prolong(ch, Chill.class, 3f);
 				}
 				return;
@@ -524,18 +540,25 @@ public final class SolomonSpells {
 		ArrayList<GoetiaDemon> out = new ArrayList<>();
 		for (GoetiaDemon d : GoetiaDemon.values()) if (GoetiaHooks.slain(d)) out.add(d);
 		Collections.sort(out, (x, y) -> x.rank != y.rank ? y.rank.ordinal() - x.rank.ordinal() : x.number() - y.number());
-		while (out.size() > SUMMON_CHOICES) out.remove(out.size() - 1);
+		while (out.size() > SolomonHooks.summonChoices(Dungeon.hero)) out.remove(out.size() - 1);
 		return out;
 	}
 
 	/** the Master of Demons keeps two at once and its pacts last 50% longer */
 	public static int maxSummons(Hero hero) {
-		return hero != null && hero.subClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass.DEMON_MASTER ? 2 : 1;
+		int n = hero != null && hero.subClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass.DEMON_MASTER ? 2 : 1;
+		if (hero != null && hero.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.MASTER_KINGS) >= 3) n++;
+		return n;
+	}
+
+	public static int summonCost(Hero hero) {
+		return SolomonHooks.summonCost(hero);
 	}
 
 	public static float summonTurns(Hero hero) {
 		float t = SUMMON_TURNS;
 		if (hero != null && hero.subClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass.DEMON_MASTER) t *= 1.5f;
+		if (hero != null) t += 10 * hero.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.SOL_PACT);
 		return t;
 	}
 
@@ -562,7 +585,7 @@ public final class SolomonSpells {
 		GameScene.show(new WndOptions(new com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite(
 				com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet.SOLOMON_RING),
 				Messages.get(SolomonSpells.class, "summon_title"),
-				Messages.get(SolomonSpells.class, "summon_msg", SUMMON_COST, Math.round(summonTurns(hero))), labels) {
+				Messages.get(SolomonSpells.class, "summon_msg", summonCost(hero), Math.round(summonTurns(hero))), labels) {
 			@Override
 			protected void onSelect(int index) {
 				summonDemon(hero, list.get(index));
@@ -585,7 +608,7 @@ public final class SolomonSpells {
 
 	private static void summonDemon(Hero hero, GoetiaDemon d) {
 		SolomonArcana a = arcana(hero);
-		if (a == null || a.mana < SUMMON_COST || activeSummons() >= maxSummons(hero)) {
+		if (a == null || a.mana < summonCost(hero) || activeSummons() >= maxSummons(hero)) {
 			GLog.w(Messages.get(SolomonSpells.class, "no_mana"));
 			return;
 		}
@@ -598,9 +621,11 @@ public final class SolomonSpells {
 			GLog.w(Messages.get(SolomonSpells.class, "no_room"));
 			return;
 		}
-		a.useMana(SUMMON_COST);
+		a.useMana(summonCost(hero));
 		GoetiaFiend f = new GoetiaFiend();
 		f.setup(d, Math.max(Dungeon.depth, Dungeon.scalingDepth()));
+		int pact = hero.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.SOL_PACT);
+		if (pact > 0) f.HP = f.HT = Math.round(f.HT * (1f + 0.2f * pact));
 		f.minion = true;
 		f.pos = Random.element(cells);
 		f.state = f.WANDERING;

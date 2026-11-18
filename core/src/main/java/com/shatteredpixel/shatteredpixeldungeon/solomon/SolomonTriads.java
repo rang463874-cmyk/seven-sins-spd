@@ -127,7 +127,7 @@ public final class SolomonTriads {
 		}
 
 		public int cost() {
-			return core.cost + (form == SolomonSpells.Element.FIRE ? 3 : 0);
+			return SolomonHooks.adjustCost(Dungeon.hero, core.cost + (form == SolomonSpells.Element.FIRE ? 3 : 0), true);
 		}
 
 		public int targeting() {
@@ -186,11 +186,7 @@ public final class SolomonTriads {
 	};
 
 	private static void pay(Hero hero, Triad t) {
-		SolomonArcana a = SolomonSpells.arcana(hero);
-		if (a != null) {
-			a.useMana(t.cost());
-			a.circle.clear();
-		}
+		SolomonHooks.afterCast(hero, t.cost());
 		if (t.cleansing()) {
 			for (Buff b : hero.buffs()) {
 				if (b.type == Buff.buffType.NEGATIVE && !(b instanceof Hunger)) b.detach();

@@ -419,7 +419,17 @@ Done and pushed (see `git log`):
   picks the `Core` (16), the FIRST one the form (fire amplified x1.4 +3 mana, air spread +1 radius/target/range, earth
   lasting x1.5 durations, water cleansing: hit enemies vulnerable 5 + the caster cleansed) = 64 spells; walls via
   `StoneDust.raise(level, cell, turns)` (RisenWall). The ring's Cast skill reads `SolomonSpells.castTitle/castDesc/castCost/
-  castTargeting`, which cover 1, 2 and 3 symbols. Strings `solomon.solomontriads.*` (c_<core>, f_<form>). Art by `tools/sinsart/make_solomon_assets.py`
+  castTargeting`, which cover 1, 2 and 3 symbols. Strings `solomon.solomontriads.*` (c_<core>, f_<form>).
+  Later Nov 18 2026 (owner): the three principles SULFUR/MERCURY/SALT (Element entries after EARTH, icons 158..160) are learned
+  one at level 10 and one at level 20 (`solomon/SolomonPrinciples`: `SolomonArcana.principles` saved, notice via
+  `toldPrinciples`, the ring's "learn" skill (icon 144) opens the choice among those left); they only work in two-symbol pairs
+  (`PSpell`, 18 = 3 x (4 elements + itself) + 3 cross pairs, unordered; a circle with a principle in any other shape casts
+  nothing: `hasPrinciple`). Buffs `SolomonPrinciples.Elixir` (Panacea: costs halved in `SolomonHooks.adjustCost`) and
+  `Immutable` (-60% damage in `SolomonHooks.modifyDamage`, Char.damage). Talents (17, `SOL_*`/`MAGUS_*`/`MASTER_*`, icons
+  talent_icons row 15 = 480..496, heroic energy 506): effects in `SolomonHooks` (drawTime, adjustCost, singleMult, summonCost,
+  summonChoices, afterCast = pay + Ward/Echo/Twin Circle, onMobDeath = Siphon/Offering, onFoodEaten via SinMeals) and in
+  `SolomonArcana` (Insight max mana, Focus regen, Overload power) and `SolomonSpells` (Pact turns/HP, Kings max summons).
+  Solomon is left out of the metamorphosis pool (`ScrollOfMetamorphosis.WndMetamorphReplace`). Armor abilities still the mage's. Art by `tools/sinsart/make_solomon_assets.py`
   (recoloured cleric, avatar frame 13). Strings `tools/strings/solomon_*`. Dev tools: wisdom row + mana refill.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
