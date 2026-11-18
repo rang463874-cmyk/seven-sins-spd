@@ -8,9 +8,9 @@ public class GiantArt {
 	public static final int ARM_W = 89, ARM_H = 75;
 	/** frames: left open, left fist, right open, right fist; {shoulder end x, y, hand x, y} */
 	public static final float[][] ARMS = {
-			{75.1f, 3.2f, 30.5f, 51.3f},
-			{75.9f, 3.1f, 30.3f, 52.2f},
 			{6.5f, 3.8f, 49.8f, 36.5f},
 			{7.2f, 4.5f, 52.2f, 47.2f},
+			{75.1f, 3.2f, 30.5f, 51.3f},
+			{75.9f, 3.1f, 30.3f, 52.2f},
 	};
 }

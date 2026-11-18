@@ -2,8 +2,9 @@
 """The holy giant, second design (Nov 18 2026, owner's five pictures in tools/sinsart/giant_art/v2/):
 - body.png (armless upper body, cut at the waist) -> sprites/heaven_giant_body.png at one sheet pixel per art pixel;
   drawn x BODY_ZOOM in game over the void above the arena, its lower part fading into the void
-- left_open/left_fist.png (the lightning arm, the giant's left = screen left) and right_open/right_fist.png (the gold
-  bracelet arm) -> sprites/heaven_giant_arms.png, one frame each (left open, left fist, right open, right fist)
+- gold_open/gold_fist.png (the gold bracelet arm, on the screen's left) and bolt_open/bolt_fist.png (the lightning arm,
+  on the right; owner, Nov 18 2026) -> sprites/heaven_giant_arms.png, one frame each (left open, left fist, right open,
+  right fist)
 - the frame sizes and the points the game needs (each arm's shoulder end and hand, the body's shoulders) are written
   to core/.../sprites/GiantArt.java
 
@@ -27,11 +28,11 @@ JAVA = os.path.join(HERE, "..", "..", "core", "src", "main", "java", "com", "sha
 
 BODY_ZOOM = 4
 # pitch search ranges (source px per art px), from the autocorrelation of each picture
-PITCH = {"body": (9.6, 11.4), "left_open": (10.5, 12.5), "left_fist": (11.0, 13.0),
-         "right_open": (13.0, 15.0), "right_fist": (16.0, 18.0)}
+PITCH = {"body": (9.6, 11.4), "bolt_open": (10.5, 12.5), "bolt_fist": (11.0, 13.0),
+         "gold_open": (13.0, 15.0), "gold_fist": (16.0, 18.0)}
 # by eye, in source pixels: each arm's cut end (the shoulder side) and the middle of its hand
-ARM_POINTS = {"left_open": ((1010, 40), (500, 590)), "left_fist": ((1000, 40), (480, 600)),
-              "right_open": ((110, 70), (760, 560)), "right_fist": ((130, 90), (880, 800))}
+ARM_POINTS = {"bolt_open": ((1010, 40), (500, 590)), "bolt_fist": ((1000, 40), (480, 600)),
+              "gold_open": ((110, 70), (760, 560)), "gold_fist": ((130, 90), (880, 800))}
 # the body's shoulder joints (where the arms come out), source pixels
 SHOULDERS = ((300, 470), (1090, 470))
 FADE = 0.22   # share of the body's height that fades into the void at the bottom
@@ -146,7 +147,7 @@ def body():
 
 def arms():
     frames, points = [], []
-    for name in ("left_open", "left_fist", "right_open", "right_fist"):
+    for name in ("gold_open", "gold_fist", "bolt_open", "bolt_fist"):
         img, to_art = load(name)
         frames.append(img)
         points.append([to_art(p) for p in ARM_POINTS[name]])

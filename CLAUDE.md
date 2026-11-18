@@ -488,8 +488,8 @@ Done and pushed (see `git log`):
   archangel's fifth skill SERAPH = id 4 (`seraphSpot`: a 2x2 spot 2-4 tiles from it, not within 1 of the hero, one seraph alive
   at a time, `MAX_SERAPHS` 3 per fight, saved as "seraphs_called", cooldown 14; the seraph keeps to the hall's bounds) and its
   death takes the called seraphs with it.
-- Holy giant, second design (Nov 18 2026, owner's five pictures `tools/sinsart/giant_art/v2/`: armless body, lightning arm
-  open/fist = left, gold bracelet arm open/fist = right) by `tools/sinsart/make_giant_v2.py` (per-picture pitch sampling, blue
+- Holy giant, second design (Nov 18 2026, owner's five pictures `tools/sinsart/giant_art/v2/`: armless body, gold bracelet arm
+  `gold_open/fist` = left, lightning arm `bolt_open/fist` = right; swapped at the owner's word the same day) by `tools/sinsart/make_giant_v2.py` (per-picture pitch sampling, blue
   backdrop cut also inside lightning loops, body's lower 22% fades into the void; writes `sprites/heaven_giant_body.png`,
   `sprites/heaven_giant_arms.png` (4 frames), the generated `sprites/GiantArt.java` (sizes, shoulders, each arm's shoulder end
   and hand) and `giant_art/v2/preview.png`). `HolyGiantLevel` is 29x37 now: void rows 1..17, `LEDGE` 18, hall to `BOTTOM` 34
