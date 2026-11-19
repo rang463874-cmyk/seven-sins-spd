@@ -125,7 +125,7 @@ def native(path):
 PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2},
          # envy: front is its own pitch, the others are matched on the hair width (walk halfway: her head is
          # drawn bigger there and the full correction would make the body too short)
-         "envy": {"front": 18.4, "walk": 21.0, "attack": 19.6, "die": 18.7},
+         "envy": {"front": 18.4, "walk": 21.0, "walk2": 6.25, "attack": 19.6, "die": 18.7},
          # wrath (second design): Gemini drew every pose at the same zoom, but the detected pitch of the attack/die
          # pictures came out finer (14/13 source px) and made them twice as big: all four at the front's pitch
          "wrath": {"front": 22.3, "walk": 22.3, "attack": 22.3, "die": 22.3},
