@@ -122,13 +122,13 @@ def native(path):
 # Gemini drew a sin's poses with different art-pixel sizes (lust: 12..20 source px for the same figure size): one
 # sampling pitch per pose (source px per sheet px) instead of the detected one, so the poses come out the same size.
 # The die picture is a smaller canvas, its pitch is matched on the head width.
-PITCH = {"lust": {"front": 12.0, "walk": 12.0, "attack": 12.0, "die": 9.2},
+PITCH = {"lust": {"front": 12.0, "walk": 12.0, "walk2": 4.13, "attack": 12.0, "die": 9.2},
          # envy: front is its own pitch, the others are matched on the hair width (walk halfway: her head is
          # drawn bigger there and the full correction would make the body too short)
          "envy": {"front": 18.4, "walk": 21.0, "walk2": 6.25, "attack": 19.6, "die": 18.7},
          # wrath (second design): Gemini drew every pose at the same zoom, but the detected pitch of the attack/die
          # pictures came out finer (14/13 source px) and made them twice as big: all four at the front's pitch
-         "wrath": {"front": 22.3, "walk": 22.3, "attack": 22.3, "die": 22.3},
+         "wrath": {"front": 22.3, "walk": 22.3, "walk2": 7.66, "attack": 22.3, "die": 22.3},
          # gluttony (third design): the poses are drawn at different zooms, matched on the straw hat's width (attack:
          # on the hat-to-boots height, its brim is foreshortened; the raised drumstick and swoosh tip still overflow)
          "gluttony": {"front": 18.0, "walk": 18.7, "walk2": 14.4, "attack": 17.0, "die": 14.9},
@@ -445,7 +445,7 @@ GLOBAL_BG = {"gluttony"}
 SWAP_LEGS = {"pride": False, "envy": False}
 # background-coloured fringe to peel off the silhouette (layers): envy's hair is the background's green, so the
 # cut can't be made looser instead
-FRINGE = {"envy": 2, "sloth": 2, "gluttony": 1, "solomon": 2}  # solomon: violet robe on a violet background  # gluttony: walk2.png left a yellow rim
+FRINGE = {"envy": 2, "sloth": 2, "gluttony": 1, "solomon": 2, "lust": 1}  # solomon: violet robe on a violet background  # gluttony: walk2.png left a yellow rim
 # walk pictures drawn facing left
 WALK_MIRROR = {"envy", "sloth", "solomon"}
 # walk2 pictures whose facing differs from walk's (default: mirrored like walk)
