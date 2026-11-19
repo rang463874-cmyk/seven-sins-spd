@@ -751,6 +751,26 @@ G["SALT"] = [
 ICONS.update({158: "SULFUR", 159: "MERCURY", 160: "SALT"})
 SOLOMON_COLORS.update({158: (200, 170, 20), 159: (150, 155, 170), 160: (215, 210, 200)})
 
+# Solomon's ultimates (Nov 19 2026, sins/Ultimate SOLOMON_ICONS 161..166): legion, eternal circle, ring command,
+# brass vessel, magnum opus, throne of wisdom; violet like his cast button, gold rim like every ultimate
+G["VESSEL"] = [
+    "............",
+    "....XXXX....",
+    ".....XX.....",
+    "....XXXX....",
+    "...XXXXXX...",
+    "..XXXXXXXX..",
+    "..XX.XX.XX..",
+    "..XXXXXXXX..",
+    "...XXXXXX...",
+    "....XXXX....",
+    "...XXXXXX...",
+    "............",
+]
+ICONS.update({161: "HORNS", 162: "HEXAGRAM", 163: "HAND", 164: "VESSEL", 165: "STAR", 166: "CROWN"})
+SOLOMON_COLORS.update({161: (130, 25, 40), 162: (120, 60, 190), 163: (150, 110, 30), 164: (160, 100, 40),
+                       165: (190, 170, 210), 166: (110, 40, 150)})
+
 
 
 # the demon lords' skills take their lord's colour (DemonLord order)

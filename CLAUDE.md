@@ -505,6 +505,17 @@ Done and pushed (see `git log`):
   every exposed hall tile (`exposedCells`, line of sight from the giant) shows a pulsing "!" (`effects/AlertCell`, made on the
   render thread, cleared on release/collapse, re-shown after a reload). Old floor-31 saves keep the 29x25 map and won't line
   up with the new constants.
+- Solomon's ultimates (Nov 19 2026, owner picked Claude's six; learned at levels 15 and 25, `Ultimate.level(cls, tier)`,
+  between his principles at 10/20; `UltimateSkills.hasUltimates` = sins + Solomon, `isSin` still sins only; icons
+  skill_icons.png row 20 = `Ultimate.SOLOMON_ICONS` 161..166, violet with gold rim): tier 1 LEGION_GOETIA (the 3 strongest
+  of `SolomonSpells.summonable()` for 15 turns under `UltimateSkills.RingPact`, a SummonPact subclass, so `activeSummons`'s
+  exact-class count ignores them), ETERNAL_CIRCLE (12-turn Effect: `SolomonHooks.afterCast` keeps the circle, `adjustCost`
+  halves), RING_COMMAND (non-boss -> `AllyBuff.affectAndLoot` with RingPact 30 turns, it dies when the pact ends; boss ->
+  paralysis 3 + vulnerable 10); tier 2 BRASS_VESSEL (non-boss killed via `die(Ultimate.class)`, so Goetia fiends are
+  recorded; boss -> paralysis 5 + a 5-turn Mark doubling damage in `modifyDamage`; paralysis-immune or IMMOVABLE bosses take
+  2x `big`), MAGNUM_OPUS (all enemies in sight `big` x spell power, non-bosses under 1/4 HP die and drop 10 x depth gold),
+  THRONE_OF_WISDOM (20-turn Effect: `SolomonRing.skills` shows unlearned principles, `drawTime` 0, `turnsPerMana` /3).
+  Strings in `tools/strings/ultimates_items_*`.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
@@ -805,7 +816,7 @@ their base weapon's ability text. Gluttony's strings predate the source copies; 
 
 - Normal PC: open in Android Studio, or `./gradlew android:assembleDebug`.
 - Phone testing: push to GitHub; `.github/workflows/build-apk.yml` builds and publishes the APK.
-- Versions (Nov 2026): the mod has its own version in `build.gradle` (`appVersionName` 1.2.0, `appVersionCode` 1004 since Nov 18 2026 (1.1.2/1003, 1.1.1/1002, 1.1.0/1001 and 1.0.0/1000 before),
+- Versions (Nov 2026): the mod has its own version in `build.gradle` (`appVersionName` 1.2.1, `appVersionCode` 1005 since Nov 19 2026 (1.2.0/1004, 1.1.2/1003, 1.1.1/1002, 1.1.0/1001 and 1.0.0/1000 before),
   `spdBaseVersion` 4.0.2; the title screen and menu show "Seven Sins v<version>"). To release: raise both (code +1 each
   time, never lower) and push to main: when no release `v<version>` exists yet the workflow creates the tag and publishes a
   "Seven Sins <version>" release with `SevenSins-<version>.apk` (same debug build: dev tools on, installs over test builds,

@@ -69,7 +69,8 @@ public class SolomonRing extends SinArtifact {
 		ArrayList<SinSkill> list = new ArrayList<>();
 		SolomonArcana a = arcana(hero);
 		for (final SolomonSpells.Element e : SolomonSpells.Element.values()) {
-			if (com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.isPrinciple(e) && !a.principles.contains(e)) continue;
+			if (com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonPrinciples.isPrinciple(e) && !a.principles.contains(e)
+					&& !com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.throne(hero)) continue; //Throne of Wisdom: every principle
 			list.add(new SymbolSkill(e));
 		}
 		list.add(new CastSkill());

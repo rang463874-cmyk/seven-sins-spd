@@ -55,6 +55,7 @@ public class SolomonArcana extends Buff {
 		//the Arch Magus draws mana 25% faster
 		if (h != null && h.subClass == com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass.ARCH_MAGUS) t /= 1.25f;
 		if (h != null) t /= 1f + 0.15f * h.pointsInTalent(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.SOL_FOCUS);
+		if (h != null && com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.throne(h)) t /= 3f; //Seven Sins: ultimates, Throne of Wisdom
 		return t;
 	}
 

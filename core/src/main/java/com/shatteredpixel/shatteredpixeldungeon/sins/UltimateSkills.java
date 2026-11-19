@@ -68,6 +68,15 @@ public final class UltimateSkills {
 				&& hero.heroClass.ordinal() <= HeroClass.SLOTH.ordinal();
 	}
 
+	/** the sins and Solomon learn ultimates */
+	public static boolean hasUltimates(Hero hero) {
+		return isSin(hero) || (hero != null && hero.heroClass == HeroClass.SOLOMON);
+	}
+
+	private static int level(Hero hero, int tier) {
+		return Ultimate.level(hero.heroClass, tier);
+	}
+
 	public static UltimateBook book(Hero hero) {
 		return hero == null ? null : hero.buff(UltimateBook.class);
 	}
@@ -76,14 +85,14 @@ public final class UltimateSkills {
 	public static int pendingTier(Hero hero) {
 		UltimateBook b = book(hero);
 		if (b == null) return 0;
-		if (hero.lvl >= Ultimate.TIER1_LEVEL && b.first == null) return 1;
-		if (hero.lvl >= Ultimate.TIER2_LEVEL && b.second == null) return 2;
+		if (hero.lvl >= level(hero, 1) && b.first == null) return 1;
+		if (hero.lvl >= level(hero, 2) && b.second == null) return 2;
 		return 0;
 	}
 
 	/** from Hero.act: gives sin heroes the book and announces open choices */
 	public static void tick(Hero hero) {
-		if (!isSin(hero)) return;
+		if (!hasUltimates(hero)) return;
 		UltimateBook b = book(hero);
 		if (b == null) {
 			b = Buff.affect(hero, UltimateBook.class);
@@ -92,11 +101,11 @@ public final class UltimateSkills {
 		int t = pendingTier(hero);
 		if (t == 1 && !b.told1) {
 			b.told1 = true;
-			GLog.p(Messages.get(UltimateSkills.class, "can_learn", Ultimate.TIER1_LEVEL));
+			GLog.p(Messages.get(UltimateSkills.class, "can_learn", level(hero, 1)));
 			resyncBar();
 		} else if (t == 2 && !b.told2) {
 			b.told2 = true;
-			GLog.p(Messages.get(UltimateSkills.class, "can_learn", Ultimate.TIER2_LEVEL));
+			GLog.p(Messages.get(UltimateSkills.class, "can_learn", level(hero, 2)));
 			resyncBar();
 		}
 	}
@@ -116,7 +125,7 @@ public final class UltimateSkills {
 	public static ArrayList<SinSkill> skills(Hero hero) {
 		ArrayList<SinSkill> out = new ArrayList<>();
 		UltimateBook b = book(hero);
-		if (b == null || !isSin(hero)) return out;
+		if (b == null || !hasUltimates(hero)) return out;
 		if (b.first != null) out.add(new UltimateSkill(b.first));
 		if (b.second != null) out.add(new UltimateSkill(b.second));
 		if (pendingTier(hero) > 0) out.add(new LearnSkill());
@@ -189,7 +198,7 @@ public final class UltimateSkills {
 
 		@Override
 		public String desc(Hero hero) {
-			return Messages.get(UltimateSkills.class, "learn_desc", Ultimate.TIER1_LEVEL, Ultimate.TIER2_LEVEL);
+			return Messages.get(UltimateSkills.class, "learn_desc", level(hero, 1), level(hero, 2));
 		}
 
 		@Override
@@ -216,7 +225,7 @@ public final class UltimateSkills {
 		String[] labels = new String[options.size()];
 		for (int i = 0; i < labels.length; i++) labels[i] = options.get(i).title();
 		GameScene.show(new WndOptions(new SinSkillIcon(Ultimate.LEARN_ICON).image(),
-				Messages.get(UltimateSkills.class, "choose_title", tier == 1 ? Ultimate.TIER1_LEVEL : Ultimate.TIER2_LEVEL),
+				Messages.get(UltimateSkills.class, "choose_title", level(hero, tier)),
 				Messages.get(UltimateSkills.class, "choose_msg"), labels) {
 			@Override
 			protected void onSelect(int index) {
@@ -301,6 +310,15 @@ public final class UltimateSkills {
 			case MIDAS: return new Object[]{15 * Math.max(1, Dungeon.depth)};
 			case COMPOUND: return new Object[]{100 * Math.max(1, Dungeon.depth)};
 			case FATAL_KISS: return new Object[]{Math.round(h.HT * 0.4f)};
+			case LEGION_GOETIA: return new Object[]{LEGION_COUNT, Math.round(LEGION_TURNS)};
+			case ETERNAL_CIRCLE: return new Object[]{Math.round(ETERNAL_TURNS)};
+			case RING_COMMAND: return new Object[]{Math.round(COMMAND_TURNS), Math.round(COMMAND_BOSS_PARA)};
+			case BRASS_VESSEL: return new Object[]{Math.round(VESSEL_TURNS)};
+			case MAGNUM_OPUS: {
+				float p = spellPower(h);
+				return new Object[]{Math.round(2 * l * p), Math.round((3 * l + 10) * p), 10 * Math.max(1, Dungeon.depth)};
+			}
+			case THRONE_OF_WISDOM: return new Object[]{Math.round(THRONE_TURNS)};
 			default: return new Object[0];
 		}
 	}
@@ -589,9 +607,97 @@ public final class UltimateSkills {
 				return true;
 			}
 			case DAYDREAM: effect(hero, u, 25f); return true;
+
+			case LEGION_GOETIA: return legion(hero);
+			case ETERNAL_CIRCLE: effect(hero, u, ETERNAL_TURNS); Sample.INSTANCE.play(Assets.Sounds.CHARGEUP); return true;
+			case MAGNUM_OPUS: {
+				ArrayList<Mob> foes = enemies(hero, 0);
+				if (foes.isEmpty()) {
+					GLog.w(Messages.get(UltimateSkills.class, "no_enemies"));
+					return false;
+				}
+				float p = spellPower(hero);
+				for (Mob m : foes) {
+					m.damage(Math.round(big(hero) * p), Ultimate.class);
+					CellEmitter.center(m.pos).burst(Speck.factory(Speck.LIGHT), 5);
+					if (m.isAlive() && !boss(m) && m.HP < m.HT / 4f) {
+						int pos = m.pos;
+						CellEmitter.get(pos).burst(Speck.factory(Speck.WOOL), 8);
+						kill(m);
+						Dungeon.level.drop(new Gold(10 * Math.max(1, Dungeon.depth)), pos).sprite.drop();
+					}
+				}
+				Sample.INSTANCE.play(Assets.Sounds.LIGHTNING);
+				return true;
+			}
+			case THRONE_OF_WISDOM: effect(hero, u, THRONE_TURNS); Sample.INSTANCE.play(Assets.Sounds.LEVELUP); return true;
 			default:
 				return false;
 		}
+	}
+
+	// ------------------------------------------------------------------ Solomon (Nov 19 2026)
+
+	public static final int LEGION_COUNT = 3;
+	public static final float LEGION_TURNS = 15f;
+	public static final float ETERNAL_TURNS = 12f;
+	public static final float COMMAND_TURNS = 30f;
+	public static final float COMMAND_BOSS_PARA = 3f;
+	public static final float VESSEL_TURNS = 5f;
+	public static final float THRONE_TURNS = 20f;
+
+	private static float spellPower(Hero hero) {
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana a =
+				hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.class);
+		return a == null ? 1f : a.spellPower();
+	}
+
+	/** Eternal Circle: casting keeps the circle and costs half (SolomonHooks) */
+	public static boolean eternalCircle(Hero hero) {
+		return active(hero, Ultimate.ETERNAL_CIRCLE) != null;
+	}
+
+	/** Throne of Wisdom: every principle, free drawing, mana x3 (SolomonHooks, SolomonArcana, SolomonRing) */
+	public static boolean throne(Hero hero) {
+		return active(hero, Ultimate.THRONE_OF_WISDOM) != null;
+	}
+
+	/** a pact of the ultimates: like a summon's, but outside the summon limit (Char.buff matches exact classes) */
+	public static class RingPact extends com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonSpells.SummonPact {
+	}
+
+	/** Legion of the Goetia: the strongest demons of the Lemegeton all at once */
+	private static boolean legion(Hero hero) {
+		ArrayList<com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaDemon> list =
+				com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonSpells.summonable();
+		if (list.isEmpty()) {
+			GLog.w(Messages.get(com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonSpells.class, "no_demons"));
+			return false;
+		}
+		ArrayList<Integer> cells = new ArrayList<>();
+		for (int n : PathFinder.NEIGHBOURS8) {
+			int c = hero.pos + n;
+			if (Dungeon.level.passable[c] && !Dungeon.level.avoid[c] && Actor.findChar(c) == null) cells.add(c);
+		}
+		int made = 0;
+		for (int i = 0; i < LEGION_COUNT && i < list.size() && !cells.isEmpty(); i++) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.goetia.GoetiaFiend f =
+					new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.goetia.GoetiaFiend();
+			f.setup(list.get(i), Math.max(Dungeon.depth, Dungeon.scalingDepth()));
+			f.minion = true;
+			f.pos = cells.remove(Random.Int(cells.size()));
+			f.state = f.WANDERING;
+			GameScene.add(f);
+			Buff.affect(f, RingPact.class).set(LEGION_TURNS);
+			CellEmitter.get(f.pos).burst(Speck.factory(Speck.WOOL), 8);
+			made++;
+		}
+		if (made == 0) {
+			GLog.w(Messages.get(UltimateSkills.class, "no_room"));
+			return false;
+		}
+		Sample.INSTANCE.play(Assets.Sounds.TELEPORT);
+		return true;
 	}
 
 	private static boolean puppets(Hero hero, int n, float life) {
@@ -718,6 +824,32 @@ public final class UltimateSkills {
 				Sample.INSTANCE.play(Assets.Sounds.LULLABY);
 				return true;
 			}
+			case RING_COMMAND:
+				if (!boss(ch) && ch instanceof Mob) {
+					AllyBuff.affectAndLoot((Mob) ch, hero, RingPact.class);
+					RingPact p = ch.buff(RingPact.class);
+					if (p != null) p.set(COMMAND_TURNS);
+					((Mob) ch).state = ((Mob) ch).WANDERING;
+					ch.sprite.emitter().burst(Speck.factory(Speck.STAR), 8);
+				} else {
+					Buff.prolong(ch, Paralysis.class, COMMAND_BOSS_PARA);
+					Buff.prolong(ch, Vulnerable.class, 10f);
+					ch.sprite.emitter().burst(Speck.factory(Speck.STAR), 8);
+				}
+				Sample.INSTANCE.play(Assets.Sounds.CHARMS);
+				return true;
+			case BRASS_VESSEL:
+				if (!boss(ch)) {
+					CellEmitter.get(ch.pos).burst(Speck.factory(Speck.WOOL), 10);
+					kill(ch);
+				} else if (ch.isImmune(Paralysis.class) || Char.hasProp(ch, Char.Property.IMMOVABLE)) {
+					ch.damage(2 * big(hero), Ultimate.class);
+				} else {
+					Buff.prolong(ch, Paralysis.class, VESSEL_TURNS);
+					Buff.append(ch, UltimateBook.Mark.class, VESSEL_TURNS).set(u);
+				}
+				Sample.INSTANCE.play(Assets.Sounds.TELEPORT);
+				return true;
 			default:
 				return false;
 		}
@@ -763,6 +895,7 @@ public final class UltimateSkills {
 		if (target instanceof Mob) {
 			if (marked(target, Ultimate.VENDETTA)) dmg = Math.round(dmg * 1.5f);
 			if (marked(target, Ultimate.BOUNTY)) dmg = Math.round(dmg * 1.3f);
+			if (marked(target, Ultimate.BRASS_VESSEL)) dmg *= 2;
 			return dmg;
 		}
 

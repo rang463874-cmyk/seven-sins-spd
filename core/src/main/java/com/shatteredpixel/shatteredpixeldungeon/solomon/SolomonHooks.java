@@ -70,6 +70,7 @@ public final class SolomonHooks {
 	/** time to draw a symbol: 0.5 turns, -0.1 per point of Deft Hands */
 	public static float drawTime(Hero hero) {
 		float t = Math.max(0.2f, SolomonSpells.DRAW_TIME - 0.1f * pts(hero, Talent.SOL_DEFTNESS));
+		if (hero != null && com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.throne(hero)) return 0f; //Seven Sins: ultimates, Throne of Wisdom
 		SolomonArcana a = hero == null ? null : hero.buff(SolomonArcana.class);
 		return a != null && a.mirrored ? t * 0.5f : t;
 	}
@@ -79,6 +80,7 @@ public final class SolomonHooks {
 		float c = base;
 		if (triad) c *= 1f - 0.1f * pts(hero, Talent.SOL_TRIAD);
 		if (hero != null && hero.buff(SolomonPrinciples.Elixir.class) != null) c *= 0.5f;
+		if (hero != null && com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.eternalCircle(hero)) c *= 0.5f; //Seven Sins: ultimates, Eternal Circle
 		return Math.max(1, Math.round(c));
 	}
 
@@ -108,7 +110,9 @@ public final class SolomonHooks {
 			hero.sprite.showStatus(0xCC99FF, Messages.get(SolomonHooks.class, "echo"));
 		}
 		int circle = pts(hero, Talent.MAGUS_CIRCLE);
-		if (circle > 0 && Random.Int(100) < 15 * circle) {
+		if (com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.eternalCircle(hero)) {
+			//Eternal Circle: the symbols stay drawn
+		} else if (circle > 0 && Random.Int(100) < 15 * circle) {
 			hero.sprite.showStatus(0xCC99FF, Messages.get(SolomonHooks.class, "circle_kept"));
 		} else {
 			a.circle.clear();
