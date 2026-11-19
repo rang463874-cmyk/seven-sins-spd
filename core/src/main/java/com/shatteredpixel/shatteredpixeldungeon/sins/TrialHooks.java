@@ -265,7 +265,7 @@ public final class TrialHooks {
 			default:
 				return null;
 		}
-		return s.targetsEnemy().onUse(h -> GameScene.selectCell(TARGET));
+		return s.targetsEnemy().upperRow(true).onUse(h -> GameScene.selectCell(TARGET));
 	}
 
 	// ------------------------------------------------------------------ helpers

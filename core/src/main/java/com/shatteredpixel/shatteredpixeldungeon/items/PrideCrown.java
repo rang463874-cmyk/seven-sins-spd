@@ -143,7 +143,7 @@ public class PrideCrown extends SinArtifact {
 				.onUse(h -> GameScene.selectCell(decree)));
 		list.add(new BasicSkill(PrideCrown.class, "effigy", 29, SinSkill.CostType.DIGNITY)
 				.cost(h -> COST_EFFIGY)
-				.visibleIf(h -> h.subClass == HeroSubClass.PARAGON)
+				.visibleIf(h -> h.subClass == HeroSubClass.PARAGON).upperRow(true)
 				.usableIf(h -> glory(h).dignity >= COST_EFFIGY)
 				.descArgs(h -> new Object[]{effigyHP(h), Math.round(EFFIGY_LIFE), PrideEffigy.TAUNT_RADIUS})
 				.onUse(h -> GameScene.selectCell(effigy)));

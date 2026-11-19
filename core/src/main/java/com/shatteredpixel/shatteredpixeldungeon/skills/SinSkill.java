@@ -78,6 +78,14 @@ public abstract class SinSkill {
 		return TARGET_NONE;
 	}
 
+	/**
+	 * Seven Sins (Nov 19 2026, owner): extra skills (subclass-only ones, the trial skill) sit in the skill bar's upper row
+	 * with the demon lord's skill and the ultimates, so the main row stays within the screen
+	 */
+	public boolean upperRow() {
+		return false;
+	}
+
 	/** hidden skills (e.g. subclass-only ones) are left out of the window and the bar */
 	public boolean visible(Hero hero) {
 		return true;

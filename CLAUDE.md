@@ -636,6 +636,10 @@ Every sin's signature item implements `skills/SkillHolder` and lists its active 
 The same list drives the item's skill window (`windows/WndSkills`, name + cost + description) and the
 skill bar (`ui/SkillBar`, icon buttons right above the quickslot toolbar, right-aligned; tap = use, long-press = info).
 `GameScene.syncSkillBar` keeps it above the toolbar; tags/log are laid out from `toolbarAreaTop()`.
+Rows (Nov 19 2026, owner: past 7 buttons they ran off the screen): the main row holds the item's own skills, at most
+`SkillBar.perRow()` (what fits the screen, 4..7); skills marked `SinSkill.upperRow()` (`BasicSkill.upperRow(true)`: Greed's
+Forced Loan, Pride's Effigy, the trial skill) and the main row's overflow go into the rows above with the demon lord's skill
+and the ultimates (also at most perRow() each; the first upper row sits right above the main row).
 Adding a skill: add a `BasicSkill` to the item's `skills()`, strings `skill_<id>` and `skill_<id>_desc`
 in the item's namespace, and an icon in `tools/sinsart/make_skill_icons.py`
 (`interfaces/skill_icons.png`, 16x16, row = sin index, 8 per row; re-run the script).

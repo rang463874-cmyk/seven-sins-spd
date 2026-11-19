@@ -31,7 +31,11 @@ public class SkillBar extends Component {
 	public static final int GAP = 1;
 
 	private final ArrayList<SkillButton> buttons = new ArrayList<>();
-	/** a second row above the main one: skills that don't come from the signature item (the demon lord's) */
+	/**
+	 * rows above the main one: skills that don't come from the signature item (the demon lord's, the ultimates), the
+	 * item's extra skills (SinSkill.upperRow) and whatever doesn't fit the main row (Nov 19 2026, owner: past 7 buttons
+	 * they ran off the screen); at most perRow() per row, the first row right above the main one
+	 */
 	private final ArrayList<SkillButton> extras = new ArrayList<>();
 	/** identity of the skill list currently shown, to rebuild only when it changes */
 	private String shownKey = "";
@@ -56,16 +60,26 @@ public class SkillBar extends Component {
 	}
 
 	private int rows() {
-		return (buttons.isEmpty() ? 0 : 1) + (extras.isEmpty() ? 0 : 1);
+		return (buttons.isEmpty() ? 0 : 1) + extraRows();
 	}
 
-	private static float rowWidth(ArrayList<SkillButton> row) {
-		return row.isEmpty() ? 0 : row.size() * (BTN_SIZE + GAP) - GAP;
+	private int extraRows() {
+		return (extras.size() + perRow() - 1) / perRow();
+	}
+
+	/** buttons per row: as many as fit the screen, 7 at most */
+	public static int perRow() {
+		int fit = (int) ((PixelScene.uiCamera.width - 4) / (BTN_SIZE + GAP));
+		return Math.max(4, Math.min(7, fit));
+	}
+
+	private static float rowWidth(int n) {
+		return n <= 0 ? 0 : n * (BTN_SIZE + GAP) - GAP;
 	}
 
 	/** width of the widest row of buttons (0 when hidden) */
 	public float barWidth() {
-		return Math.max(rowWidth(buttons), rowWidth(extras));
+		return Math.max(rowWidth(buttons.size()), rowWidth(Math.min(extras.size(), perRow())));
 	}
 
 	private static ArrayList<SinSkill> extraSkills(Hero hero) {
@@ -85,10 +99,20 @@ public class SkillBar extends Component {
 	public void refresh() {
 		Hero hero = Dungeon.hero;
 		Item item = SkillHolder.find(hero);
-		ArrayList<SinSkill> skills = item == null ? new ArrayList<SinSkill>()
+		ArrayList<SinSkill> all = item == null ? new ArrayList<SinSkill>()
 				: SkillHolder.visibleSkills((SkillHolder) item, hero);
-		ArrayList<SinSkill> extra = extraSkills(hero);
-		String key = keyFor(item, skills) + "/" + keyFor(null, extra);
+		//the main row: the item's own skills, as many as fit; the extra ones and the overflow go up with the others
+		ArrayList<SinSkill> skills = new ArrayList<>();
+		ArrayList<SinSkill> upper = new ArrayList<>();
+		for (SinSkill s : all) {
+			if (s.upperRow()) upper.add(s);
+			else skills.add(s);
+		}
+		int per = perRow();
+		while (skills.size() > per) upper.add(0, skills.remove(skills.size() - 1));
+		ArrayList<SinSkill> extra = upper;
+		extra.addAll(extraSkills(hero));
+		String key = keyFor(item, skills) + "/" + keyFor(null, extra) + "/" + per;
 		if (key.equals(shownKey)) {
 			for (SkillButton b : buttons) b.updateState();
 			for (SkillButton b : extras) b.updateState();
@@ -135,17 +159,20 @@ public class SkillBar extends Component {
 	protected void layout() {
 		width = barWidth();
 		height = barHeight();
-		//rows are right-aligned; the extra row sits on top
+		//rows are right-aligned; the extra rows sit on top, the first of them right above the main row
+		int per = perRow();
+		int er = extraRows();
 		float rowY = y;
-		if (!extras.isEmpty()) {
-			float x = this.x + width - rowWidth(extras);
-			for (SkillButton b : extras) {
-				b.setRect(x, rowY, BTN_SIZE, BTN_SIZE);
+		for (int row = er - 1; row >= 0; row--) {
+			int from = row * per, to = Math.min(extras.size(), from + per);
+			float x = this.x + width - rowWidth(to - from);
+			for (int i = from; i < to; i++) {
+				extras.get(i).setRect(x, rowY, BTN_SIZE, BTN_SIZE);
 				x += BTN_SIZE + GAP;
 			}
 			rowY += BTN_SIZE + GAP;
 		}
-		float x = this.x + width - rowWidth(buttons);
+		float x = this.x + width - rowWidth(buttons.size());
 		if (circle != null) {
 			circle.setPos(x, rowY);
 			rowY += CircleStrip.HEIGHT + GAP;

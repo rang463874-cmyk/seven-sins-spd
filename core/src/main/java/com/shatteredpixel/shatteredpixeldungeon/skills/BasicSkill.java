@@ -25,6 +25,18 @@ public class BasicSkill extends SinSkill {
 	private Consumer<Hero> use = h -> {};
 	private Function<Hero, Object[]> args = h -> new Object[0];
 	private Function<Hero, String> nameKey = null;
+	private boolean upper = false;
+
+	/** puts the skill in the skill bar's upper row (SinSkill.upperRow) */
+	public BasicSkill upperRow(boolean upper) {
+		this.upper = upper;
+		return this;
+	}
+
+	@Override
+	public boolean upperRow() {
+		return upper;
+	}
 
 	public BasicSkill(Class<?> owner, String id, int icon, CostType type) {
 		super(owner, id, icon);

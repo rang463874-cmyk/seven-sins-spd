@@ -212,7 +212,7 @@ public class GoldenCard extends SinArtifact {
 				.descArgs(h -> new Object[]{Math.round(10f * (1f + 0.5f * h.pointsInTalent(Talent.GREED_BRIBERY)))})
 				.onUse(h -> GameScene.selectCell(bribe)));
 		list.add(new BasicSkill(GoldenCard.class, "loan", 12, SinSkill.CostType.VARIES).targetsEnemy()
-				.visibleIf(h -> h.subClass == HeroSubClass.USURER)
+				.visibleIf(h -> h.subClass == HeroSubClass.USURER).upperRow(true)
 				.usableIf(h -> Dungeon.gold > 0)
 				.onUse(h -> GameScene.selectCell(loan)));
 		list.add(new BasicSkill(GoldenCard.class, "sell", 13, SinSkill.CostType.GAUGE)
