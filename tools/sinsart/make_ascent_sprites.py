@@ -26,8 +26,11 @@ FX = {"moloch": (255, 150, 40, 255), "lilith": (200, 90, 255, 255), "azazel": (2
       "abaddon": (150, 200, 60, 255), "cherubim": (255, 170, 60, 255), "ophanim": (255, 230, 120, 255),
       "azrael": (220, 220, 230, 255), "sandalphon": (150, 210, 255, 255), "behemoth": (200, 140, 80, 255),
       "metatron": (255, 250, 220, 255)}
+# pictures drawn facing left: mirrored so every sprite faces right like the game expects
+MIRROR = {"behemoth"}
+ISLAND = 0.02   # pieces smaller than this share of the biggest are dropped (swarms, flying rubble, the Gemini sparkle)
 SIZE = 64
-TOL = 70        # colour distance still counted as background when flood filling
+TOL = 50        # colour distance still counted as background when flood filling
 
 
 def cut(path):
@@ -55,8 +58,31 @@ def cut(path):
     r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
     hue = np.where(mx == r, ((g - b) / d) % 6, np.where(mx == g, (b - r) / d + 2, (r - g) / d + 4)) / 6
     dh = np.minimum(np.abs(hue - bh), 1 - np.abs(hue - bh))
-    leak = (dh < 0.09) & (sat > 0.28) & (mx > 0.3)
-    a[..., 3] = np.where(seen | leak, 0, 255)
+    leak = (dh < 0.09) & (sat > 0.28) & (mx > 0.3) & (bs > 0.3)  # only for a coloured background
+    keep = ~(seen | leak)
+    # drop small islands
+    lab = np.zeros((h, w), int)
+    sizes = []
+    for y0 in range(h):
+        for x0 in range(w):
+            if not keep[y0, x0] or lab[y0, x0]:
+                continue
+            n = len(sizes) + 1
+            st, cnt = [(y0, x0)], 0
+            lab[y0, x0] = n
+            while st:
+                y, x = st.pop()
+                cnt += 1
+                for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                    if 0 <= ny < h and 0 <= nx < w and keep[ny, nx] and not lab[ny, nx]:
+                        lab[ny, nx] = n
+                        st.append((ny, nx))
+            sizes.append(cnt)
+    if sizes:
+        big = max(sizes)
+        small = [i + 1 for i, c in enumerate(sizes) if c < big * ISLAND]
+        keep &= ~np.isin(lab, small)
+    a[..., 3] = np.where(keep, 255, 0)
     return Image.fromarray(a.astype(np.uint8), "RGBA")
 
 
@@ -68,7 +94,10 @@ def main():
         path = os.path.join(SRC, name + ".png")
         if not os.path.exists(path):
             continue
-        base = mvs.shrink(mvs.cutout(cut(path), dark=-1))
+        img = cut(path)
+        if name in MIRROR:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        base = mvs.shrink(img)
         for i, f in enumerate(mvs.frames(base, FX[name])):
             sheet.paste(f, (i * SIZE, row * (SIZE + 1)), f)
         done.append(name)

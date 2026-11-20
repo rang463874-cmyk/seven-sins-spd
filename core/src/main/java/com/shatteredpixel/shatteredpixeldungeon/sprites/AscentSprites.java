@@ -70,15 +70,16 @@ public class AscentSprites {
 		{ blood = 0xFF404048; }
 	}
 
-	public static class Abaddon extends DemonSprites.LordSprite {
-		protected DemonLord lord() { return DemonLord.BEELZEBUB; }
-		@Override public void resetColor() { super.resetColor(); paint(this, 0x607040); }
+	public static class Abaddon extends ArtSprite {
+		protected int row() { return 3; }
+		{ blood = 0xFF507030; }
 	}
 
-	public static class Behemoth extends DemonSprites.LordSprite {
-		protected DemonLord lord() { return DemonLord.BELPHEGOR; }
+	/** drawn side-on and wide, so it is scaled up to tower over the sewers */
+	public static class Behemoth extends ArtSprite {
+		protected int row() { return 8; }
+		{ blood = 0xFF806040; }
 		public Behemoth() { super(); scale.set(1.6f); }
-		@Override public void resetColor() { super.resetColor(); paint(this, 0xA07040); }
 	}
 
 	public static class Cherubim extends VirtueSprites.AngelSprite {
