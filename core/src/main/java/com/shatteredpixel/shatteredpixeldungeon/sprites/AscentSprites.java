@@ -1,12 +1,9 @@
 package com.shatteredpixel.shatteredpixeldungeon.sprites;
 
-import com.shatteredpixel.shatteredpixeldungeon.demons.DemonLord;
-import com.shatteredpixel.shatteredpixeldungeon.virtues.Virtue;
 import com.watabou.noosa.TextureFilm;
 
 /**
- * Seven Sins: placeholder sprites for the ascent's bosses (Nov 20 2026) until the owner's pictures arrive: the demon lords'
- * and the archangels' pictures, tinted (the tint is put back after every flash) and, for the two chasers, drawn bigger.
+ * Seven Sins: the ascent's bosses, drawn from the owner's pictures (Nov 20 2026; sheet by tools/sinsart/make_ascent_sprites.py).
  */
 public class AscentSprites {
 
@@ -48,10 +45,6 @@ public class AscentSprites {
 		public int blood() {
 			return blood;
 		}
-	}
-
-	private static void paint(CharSprite s, int rgb) {
-		s.hardlight(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f);
 	}
 
 	//the owner's pictures (Nov 20 2026)
@@ -102,9 +95,10 @@ public class AscentSprites {
 		{ blood = 0xFF80C8FF; }
 	}
 
-	public static class Metatron extends VirtueSprites.AngelSprite {
-		protected Virtue virtue() { return Virtue.PATIENCE; }
-		public Metatron() { super(); scale.set(1.6f); }
-		@Override public void resetColor() { super.resetColor(); paint(this, 0xFFF4D0); }
+	/** the voice of God, as tall as heaven: scaled up like Behemoth */
+	public static class Metatron extends ArtSprite {
+		protected int row() { return 9; }
+		{ blood = 0xFFFFF4D0; }
+		public Metatron() { super(); scale.set(1.25f); }
 	}
 }

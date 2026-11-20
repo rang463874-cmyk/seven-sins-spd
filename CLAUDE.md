@@ -557,7 +557,7 @@ Done and pushed (see `git log`):
   `tools/sinsart/make_ascent_sprites.py` (border flood fill + background-hue leak cut, then make_virtue_sprites-style shrink,
   outline and frames) -> `sprites/ascent_bosses.png` (96x80 frames since the wide-winged angels, own shrink/frames in the script, 12 per row,
   row = `ORDER` index) read by
-  `AscentSprites.ArtSprite`; done Nov 20 2026: all but Metatron (Behemoth x1.25; drawn facing left: `MIRROR`; grey backgrounds skip the hue cut; islands under `ISLAND` 2% dropped: swarms, rubble, the Gemini sparkle). The others are still placeholders (demon lords'/
+  `AscentSprites.ArtSprite`; done Nov 20 2026: all ten (Behemoth and Metatron x1.25; drawn facing left: `MIRROR`; grey backgrounds skip the hue cut; islands under `ISLAND` 2% dropped: swarms, rubble, the Gemini sparkle). The others are still placeholders (demon lords'/
   archangels' sheets tinted via `resetColor`; chasers x1.6): when a picture arrives, run the script and make its class an
   ArtSprite with its row. All ten in the bestiary's QUEST group. Strings `tools/strings/ascent_actors_*`.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
