@@ -538,6 +538,24 @@ Done and pushed (see `git log`):
   else faction x side: GOD_OF_SIN, GOD_OF_DAWN, HEIR, PENITENT), then `Badges.validateAscentEnding` (Badge ASCENT_* 112..116,
   ASCENT_ALL_PATHS 117 GLOBAL once all five are unlocked; icons tinted by `tools/sinsart/make_ascent_badges.py`; strings at
   the happy end badge in messages/misc, not synced). Strings `tools/strings/ascent_items_*`. Not yet tried on a device.
+- The ascent's bosses (Nov 20 2026, owner: new figures from the same myths, fixed per faction): `actors/mobs/ascent/`.
+  `AscentBoss` (RegionElite, BOSS, `setTier((25 - depth) / 5)`: HT 600 + 120/tier, skills `skillMin/Max` 18+3t..34+5t,
+  `cd()` one turn shorter below half HP, softcapped; helpers `line`, `quarter`, `dashAlong`, `summon` (minions get
+  `Minion` + `AscentHooks.Herald`)). Demons: Moloch 25 (charge line + dash, furnace donut 1-2 + burning, fire elementals),
+  Lilith 20 (checker charm + drain, wraiths, cone kiss), Azazel 15 (blade scatter + bleed, chain line pull + cripple, armory
+  crossLines when enraged), Abaddon 10 (locust bandWaves + poison, pit scatter + roots, carapace barrier + swarms). Angels:
+  Cherubim 25 (turning sword = 4 waves of `quarter(1, 4, q)` clockwise + burning, X faces + weakness, cross guard + blind),
+  Ophanim 20 (wheel bandWaves + cripple, gaze line + vulnerable, eyes checker + hex), Azrael 15 (`Azrael.DeathMark` 4 turns:
+  2x skillMax if still within `MARK_RANGE` 4 when it ends; harvest donut heals; scythe cone), Sandalphon 10 (song ringWaves 1-7
+  + vertigo, hymn barrier + believers, voice crossLines, paralysis 1 when enraged). `AscentHooks.spawnBoss` puts the
+  faction's boss 4-9 tiles from the hero on the first ascent visit of 25/20/15/10 and calls `level.seal()` (vanilla lock:
+  no stairs); `onBossSlain` unseals, drops a scroll of upgrade + 2 sin essences and adds `BOSS_POINTS` 15 (demon = virtue,
+  angel = sin). Sewers 5..1: `AscentChaser` (Behemoth: stampede line + dash, quake scatter; Metatron: pillar scatter, voice
+  ringWaves) rises at the floor's exit `chaserDue` 6 turns after arrival (one per level, `raiseChaser`), speed 0.8, beckoned to
+  the hero every turn, unkillable: `damage` fills a `STAGGER` 90 meter (3 turns paralysis), `die` staggers 5 instead (only
+  `die(AscentChaser.class)` kills). Placeholder art `sprites/AscentSprites` (demon lords'/archangels' sheets tinted via
+  `resetColor`; chasers x1.6) until the owner's pictures (prompts in `tools/sinsart/ascent_art/PROMPTS.md`, files
+  `ascent_art/<name>.png`). All ten in the bestiary's QUEST group. Strings `tools/strings/ascent_actors_*`.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

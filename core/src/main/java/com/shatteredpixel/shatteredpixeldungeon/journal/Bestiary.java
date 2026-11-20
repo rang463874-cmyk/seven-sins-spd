@@ -253,6 +253,8 @@ public enum Bestiary {
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.HumilityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.CharityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.ChastityChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.PatienceChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.TemperanceChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.KindnessChampion.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.virtues.DiligenceChampion.class,
 				//seven sins mod: the trial of sin
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.SinShadow.class,
+				//seven sins mod: the ascent's bosses
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Moloch.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Lilith.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Azazel.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Abaddon.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Cherubim.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Ophanim.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Azrael.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Sandalphon.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Behemoth.class, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Metatron.class,
 				//seven sins mod: the heavens (floors 27-30)
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Believer.class,
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.heaven.Priest.class,

@@ -169,6 +169,9 @@ public final class AscentHooks {
 	private static int prideStacks = 0;
 	private static boolean hurtSinceKill = false;
 	private static boolean martyrUsed = false;
+	//the bosses
+	private static final HashSet<Integer> bossSpawned = new HashSet<>();
+	private static float chaserDue = 0;
 
 	//not saved: a choice window is open
 	private static boolean promptOpen = false;
@@ -191,6 +194,8 @@ public final class AscentHooks {
 		prideStacks = 0;
 		hurtSinceKill = false;
 		martyrUsed = false;
+		bossSpawned.clear();
+		chaserDue = 0;
 		promptOpen = false;
 	}
 
@@ -252,6 +257,8 @@ public final class AscentHooks {
 		b.put("pride_stacks", prideStacks);
 		b.put("hurt_since_kill", hurtSinceKill);
 		b.put("martyr_used", martyrUsed);
+		b.put("boss_spawned", ints(bossSpawned));
+		b.put("chaser_due", chaserDue);
 		bundle.put(NODE, b);
 	}
 
@@ -296,6 +303,8 @@ public final class AscentHooks {
 		prideStacks = b.getInt("pride_stacks");
 		hurtSinceKill = b.getBoolean("hurt_since_kill");
 		martyrUsed = b.getBoolean("martyr_used");
+		if (b.contains("boss_spawned")) for (int v : b.getIntArray("boss_spawned")) bossSpawned.add(v);
+		chaserDue = b.getFloat("chaser_due");
 	}
 
 	// ------------------------------------------------------------------ queries
@@ -507,6 +516,7 @@ public final class AscentHooks {
 		allyPresent = ally;
 
 		float now = Statistics.duration;
+		if (Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 && now >= chaserDue) raiseChaser(Dungeon.level);
 		AscentCard c = card();
 		if (c == AscentCard.WRATH_FIRE && now >= nextFire) {
 			nextFire = now + FIRE_EVERY;
@@ -538,6 +548,7 @@ public final class AscentHooks {
 		hurtSinceKill = false;
 		nextWave = floorStart + DILIGENCE_LIMIT;
 		nextFire = floorStart + 5;
+		chaserDue = floorStart + 6;
 		if (Dungeon.branch != 0) return;
 
 		Level level = Dungeon.level;
@@ -553,6 +564,88 @@ public final class AscentHooks {
 			cardSeeded.add(d);
 			applyCard(level, c);
 		}
+		if ((d == 25 || d == 20 || d == 15 || d == 10) && !bossSpawned.contains(d)) {
+			bossSpawned.add(d);
+			spawnBoss(level, d);
+		}
+	}
+
+	// ------------------------------------------------------------------ the bosses
+
+	public static final int BOSS_POINTS = 15;
+
+	private static com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentBoss bossFor(int depth) {
+		boolean demons = faction == DIVINITY;
+		switch (depth) {
+			case 25: return demons ? new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Moloch() : new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Cherubim();
+			case 20: return demons ? new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Lilith() : new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Ophanim();
+			case 15: return demons ? new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Azazel() : new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Azrael();
+			default: return demons ? new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Abaddon() : new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Sandalphon();
+		}
+	}
+
+	/** an open tile 4..9 steps from the hero (any open tile if none) */
+	private static int bossCell(Level level) {
+		Hero hero = Dungeon.hero;
+		ArrayList<Integer> near = new ArrayList<>(), any = new ArrayList<>();
+		for (int c = 0; c < level.length(); c++) {
+			if (!level.passable[c] || level.solid[c] || level.avoid[c] || level.pit[c] || Actor.findChar(c) != null) continue;
+			if (level.getTransition(c) != null) continue;
+			int d = hero == null ? 6 : level.distance(c, hero.pos);
+			if (d >= 4 && d <= 9) near.add(c);
+			else if (d >= 3) any.add(c);
+		}
+		if (!near.isEmpty()) return Random.element(near);
+		return any.isEmpty() ? -1 : Random.element(any);
+	}
+
+	private static void spawnBoss(Level level, int depth) {
+		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentBoss b = bossFor(depth);
+		b.setTier((25 - depth) / 5);
+		int cell = bossCell(level);
+		if (cell == -1) return;
+		b.pos = cell;
+		GameScene.add(b);
+		if (Dungeon.hero != null) b.beckon(Dungeon.hero.pos);
+		level.seal();
+		GLog.n(Messages.get(AscentHooks.class, "boss_arrives", b.name()));
+	}
+
+	/** from AscentBoss.die: the stairs open, rewards, and the scale tips (slaying demons is virtuous, angels sinful) */
+	public static void onBossSlain(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentBoss b) {
+		if (Dungeon.level != null) Dungeon.level.unseal();
+		Dungeon.level.drop(new ScrollOfUpgrade(), b.pos).sprite.drop();
+		if (ChallengeHooks.essences()) Dungeon.level.drop(new SinEssence().quantity(2), b.pos).sprite.drop();
+		if (!active()) return;
+		if (faction == DIVINITY) virtueScore += BOSS_POINTS;
+		else sinScore += BOSS_POINTS;
+		GLog.h(Messages.get(AscentHooks.class, faction == DIVINITY ? "boss_slain_virtue" : "boss_slain_sin", b.name()));
+		BuffIndicator.refreshHero();
+	}
+
+	/** the sewers' giant rises from the stairs below */
+	private static void raiseChaser(Level level) {
+		for (Mob m : level.mobs) if (m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentChaser) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentChaser ch = faction == DIVINITY
+				? new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Behemoth()
+				: new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.Metatron();
+		int exit = level.exit();
+		int cell = -1;
+		if (exit > 0 && level.passable[exit] && Actor.findChar(exit) == null) cell = exit;
+		else if (exit > 0) {
+			for (int n : PathFinder.NEIGHBOURS8) {
+				int c = exit + n;
+				if (level.passable[c] && !level.solid[c] && Actor.findChar(c) == null) { cell = c; break; }
+			}
+		}
+		if (cell == -1) cell = level.randomRespawnCell(ch);
+		if (cell == -1) return;
+		ch.pos = cell;
+		GameScene.add(ch);
+		if (Dungeon.hero != null) ch.beckon(Dungeon.hero.pos);
+		chaserDue = Float.MAX_VALUE;
+		GLog.n(Messages.get(AscentHooks.class, "chaser_rises", ch.name()));
+		com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.shake(3, 0.8f);
 	}
 
 	/** the virtues of a floor left behind on the way up */
@@ -872,7 +965,8 @@ public final class AscentHooks {
 			for (Item it : sw.items) Dungeon.level.drop(it, mob.pos).sprite.drop();
 			sw.items.clear();
 		}
-		boolean herald = isHerald(mob);
+		boolean herald = isHerald(mob) || mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentBoss
+				|| mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentChaser;
 		AscentCard c = card();
 		if (c == AscentCard.GLUTTON_MARCH && !herald && Random.Float() < 0.15f) {
 			Dungeon.level.drop(new MysteryMeat(), mob.pos).sprite.drop();
