@@ -237,6 +237,8 @@ public class Potion extends Item {
 			GameScene.show(new WndUseItem(null, this) );
 			
 		} else if (action.equals( AC_DRINK )) {
+
+			if (com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.blocksPotion()) return; //Seven Sins: ascent (chastity)
 			
 			if (isKnown() && mustThrowPots.contains(getClass()) && !com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.drinksSafely(hero, this)) {
 				

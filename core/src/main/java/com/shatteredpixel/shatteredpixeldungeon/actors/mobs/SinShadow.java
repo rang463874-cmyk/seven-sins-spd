@@ -90,6 +90,7 @@ public class SinShadow extends VirtueChampion {
 	@Override
 	protected void onSlain() {
 		yell(Messages.get(SinShadow.class, "death"));
+		if (buff(com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.Shade.class) != null) return; //Seven Sins: the ascent's mirror maze, not the trial
 		EliteHooks.regionReward(pos);
 		if (Dungeon.hero != null && Dungeon.hero.isAlive()) TrialHooks.onShadowSlain(Dungeon.hero);
 	}

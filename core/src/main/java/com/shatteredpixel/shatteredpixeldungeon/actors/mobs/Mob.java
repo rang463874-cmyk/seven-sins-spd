@@ -1064,6 +1064,7 @@ public abstract class Mob extends Char {
 		com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.onMobDeath( this ); //Seven Sins: ultimates
 		com.shatteredpixel.shatteredpixeldungeon.solomon.SolomonHooks.onMobDeath( this, cause ); //Seven Sins: Solomon
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onMobDeath( this, cause );
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.onMobDeath( this, cause ); //Seven Sins: ascent
 
 		if (cause == Chasm.class){
 			//50% chance to round up, 50% to round down
@@ -1142,7 +1143,7 @@ public abstract class Mob extends Char {
 		dropBonus += ShardOfOblivion.lootChanceMultiplier()-1f;
 		dropBonus += com.shatteredpixel.shatteredpixeldungeon.sins.UniqueStats.lootChance();
 
-		return lootChance * dropBonus;
+		return lootChance * dropBonus * com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.lootMult(); //Seven Sins: ascent
 	}
 	
 	public void rollToDropLoot(){

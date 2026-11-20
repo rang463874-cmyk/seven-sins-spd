@@ -232,6 +232,14 @@ public class Badges {
 		HIGH_SCORE_4                ( 110 ),
 		CHAMPION_1                  ( 111 ),
 
+		//Seven Sins: the ascent's five endings and all of them (Nov 20 2026)
+		ASCENT_GOD_OF_SIN           ( 112 ),
+		ASCENT_GOD_OF_DAWN          ( 113 ),
+		ASCENT_HEIR                 ( 114 ),
+		ASCENT_PENITENT             ( 115 ),
+		ASCENT_WANDERER             ( 116 ),
+		ASCENT_ALL_PATHS            ( 117, BadgeType.GLOBAL ),
+
 		//diamond
 		PACIFIST_ASCENT             ( 120 ),
 		TAKING_THE_MICK             ( 121 ), //This might be the most obscure game reference I've made
@@ -1217,6 +1225,16 @@ public class Badges {
 		displayBadge( badge );
 	}
 	
+	//Seven Sins: an ending of the ascent's crossroads (ascent/AscentHooks)
+	public static void validateAscentEnding( Badge ending ) {
+		local.add( ending );
+		displayBadge( ending );
+		Badge[] all = {Badge.ASCENT_GOD_OF_SIN, Badge.ASCENT_GOD_OF_DAWN, Badge.ASCENT_HEIR,
+				Badge.ASCENT_PENITENT, Badge.ASCENT_WANDERER};
+		for (Badge b : all) if (!isUnlocked(b)) return;
+		displayBadge( Badge.ASCENT_ALL_PATHS );
+	}
+
 	public static void validateHappyEnd() {
 		local.add( Badge.HAPPY_END );
 		displayBadge( Badge.HAPPY_END );

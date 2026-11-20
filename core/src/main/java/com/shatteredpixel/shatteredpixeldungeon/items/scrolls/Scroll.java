@@ -180,7 +180,9 @@ public abstract class Scroll extends Item {
 
 		if (action.equals( AC_READ )) {
 			
-			if (hero.buff(MagicImmune.class) != null){
+			if (com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.blocksScroll()) {
+				//Seven Sins: ascent (temperance)
+			} else if (hero.buff(MagicImmune.class) != null){
 				GLog.w( Messages.get(this, "no_magic") );
 			} else if (hero.buff( Blindness.class ) != null) {
 				GLog.w( Messages.get(this, "blinded") );

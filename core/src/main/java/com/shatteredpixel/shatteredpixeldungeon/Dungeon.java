@@ -284,6 +284,7 @@ public class Dungeon {
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.reset();
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.reset();
 
 		hero = new Hero();
 		hero.live();
@@ -694,6 +695,7 @@ public class Dungeon {
 			com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.storeInBundle( quests );
 			com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.storeInBundle( quests );
 			com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.storeInBundle( quests );
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.storeInBundle( quests );
 			bundle.put( QUESTS, quests );
 			
 			SpecialRoom.storeRoomsInBundle( bundle );
@@ -806,6 +808,7 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.restoreFromBundle( quests );
 				com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.restoreFromBundle( quests );
 				com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.restoreFromBundle( quests );
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.restoreFromBundle( quests );
 			} else {
 				Ghost.Quest.reset();
 				Wandmaker.Quest.reset();
@@ -817,6 +820,7 @@ public class Dungeon {
 		com.shatteredpixel.shatteredpixeldungeon.virtues.VirtueHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.sins.TrialHooks.reset();
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.reset();
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.reset();
 			}
 			
 			SpecialRoom.restoreRoomsFromBundle(bundle);

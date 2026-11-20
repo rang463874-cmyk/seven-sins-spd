@@ -297,6 +297,7 @@ public class Hero extends Char {
 		HT = com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.bonusHT(this, HT);
 		HT = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.bonusHT(this, HT); //Seven Sins: metamorphosed sin talents
 		HT = Math.max(1, Math.round(HT * com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.htMultiplier(this))); //Seven Sins: awakening
+		HT = Math.max(1, Math.round(HT * com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.htMult())); //Seven Sins: ascent
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -664,6 +665,7 @@ public class Hero extends Char {
 		float evasion = defenseSkill;
 		
 		evasion *= RingOfEvasion.evasionMultiplier( this );
+		evasion *= com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.evasion( this ); //Seven Sins: ascent
 		evasion = PredatorHooks.evasion( this, evasion );
 		evasion = GreedHooks.evasion( this, evasion );
 		evasion = WrathHooks.evasion( this, evasion );
@@ -843,6 +845,7 @@ public class Hero extends Char {
 		speed *= UniqueStats.moveSpeed(this) * HorsemenHooks.moveSpeed(this) * com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.moveSpeed();
 		speed *= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.moveSpeed(this); //Seven Sins: awakening
 		speed *= com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.moveSpeed(this); //Seven Sins: the Lesser Key's slaughter combo
+		speed *= com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.moveSpeed(); //Seven Sins: ascent
 		speed = AscensionChallenge.modifyHeroSpeed(speed);
 		
 		return speed;
@@ -992,6 +995,7 @@ public class Hero extends Char {
 		fieldOfView = Dungeon.level.heroFOV;
 		com.shatteredpixel.shatteredpixeldungeon.goetia.GoetiaHooks.tick(this); //Seven Sins: a boss floor's hidden sigil
 		com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.tick(this); //Seven Sins: ultimates
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.tick(this); //Seven Sins: ascent
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.tick(this); //Seven Sins: metamorphosed sin talents
 
 		if (buff(Endure.EndureTracker.class) != null){
@@ -1706,6 +1710,7 @@ public class Hero extends Char {
 		damage = EnvyHooks.onAttack( this, enemy, damage );
 		damage = SlothHooks.onAttack( this, enemy, damage );
 		damage = com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.onAttack( this, enemy, damage ); //Seven Sins: ultimates
+		damage = com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.onAttack( this, enemy, damage ); //Seven Sins: ascent
 		damage = HorsemenHooks.onAttack( this, enemy, damage );
 		damage = com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onAttack( this, enemy, damage );
 		damage = com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onAttack( this, enemy, damage );

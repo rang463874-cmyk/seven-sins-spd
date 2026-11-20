@@ -81,6 +81,7 @@ public class SolomonArcana extends Buff {
 
 	public void addWisdom(float amount) {
 		if (amount <= 0) return;
+		amount *= com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.pointMult(); //Seven Sins: ascent (the sins' parade)
 		wisdom += amount;
 		Hero h = hero();
 		if (h != null) h.updateHT(false);

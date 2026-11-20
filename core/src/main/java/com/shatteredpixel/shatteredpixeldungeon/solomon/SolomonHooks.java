@@ -81,6 +81,7 @@ public final class SolomonHooks {
 		if (triad) c *= 1f - 0.1f * pts(hero, Talent.SOL_TRIAD);
 		if (hero != null && hero.buff(SolomonPrinciples.Elixir.class) != null) c *= 0.5f;
 		if (hero != null && com.shatteredpixel.shatteredpixeldungeon.sins.UltimateSkills.eternalCircle(hero)) c *= 0.5f; //Seven Sins: ultimates, Eternal Circle
+		c *= com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.costMult(); //Seven Sins: ascent (temperance)
 		return Math.max(1, Math.round(c));
 	}
 

@@ -62,12 +62,14 @@ public class Gold extends Item {
 	@Override
 	public boolean doPickUp(Hero hero, int pos) {
 
+		if (com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.refusesGold()) return false; //Seven Sins: ascent (charity)
 		Catalog.setSeen(getClass());
 		Statistics.itemTypesDiscovered.add(getClass());
 
 		quantity += GreedHooks.bonusGold( hero, quantity ) + EnvyHooks.bonusGold( hero, quantity )
 				+ com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.bonusGold( hero, quantity );
 		quantity += com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.goldDelta( hero, quantity );
+		quantity = com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.goldPickup( quantity ); //Seven Sins: ascent
 		Dungeon.gold += quantity;
 		GreedHooks.onGoldPickup( hero, quantity );
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onGoldPickup( hero, quantity );

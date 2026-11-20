@@ -202,7 +202,7 @@ public final class MetaTalents {
 	/** rule A: multiplier on the hero's own sin points gained (+10% per point; "balanced diet" +5%) */
 	public static float pointGain(Hero h) {
 		if (h == null) return 1f;
-		return 1f + 0.10f * sum(h, RULE_A) + 0.05f * m(h, Talent.PREDATOR_ADAPT);
+		return (1f + 0.10f * sum(h, RULE_A) + 0.05f * m(h, Talent.PREDATOR_ADAPT)) * com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.pointMult(); //Seven Sins: ascent
 	}
 
 	/** rule B: added to the "stat effects of my points" multiplier (+5% per point) */
@@ -221,7 +221,7 @@ public final class MetaTalents {
 		float cut = 0;
 		for (Talent t : RULE_D) cut += pick(m(h, t), 0.08f, 0.15f);
 		//Seven Sins: the abstinence challenge doubles every sin's skill costs
-		return Math.max(0.4f, 1f - cut) * ChallengeHooks.skillCost();
+		return Math.max(0.4f, 1f - cut) * ChallengeHooks.skillCost() * com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.costMult(); //Seven Sins: ascent
 	}
 
 	/** rule E: multiplier on the hero's own resource maximum (+10% per point) */

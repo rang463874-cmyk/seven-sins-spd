@@ -540,7 +540,7 @@ public abstract class Level implements Bundlable {
 
 		Mob m = Reflection.newInstance(mobsToSpawn.remove(0));
 		ChampionEnemy.rollForChampion(m);
-		return m;
+		return com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.onCreateMob(m); //Seven Sins: ascent
 	}
 
 	abstract protected void createMobs();
@@ -1366,6 +1366,7 @@ public abstract class Level implements Bundlable {
 			if (c instanceof Hero){
 				viewDist *= 1f + 0.25f*((Hero) c).pointsInTalent(Talent.FARSIGHT);
 				viewDist *= EyeOfNewt.visionRangeMultiplier();
+				viewDist *= com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.viewMult(); //Seven Sins: ascent
 			}
 			
 			ShadowCaster.castShadow( cx, cy, width(), fieldOfView, blocking, Math.round(viewDist) );

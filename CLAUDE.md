@@ -516,6 +516,28 @@ Done and pushed (see `git log`):
   2x `big`), MAGNUM_OPUS (all enemies in sight `big` x spell power, non-bosses under 1/4 HP die and drop 10 x depth gold),
   THRONE_OF_WISDOM (20-turn Effect: `SolomonRing.skills` shows unlearned principles, `drawTime` 0, `turnsPerMana` /3).
   Strings in `tools/strings/ultimates_items_*`.
+- The ascent's crossroads (Nov 20 2026, owner's design from Claude's proposal; `ascent/AscentHooks` + `ascent/AscentCard`,
+  state with the quests in `Dungeon`, node "sevenSinsAscent"; hooks marked "Seven Sins: ascent"). The gem's END stays; the
+  amulet dropped by the holy giant starts the ascent. First choice (`tick` from Hero.act opens it once the hero carries the
+  amulet, can't be skipped): DIVINITY "새로운 신성이 되다" = demons (GoetiaFiend at depth 26) or SINNER "죄악으로 남는다" = angels
+  (Believer/Priest), marked `Herald` (their kills count for nothing); `factionCount` 2..6 per floor on first entry of 30..6,
+  +2 in the sewers, a third of them beckoned; `onCreateMob` (Level.createMob) turns 30% of respawns into heralds. Entering
+  each region on the way up (halls 21-25, city 16-20, caves 11-15, prison 6-10; `region()`) offers 3 random cards (one sin,
+  one virtue, one any, not already taken; the offer is saved) from the 24 `AscentCard`s (11 sin, 8 virtue, 5 neutral);
+  the card holds for the region (`card()`), floor effects run once per depth in `applyCard` (terrain ones skip boss floors),
+  the rest through hooks (Char.damage, Hero.attackProc/updateHT/speed/defenseSkill, Mob.die/lootChance, Level.createMob/
+  updateFieldOfView, Hunger, Regeneration, Gold.doPickUp, Shopkeeper.sellPrice, Potion/Scroll.execute, Item.buffedLvl/
+  doPickUp, Food, PredatorHooks.onConsumed, MetaTalents.costMult/pointGain, SolomonHooks.adjustCost, SolomonArcana.addWisdom).
+  Envy's mirror maze uses a half-HP `SinShadow` marked `Shade` (its onSlain skips the trial). Scores: each sin/virtue card
+  `CARD_POINTS` 25; deeds via `award(Trigger, pts)`, at most `FLOOR_CAP` 3 per trigger and floor, first one per floor logged
+  (sins: food/potions, every 100 gold, kills (+1 more for a second kill the same turn; ally kills = sloth), a floor left
+  without being hurt, hitting charmed foes/lust lifesteal, picking up equipment, 20 turns of rest; virtues judged on leaving
+  a floor upwards (`judge`): no food/potion, no gold, no kills, no lust, an ally alive, under `FAST_TURNS` 150, plus humility
+  for climbing back from under 25% to 50% HP). The `Scale` buff (amulet icon, red/gold tint) shows faction, cards and scores.
+  At the surface `SewerLevel` calls `interceptSurface`: the `ending()` window (WANDERER if the gap is within max(10, 10%%);
+  else faction x side: GOD_OF_SIN, GOD_OF_DAWN, HEIR, PENITENT), then `Badges.validateAscentEnding` (Badge ASCENT_* 112..116,
+  ASCENT_ALL_PATHS 117 GLOBAL once all five are unlocked; icons tinted by `tools/sinsart/make_ascent_badges.py`; strings at
+  the happy end badge in messages/misc, not synced). Strings `tools/strings/ascent_items_*`. Not yet tried on a device.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.

@@ -120,6 +120,7 @@ public final class PredatorHooks {
 
 	public static void onConsumed(Hero hero, Item item) {
 		com.shatteredpixel.shatteredpixeldungeon.sins.MetaTalents.onConsumed(hero, item); //gluttony talents held by the other classes
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.onConsumed(item); //Seven Sins: ascent
 		if (hero != null && item != null && hero.heroClass == HeroClass.ENVY) {
 			com.shatteredpixel.shatteredpixeldungeon.envy.EnvyHooks.onConsumed(hero, item);
 			return;

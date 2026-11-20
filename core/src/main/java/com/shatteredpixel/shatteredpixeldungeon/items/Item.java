@@ -130,6 +130,7 @@ public class Item implements Bundlable {
 			hero.spendAndNext( pickupDelay() );
 			//Seven Sins: awakening
 			com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.onPickedUp( hero, this );
+			com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.onPickedUp( this ); //Seven Sins: ascent
 			return true;
 			
 		} else {
@@ -390,9 +391,9 @@ public class Item implements Bundlable {
 		//only the hero can be affected by Degradation
 		if (Dungeon.hero != null && Dungeon.hero.buff( Degrade.class ) != null
 			&& (isEquipped( Dungeon.hero ) || Dungeon.hero.belongings.contains( this ))) {
-			return Degrade.reduceLevel(level());
+			return Degrade.reduceLevel(level()) - com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.levelPenalty(this); //Seven Sins: ascent (pilgrim)
 		} else {
-			return level();
+			return level() - com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.levelPenalty(this);
 		}
 	}
 

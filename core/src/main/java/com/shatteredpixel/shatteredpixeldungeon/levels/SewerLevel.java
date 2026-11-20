@@ -164,6 +164,7 @@ public class SewerLevel extends RegularLevel {
 				});
 				return false;
 			} else {
+				if (com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.interceptSurface(this, hero, transition)) return false; //Seven Sins: ascent's ending
 				Statistics.ascended = true;
 				Game.switchScene(SurfaceScene.class, new Game.SceneChangeCallback() {
 					@Override

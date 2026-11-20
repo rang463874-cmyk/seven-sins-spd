@@ -82,7 +82,7 @@ public class Regeneration extends Buff {
 					delay /= SaltCube.healthRegenMultiplier();
 				}
 
-				partialRegen += com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.regenMultiplier(target) / delay; //Seven Sins: awakening
+				partialRegen += com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.regenMultiplier(target) * com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.regenMult(target) / delay; //Seven Sins: awakening, ascent
 
 				if (partialRegen >= 1) {
 					target.HP += (int)partialRegen;

@@ -80,6 +80,7 @@ public class Food extends Item {
 			GLog.i( Messages.get(this, "eat_msg") );
 			com.shatteredpixel.shatteredpixeldungeon.predator.PredatorHooks.onFoodEaten(hero, this);
 			com.shatteredpixel.shatteredpixeldungeon.demons.DemonHooks.onFoodEaten(hero);
+			com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.onFoodEaten(hero); //Seven Sins: ascent
 			
 			hero.sprite.operate( hero.pos );
 			hero.busy();
