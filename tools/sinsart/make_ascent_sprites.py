@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """The ascent's bosses (Nov 20 2026): the owner's pictures tools/sinsart/ascent_art/<name>.png (made from PROMPTS.md, each on
-a flat background colour) -> sprites/ascent_bosses.png, 64x65 frames, 12 per row (idle 0-1, run 2-5, attack 6-8, die 9-11),
+a flat background colour) -> sprites/ascent_bosses.png, 96x80 frames, 12 per row (idle 0-1, run 2-5, attack 6-8, die 9-11),
 one row per boss in ORDER (the row index is AscentSprites' `row`). A boss without a picture leaves its row empty; its Java
 sprite stays the tinted placeholder until AscentSprites points it at its row.
 Background: flood fill from the border by distance to the border's median colour, plus any strongly saturated pixel of the
-background's hue anywhere (light leaking between wings and weapons). Shrinking, the outline and the frames come from
-make_virtue_sprites (the archangels' 64px pipeline).
+background's hue anywhere (light leaking between wings and weapons). Shrinking, the outline and the frames follow make_virtue_sprites
+(the archangels' pipeline), on wider 96x80 frames.
 Re-run: python3 tools/sinsart/make_ascent_sprites.py"""
 import colorsys
 import os
@@ -29,7 +29,7 @@ FX = {"moloch": (255, 150, 40, 255), "lilith": (200, 90, 255, 255), "azazel": (2
 # pictures drawn facing left: mirrored so every sprite faces right like the game expects
 MIRROR = {"behemoth"}
 ISLAND = 0.02   # pieces smaller than this share of the biggest are dropped (swarms, flying rubble, the Gemini sparkle)
-SIZE = 64
+FW, FH = 96, 80   # frame size: wide enough for wingspans, tall enough for the giants
 TOL = 50        # colour distance still counted as background when flood filling
 
 
@@ -86,9 +86,76 @@ def cut(path):
     return Image.fromarray(a.astype(np.uint8), "RGBA")
 
 
+OUTLINE = mvs.OUTLINE
+
+
+def shrink(img):
+    """crop, scale to fit FW-2 x FH-2 keeping the aspect (premultiplied box filter), threshold alpha, outline, bottom centre"""
+    img = img.crop(img.getbbox())
+    scale = min((FW - 2) / img.width, (FH - 2) / img.height)
+    nw, nh = max(1, round(img.width * scale)), max(1, round(img.height * scale))
+    a = np.array(img).astype(float)
+    a[..., :3] *= a[..., 3:4] / 255
+    pre = Image.fromarray(a.astype(np.uint8), "RGBA")
+    small = np.array(pre.resize((nw, nh), Image.BOX)).astype(float)
+    alpha = small[..., 3]
+    rgb = np.where(alpha[..., None] > 0, small[..., :3] * 255 / np.maximum(alpha[..., None], 1), 0)
+    out_small = np.zeros((nh, nw, 4), np.uint8)
+    on = alpha >= 110
+    out_small[on, :3] = np.clip(rgb[on], 0, 255)
+    out_small[on, 3] = 255
+    out = np.zeros((FH, FW, 4), np.uint8)
+    x0, y0 = (FW - nw) // 2, FH - 1 - nh
+    out[y0:y0 + nh, x0:x0 + nw] = out_small
+    solid = out[..., 3] == 255
+    edge = np.zeros_like(solid)
+    edge[1:] |= solid[:-1]; edge[:-1] |= solid[1:]; edge[:, 1:] |= solid[:, :-1]; edge[:, :-1] |= solid[:, 1:]
+    edge &= ~solid
+    out[edge] = OUTLINE
+    return Image.fromarray(out, "RGBA")
+
+
+def shifted(img, dx, dy):
+    out = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    out.paste(img, (dx, dy), img)
+    return out
+
+
+def squashed(img, hfrac, alpha):
+    nh = max(1, int(FH * hfrac))
+    small = img.resize((FW, nh), Image.NEAREST)
+    out = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    out.paste(small, (0, FH - nh), small)
+    return mvs.faded(out, alpha)
+
+
+def glow(img, color, strong):
+    """attack frame: a spark in front (right of the figure, mid height)"""
+    out = img.copy()
+    px = out.load()
+    box = img.getbbox() or (0, 0, FW, FH)
+    cx, cy = min(FW - 3, box[2] + 1), (box[1] + box[3]) // 2
+    r = 2 if strong else 1
+    for y in range(cy - r, cy + r + 1):
+        for x in range(cx - r, cx + r + 1):
+            if abs(x - cx) + abs(y - cy) <= r and 0 <= x < FW and 0 <= y < FH:
+                px[x, y] = color
+    if strong:
+        for x, y in ((cx - 4, cy), (cx, cy - 4), (cx, cy + 4)):
+            if 0 <= x < FW and 0 <= y < FH:
+                px[x, y] = color
+    return out
+
+
+def frames(base, fx):
+    rest, up = shifted(base, 0, 0), shifted(base, 0, -1)
+    return [rest, up, rest, up, rest, up,
+            shifted(base, -1, 0), glow(shifted(base, 1, 0), fx, True), glow(rest, fx, False),
+            squashed(base, 0.8, 0.8), squashed(base, 0.55, 0.55), squashed(base, 0.3, 0.3)]
+
+
 def main():
-    mvs.S, mvs.H = SIZE, SIZE + 1
-    sheet = Image.new("RGBA", (SIZE * 12, (SIZE + 1) * len(ORDER)), (0, 0, 0, 0))
+    sheet = Image.new("RGBA", (FW * 12, FH * len(ORDER)), (0, 0, 0, 0))
     done = []
     for row, name in enumerate(ORDER):
         path = os.path.join(SRC, name + ".png")
@@ -97,9 +164,9 @@ def main():
         img = cut(path)
         if name in MIRROR:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
-        base = mvs.shrink(img)
-        for i, f in enumerate(mvs.frames(base, FX[name])):
-            sheet.paste(f, (i * SIZE, row * (SIZE + 1)), f)
+        base = shrink(img)
+        for i, f in enumerate(frames(base, FX[name])):
+            sheet.paste(f, (i * FW, row * FH), f)
         done.append(name)
     sheet.save(OUT)
     print("ascent bosses:", ", ".join(done))

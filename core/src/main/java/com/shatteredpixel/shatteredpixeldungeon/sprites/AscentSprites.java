@@ -11,7 +11,7 @@ import com.watabou.noosa.TextureFilm;
 public class AscentSprites {
 
 	/** a boss drawn from the owner's picture: one row of sprites/ascent_bosses.png (tools/sinsart/make_ascent_sprites.py,
-	 *  64x65 frames, rows in its ORDER: moloch 0, lilith 1, azazel 2, abaddon 3, cherubim 4, ophanim 5, azrael 6,
+	 *  96x80 frames, rows in its ORDER: moloch 0, lilith 1, azazel 2, abaddon 3, cherubim 4, ophanim 5, azrael 6,
 	 *  sandalphon 7, behemoth 8, metatron 9) */
 	public static abstract class ArtSprite extends MobSprite {
 
@@ -24,7 +24,7 @@ public class AscentSprites {
 		public ArtSprite() {
 			super();
 			texture(TEXTURE);
-			TextureFilm frames = new TextureFilm(texture, 64, 65);
+			TextureFilm frames = new TextureFilm(texture, 96, 80);
 			int o = row() * 12;
 
 			perspectiveRaise = -8 / 16f;
@@ -79,27 +79,27 @@ public class AscentSprites {
 	public static class Behemoth extends ArtSprite {
 		protected int row() { return 8; }
 		{ blood = 0xFF806040; }
-		public Behemoth() { super(); scale.set(1.6f); }
+		public Behemoth() { super(); scale.set(1.25f); }
 	}
 
-	public static class Cherubim extends VirtueSprites.AngelSprite {
-		protected Virtue virtue() { return Virtue.HUMILITY; }
-		@Override public void resetColor() { super.resetColor(); paint(this, 0xFFA040); }
+	public static class Cherubim extends ArtSprite {
+		protected int row() { return 4; }
+		{ blood = 0xFFFFA040; }
 	}
 
-	public static class Ophanim extends VirtueSprites.AngelSprite {
-		protected Virtue virtue() { return Virtue.TEMPERANCE; }
-		@Override public void resetColor() { super.resetColor(); paint(this, 0xFFE070); }
+	public static class Ophanim extends ArtSprite {
+		protected int row() { return 5; }
+		{ blood = 0xFFFFE070; }
 	}
 
-	public static class Azrael extends VirtueSprites.AngelSprite {
-		protected Virtue virtue() { return Virtue.DILIGENCE; }
-		@Override public void resetColor() { super.resetColor(); paint(this, 0x707080); }
+	public static class Azrael extends ArtSprite {
+		protected int row() { return 6; }
+		{ blood = 0xFF505058; }
 	}
 
-	public static class Sandalphon extends VirtueSprites.AngelSprite {
-		protected Virtue virtue() { return Virtue.CHASTITY; }
-		@Override public void resetColor() { super.resetColor(); paint(this, 0x80C8FF); }
+	public static class Sandalphon extends ArtSprite {
+		protected int row() { return 7; }
+		{ blood = 0xFF80C8FF; }
 	}
 
 	public static class Metatron extends VirtueSprites.AngelSprite {
