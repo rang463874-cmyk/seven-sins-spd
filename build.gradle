@@ -18,8 +18,8 @@ allprojects {
         //To release: raise both numbers (code +1 every release, never lower: Android refuses
         //to install a lower code over a higher one) and push to main: the workflow tags and publishes the release.
         //Debug builds add "-INDEV", which keeps the developer tools on.
-        appVersionCode = 1005
-        appVersionName = '1.2.1'
+        appVersionCode = 1006
+        appVersionName = '1.3.0'
         spdBaseVersion = '4.0.2'
 
         appJavaCompatibility = JavaVersion.VERSION_11
