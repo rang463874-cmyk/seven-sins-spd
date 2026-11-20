@@ -288,11 +288,21 @@ public class CavesBossLevel extends Level {
 		return super.invalidHeroPos(tile);
 	}
 
+	//Seven Sins: the ascent's boss appears in this arena (ascent/AscentHooks); -1 = no fixed spot
+	public int ascentBossCell() {
+		return ascentArenaCell();
+	}
+
+	//Seven Sins: the arena is still closed because its boss was never fought (e.g. floors skipped with the dev tools)
+	public boolean ascentArenaClosed() {
+		return solid[pointToCell(new Point(gate.left, gate.top))];
+	}
+
 	@Override
 	public void occupyCell(Char ch) {
 		//seal the level when the hero moves near to a pylon, the level isn't already sealed, and the gate hasn't been destroyed
 		int gatePos = pointToCell(new Point(gate.left, gate.top));
-		if (ch == Dungeon.hero && !locked && solid[gatePos]){
+		if (ch == Dungeon.hero && !locked && solid[gatePos] && !com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.active()){ //Seven Sins: no DM-300 on the way up
 			for (int pos : pylonPositions){
 				if (Dungeon.level.distance(ch.pos, pos) <= 3){
 					seal();
@@ -302,6 +312,14 @@ public class CavesBossLevel extends Level {
 		}
 
 		super.occupyCell(ch);
+	}
+
+	private int ascentArenaCell() {
+		for (int tries = 0; tries < 300; tries++) {
+			int c = pointToCell(Random.element(mainArena.getPoints()));
+			if (openSpace[c] && map[c] != Terrain.EMPTY_SP && Actor.findChar(c) == null) return c;
+		}
+		return -1;
 	}
 
 	@Override

@@ -75,6 +75,38 @@ public abstract class AscentChaser extends RegionElite {
 		return super.act();
 	}
 
+	/**
+	 * Seven Sins (Nov 20 2026, owner): it breaks the dungeon on its way. It walks straight at its target through walls
+	 * (smashing them), and every tile it leaves crumbles into a ruin nothing can enter again (AscentHooks.ruin).
+	 */
+	@Override
+	protected boolean getCloser(int target) {
+		if (rooted || target == pos || paralysed > 0) return false;
+		int w = Dungeon.level.width();
+		int best = -1;
+		for (int n : com.watabou.utils.PathFinder.NEIGHBOURS8) {
+			int c = pos + n;
+			if (c < 0 || c >= Dungeon.level.length()) continue;
+			int x = c % w, y = c / w;
+			if (x <= 0 || y <= 0 || x >= w - 1 || y >= Dungeon.level.height() - 1) continue;
+			if (com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.isRuin(c)) continue;
+			if (com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(c) != null) continue;
+			if (best == -1 || Dungeon.level.trueDistance(c, target) < Dungeon.level.trueDistance(best, target)) best = c;
+		}
+		if (best == -1 || Dungeon.level.trueDistance(best, target) >= Dungeon.level.trueDistance(pos, target)) {
+			return super.getCloser(target);
+		}
+		if (Dungeon.level.solid[best]) {
+			com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.smash(best);
+			if (Dungeon.level.solid[best]) return super.getCloser(target);
+			com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.shake(1, 0.2f);
+		}
+		int old = pos;
+		move(best);
+		com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.ruin(old);
+		return true;
+	}
+
 	/** blows only stagger it */
 	@Override
 	public void damage(int dmg, Object src) {

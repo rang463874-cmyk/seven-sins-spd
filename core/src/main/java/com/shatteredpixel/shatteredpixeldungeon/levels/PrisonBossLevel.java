@@ -574,12 +574,22 @@ public class PrisonBossLevel extends Level {
 	
 	private boolean[] triggered = new boolean[]{false, false, false, false};
 	
+	//Seven Sins: the ascent's boss appears in this arena (ascent/AscentHooks); -1 = no fixed spot
+	public int ascentBossCell() {
+		return state == State.WON ? pointToCell(arena.center()) : -1;
+	}
+
+	//Seven Sins: the arena is still closed because its boss was never fought (e.g. floors skipped with the dev tools)
+	public boolean ascentArenaClosed() {
+		return state != State.WON;
+	}
+
 	@Override
 	public void occupyCell(Char ch) {
 		if (ch == Dungeon.hero){
 			switch (state){
 				case START:
-					if (cellToPoint(ch.pos).y > tenguCell.top){
+					if (cellToPoint(ch.pos).y > tenguCell.top && !com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.active()){ //Seven Sins: no Tengu on the way up
 						progress();
 					}
 					break;

@@ -553,7 +553,18 @@ Done and pushed (see `git log`):
   angel = sin). Sewers 5..1: `AscentChaser` (Behemoth: stampede line + dash, quake scatter; Metatron: pillar scatter, voice
   ringWaves) rises at the floor's exit `chaserDue` 6 turns after arrival (one per level, `raiseChaser`), speed 0.8, beckoned to
   the hero every turn, unkillable: `damage` fills a `STAGGER` 90 meter (3 turns paralysis), `die` staggers 5 instead (only
-  `die(AscentChaser.class)` kills). Art: the owner's pictures `tools/sinsart/ascent_art/<name>.png` (prompts in `PROMPTS.md`, flat background) ->
+  `die(AscentChaser.class)` kills). Nov 20 2026 (owner): it breaks the dungeon: `AscentChaser.getCloser` steps straight at
+  its target through walls (`AscentHooks.smash`) and every tile it leaves becomes a ruin (`AscentHooks.ruin`: terrain STATUE,
+  so nothing enters, covered by `effects/RuinTile` in violet for Behemoth / platinum for Metatron, `ruinColor/ruinCrack`;
+  per-depth sets saved as `ruins_<d>`, redrawn from `tick` when the level or scene changed; never the border, a stair or a
+  tile next to one, an occupied tile, or a tile whose loss would cut the hero off from the entrance (PathFinder check)).
+  Behemoth's stampede ruins its line, Metatron's pillars that hit nobody ruin a third of their tiles.
+  Fixed the same day: `spawnBoss` used `level.seal()`, but CavesBossLevel/CityBossLevel/HallsBossLevel summon their own
+  boss in `seal()`, so DM-300/the dwarf king/Yog came along. The ascent now locks with `lock/unlock` (locked flag +
+  LockedFloor), puts its boss at the old arena (`ascentBossCell()` added to the four boss levels; `arenaCell`), removes any
+  vanilla boss on arrival (`clearOldBosses`, also Goo on 5), the vanilla seal triggers are skipped while `active()` (Caves/
+  City/Halls occupyCell, Prison's START progress), and an arena never fought (`ascentArenaClosed()`, dev-tool skips) gets
+  its own `unseal()` when the ascent boss dies to open gates/doors. Art: the owner's pictures `tools/sinsart/ascent_art/<name>.png` (prompts in `PROMPTS.md`, flat background) ->
   `tools/sinsart/make_ascent_sprites.py` (border flood fill + background-hue leak cut, then make_virtue_sprites-style shrink,
   outline and frames) -> `sprites/ascent_bosses.png` (96x80 frames since the wide-winged angels, own shrink/frames in the script, 12 per row,
   row = `ORDER` index) read by

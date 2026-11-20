@@ -51,9 +51,13 @@ public class Behemoth extends AscentChaser {
 			int dest = -1;
 			for (int c : cells) if (Dungeon.level.passable[c] && Actor.findChar(c) == null) dest = c;
 			if (dest != -1) {
+				int from = pos;
 				Actor.add(new Pushing(this, pos, dest));
 				pos = dest;
 				Dungeon.level.occupyCell(this);
+				//the trampled line crumbles behind it
+				com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.ruin(from);
+				for (int c : cells) if (c != dest) com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.ruin(c);
 			}
 		}
 	}

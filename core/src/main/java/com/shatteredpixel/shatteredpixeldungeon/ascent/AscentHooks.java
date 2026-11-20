@@ -172,6 +172,8 @@ public final class AscentHooks {
 	//the bosses
 	private static final HashSet<Integer> bossSpawned = new HashSet<>();
 	private static float chaserDue = 0;
+	//the sewers' cells broken by the chaser, by depth
+	private static final java.util.HashMap<Integer, HashSet<Integer>> ruins = new java.util.HashMap<>();
 
 	//not saved: a choice window is open
 	private static boolean promptOpen = false;
@@ -196,6 +198,7 @@ public final class AscentHooks {
 		martyrUsed = false;
 		bossSpawned.clear();
 		chaserDue = 0;
+		ruins.clear();
 		promptOpen = false;
 	}
 
@@ -259,6 +262,7 @@ public final class AscentHooks {
 		b.put("martyr_used", martyrUsed);
 		b.put("boss_spawned", ints(bossSpawned));
 		b.put("chaser_due", chaserDue);
+		for (java.util.Map.Entry<Integer, HashSet<Integer>> e : ruins.entrySet()) b.put("ruins_" + e.getKey(), ints(e.getValue()));
 		bundle.put(NODE, b);
 	}
 
@@ -305,6 +309,12 @@ public final class AscentHooks {
 		martyrUsed = b.getBoolean("martyr_used");
 		if (b.contains("boss_spawned")) for (int v : b.getIntArray("boss_spawned")) bossSpawned.add(v);
 		chaserDue = b.getFloat("chaser_due");
+		for (int d = 1; d <= 5; d++) {
+			if (!b.contains("ruins_" + d)) continue;
+			HashSet<Integer> set = new HashSet<>();
+			for (int v : b.getIntArray("ruins_" + d)) set.add(v);
+			ruins.put(d, set);
+		}
 	}
 
 	// ------------------------------------------------------------------ queries
@@ -517,6 +527,10 @@ public final class AscentHooks {
 
 		float now = Statistics.duration;
 		if (Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 && now >= chaserDue) raiseChaser(Dungeon.level);
+		HashSet<Integer> here = Dungeon.branch == 0 ? ruins.get(Dungeon.depth) : null;
+		if (here != null && !here.isEmpty() && !com.shatteredpixel.shatteredpixeldungeon.effects.RuinTile.showingFor(Dungeon.level)) {
+			com.shatteredpixel.shatteredpixeldungeon.effects.RuinTile.show(Dungeon.level, ints(here), ruinColor(), ruinCrack());
+		}
 		AscentCard c = card();
 		if (c == AscentCard.WRATH_FIRE && now >= nextFire) {
 			nextFire = now + FIRE_EVERY;
@@ -564,6 +578,7 @@ public final class AscentHooks {
 			cardSeeded.add(d);
 			applyCard(level, c);
 		}
+		if (d == 25 || d == 20 || d == 15 || d == 10 || d == 5) clearOldBosses(level);
 		if ((d == 25 || d == 20 || d == 15 || d == 10) && !bossSpawned.contains(d)) {
 			bossSpawned.add(d);
 			spawnBoss(level, d);
@@ -602,18 +617,147 @@ public final class AscentHooks {
 	private static void spawnBoss(Level level, int depth) {
 		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentBoss b = bossFor(depth);
 		b.setTier((25 - depth) / 5);
-		int cell = bossCell(level);
+		int cell = arenaCell(level);
+		if (cell == -1) cell = bossCell(level);
 		if (cell == -1) return;
 		b.pos = cell;
 		GameScene.add(b);
 		if (Dungeon.hero != null) b.beckon(Dungeon.hero.pos);
-		level.seal();
+		lock(level);
 		GLog.n(Messages.get(AscentHooks.class, "boss_arrives", b.name()));
+	}
+
+	/** the original boss's arena on this floor, -1 if none (or it is taken) */
+	private static int arenaCell(Level level) {
+		int c = -1;
+		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.CavesBossLevel)
+			c = ((com.shatteredpixel.shatteredpixeldungeon.levels.CavesBossLevel) level).ascentBossCell();
+		else if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.CityBossLevel)
+			c = ((com.shatteredpixel.shatteredpixeldungeon.levels.CityBossLevel) level).ascentBossCell();
+		else if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.HallsBossLevel)
+			c = ((com.shatteredpixel.shatteredpixeldungeon.levels.HallsBossLevel) level).ascentBossCell();
+		else if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel)
+			c = ((com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel) level).ascentBossCell();
+		if (c < 0 || c >= level.length()) return -1;
+		if (level.passable[c] && !level.solid[c] && Actor.findChar(c) == null) return c;
+		for (int n : PathFinder.NEIGHBOURS8) {
+			int x = c + n;
+			if (x >= 0 && x < level.length() && level.passable[x] && !level.solid[x] && Actor.findChar(x) == null) return x;
+		}
+		return -1;
+	}
+
+	/** the original boss floors seal themselves by summoning their own boss (CavesBossLevel.seal and the like), so the
+	 *  ascent locks the stairs the plain way */
+	private static void lock(Level level) {
+		level.locked = true;
+		if (Dungeon.hero != null) Buff.affect(Dungeon.hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor.class);
+	}
+
+	private static void unlock(Level level) {
+		level.locked = false;
+		if (Dungeon.hero != null) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor lf =
+					Dungeon.hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor.class);
+			if (lf != null) lf.detach();
+		}
+		//an arena whose own boss was never fought (floors skipped with the dev tools): its own unseal opens gates and doors
+		boolean closed = false;
+		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.CavesBossLevel)
+			closed = ((com.shatteredpixel.shatteredpixeldungeon.levels.CavesBossLevel) level).ascentArenaClosed();
+		else if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.CityBossLevel)
+			closed = ((com.shatteredpixel.shatteredpixeldungeon.levels.CityBossLevel) level).ascentArenaClosed();
+		else if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.HallsBossLevel)
+			closed = ((com.shatteredpixel.shatteredpixeldungeon.levels.HallsBossLevel) level).ascentArenaClosed();
+		if (closed) level.unseal();
+	}
+
+	/** the original bosses never come back on the way up */
+	private static void clearOldBosses(Level level) {
+		for (Mob m : level.mobs.toArray(new Mob[0])) {
+			if (m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Goo
+					|| m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Tengu
+					|| m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DM300
+					|| m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DwarfKing
+					|| m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogDzewa
+					|| m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogFist) {
+				m.destroy();
+				if (m.sprite != null) m.sprite.killAndErase();
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------ the sewers' ruins
+
+	public static int ruinColor() {
+		return faction == DIVINITY ? 0x5E1E9E : 0xCFCBBE;
+	}
+
+	public static int ruinCrack() {
+		return faction == DIVINITY ? 0xC27BFF : 0xFFF4CF;
+	}
+
+	public static boolean isRuin(int cell) {
+		HashSet<Integer> here = ruins.get(Dungeon.depth);
+		return Dungeon.branch == 0 && here != null && here.contains(cell);
+	}
+
+	private static boolean protectedCell(Level level, int cell) {
+		int w = level.width();
+		int x = cell % w, y = cell / w;
+		if (x <= 0 || y <= 0 || x >= w - 1 || y >= level.height() - 1) return true;
+		for (LevelTransition t : level.transitions) {
+			if (level.distance(cell, t.cell()) <= 1) return true;
+		}
+		return false;
+	}
+
+	/** from AscentChaser: the floor it passed over breaks for good (a statue tile under a glowing ruin) */
+	public static void ruin(int cell) {
+		if (!active() || Dungeon.branch != 0 || Dungeon.depth < 1 || Dungeon.depth > 5) return;
+		Level level = Dungeon.level;
+		if (cell < 0 || cell >= level.length() || protectedCell(level, cell) || isRuin(cell)) return;
+		if (Actor.findChar(cell) != null) return;
+		//never cut the hero off from the stairs up
+		Hero hero = Dungeon.hero;
+		int up = level.entrance();
+		if (hero != null && up >= 0 && up < level.length()) {
+			boolean[] pass = level.passable.clone();
+			pass[cell] = false;
+			PathFinder.buildDistanceMap(up, pass);
+			if (PathFinder.distance[hero.pos] == Integer.MAX_VALUE) return;
+		}
+		Heap h = level.heaps.get(cell);
+		if (h != null) {
+			//what lay there tumbles aside if it can
+			for (int n : PathFinder.NEIGHBOURS8) {
+				int c = cell + n;
+				if (level.passable[c] && !isRuin(c)) {
+					for (Item it : h.items.toArray(new Item[0])) level.drop(it, c).sprite.drop(cell);
+					break;
+				}
+			}
+			h.destroy();
+		}
+		Level.set(cell, Terrain.STATUE, level);
+		GameScene.updateMap(cell);
+		ruins.computeIfAbsent(Dungeon.depth, k -> new HashSet<>()).add(cell);
+		com.shatteredpixel.shatteredpixeldungeon.effects.RuinTile.show(level, new int[]{cell}, ruinColor(), ruinCrack());
+	}
+
+	/** from AscentChaser: a wall in its way is smashed */
+	public static void smash(int cell) {
+		Level level = Dungeon.level;
+		if (cell < 0 || cell >= level.length() || protectedCell(level, cell) || isRuin(cell) || !level.solid[cell]) return;
+		Level.set(cell, Terrain.EMPTY, level);
+		GameScene.updateMap(cell);
+		com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter.get(cell).burst(
+				com.shatteredpixel.shatteredpixeldungeon.effects.Speck.factory(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.ROCK), 6);
 	}
 
 	/** from AscentBoss.die: the stairs open, rewards, and the scale tips (slaying demons is virtuous, angels sinful) */
 	public static void onBossSlain(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.ascent.AscentBoss b) {
-		if (Dungeon.level != null) Dungeon.level.unseal();
+		if (Dungeon.level != null) unlock(Dungeon.level);
 		Dungeon.level.drop(new ScrollOfUpgrade(), b.pos).sprite.drop();
 		if (ChallengeHooks.essences()) Dungeon.level.drop(new SinEssence().quantity(2), b.pos).sprite.drop();
 		if (!active()) return;

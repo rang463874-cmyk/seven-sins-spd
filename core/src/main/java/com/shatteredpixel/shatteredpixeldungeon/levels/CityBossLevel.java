@@ -322,10 +322,20 @@ public class CityBossLevel extends Level {
 		return super.invalidHeroPos(tile);
 	}
 
+	//Seven Sins: the ascent's boss appears in this arena (ascent/AscentHooks); -1 = no fixed spot
+	public int ascentBossCell() {
+		return pointToCell(arena.center());
+	}
+
+	//Seven Sins: the arena is still closed because its boss was never fought (e.g. floors skipped with the dev tools)
+	public boolean ascentArenaClosed() {
+		return map[topDoor] == Terrain.LOCKED_DOOR;
+	}
+
 	@Override
 	public void occupyCell( Char ch ) {
 		if (map[bottomDoor] != Terrain.LOCKED_DOOR && map[topDoor] == Terrain.LOCKED_DOOR
-				&& ch.pos < bottomDoor && ch == Dungeon.hero) {
+				&& ch.pos < bottomDoor && ch == Dungeon.hero && !com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.active()) { //Seven Sins: no dwarf king on the way up
 			seal();
 		}
 

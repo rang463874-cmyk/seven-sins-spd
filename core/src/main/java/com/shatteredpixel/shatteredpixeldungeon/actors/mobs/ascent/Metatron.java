@@ -34,6 +34,10 @@ public class Metatron extends AscentChaser {
 	protected void release(int s, int[] cells) {
 		for (int c : cells) {
 			Char ch = strike(c, skillMin(), skillMax());
+			if (ch == null && s == 0 && com.watabou.utils.Random.Int(3) == 0) {
+				//a pillar of light that hit nobody burns the floor away
+				com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.ruin(c);
+			}
 			if (ch == null || !ch.isAlive()) continue;
 			if (s == 0) Buff.prolong(ch, Blindness.class, 1f);
 			else Buff.prolong(ch, Vertigo.class, 2f);

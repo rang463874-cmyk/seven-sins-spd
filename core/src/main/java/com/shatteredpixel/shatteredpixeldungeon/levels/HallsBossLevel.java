@@ -239,10 +239,21 @@ public class HallsBossLevel extends Level {
 		}
 	}
 
+	//Seven Sins: the ascent's boss appears in this arena (ascent/AscentHooks); -1 = no fixed spot
+	public int ascentBossCell() {
+		return exit() + width * 3;
+	}
+
+	//Seven Sins: the arena is still closed because its boss was never fought (e.g. floors skipped with the dev tools)
+	public boolean ascentArenaClosed() {
+		return map[exit()] != Terrain.EXIT;
+	}
+
 	@Override
 	public void occupyCell( Char ch ) {
 		if (map[entrance()] == Terrain.ENTRANCE && map[exit()] != Terrain.EXIT
-				&& ch == Dungeon.hero && Dungeon.level.distance(ch.pos, entrance()) >= 2) {
+				&& ch == Dungeon.hero && Dungeon.level.distance(ch.pos, entrance()) >= 2
+				&& !com.shatteredpixel.shatteredpixeldungeon.ascent.AscentHooks.active()) { //Seven Sins: no Yog-Dzewa on the way up
 			seal();
 		}
 
