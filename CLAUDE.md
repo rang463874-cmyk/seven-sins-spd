@@ -572,7 +572,9 @@ Done and pushed (see `git log`):
   LockedFloor), puts its boss at the old arena (`ascentBossCell()` added to the four boss levels; `arenaCell`), removes any
   vanilla boss on arrival (`clearOldBosses`, also Goo on 5), the vanilla seal triggers are skipped while `active()` (Caves/
   City/Halls occupyCell, Prison's START progress), and an arena never fought (`ascentArenaClosed()`, dev-tool skips) gets
-  its own `unseal()` when the ascent boss dies to open gates/doors. Art: the owner's pictures `tools/sinsart/ascent_art/<name>.png` (prompts in `PROMPTS.md`, flat background) ->
+  its own `unseal()` when the ascent boss dies to open gates/doors. The prison (10) is different: its unfought start map has the exit inside
+  the walls, so `PrisonBossLevel.ascentOpen` (from `onFloorChange` and every `tick` there) jumps it to the after-Tengu map
+  (state WON, heaps/mobs on now-solid tiles moved into Tengu's cell; Nov 23 2026). Art: the owner's pictures `tools/sinsart/ascent_art/<name>.png` (prompts in `PROMPTS.md`, flat background) ->
   `tools/sinsart/make_ascent_sprites.py` (border flood fill + background-hue leak cut, then make_virtue_sprites-style shrink,
   outline and frames) -> `sprites/ascent_bosses.png` (96x80 frames since the wide-winged angels, own shrink/frames in the script, 12 per row,
   row = `ORDER` index) read by

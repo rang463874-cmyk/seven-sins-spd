@@ -499,6 +499,9 @@ public final class AscentHooks {
 		if (hero.buff(Scale.class) == null) Buff.affect(hero, Scale.class);
 
 		if (Dungeon.depth != floorDepth || Dungeon.branch != floorBranch) onFloorChange(hero);
+		//also frees a save that was already stuck in the dark prison start map
+		if (Dungeon.branch == 0 && Dungeon.level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel)
+			((com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel) Dungeon.level).ascentOpen();
 
 		int r = region(Dungeon.depth);
 		if (r != lastRegion) {
@@ -567,6 +570,8 @@ public final class AscentHooks {
 
 		Level level = Dungeon.level;
 		int d = Dungeon.depth;
+		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel)
+			((com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel) level).ascentOpen();
 		if (!seeded.contains(d) && d <= 30) {
 			seeded.add(d);
 			int n = factionCount(d);

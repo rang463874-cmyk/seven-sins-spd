@@ -584,6 +584,42 @@ public class PrisonBossLevel extends Level {
 		return state != State.WON;
 	}
 
+	//Seven Sins: on the way up (ascent/AscentHooks) a prison never fought (floors skipped with the dev tools) still has its
+	//starting map, whose exit lies in the walls, so the hero arrived in the dark. Jump straight to the map after Tengu.
+	public void ascentOpen(){
+		if (state == State.WON) return;
+		for (Mob m : mobs.toArray(new Mob[0])){
+			if (m instanceof Tengu){
+				m.destroy();
+				if (m.sprite != null) m.sprite.killAndErase();
+			}
+		}
+		transitions.clear();
+		setMapEnd();
+		state = State.WON;
+		cleanMapState();
+
+		for (Heap h : heaps.valueList()){
+			if (passable[h.pos] && !solid[h.pos]) continue;
+			ArrayList<Item> items = new ArrayList<>(h.items);
+			h.destroy();
+			for (Item i : items) drop(i, randomTenguCellPos());
+		}
+		for (Mob m : mobs.toArray(new Mob[0])){
+			if (passable[m.pos] && !solid[m.pos]) continue;
+			int tries = 50;
+			do { m.pos = randomTenguCellPos(); } while (tries-- > 0 && (findMob(m.pos) != null || m.pos == Dungeon.hero.pos));
+			if (m.sprite != null) m.sprite.place(m.pos);
+		}
+		Dungeon.observe();
+		Game.runOnRenderThread(new Callback() {
+			@Override
+			public void call() {
+				playLevelMusic();
+			}
+		});
+	}
+
 	@Override
 	public void occupyCell(Char ch) {
 		if (ch == Dungeon.hero){
