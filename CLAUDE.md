@@ -293,6 +293,10 @@ Done and pushed (see `git log`):
     Forge skill -> Dream Patrol (`patrol`, needs a puppet, doze `PATROL_TURNS` 40, `reveal(false)`: layout only); Gluttony's
     heavy rumination is gone (`ruminable` refuses `!canRepeat`), new Regurgitate (`regurgitate`, icon 5, 100 satiety,
     projectile: a fresh copy of `PredatorStomach.lastPotion` shatters at the target). Old gild/forge code and buffs stay for saves.
+  - Wrath, Nov 23 2026 (owner): the hero's own wounds give grudge too (`WrathGrudge.HURT_GRUDGE` 0.05 per damage, in
+    `WrathHooks.onDefense`; enemies hurting each other give 0.10), and a melee skill Rampage (`WarDrum.rampage`, icon 21,
+    `COST_RAMPAGE` 35 rage: `WarDrum.Rampage` for `rageDuration(RAMPAGE_TURNS 10)`: melee +`RAMPAGE_BONUS` 25% and a
+    `RAMPAGE_CLEAVE` 50% chance to hit another adjacent enemy for 60%, in `WrathHooks.onAttack`).
   - Wrath (later Nov 11): rage cools at `WrathGrudge.COOLING` 0.25/turn (x the awakening's simmer factor) and bosses/
     minibosses can be enraged (`WrathGrudge.immune` = only `isImmune(Amok)`).
 - Solomon's demons, the Ars Goetia (Nov 2026, owner's design): `goetia/GoetiaDemon` enum = all 72 in Goetia order

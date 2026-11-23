@@ -48,6 +48,11 @@ public class WarDrum extends SinArtifact {
 	public static final int COST_DISCORD = 25;
 	public static final int COST_CONTAGION = 50;
 	public static final int COST_DASH = 25;
+	/** Rampage (Nov 23 2026, owner: a melee skill for Wrath): rage cost, base turns, damage bonus, cleave chance */
+	public static final int COST_RAMPAGE = 35;
+	public static final float RAMPAGE_TURNS = 10f;
+	public static final float RAMPAGE_BONUS = 0.25f;
+	public static final float RAMPAGE_CLEAVE = 0.5f;
 	/** War Cry: free, on a cooldown; calls the enemies within RALLY_RANGE and fills some rage */
 	public static final int RALLY_RANGE = 12;
 	public static final float RALLY_COOLDOWN = 30f;
@@ -126,6 +131,12 @@ public class WarDrum extends SinArtifact {
 				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_DASH))
 				.descArgs(h -> new Object[]{dashRange(h)})
 				.onUse(h -> GameScene.selectCell(dash)));
+		list.add(new BasicSkill(WarDrum.class, "rampage", 21, SinSkill.CostType.RAGE)
+				.cost(h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_RAMPAGE))
+				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_RAMPAGE))
+				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, RAMPAGE_TURNS)),
+						Math.round(RAMPAGE_BONUS * 100), Math.round(RAMPAGE_CLEAVE * 100)})
+				.onUse(WarDrum::rampage));
 		return list;
 	}
 
@@ -383,6 +394,54 @@ public class WarDrum extends SinArtifact {
 		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(Messages.get(WarDrum.class, n > 0 ? "rally_done" : "rally_none", n));
 		hero.sprite.operate(hero.pos);
 		hero.spendAndNext(1f);
+	}
+
+	/** the drum beats a frenzy: melee hits deal more and may cut another adjacent enemy too (WrathHooks.onAttack) */
+	public static void rampage(Hero hero) {
+		WrathGrudge g = grudge(hero);
+		if (g == null || !g.useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(hero, COST_RAMPAGE))) return;
+		float turns = WrathGrudge.rageDuration(hero, RAMPAGE_TURNS);
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(hero, Rampage.class, turns).total = turns;
+		hero.sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.NEGATIVE, Messages.get(WarDrum.class, "skill_rampage"));
+		hero.sprite.operate(hero.pos);
+		com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.CHALLENGE);
+		com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.refreshHero();
+		hero.spendAndNext(1f);
+	}
+
+	public static class Rampage extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{
+			type = buffType.POSITIVE;
+		}
+
+		public float total = RAMPAGE_TURNS;
+
+		@Override
+		public int icon() {
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.FURY;
+		}
+
+		@Override
+		public float iconFadePercent() {
+			return Math.max(0, (total - visualcooldown()) / Math.max(1f, total));
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", Math.round(RAMPAGE_BONUS * 100), Math.round(RAMPAGE_CLEAVE * 100), dispTurns());
+		}
+
+		@Override
+		public void storeInBundle(com.watabou.utils.Bundle bundle) {
+			super.storeInBundle(bundle);
+			bundle.put("total", total);
+		}
+
+		@Override
+		public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
+			super.restoreFromBundle(bundle);
+			total = Math.max(1f, bundle.getFloat("total"));
+		}
 	}
 
 	public static class RallyCooldown extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {

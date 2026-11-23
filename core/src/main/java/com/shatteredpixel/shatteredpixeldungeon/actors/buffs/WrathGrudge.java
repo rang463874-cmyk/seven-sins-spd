@@ -114,6 +114,9 @@ public class WrathGrudge extends Buff {
 	/** flat rage for every enemy attack that lands, on top of the share by damage below */
 	public static final float HURT_RAGE = 5f;
 
+	/** grudge per point of damage the hero takes (Nov 23 2026, owner); enemies hurting each other give 0.10 */
+	public static final float HURT_GRUDGE = 0.05f;
+
 	/** rage from being hurt: a hit for your whole max HP fills 100 */
 	public void onHurt(int dmg) {
 		Hero h = hero();

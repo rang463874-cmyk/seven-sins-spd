@@ -159,6 +159,22 @@ public final class WrathHooks {
 			WrathGrudge.Vengeance v = hero.buff(WrathGrudge.Vengeance.class);
 			if (v != null) dmg += v.stacks;
 			dmg = com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.wrathMelee(hero, dmg); //Seven Sins: awakening
+			//Seven Sins: Rampage (Nov 23 2026): more damage, and a chance to cut another adjacent enemy
+			if (hero.buff(com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.Rampage.class) != null) {
+				dmg = Math.round(dmg * (1f + com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.RAMPAGE_BONUS));
+				if (enemy != null && com.watabou.utils.Random.Float() < com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.RAMPAGE_CLEAVE) {
+					java.util.ArrayList<Char> others = new java.util.ArrayList<>();
+					for (int n : com.watabou.utils.PathFinder.NEIGHBOURS8) {
+						Char c = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(hero.pos + n);
+						if (c != null && c != enemy && c.alignment == Char.Alignment.ENEMY && c.isAlive()) others.add(c);
+					}
+					if (!others.isEmpty()) {
+						Char other = com.watabou.utils.Random.element(others);
+						other.damage(Math.max(1, Math.round(dmg * 0.6f) - other.drRoll()), hero);
+						if (other.sprite != null) other.sprite.flash();
+					}
+				}
+			}
 			int exec = hero.pointsInTalent(Talent.AVENGER_EXECUTE);
 			if (exec > 0 && enemy != null && WrathGrudge.enraged(enemy)) {
 				dmg = Math.round(dmg * (1f + 0.10f * exec));
@@ -175,6 +191,8 @@ public final class WrathHooks {
 		if (attacker != null) g.addRage(WrathGrudge.HURT_RAGE);
 		if (dmg <= 0) return dmg;
 		g.onHurt(dmg);
+		//Seven Sins (Nov 23 2026, owner): every wound breeds a little grudge
+		g.addGrudge(dmg * WrathGrudge.HURT_GRUDGE);
 		int fuel = hero.pointsInTalent(Talent.WRATH_FUEL);
 		if (fuel > 0) g.gainCharge(0.10f * fuel);
 		return dmg;

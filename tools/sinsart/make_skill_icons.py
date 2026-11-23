@@ -626,7 +626,7 @@ G = {
 ICONS = {
     0: "JAW", 1: "FANG", 2: "LOOP", 3: "BOLT", 4: "SPLASH", 5: "SPLASH",
     8: "COIN", 9: "SHIELD", 10: "ARROW", 11: "HAND", 12: "SCROLL", 13: "BAG", 14: "CART", 15: "MAP",
-    16: "EXCLAIM", 17: "CROSSARROWS", 18: "BURST", 19: "ARROW", 20: "RALLY",
+    16: "EXCLAIM", 17: "CROSSARROWS", 18: "BURST", 19: "ARROW", 20: "RALLY", 21: "SWORDS",
     24: "CROWN", 25: "SWORDS", 26: "STAR", 27: "SCROLL", 28: "EYE", 29: "STATUE", 30: "PUSH",
     32: "HEART", 33: "WAVE", 34: "DROP", 35: "DHEART",
     40: "MASK", 41: "SWAP", 42: "SWAP", 43: "MASK",
