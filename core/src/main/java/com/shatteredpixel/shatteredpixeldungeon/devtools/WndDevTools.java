@@ -135,6 +135,29 @@ public class WndDevTools extends Window {
 				GLog.w("소환할 자리가 없습니다.");
 			}
 		});
+		//one floor at a time (owner, Nov 23 2026); the main dungeon only, 1..31
+		addBtn(new RedButton("한 층 위로 (" + Math.max(1, Dungeon.depth - 1) + "층)") {
+			@Override
+			protected void onClick() {
+				if (Dungeon.depth <= 1 && Dungeon.branch == 0) {
+					GLog.w("이미 1층입니다.");
+					return;
+				}
+				hide();
+				devTravel(Math.max(1, Dungeon.depth - 1));
+			}
+		});
+		addBtn(new RedButton("한 층 아래로 (" + Math.min(31, Dungeon.depth + 1) + "층)") {
+			@Override
+			protected void onClick() {
+				if (Dungeon.depth >= 31) {
+					GLog.w("이미 가장 깊은 층입니다.");
+					return;
+				}
+				hide();
+				devTravel(Math.min(31, Dungeon.depth + 1));
+			}
+		});
 		addBtn(new RedButton("천상 27층으로 이동") {
 			@Override
 			protected void onClick() {
@@ -332,7 +355,8 @@ public class WndDevTools extends Window {
 				add(levelText);
 				y = stepper(y, levelText, new int[]{-5, -1, 1, 5}, true);
 			}
-			boolean countable = sample != null && (sample.stackable || sample instanceof Gold || sample instanceof EnergyCrystal);
+			//every item takes a count: stacks get the quantity, the others come as that many copies (max 20)
+			boolean countable = sample != null;
 			if (countable) {
 				qtyText = PixelScene.renderTextBlock("", 8);
 				add(qtyText);
@@ -369,7 +393,33 @@ public class WndDevTools extends Window {
 		private float stepper(float y, RenderedTextBlock label, int[] deltas, final boolean isLevel) {
 			label.setPos(0, y + 4);
 			float bx = 46;
-			float bw = (WIDTH - bx - (deltas.length - 1)) / deltas.length;
+			float inputW = 22;
+			float bw = (WIDTH - bx - inputW - deltas.length) / deltas.length;
+			//type the number directly (owner, Nov 23 2026)
+			RedButton type = new RedButton("입력", 7) {
+				@Override
+				protected void onClick() {
+					com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndTextInput(
+							isLevel ? "강화 단계 입력" : "수량 입력",
+							isLevel ? "-3 ~ 99 사이의 숫자" : "1 ~ 9999 사이의 숫자",
+							Integer.toString(isLevel ? level : qty), 5, false, "확인", "취소") {
+						@Override
+						public void onSelect(boolean positive, String text) {
+							if (!positive) return;
+							try {
+								int v = Integer.parseInt(text.trim().replace("+", ""));
+								if (isLevel) level = clamp(v, -3, 99);
+								else qty = clamp(v, 1, 9999);
+								refreshTexts();
+							} catch (NumberFormatException e) {
+								GLog.w("숫자를 입력해 주세요.");
+							}
+						}
+					});
+				}
+			};
+			add(type);
+			type.setRect(WIDTH - inputW, y, inputW, 16);
 			for (int i = 0; i < deltas.length; i++) {
 				final int d = deltas[i];
 				RedButton b = new RedButton((d > 0 ? "+" : "") + d, 7) {
@@ -422,6 +472,10 @@ public class WndDevTools extends Window {
 		Item item = create(cn);
 		if (item == null) {
 			GLog.w("생성 실패: " + cn);
+			return;
+		}
+		if (qty > 1 && !item.stackable && !(item instanceof Gold) && !(item instanceof EnergyCrystal)) {
+			for (int i = 0; i < Math.min(qty, 20); i++) spawn(cn, level, 1, identify);
 			return;
 		}
 		try {
