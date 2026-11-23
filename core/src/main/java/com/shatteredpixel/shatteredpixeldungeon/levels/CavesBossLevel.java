@@ -377,7 +377,8 @@ public class CavesBossLevel extends Level {
 	public void unseal() {
 		super.unseal();
 
-		blobs.get(PylonEnergy.class).fullyClear();
+		//Seven Sins: null when the DM-300 fight never started (the ascent opens the arena without it)
+		if (blobs.get(PylonEnergy.class) != null) blobs.get(PylonEnergy.class).fullyClear();
 
 		set( entrance(), Terrain.ENTRANCE );
 		int i = gate.top*width();
