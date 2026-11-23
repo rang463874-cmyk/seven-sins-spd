@@ -331,6 +331,12 @@ public final class AscentHooks {
 		return virtueScore;
 	}
 
+	/** the game clock: Statistics.duration only catches up when the actors are re-timed (floor changes, saves), so within a
+	 *  floor it stands still; the vanilla quickslot hint adds Actor.now() the same way */
+	public static float gameTime() {
+		return Statistics.duration + Actor.now();
+	}
+
 	/** climbing with the amulet after the first choice */
 	public static boolean active() {
 		Hero h = Dungeon.hero;
@@ -406,7 +412,7 @@ public final class AscentHooks {
 		faction = f;
 		floorDepth = Dungeon.depth;
 		floorBranch = Dungeon.branch;
-		floorStart = Statistics.duration;
+		floorStart = gameTime();
 		resetFloor();
 		judged.add(Dungeon.depth);
 		seeded.add(Dungeon.depth);
@@ -528,7 +534,7 @@ public final class AscentHooks {
 		for (Mob m : Dungeon.level.mobs) if (m.alignment == Char.Alignment.ALLY && m.isAlive() && !(m instanceof NPC)) { ally = true; break; }
 		allyPresent = ally;
 
-		float now = Statistics.duration;
+		float now = gameTime();
 		if (Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 && now >= chaserDue) raiseChaser(Dungeon.level);
 		HashSet<Integer> here = Dungeon.branch == 0 ? ruins.get(Dungeon.depth) : null;
 		if (here != null && !here.isEmpty() && !com.shatteredpixel.shatteredpixeldungeon.effects.RuinTile.showingFor(Dungeon.level)) {
@@ -560,7 +566,7 @@ public final class AscentHooks {
 		}
 		floorDepth = Dungeon.depth;
 		floorBranch = Dungeon.branch;
-		floorStart = Statistics.duration;
+		floorStart = gameTime();
 		resetFloor();
 		hurtSinceKill = false;
 		nextWave = floorStart + DILIGENCE_LIMIT;
@@ -799,7 +805,7 @@ public final class AscentHooks {
 
 	/** the virtues of a floor left behind on the way up */
 	private static void judge(Hero hero, int depth) {
-		float elapsed = Statistics.duration - floorStart;
+		float elapsed = gameTime() - floorStart;
 		if (!consumed) award(Trigger.TEMPERANCE, 3);
 		if (!goldTaken) award(Trigger.CHARITY, 3);
 		if (!killed) award(Trigger.PATIENCE, 3);
@@ -1146,7 +1152,7 @@ public final class AscentHooks {
 		if (cause instanceof Mob && ((Mob) cause).alignment == Char.Alignment.ALLY) {
 			award(Trigger.SLOTH, 1);
 		} else {
-			float now = Statistics.duration;
+			float now = gameTime();
 			award(Trigger.WRATH, now == lastKill ? 2 : 1);
 			lastKill = now;
 		}

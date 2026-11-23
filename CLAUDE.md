@@ -567,6 +567,9 @@ Done and pushed (see `git log`):
   per-depth sets saved as `ruins_<d>`, redrawn from `tick` when the level or scene changed; never the border, a stair or a
   tile next to one, an occupied tile, or a tile whose loss would cut the hero off from the entrance (PathFinder check)).
   Behemoth's stampede ruins its line, Metatron's pillars that hit nobody ruin a third of their tiles.
+  Fixed Nov 23 2026: the ascent's timers (chaser, diligence waves, wrath fires, the fast-floor virtue) read
+  `Statistics.duration`, which only advances when actors are re-timed (floor change/save), so the chaser never rose;
+  they use `AscentHooks.gameTime()` = duration + `Actor.now()` now.
   Fixed the same day: `spawnBoss` used `level.seal()`, but CavesBossLevel/CityBossLevel/HallsBossLevel summon their own
   boss in `seal()`, so DM-300/the dwarf king/Yog came along. The ascent now locks with `lock/unlock` (locked flag +
   LockedFloor), puts its boss at the old arena (`ascentBossCell()` added to the four boss levels; `arenaCell`), removes any
