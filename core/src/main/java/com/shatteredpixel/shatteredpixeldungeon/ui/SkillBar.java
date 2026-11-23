@@ -288,13 +288,16 @@ public class SkillBar extends Component {
 		private static com.watabou.noosa.TextureFilm film;
 
 		private NinePatch bg;
-		private final Image[] icons = new Image[com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.MAX_SYMBOLS];
-		private final com.watabou.noosa.ColorBlock[] empty = new com.watabou.noosa.ColorBlock[icons.length];
+		//made in createChildren, which the Component constructor calls before field initialisers run
+		private Image[] icons;
+		private com.watabou.noosa.ColorBlock[] empty;
 		private String shown = null;
 
 		@Override
 		protected void createChildren() {
 			super.createChildren();
+			icons = new Image[com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SolomonArcana.MAX_SYMBOLS];
+			empty = new com.watabou.noosa.ColorBlock[icons.length];
 			bg = Chrome.get(Chrome.Type.TOAST_TR);
 			add(bg);
 			for (int i = 0; i < icons.length; i++) {
