@@ -191,7 +191,8 @@ public class HollowRing extends Ring {
 			} catch (ClassNotFoundException ignored) {
 			}
 		}
-		if (ch instanceof Hero) ((Hero) ch).updateHT(false);
+		//while a save loads Dungeon.hero is still null (ring levels read it); HT comes from the save then
+		if (ch instanceof Hero && Dungeon.hero == ch) ((Hero) ch).updateHT(false);
 	}
 
 	private void clearPhantoms() {
