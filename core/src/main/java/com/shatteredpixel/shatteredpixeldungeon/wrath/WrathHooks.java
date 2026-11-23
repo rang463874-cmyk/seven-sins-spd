@@ -189,6 +189,12 @@ public final class WrathHooks {
 		if (g == null) return dmg;
 		//every blow that lands stokes the rage, even one the armor soaks up (owner, Nov 13 2026)
 		if (attacker != null) g.addRage(WrathGrudge.HURT_RAGE);
+		//Seven Sins: Counter Stance (Nov 23 2026) catches every blow
+		com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.Parry parry = hero.buff(com.shatteredpixel.shatteredpixeldungeon.items.WarDrum.Parry.class);
+		if (parry != null && attacker != null && dmg > 0) {
+			parry.block(dmg);
+			return 0;
+		}
 		if (dmg <= 0) return dmg;
 		g.onHurt(dmg);
 		//Seven Sins (Nov 23 2026, owner): every wound breeds a little grudge

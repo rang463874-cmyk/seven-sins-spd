@@ -53,6 +53,13 @@ public class WarDrum extends SinArtifact {
 	public static final float RAMPAGE_TURNS = 10f;
 	public static final float RAMPAGE_BONUS = 0.25f;
 	public static final float RAMPAGE_CLEAVE = 0.5f;
+	/** Counter Stance (Nov 23 2026, owner: a parry for this turn and the next, then a sweep at every adjacent enemy) */
+	public static final int COST_PARRY = 20;
+	public static final float PARRY_TURNS = 2f;
+	/** share of the blocked damage added to the sweep */
+	public static final float PARRY_RETURN = 0.5f;
+	/** grudge per point of damage blocked or dealt by the sweep */
+	public static final float PARRY_GRUDGE = 0.10f;
 	/** War Cry: free, on a cooldown; calls the enemies within RALLY_RANGE and fills some rage */
 	public static final int RALLY_RANGE = 12;
 	public static final float RALLY_COOLDOWN = 30f;
@@ -137,6 +144,12 @@ public class WarDrum extends SinArtifact {
 				.descArgs(h -> new Object[]{Math.round(WrathGrudge.rageDuration(h, RAMPAGE_TURNS)),
 						Math.round(RAMPAGE_BONUS * 100), Math.round(RAMPAGE_CLEAVE * 100)})
 				.onUse(WarDrum::rampage));
+		list.add(new BasicSkill(WarDrum.class, "parry", 22, SinSkill.CostType.RAGE)
+				.cost(h -> com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_PARRY))
+				.usableIf(h -> grudge(h).rage >= com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(h, COST_PARRY)
+						&& h.buff(Parry.class) == null)
+				.descArgs(h -> new Object[]{Math.round(PARRY_RETURN * 100), Math.round(PARRY_GRUDGE * 100)})
+				.onUse(WarDrum::parry));
 		return list;
 	}
 
@@ -407,6 +420,94 @@ public class WarDrum extends SinArtifact {
 		com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.CHALLENGE);
 		com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.refreshHero();
 		hero.spendAndNext(1f);
+	}
+
+	/** Counter Stance: blocks every attack until the end of the next turn, then sweeps the adjacent enemies */
+	public static void parry(Hero hero) {
+		WrathGrudge g = grudge(hero);
+		if (g == null || !g.useRage(com.shatteredpixel.shatteredpixeldungeon.sins.AwakeningHooks.rageCost(hero, COST_PARRY))) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(hero, Parry.class, PARRY_TURNS);
+		hero.sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.POSITIVE, Messages.get(WarDrum.class, "skill_parry"));
+		hero.sprite.operate(hero.pos);
+		com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.HIT_PARRY);
+		com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.refreshHero();
+		hero.spendAndNext(1f);
+	}
+
+	public static class Parry extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{
+			type = buffType.POSITIVE;
+		}
+
+		/** damage blocked so far */
+		public int blocked = 0;
+
+		/** from WrathHooks.onDefense: a blow caught on the stance */
+		public void block(int dmg) {
+			blocked += dmg;
+			if (target.sprite != null) {
+				target.sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.NEUTRAL,
+						Messages.get(WarDrum.class, "parried"));
+			}
+			com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.HIT_PARRY);
+		}
+
+		@Override
+		public boolean act() {
+			if (target instanceof Hero && target.isAlive()) sweep((Hero) target);
+			return super.act();
+		}
+
+		private void sweep(Hero hero) {
+			java.util.ArrayList<Char> foes = new java.util.ArrayList<>();
+			for (int n : com.watabou.utils.PathFinder.NEIGHBOURS8) {
+				Char c = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(hero.pos + n);
+				if (c != null && c.alignment == Char.Alignment.ENEMY && c.isAlive()) foes.add(c);
+			}
+			WrathGrudge g = grudge(hero);
+			int dealt = 0;
+			if (!foes.isEmpty()) {
+				int bonus = Math.round(blocked * PARRY_RETURN / foes.size());
+				for (Char c : foes) {
+					int dmg = hero.damageRoll() + (g == null ? 0 : g.meleeBonus()) + bonus;
+					dmg = Math.max(1, dmg - c.drRoll());
+					int before = c.HP;
+					c.damage(dmg, hero);
+					dealt += Math.max(0, before - Math.max(0, c.HP));
+					if (c.sprite != null) c.sprite.flash();
+				}
+				hero.sprite.attack(foes.get(0).pos);
+				com.watabou.noosa.audio.Sample.INSTANCE.play(com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.HIT_SLASH);
+			}
+			if (g != null) g.addGrudge((blocked + dealt) * PARRY_GRUDGE);
+		}
+
+		@Override
+		public int icon() {
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.ARMOR;
+		}
+
+		@Override
+		public void tintIcon(com.watabou.noosa.Image icon) {
+			icon.hardlight(1f, 0.35f, 0.25f);
+		}
+
+		@Override
+		public String desc() {
+			return Messages.get(this, "desc", blocked, dispTurns());
+		}
+
+		@Override
+		public void storeInBundle(com.watabou.utils.Bundle bundle) {
+			super.storeInBundle(bundle);
+			bundle.put("blocked", blocked);
+		}
+
+		@Override
+		public void restoreFromBundle(com.watabou.utils.Bundle bundle) {
+			super.restoreFromBundle(bundle);
+			blocked = bundle.getInt("blocked");
+		}
 	}
 
 	public static class Rampage extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {

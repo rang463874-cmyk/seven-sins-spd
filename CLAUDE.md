@@ -297,6 +297,10 @@ Done and pushed (see `git log`):
     `WrathHooks.onDefense`; enemies hurting each other give 0.10), and a melee skill Rampage (`WarDrum.rampage`, icon 21,
     `COST_RAMPAGE` 35 rage: `WarDrum.Rampage` for `rageDuration(RAMPAGE_TURNS 10)`: melee +`RAMPAGE_BONUS` 25% and a
     `RAMPAGE_CLEAVE` 50% chance to hit another adjacent enemy for 60%, in `WrathHooks.onAttack`).
+    Same day: Counter Stance (`WarDrum.parry`, icon 22, `COST_PARRY` 20 rage, not while one is up): `WarDrum.Parry` for
+    `PARRY_TURNS` 2 (this turn and the next); `WrathHooks.onDefense` returns 0 for every attack and adds it to `blocked`; when
+    the buff ends (`act`) it sweeps every adjacent enemy for a damage roll + melee bonus + `PARRY_RETURN` 50% of the blocked
+    damage split among them, then `addGrudge((blocked + dealt) x PARRY_GRUDGE 0.10)`.
   - Wrath (later Nov 11): rage cools at `WrathGrudge.COOLING` 0.25/turn (x the awakening's simmer factor) and bosses/
     minibosses can be enraged (`WrathGrudge.immune` = only `isImmune(Amok)`).
 - Solomon's demons, the Ars Goetia (Nov 2026, owner's design): `goetia/GoetiaDemon` enum = all 72 in Goetia order
