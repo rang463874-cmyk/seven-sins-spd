@@ -84,6 +84,20 @@ jobs:
             Developer tools are enabled in this build.
           files: out/*.apk
 
+      # Keep only the newest test APKs, so the release page doesn't fill up with old builds
+      # (owner, Nov 23 2026: an old, lower-version APK picked by mistake won't install over a newer one).
+      - name: Prune old test builds
+        if: ${{ !startsWith(github.ref, 'refs/tags/') && steps.ver.outputs.release != 'true' }}
+        run: |
+          KEEP=5
+          ids=$(gh api "repos/${{ github.repository }}/releases/tags/test-build" \
+            --jq "[.assets | sort_by(.created_at) | reverse | .[$KEEP:][] | .id] | .[]")
+          for id in $ids; do
+            gh api -X DELETE "repos/${{ github.repository }}/releases/assets/$id" && echo "deleted asset $id"
+          done
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Publish the versioned release
         if: ${{ steps.ver.outputs.release == 'true' }}
         uses: softprops/action-gh-release@v2

@@ -83,7 +83,7 @@ Done and pushed (see `git log`):
   `effectText`) and `usePower` gives a one-time version of the picked artifact's power (`use`; chains and skeleton key are
   targeted via `targeter`; the rose summons two 30-turn `ArtifactShard.Spirit` wraith allies). Strings in
   `tools/strings/virtues_items_*` + `windows.wndartifactshard.*` at the end of messages/windows/windows*.properties. On the alchemy guide's Seven_Sins page.
-- GitHub Actions builds a debug APK on every push and publishes it to the `test-build`
+- GitHub Actions builds a debug APK on every push and publishes it to the `test-build` (since Nov 23 2026 the step "Prune old test builds" keeps only the newest 5 APKs there)
   pre-release: https://github.com/rang463874-cmyk/seven-sins-spd/releases/tag/test-build
 - Four horsemen relics (all classes) from the sewer "prophet of seals" quest, see below.
 - Elite monsters (Nov 2026, `elites/EliteHooks`, called from the end of `RegularLevel.createMobs`, `Mob.die`,
