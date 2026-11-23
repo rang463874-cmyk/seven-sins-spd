@@ -901,6 +901,9 @@ public class ItemSpriteSheet {
 	public static final int MIRROR_ENVY     = SINS3+5;
 	public static final int MIRROR_SLOTH    = SINS3+6;
 	public static final int MIRROR_SOLOMON  = SINS3+7;
+	//Seven Sins (Nov 23 2026): the hollow ring and its completed form
+	public static final int HOLLOW_RING       = SINS3+8;
+	public static final int TWELVE_KINGS_RING = SINS3+9;
 	static{
 		int[][] pairs = {
 				{MIRROR_GLUTTONY, PREDATOR_MAW}, {MIRROR_GREED, GOLDEN_CARD}, {MIRROR_WRATH, WAR_DRUM},

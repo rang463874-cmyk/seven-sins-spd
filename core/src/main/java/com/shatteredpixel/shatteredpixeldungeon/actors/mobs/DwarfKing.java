@@ -565,6 +565,9 @@ public class DwarfKing extends Mob {
 			Dungeon.level.drop(new KingsCrown(), pos).sprite.drop();
 		}
 
+		//Seven Sins (Nov 23 2026): the hollow ring, which learns the powers of the rings fed to it
+		Dungeon.level.drop(new com.shatteredpixel.shatteredpixeldungeon.items.rings.HollowRing(), pos).sprite.drop();
+
 		Badges.validateBossSlain();
 		if (Statistics.qualifiedForBossChallengeBadge){
 			Badges.validateBossChallengeCompleted();

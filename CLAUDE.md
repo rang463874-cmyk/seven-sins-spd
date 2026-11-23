@@ -579,6 +579,14 @@ Done and pushed (see `git log`):
   `AscentSprites.ArtSprite`; done Nov 20 2026: all ten (Behemoth and Metatron x1.25; drawn facing left: `MIRROR`; grey backgrounds skip the hue cut; islands under `ISLAND` 2% dropped: swarms, rubble, the Gemini sparkle). The others are still placeholders (demon lords'/
   archangels' sheets tinted via `resetColor`; chasers x1.6): when a picture arrives, run the script and make its class an
   ArtSprite with its row. All ten in the bestiary's QUEST group. Strings `tools/strings/ascent_actors_*`.
+- The hollow ring (Nov 23 2026, owner picked option 1: a ring that learns every ring's power): `items/rings/HollowRing`
+  (Ring subclass, unique, always known, not upgradable; items.png row 35 +8/+9 = `HOLLOW_RING`/`TWELVE_KINGS_RING` by
+  `tools/sinsart/make_hollow_ring_icon.py`), dropped by `DwarfKing.die`. AC_FEED (default action) picks an unequipped
+  vanilla ring (`Generator.Category.RING.classes`), destroys it and stores its class -> highest fed level (`fed`, saved as
+  `fed_kinds`/`fed_levels`). Each power works at fed - 1 (min 0); all twelve fed = "Ring of the Twelve Kings" (gold, glowing),
+  every power at fed + 1 (`powerLevel`). Worn like a ring: `activate` makes one unseen phantom ring per fed kind at that
+  level and activates it on the wearer (their RingBuffs carry every vanilla ring hook), `doUnequip` detaches them, both
+  re-run `updateHT` for might. Strings `tools/strings/hollowring_items_*`.
 - Remains items for every sin (`items/remains/`: MawFang, MeltedCard, TornDrumhead, CrackedGem,
   BrokenPerfume, MirrorShard, PillowStuffing; dispatched in `RemainsItem.get`; art row 36 +5..11).
   CrackedGem's `Ward` buff is checked in `Hero.defenseProc`.
