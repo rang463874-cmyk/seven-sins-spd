@@ -45,9 +45,11 @@ public class SinRewards {
 			st.addPoints(PredatorStomach.CAT_SCROLL, pts / 3f);
 			done = true;
 		}
-		if (h.buff(GreedVault.class) != null) {
-			//greed's points are the gold it carries (100 gold per point), paid out at half rate
-			Dungeon.gold += Math.round(pts * 50);
+		GreedVault gvault = h.buff(GreedVault.class);
+		if (gvault != null) {
+			//greed's points are the gold it carries (100 gold per point), paid out at half rate; earned like a pickup:
+			//shown over the hero, fills the card's gauge and re-syncs the wallet's stats
+			gvault.earnGold(h, Math.round(pts * 50));
 			done = true;
 		}
 		WrathGrudge wg = h.buff(WrathGrudge.class);
