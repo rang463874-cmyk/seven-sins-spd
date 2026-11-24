@@ -94,7 +94,8 @@ Done and pushed (see `git log`):
   skills via `prepare/release`): RatChieftain (sewers), ChainWarden (prison), GnollForeman (caves), FallenPriest
   (city), Hellhound twins (halls, `twin` id, survivor enrages); one per region (chance 1/floors left, forced on the
   region's last regular floor), listed in the bestiary's QUEST group. Drops: sin elite 1 `items/SinEssence` (+ own
-  sin: `sins/SinRewards.grant` 15 pts; greedy: stolen gold x2), region elite 2 essences + uncursed +1
+  sin: `sins/SinRewards.grant` 15 pts, any other sin 7.5 since Nov 24 2026 (owner); greedy: stolen gold x2; Greed's
+  points arrive as gold via `GreedVault.earnGold`), region elite 2 essences + uncursed +1
   weapon/armor/ring (`EliteHooks.regionReward`).
 - Alchemy (Nov 2026): `items/elite/ElixirOfSin` (2 essences + any potion: +20 sin points and resource refill,
   else full heal + bless), `items/bombs/SinBomb` (bomb + essence, random sin debuff), `items/bombs/StickyBomb`

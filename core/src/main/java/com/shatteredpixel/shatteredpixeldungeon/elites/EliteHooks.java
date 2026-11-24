@@ -40,6 +40,8 @@ public class EliteHooks {
 
 	public static final float SIN_ELITE_CHANCE = 0.25f;
 	public static final float SIN_POINTS_FOR_OWN_SIN = 15f;
+	//owner, Nov 24 2026: any other sin's elite feeds the hero's sin too, at half
+	public static final float SIN_POINTS_FOR_OTHER_SIN = 7.5f;
 
 	/** bit r set = region r's named elite has already appeared */
 	private static int regionsDone = 0;
@@ -174,9 +176,10 @@ public class EliteHooks {
 		if (e instanceof SinElite.Greedy) {
 			Dungeon.level.drop(((SinElite.Greedy) e).loot(), mob.pos).sprite.drop();
 		}
-		if (Dungeon.hero != null && Dungeon.hero.isAlive() && SinRewards.sinOf(Dungeon.hero) == e.sin()) {
-			if (SinRewards.grant(Dungeon.hero, SIN_POINTS_FOR_OWN_SIN)) {
-				GLog.p(Messages.get(SinElite.class, "own_sin", e.prefix()));
+		if (Dungeon.hero != null && Dungeon.hero.isAlive() && SinRewards.sinOf(Dungeon.hero) != SinRewards.NONE) {
+			boolean own = SinRewards.sinOf(Dungeon.hero) == e.sin();
+			if (SinRewards.grant(Dungeon.hero, own ? SIN_POINTS_FOR_OWN_SIN : SIN_POINTS_FOR_OTHER_SIN)) {
+				GLog.p(Messages.get(SinElite.class, own ? "own_sin" : "other_sin", e.prefix()));
 			}
 		}
 	}
